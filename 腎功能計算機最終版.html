@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>腎功能計算機</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 設定字體為 Inter，並確保整體居中 */
+        body {
+            font-family: 'Inter', sans-serif;
+            /* 調整為柔和的灰藍色背景 */
+            background-color: #F0F4F8; 
+        }
+        .container {
+            max-width: 900px;
+        }
+        /* 隱藏 Chrome/Safari 的數字輸入欄位箭頭 */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* 隱藏 Firefox 的數字輸入欄位箭頭 */
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        /* 彈出視窗 (Modal) 樣式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            max-width: 90%;
+            max-height: 80%; /* 限制高度以啟用滾動 */
+            overflow-y: auto; /* 啟用垂直滾動 */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex justify-center">
+
+    <div class="container bg-white shadow-2xl rounded-xl p-6 md:p-10 w-full">
+        
+        <!-- 標題區塊 - 使用 Flex 實現左右對齊 -->
+        <div class="flex justify-between items-end mb-2 border-b-4 border-teal-100 pb-3">
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-teal-700">
+                腎功能計算機
+            </h1>
+            <p class="text-xs sm:text-sm text-gray-500 font-medium whitespace-nowrap">
+                製作者:其仁藥師 2025年9月
+            </p>
+        </div>
+        <!-- 標題結束 -->
+
+        <p class="text-gray-500 mb-8">請輸入您的基本資料和血清肌酸酐 Scr 值，以計算各項指標。</p>
+
+        <!-- 輸入區塊 -->
+        <div id="input-section" class="mb-10 p-6 sm:p-8 bg-teal-50 rounded-2xl shadow-2xl border-b-4 border-teal-300">
+            <h2 class="text-2xl font-bold text-teal-600 mb-6">參數輸入 (基本資料與檢驗數據)</h2>
+
+            <!-- 主要輸入欄位 (在桌面尺寸使用 4 欄布局) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+
+                <!-- 1. 性別 -->
+                <div class="flex flex-col">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">性別</label>
+                    <div class="flex space-x-3 p-2 bg-white rounded-lg shadow-inner text-sm">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="sex" id="male" value="male" checked class="form-radio text-teal-600 h-4 w-4">
+                            <span class="ml-1.5 text-gray-800">男性</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="sex" id="female" value="female" class="form-radio text-pink-600 h-4 w-4">
+                            <span class="ml-1.5 text-gray-800">女性</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 2. 年齡 -->
+                <div class="flex flex-col">
+                    <label for="age" class="block text-sm font-medium text-gray-700 mb-1">年齡 (歲)</label>
+                    <input type="number" id="age" min="1" max="120" placeholder="例如: 45" class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-150 text-base">
+                </div>
+
+                <!-- 3. 身高 -->
+                <div class="flex flex-col">
+                    <label for="height" class="block text-sm font-medium text-gray-700 mb-1">身高 (公分)</label>
+                    <input type="number" id="height" min="100" max="250" step="0.1" placeholder="例如: 175.5" class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-150 text-base">
+                </div>
+
+                <!-- 4. 實際體重 -->
+                <div class="flex flex-col">
+                    <label for="actual-weight" class="block text-sm font-medium text-gray-700 mb-1">實際體重 (公斤)</label>
+                    <input type="number" id="actual-weight" min="10" max="300" step="0.1" placeholder="例如: 75.0" class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-150 text-base">
+                </div>
+                
+                <!-- 5. 血清肌酸酐 (Scr) - 佔用 2 欄寬度 -->
+                <div class="flex flex-col lg:col-span-2">
+                    <label for="scr" class="block text-sm font-medium text-gray-700 mb-1">血清肌酸酐 (Scr) mg/dL</label>
+                    <input type="number" id="scr" min="0.1" max="50" step="0.01" placeholder="例如: 1.25" class="p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-teal-500 focus:border-teal-500 transition duration-150 text-base">
+                    
+                    <!-- Scr Source Options -->
+                    <div id="scr-options" class="mt-2 flex space-x-3 text-sm p-2 bg-white rounded-lg border border-gray-200 shadow-inner">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="scr-source" value="actual" checked class="form-radio text-teal-600 h-4 w-4" onchange="handleScrSourceChange()">
+                            <span class="ml-1.5 text-gray-700 font-semibold whitespace-nowrap">實際值</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="scr-source" value="0.8" class="form-radio text-teal-600 h-4 w-4" onchange="handleScrSourceChange()">
+                            <span class="ml-1.5 text-gray-700 whitespace-nowrap">以 0.8 計算</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="scr-source" value="1.0" class="form-radio text-teal-600 h-4 w-4" onchange="handleScrSourceChange()">
+                            <span class="ml-1.5 text-gray-700 whitespace-nowrap">以 1.0 計算</span>
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 italic">
+                        * Scr 門檻值僅影響 ClCr (Cockcroft-Gault) 計算結果。
+                    </p>
+                </div>
+                
+                <!-- 佔位符 (讓 Scr 填滿 2 欄，並將計算體重指標放在同一行) -->
+                <div class="flex flex-col lg:col-span-2 pt-1 lg:pt-0">
+                    <div class="flex items-center justify-between mb-3 mt-4 lg:mt-0">
+                         <h3 class="text-lg font-semibold text-teal-600">計算體重指標 (Devine 公式)</h3>
+                         <button class="text-teal-500 hover:text-teal-700 p-1 rounded-full bg-teal-100 transition shadow" onclick="showInfoModal('weight_guide')" title="體重選擇考量">
+                             <span class="font-bold">?</span>
+                         </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 sm:gap-6">
+                        <!-- 6. 理想體重 (IBW) -->
+                        <div class="flex flex-col">
+                            <label for="ideal-weight" class="block text-sm font-medium text-gray-700 mb-1">理想體重 (公斤)</label>
+                            <!-- 唯讀欄位 -->
+                            <input type="text" id="ideal-weight" disabled placeholder="執行計算後顯示" class="p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100 text-gray-600 font-mono text-base">
+                            
+                            <!-- 新增 IBW 計算方法切換 -->
+                            <div id="ibw-options" class="mt-2 flex space-x-3 text-sm p-2 bg-white rounded-lg border border-gray-200 shadow-inner">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="ibw-method" value="devine" checked class="form-radio text-indigo-600 h-4 w-4" onchange="handleIbwMethodChange()">
+                                    <span class="ml-1.5 text-gray-700 font-semibold whitespace-nowrap">Devine 公式</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="ibw-method" value="bmi_reverse" class="form-radio text-indigo-600 h-4 w-4" onchange="handleIbwMethodChange()">
+                                    <span class="ml-1.5 text-gray-700 whitespace-nowrap">BMI 反推 (BMI=22)</span>
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1 italic">
+                                註:Devine 公式不適用於 <152cm 或未成年者。
+                            </p>
+                        </div>
+
+                        <!-- 7. 調整體重 (AdjBW) -->
+                        <div class="flex flex-col">
+                            <label for="adjusted-weight" class="block text-sm font-medium text-gray-700 mb-1">調整體重 (公斤)</label>
+                            <!-- 唯讀欄位 -->
+                            <input type="text" id="adjusted-weight" disabled placeholder="執行計算後顯示" class="p-3 border border-gray-300 rounded-lg shadow-sm bg-gray-100 text-gray-600 font-mono text-base">
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2 italic">
+                        註:調整體重 (AdjBW) 僅在實際體重超過理想體重 (IBW) 時才會計算顯示。
+                    </p>
+                </div>
+
+            </div>
+            
+            <!-- 錯誤訊息 -->
+            <div id="error-message" class="mt-8 text-red-600 font-medium hidden p-3 bg-red-100 rounded-lg border border-red-300">
+                請檢查所有輸入欄位是否皆已填寫有效的正數。
+            </div>
+
+            <!-- 計算按鈕群組 -->
+            <div class="mt-8 flex flex-wrap gap-3 justify-center">
+                <!-- 原來的計算按鈕 (使用實際體重) -->
+                <button id="calculate-btn" onclick="calculateRenalFunction('actual')" class="px-4 py-3 bg-teal-600 text-white font-semibold rounded-lg shadow-lg hover:bg-teal-700 transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-teal-500 focus:ring-opacity-50 flex-grow md:flex-grow-0">
+                    執行計算 (實際體重)
+                </button>
+                
+                <!-- 新增的理想體重按鈕 -->
+                <button id="calculate-ibw-btn" onclick="recalculateWithWeight('IBW')" class="px-4 py-3 bg-blue-500 text-white font-semibold rounded-lg shadow-lg hover:bg-blue-600 transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-blue-500 focus:ring-opacity-50 flex-grow md:flex-grow-0 disabled:opacity-50" disabled>
+                    以理想體重重算
+                </button>
+
+                <!-- 新增的調整體重按鈕 -->
+                <button id="calculate-abw-btn" onclick="recalculateWithWeight('ABW')" class="px-4 py-3 bg-pink-500 text-white font-semibold rounded-lg shadow-lg hover:bg-pink-600 transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-pink-500 focus:ring-opacity-50 flex-grow md:flex-grow-0 disabled:opacity-50" disabled>
+                    以調整體重重算
+                </button>
+                
+                <!-- 新增的清除參數按鈕 (New Button) -->
+                <button id="clear-params-btn" onclick="clearParameters()" class="px-4 py-3 bg-slate-200 text-slate-700 font-semibold rounded-lg shadow-lg hover:bg-slate-300 transition duration-300 transform hover:scale-[1.01] focus:outline-none focus:ring-4 focus:ring-slate-400 focus:ring-opacity-50 flex-grow md:flex-grow-0">
+                    清除參數
+                </button>
+            </div>
+        </div>
+
+        <!-- 計算結果區塊 - 使用 4 欄布局 -->
+        <div id="results-section" class="p-6 bg-gray-50 rounded-lg border border-gray-200 hidden">
+            <h2 class="text-2xl font-bold text-gray-700 mb-6">計算結果</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                
+                <!-- 腎絲球過濾率與肌酸酐清除率 Title -->
+                <div class="col-span-1 lg:col-span-4">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3 border-b-2 pb-1 border-gray-200">腎絲球過濾率與肌酸酐清除率</h3>
+                </div>
+
+                <!-- ClCr (Cockcroft-Gault) -->
+                <div class="relative bg-white p-4 rounded-lg shadow border-2 border-blue-300">
+                    <button class="absolute top-2 right-2 text-blue-500 hover:text-blue-700 p-1 rounded-full bg-gray-50 transition" onclick="showInfoModal('clcr')">
+                        <span class="font-bold">?</span>
+                    </button>
+                    <p class="text-sm font-medium text-gray-500">肌酸酐清除率 ClCr</p>
+                    <!-- 內容將由 JS 動態更新，包含使用的體重類型和 Scr 來源 -->
+                    <div id="result-clcr" class="mt-1">
+                        <span class="text-2xl font-extrabold text-blue-600">-</span>
+                        <p class="text-xs text-gray-400">mL/min (Cockcroft-Gault)</p>
+                    </div>
+                </div>
+
+                <!-- eGFR (CKD-EPI 2021) -->
+                <div class="relative bg-white p-4 rounded-lg shadow border-2 border-emerald-300">
+                    <button class="absolute top-2 right-2 text-emerald-500 hover:text-emerald-700 p-1 rounded-full bg-gray-50 transition" onclick="showInfoModal('ckdepi')">
+                        <span class="font-bold">?</span>
+                    </button>
+                    <p class="text-sm font-medium text-gray-500">eGFR (CKD-EPI 2021)</p>
+                    <p id="result-ckdepi" class="text-2xl font-extrabold text-emerald-600 mt-1">-</p>
+                    <p class="text-xs text-gray-400">mL/min/1.73 m² (無種族校正)</p>
+                </div>
+                
+                <!-- eGFR (Taiwanese MDRD) -->
+                <div class="relative bg-white p-4 rounded-lg shadow border-2 border-orange-300">
+                    <button class="absolute top-2 right-2 text-orange-500 hover:text-orange-700 p-1 rounded-full bg-gray-50 transition" onclick="showInfoModal('taiwanese_mdrd')">
+                        <span class="font-bold">?</span>
+                    </button>
+                    <p class="text-sm font-medium text-gray-500">eGFR (Taiwanese MDRD)</p>
+                    <p id="result-taiwan-mdrd" class="text-2xl font-extrabold text-orange-600 mt-1">-</p>
+                    <!-- 調整係數 0.945 -->
+                    <p class="text-xs text-gray-400">mL/min/1.73 m² (調整係數 0.945)</p>
+                </div>
+
+                <!-- eGFR (MDRD-4) 美國 -->
+                <div class="relative bg-white p-4 rounded-lg shadow border-2 border-amber-300">
+                    <button class="absolute top-2 right-2 text-amber-500 hover:text-amber-700 p-1 rounded-full bg-gray-50 transition" onclick="showInfoModal('mdrd')">
+                        <span class="font-bold">?</span>
+                    </button>
+                    <p class="text-sm font-medium text-gray-500">eGFR (MDRD-4)美國</p>
+                    <p id="result-mdrd" class="text-2xl font-extrabold text-amber-600 mt-1">-</p>
+                    <p class="text-xs text-gray-400">mL/min/1.73 m²</p>
+                </div>
+
+                <!-- eGFR (Schwartz) -->
+                <div class="relative bg-white p-4 rounded-lg shadow border-2 border-purple-300">
+                    <button class="absolute top-2 right-2 text-purple-500 hover:text-purple-700 p-1 rounded-full bg-gray-50 transition" onclick="showInfoModal('schwartz')">
+                        <span class="font-bold">?</span>
+                    </button>
+                    <p class="text-sm font-medium text-gray-500">eGFR (Schwartz Bedside 2009)</p>
+                    <p id="result-schwartz" class="text-2xl font-extrabold text-purple-600 mt-1">-</p>
+                    <p class="text-xs text-gray-400">mL/min/1.73 m²</p>
+                </div>
+                
+                <!-- eGFR (CKiD U25 Creatinine) -->
+                <div class="relative bg-white p-4 rounded-lg shadow border-2 border-rose-300">
+                    <button class="absolute top-2 right-2 text-rose-500 hover:text-rose-700 p-1 rounded-full bg-gray-50 transition" onclick="showInfoModal('ckid')">
+                        <span class="font-bold">?</span>
+                    </button>
+                    <p class="text-sm font-medium text-gray-500">eGFR (CKiD U25 Creatinine)</p>
+                    <p id="result-ckid" class="text-2xl font-extrabold text-rose-600 mt-1">-</p>
+                    <p class="text-xs text-gray-400">mL/min/1.73 m²</p>
+                </div>
+                <!-- 佔位符 (將 Schwartz/CKiD 放在第二行) -->
+                <div class="hidden lg:col-span-2"></div>
+
+
+                
+                <!-- 身體組成指標 Title -->
+                <div class="col-span-1 lg:col-span-4 pt-4">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-3 border-b-2 pb-1 border-gray-200">身體組成指標</h3>
+                </div>
+
+                <!-- BMI -->
+                <div class="bg-white p-4 rounded-lg shadow border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500">身體質量指數 BMI</p>
+                    <p id="result-bmi" class="text-2xl font-extrabold text-cyan-600 mt-1">-</p>
+                    <p class="text-xs text-gray-400">kg/m²</p>
+                </div>
+
+                <!-- BSA -->
+                <div class="bg-white p-4 rounded-lg shadow border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500">體表面積 BSA</p>
+                    <p id="result-bsa" class="text-2xl font-extrabold text-cyan-600 mt-1">-</p>
+                    <p class="text-xs text-gray-400">m² (Mosteller)</p>
+                </div>
+                
+                <!-- BMR -->
+                <div class="relative bg-white p-4 rounded-lg shadow border-2 border-fuchsia-300">
+                    <button class="absolute top-2 right-2 text-fuchsia-500 hover:text-fuchsia-700 p-1 rounded-full bg-gray-50 transition" onclick="showInfoModal('bmr')">
+                        <span class="font-bold">?</span>
+                    </button>
+                    <p class="text-sm font-medium text-gray-500">基礎代謝率 BMR</p>
+                    <p id="result-bmr" class="text-2xl font-extrabold text-fuchsia-600 mt-1">-</p>
+                    <p class="text-xs text-gray-400">kcal/天 (Mifflin-St Jeor)</p>
+                </div>
+                <!-- 佔位符 -->
+                <div class="hidden lg:block"></div>
+
+
+            </div>
+            
+            <!-- 結論說明 -->
+            <div class="mt-6 text-sm text-gray-500 italic border-t pt-3 space-y-2">
+                <span class="font-bold text-rose-700">重要說明:</span> 
+                <ul class="list-disc list-inside ml-4">
+                    <li>eGFR 單位: 所有腎絲球過濾率 (eGFR) 的計算結果，統一以標準化單位 mL/min/1.73 m² 呈現。</li>
+                    <li>Schwartz 公式 (k=0.413) 和 CKiD U25 公式主要設計用於兒童及青少年。CKiD U25 公式僅適用於 1 歲至 25 歲的年齡範圍。</li>
+                    <li>MDRD 限制: MDRD-4 (美國) 和 CKD-EPI 公式是針對非黑人族群進行驗證的結果，但 CKD-EPI 2021 已移除種族校正。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 彈出視窗 (Modal) 結構 -->
+    <div id="info-modal" class="modal-overlay hidden" onclick="closeInfoModal()">
+        <div class="modal-content w-full md:w-3/5" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 id="modal-title" class="text-xl font-bold text-teal-600">公式資訊</h3>
+                <button class="text-gray-500 hover:text-gray-800 text-3xl font-light" onclick="closeInfoModal()">
+                    &times;
+                </button>
+            </div>
+            <div id="modal-body" class="text-gray-700 space-y-4">
+                <!-- 內容將由 JavaScript 動態插入 -->
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // 獲取 DOM 元素
+        const ageInput = document.getElementById('age');
+        const heightInput = document.getElementById('height');
+        const actualWeightInput = document.getElementById('actual-weight');
+        const scrInput = document.getElementById('scr');
+        const idealWeightInput = document.getElementById('ideal-weight');
+        const adjustedWeightInput = document.getElementById('adjusted-weight');
+        const errorMessage = document.getElementById('error-message');
+        const resultsSection = document.getElementById('results-section');
+        const infoModal = document.getElementById('info-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+
+        const calculateIBWBtn = document.getElementById('calculate-ibw-btn');
+        const calculateABWBtn = document.getElementById('calculate-abw-btn');
+        const scrSourceRadios = document.querySelectorAll('input[name="scr-source"]');
+        const ibwMethodRadios = document.querySelectorAll('input[name="ibw-method"]'); // 新增 IBW 方法選擇
+
+        // 全域變數用於儲存計算後的體重，供重算按鈕使用，以及追蹤目前使用的體重和計算狀態
+        let calculatedIBW = null;
+        let calculatedAdjBW = null;
+        let currentClCrWeightUsage = 'actual'; // 追蹤 ClCr 上次使用的體重類型
+        let isCalculated = false; // 追蹤是否已執行過一次計算
+        
+        // 新增 IBW 計算的常量
+        const DEFAULT_IDEAL_BMI = 22.0; // WHO 建議的健康中位值
+
+        // 定義所有公式的詳細資訊內容 
+        const formulaDetails = {
+            'weight_guide': {
+                title: '體重選擇考量與計算公式',
+                content: `
+                    <h4 class="font-semibold text-lg text-teal-700">臨床體重選擇考量</h4>
+                    <p>在藥物劑量調整中，特別是針對腎臟排泄藥物，選擇合適的體重參數（實際體重、理想體重或調整體重）來計算肌酸酐清除率 (ClCr) 至關重要。</p>
+                    <ul class="list-disc list-inside ml-4 space-y-2 text-sm">
+                        <li><strong>實際體重 (Actual Body Weight, ABW):</strong> 
+                            通常用於體重正常或體型較小的患者。
+                        </li>
+                        <li><strong>理想體重 (Ideal Body Weight, IBW):</strong> 
+                            主要用於<strong>肥胖</strong>患者（實際體重遠大於 IBW），因為肌酸酐主要由肌肉組織產生，脂肪組織的貢獻較小。使用實際體重可能導致 ClCr 被<strong>高估</strong>。
+                        </li>
+                        <li><strong>調整體重 (Adjusted Body Weight, AdjBW):</strong> 
+                            用於 BMI 過高或肥胖的患者。它是一個介於 IBW 和實際體重之間的折衷值，通常被認為在這些患者中計算 ClCr 時更為準確。
+                        </li>
+                        <li><strong>注意事項:</strong> 
+                            eGFR 公式 (CKD-EPI, MDRD, Schwartz, CKiD U25, BMR) 本身在計算過程中<strong>不使用體重參數</strong>，它們僅依賴年齡、性別、Scr（及身高，針對兒科公式）來估算。只有 Cockcroft-Gault (ClCr) 公式需要體重參數。
+                        </li>
+                    </ul>
+
+                    <h4 class="font-semibold text-lg text-teal-700 mt-4">理想體重 (IBW) - Devine Formula (預設)</h4>
+                    <p>單位: 公斤 (kg)</p>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        男性 IBW = 50 + 2.3 * (身高, 英吋 - 60)
+                        <br>
+                        女性 IBW = 45.5 + 2.3 * (身高, 英吋 - 60)
+                    </p>
+                    <p class="text-xs text-rose-600 mt-1 font-bold">
+                        限制: 此公式假設正常成人體型，不適用於身高 <152cm、未成年者 (兒童/青少年) 或極度肥胖者。
+                    </p>
+
+                    <h4 class="font-semibold text-lg text-teal-700 mt-4">理想體重 (IBW) - BMI 反推法</h4>
+                    <p>單位: 公斤 (kg)</p>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        IBW (kg) = 理想 BMI (預設 ${DEFAULT_IDEAL_BMI}$) * (身高 (cm) / 100)²
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        適用對象: 尤其適用於因老化或疾病導致身高縮短的<strong>老年人</strong>，以及身高 $<152cm$ 的個體。
+                    </p>
+                    
+                    <h4 class="font-semibold text-lg text-teal-700 mt-4">調整體重 (AdjBW)</h4>
+                    <p>單位: 公斤 (kg)</p>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        AdjBW = IBW + 0.4 * (實際體重 - IBW)
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        註：僅在實際體重 (Actual Body Weight) > 理想體重 (IBW) 時才應計算和使用此數值。
+                    </p>
+                `
+            },
+            'clcr': {
+                title: '肌酸酐清除率 (ClCr) - Cockcroft-Gault 公式',
+                content: `
+                    <h4 class="font-semibold text-lg text-blue-700">適用對象</h4>
+                    <p>主要用於<strong>成年人</strong>，尤其是評估腎功能對藥物劑量的影響。</p>
+                    
+                    <h4 class="font-semibold text-lg text-blue-700 mt-3">注意事項</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>此公式未針對體表面積 (1.73 m²) 進行校正，因此其結果是肌酸酐清除率 (mL/min)，而非標準化 eGFR。</li>
+                        <li>對於老年人、極端體重（過輕或肥胖）個體，可能存在較大誤差。</li>
+                        <li>公式假設肌酸酐濃度處於穩定狀態。</li>
+                        <li><strong>Scr 門檻值 (Capping):</strong> 針對血清肌酸酐過低（例如低於 0.8 或 低於 1.0 mg/dL）的患者，臨床上常使用門檻值（例如 0.8 或 1.0 mg/dL）代替實際值來計算 ClCr，以避免因低 Scr 而高估腎功能。</li>
+                    </ul>
+                    
+                    <h4 class="font-semibold text-lg text-blue-700 mt-3">詳細公式</h4>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        ClCr (mL/min) = [ (140 - 年齡) * 體重 (kg) ] / [ 72 * Scr (mg/dL) ] 
+                        <br>
+                        * ( 0.85 針對女性 )
+                    </p>
+                `
+            },
+            'ckdepi': {
+                title: 'eGFR (CKD-EPI 2021) - 無種族校正',
+                content: `
+                    <h4 class="font-semibold text-lg text-emerald-700">適用對象</h4>
+                    <p><strong>成年人</strong> (≥ 18 歲)，被許多國際指南推薦為目前臨床上估算成年人 GFR 的首選方法。</p>
+                    
+                    <h4 class="font-semibold text-lg text-emerald-700 mt-3">注意事項</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>此為最新的 CKD-EPI 版本，已<strong>移除種族係數</strong>。</li>
+                        <li>在 GFR 較高 (> 60) 時，相較於 MDRD 公式更為準確。</li>
+                        <li>計算結果單位為 mL/min/1.73 m² (標準化 eGFR)。</li>
+                    </ul>
+                    
+                    <h4 class="font-semibold text-lg text-emerald-700 mt-3">詳細公式</h4>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        eGFR = 142 * min(Scr/k, 1)^α * max(Scr/k, 1)^(-1.200) * 0.9938^年齡 * (1.012 針對女性)
+                    </p>
+                    <p class="mt-3">其中參數值如下：</p>
+                    <ul class="list-disc list-inside ml-4 space-y-1 text-sm font-mono">
+                        <li>k: 男性=0.9, 女性=0.7</li>
+                        <li>α: 男性=-0.302, 女性=-0.241</li>
+                    </ul>
+                `
+            },
+            'taiwanese_mdrd': {
+                title: 'eGFR (Taiwanese MDRD) 公式',
+                content: `
+                    <h4 class="font-semibold text-lg text-orange-700">適用對象</h4>
+                    <p><strong>成年人</strong> (≥ 18 歲) 的<strong>臺灣族群</strong>。</p>
+                    
+                    <h4 class="font-semibold text-lg text-orange-700 mt-3">注意事項</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>此公式是在標準 MDRD-4 基礎上，加入了針對臺灣族群的<strong>調整係數 0.945</strong>，使其評估更符合特定亞洲族群的驗證結果。</li>
+                        <li>與所有 MDRD 公式一樣，不建議用於 GFR 正常或較高 (> 60) 的個體。</li>
+                        <li>計算結果單位為 mL/min/1.73 m² (標準化 eGFR)。</li>
+                    </ul>
+                    
+                    <h4 class="font-semibold text-lg text-orange-700 mt-3">詳細公式</h4>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        eGFR = 175 * Scr^(-1.154) * 年齡^(-0.203) * (0.742 針對女性) * 0.945
+                    </p>
+                `
+            },
+            'mdrd': {
+                title: 'eGFR (MDRD-4) 美國 公式',
+                content: `
+                    <h4 class="font-semibold text-lg text-amber-700">適用對象</h4>
+                    <p><strong>成年人</strong> (≥ 18 歲)，特別是針對 eGFR < 60 的慢性腎臟病 (CKD) 患者。</p>
+                    
+                    <h4 class="font-semibold text-lg text-amber-700 mt-3">注意事項</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>不建議用於 GFR 正常或較高 (> 60) 的個體，因可能低估實際 GFR。</li>
+                        <li>此處使用<strong>無種族校正</strong>的版本，主要在美國和其他地區使用。</li>
+                        <li>計算結果單位為 mL/min/1.73 m² (標準化 eGFR)。</li>
+                    </ul>
+                    
+                    <h4 class="font-semibold text-lg text-amber-700 mt-3">詳細公式</h4>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        eGFR = 175 * Scr^(-1.154) * 年齡^(-0.203) * (0.742 針對女性)
+                    </p>
+                `
+            },
+            'schwartz': {
+                title: 'eGFR (Schwartz Bedside 2009) 公式',
+                content: `
+                    <h4 class="font-semibold text-lg text-purple-700">適用對象</h4>
+                    <p><strong>兒童及青少年</strong> (< 18 歲)，用於估算 GFR。</p>
+                    
+                    <h4 class="font-semibold text-lg text-purple-700 mt-3">注意事項</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>這是臨床上用於兒童 GFR 估算最常用的公式之一。</li>
+                        <li>此版本使用固定的 k 值 (0.413) 且無需性別校正。</li>
+                        <li>計算結果單位為 mL/min/1.73 m² (標準化 eGFR)。</li>
+                    </ul>
+                    
+                    <h4 class="font-semibold text-lg text-purple-700 mt-3">詳細公式</h4>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        eGFR = ( 0.413 * 身高 (cm) ) / Scr (mg/dL)
+                    </p>
+                `
+            },
+            'ckid': {
+                title: 'eGFR (CKiD U25 Creatinine) 公式',
+                content: `
+                    <h4 class="font-semibold text-lg text-rose-700">適用對象</h4>
+                    <p><strong>兒童、青少年及年輕成人</strong> (1 歲到 25 歲)。</p>
+                    
+                    <h4 class="font-semibold text-lg text-rose-700 mt-3">注意事項</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>公式僅適用於年齡在 1 歲到 25 歲之間的個體。</li>
+                        <li>此公式的 k 值是根據<strong>性別和年齡分段動態調整</strong>的，使其在兒童及青少年群體中更為精確。</li>
+                        <li>計算結果單位為 mL/min/1.73 m² (標準化 eGFR)。</li>
+                    </ul>
+                    
+                    <h4 class="font-semibold text-lg text-rose-700 mt-3">詳細公式</h4>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        eGFR = k * [ 身高 (m) / Scr (mg/dL) ]
+                    </p>
+                    <p class="mt-3">其中 k 值 (根據性別與年齡分段) 如下：</p>
+                    <ul class="list-disc list-inside ml-4 space-y-1 text-sm">
+                        <li><strong>男性 (Male):</strong></li>
+                        <ul class="list-circle list-inside ml-8 font-mono">
+                            <li>1 ≤ 年齡 < 12: k = 39.0 * 1.008^(年齡-12)</li>
+                            <li>12 ≤ 年齡 < 18: k = 39.0 * 1.045^(年齡-12)</li>
+                            <li>18 ≤ 年齡 ≤ 25: k = 50.8</li>
+                        </ul>
+                        <li><strong>女性 (Female):</strong></li>
+                        <ul class="list-circle list-inside ml-8 font-mono">
+                            <li>1 ≤ 年齡 < 12: k = 36.1 * 1.008^(年齡-12)</li>
+                            <li>12 ≤ 年齡 < 18: k = 36.1 * 1.023^(年齡-12)</li>
+                            <li>18 ≤ 年齡 ≤ 25: k = 41.4</li>
+                        </ul>
+                    </ul>
+                `
+            },
+            'bmr': {
+                title: '基礎代謝率 (BMR) - Mifflin-St Jeor 公式',
+                content: `
+                    <h4 class="font-semibold text-lg text-fuchsia-700">適用對象</h4>
+                    <p><strong>成年人</strong>，為臨床上估算靜息能量消耗最常用的公式之一。</p>
+                    
+                    <h4 class="font-semibold text-lg text-fuchsia-700 mt-3">注意事項</h4>
+                    <ul class="list-disc list-inside ml-4 space-y-1">
+                        <li>BMR 代表身體在靜息狀態下維持生命所需消耗的最低能量。</li>
+                        <li>此數值是估算值，實際 BMR 可能受肌肉量、基因和健康狀況影響。</li>
+                        <li>計算結果單位為 大卡/天 (kcal/day)。</li>
+                    </ul>
+                    
+                    <h4 class="font-semibold text-lg text-fuchsia-700 mt-3">詳細公式 (Mifflin-St Jeor)</h4>
+                    <p class="text-center p-3 bg-gray-100 rounded-lg overflow-x-auto text-sm font-mono leading-relaxed">
+                        <strong>男性:</strong> BMR = 10W + 6.25H - 5A + 5
+                        <br>
+                        <strong>女性:</strong> BMR = 10W + 6.25H - 5A - 161
+                    </p>
+                    <p class="text-xs text-gray-500 mt-1">
+                        W = 體重 (kg), H = 身高 (cm), A = 年齡 (歲)
+                    </p>
+                `
+            },
+        };
+
+
+        /**
+         * 顯示彈出視窗並載入公式資訊
+         * @param {string} formulaId - 公式ID
+         */
+        function showInfoModal(formulaId) {
+            const detail = formulaDetails[formulaId];
+            if (detail) {
+                modalTitle.textContent = detail.title;
+                modalBody.innerHTML = detail.content;
+                infoModal.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * 關閉彈出視窗
+         */
+        function closeInfoModal() {
+            infoModal.classList.add('hidden');
+        }
+
+
+        /**
+         * 驗證所有輸入欄位是否為有效的正數
+         * @param {boolean} showError - 是否顯示錯誤訊息
+         * @returns {boolean} 如果所有輸入都有效則為 true
+         */
+        function validateInputs(showError = true) {
+            // 必須輸入項目：age, height, actual-weight, scr 
+            const inputs = [ageInput, heightInput, actualWeightInput, scrInput];
+            for (const input of inputs) {
+                const value = parseFloat(input.value);
+                // 檢查是否為有效的正數
+                if (isNaN(value) || value <= 0) {
+                    if (showError) {
+                        errorMessage.textContent = `請檢查所有輸入欄位是否皆已填寫有效的正數。`;
+                        errorMessage.classList.remove('hidden');
+                        resultsSection.classList.add('hidden');
+                    }
+                    return false;
+                }
+            }
+            if (showError) {
+                errorMessage.classList.add('hidden');
+            }
+            return true;
+        }
+
+        /**
+         * 處理 Scr 來源按鈕變更事件
+         */
+        function handleScrSourceChange() {
+            // 只有當計算已經執行過且輸入有效時才重新計算
+            if (validateInputs(false) && isCalculated) {
+                // 使用當前選定的體重類型進行 ClCr 重新計算
+                calculateRenalFunction(currentClCrWeightUsage);
+            }
+        }
+        
+        /**
+         * 處理 IBW 方法按鈕變更事件
+         */
+        function handleIbwMethodChange() {
+            // 只有當計算已經執行過且輸入有效時才重新計算
+            if (validateInputs(false) && isCalculated) {
+                // 強制重新執行整個計算，以更新 IBW/AdjBW/ClCr
+                calculateRenalFunction(currentClCrWeightUsage);
+            }
+        }
+
+
+        /**
+         * 清空所有輸入欄位、重置計算狀態並隱藏結果區塊
+         */
+        function clearParameters() {
+            // 1. 清空人工輸入的數值
+            ageInput.value = '';
+            heightInput.value = '';
+            actualWeightInput.value = '';
+            scrInput.value = '';
+
+            // 2. 清空唯讀輸出欄位
+            idealWeightInput.value = '';
+            adjustedWeightInput.value = '';
+            
+            // 3. 重置所有計算結果顯示
+            document.getElementById('result-clcr').innerHTML = '<span class="text-2xl font-extrabold text-blue-600">-</span><p class="text-xs text-gray-400">mL/min (Cockcroft-Gault)</p>';
+            document.getElementById('result-ckdepi').textContent = '-';
+            document.getElementById('result-taiwan-mdrd').textContent = '-';
+            document.getElementById('result-mdrd').textContent = '-';
+            document.getElementById('result-schwartz').textContent = '-';
+            document.getElementById('result-ckid').textContent = '-';
+            document.getElementById('result-bmi').textContent = '-';
+            document.getElementById('result-bsa').textContent = '-';
+            document.getElementById('result-bmr').textContent = '-'; 
+
+            // 4. 重置內部狀態變數
+            calculatedIBW = null;
+            calculatedAdjBW = null;
+            currentClCrWeightUsage = 'actual';
+            isCalculated = false;
+
+            // 5. 隱藏結果和錯誤訊息
+            resultsSection.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+
+            // 6. 禁用重算按鈕
+            calculateIBWBtn.disabled = true;
+            calculateABWBtn.disabled = true;
+
+            // 7. 重置 Scr 來源和 IBW 方法選項為 '實際值'/'Devine'
+            document.getElementById('scr-options').querySelector('input[value="actual"]').checked = true;
+            document.getElementById('ibw-options').querySelector('input[value="devine"]').checked = true;
+
+
+            // 8. 將焦點移回第一個輸入欄位
+            ageInput.focus();
+        }
+
+
+        // ----------------------------------------------------------------
+        // **核心計算邏輯**
+        // ----------------------------------------------------------------
+        /**
+         * 執行所有腎功能和身體組成指標的計算
+         * @param {string} weightUsage - 指示使用哪種體重進行 ClCr 計算 ('actual', 'IBW', 'ABW')
+         */
+        function calculateRenalFunction(weightUsage = 'actual') {
+            if (!validateInputs()) {
+                isCalculated = false;
+                return;
+            }
+
+            // 更新追蹤狀態
+            currentClCrWeightUsage = weightUsage;
+            isCalculated = true; 
+
+            // 獲取輸入值
+            const age = parseFloat(ageInput.value); // 歲
+            const heightCm = parseFloat(heightInput.value); // 公分
+            const actualWeightKg = parseFloat(actualWeightInput.value); // 實際體重 (公斤)
+            const actualScr = parseFloat(scrInput.value); // 實際 Scr (mg/dL) - 用於所有 eGFR 公式
+            const isMale = document.getElementById('male').checked;
+
+            // ----------------------------------------------------------------
+            // 1. 身體組成指標計算 (IBW, AdjBW, BMI, BSA, BMR) - 每次計算都更新
+            // ----------------------------------------------------------------
+            const heightM = heightCm / 100; // 身高 (公尺)
+            
+            // 1a. BMI (Body Mass Index) = kg / m^2
+            const bmi = actualWeightKg / (heightM * heightM);
+            document.getElementById('result-bmi').textContent = bmi.toFixed(2);
+
+            // 1b. BSA (Body Surface Area) - Mosteller 公式
+            // BSA (m^2) = sqrt((Height (cm) * Actual Weight (kg)) / 3600)
+            const bsa = Math.sqrt((heightCm * actualWeightKg) / 3600);
+            document.getElementById('result-bsa').textContent = bsa.toFixed(2);
+
+            // 1c. 理想體重 (IBW) - Devine Formula / BMI Reverse
+            const heightInches = heightCm / 2.54;
+            const selectedIbwMethod = document.querySelector('input[name="ibw-method"]:checked').value;
+            let ibw;
+            let ibwMethodLabel;
+            
+            if (selectedIbwMethod === 'devine') {
+                // Devine Formula
+                if (isMale) {
+                    ibw = 50 + 2.3 * Math.max(0, heightInches - 60);
+                } else { // Female
+                    ibw = 45.5 + 2.3 * Math.max(0, heightInches - 60);
+                }
+                ibwMethodLabel = 'Devine';
+            } else { // bmi_reverse
+                // BMI Reverse Calculation (IBW = Ideal BMI * m^2)
+                ibw = DEFAULT_IDEAL_BMI * (heightM * heightM);
+                ibwMethodLabel = `BMI反推 (${DEFAULT_IDEAL_BMI})`;
+            }
+
+
+            calculatedIBW = ibw; // Store globally
+            idealWeightInput.value = `${ibw.toFixed(2)} kg (${ibwMethodLabel})`; // 顯示在唯讀欄位 (包含方法)
+
+            // 1d. 調整體重 (AdjBW)
+            if (actualWeightKg > ibw) {
+                // AdjBW = IBW + 0.4 * (Actual Weight - IBW)
+                calculatedAdjBW = ibw + 0.4 * (actualWeightKg - ibw);
+                adjustedWeightInput.value = calculatedAdjBW.toFixed(2);
+                calculateABWBtn.disabled = false; // Enable ABW button
+            } else {
+                calculatedAdjBW = null; // Store globally
+                adjustedWeightInput.value = 'N/A (非肥胖)';
+                calculateABWBtn.disabled = true; // Disable ABW button
+            }
+            
+            // Always enable IBW button after initial calculation
+            calculateIBWBtn.disabled = false;
+            
+            // 1e. 基礎代謝率 (BMR) - Mifflin-St Jeor Equation
+            // 男性: BMR = 10W + 6.25H - 5A + 5
+            // 女性: BMR = 10W + 6.25H - 5A - 161
+            let bmr;
+            if (isMale) {
+                bmr = (10 * actualWeightKg) + (6.25 * heightCm) - (5 * age) + 5;
+            } else { // Female
+                bmr = (10 * actualWeightKg) + (6.25 * heightCm) - (5 * age) - 161;
+            }
+            // 四捨五入到整數
+            const roundedBMR = Math.round(bmr);
+            document.getElementById('result-bmr').textContent = roundedBMR.toLocaleString('en-US'); 
+
+
+            // ----------------------------------------------------------------
+            // 2. 腎功能指標計算
+            // ----------------------------------------------------------------
+            
+            // 2a. 決定 ClCr 所使用的體重
+            let weightToUse = actualWeightKg;
+            let weightLabel = '實際體重';
+
+            if (weightUsage === 'IBW') {
+                weightToUse = calculatedIBW;
+                weightLabel = `理想體重 (IBW, ${ibwMethodLabel})`;
+            } else if (weightUsage === 'ABW') {
+                weightToUse = calculatedAdjBW !== null ? calculatedAdjBW : actualWeightKg; 
+                // 修正後的 AdjBW 標籤
+                weightLabel = calculatedAdjBW !== null ? '調整體重 (AdjBW)' : '實際體重 (AdjBW不適用)';
+            }
+            
+            // 2b. 決定 ClCr 所使用的 Scr (新增邏輯)
+            const selectedScrSource = document.querySelector('input[name="scr-source"]:checked').value;
+            let scrToUse = actualScr;
+            let scrLabel = '';
+            
+            if (selectedScrSource === 'actual') {
+                scrToUse = actualScr;
+                scrLabel = actualScr.toFixed(2);
+            } else if (selectedScrSource === '0.8') {
+                // 強制使用 0.8
+                scrToUse = 0.8;
+                scrLabel = '0.80 (強制)';
+            } else if (selectedScrSource === '1.0') {
+                // 強制使用 1.0
+                scrToUse = 1.0;
+                scrLabel = '1.00 (強制)';
+            }
+
+            // Cockcroft-Gault Equation - **使用 weightToUse 和 scrToUse**
+            let clcr = ((140 - age) * weightToUse) / (72 * scrToUse);
+            if (!isMale) {
+                clcr *= 0.85;
+            }
+            
+            // Update ClCr result display with weight and Scr source
+            document.getElementById('result-clcr').innerHTML = `
+                <span class="text-2xl font-extrabold text-blue-600">${clcr.toFixed(2)}</span>
+                <p class="text-xs text-gray-400">
+                    mL/min (Cockcroft-Gault, 
+                    體重: ${weightLabel}, 
+                    Scr: ${scrLabel} mg/dL
+                )</p>
+            `;
+
+
+            // 以下 eGFR 公式 **皆使用實際 Scr 數值 (actualScr)**
+            
+            // eGFR (MDRD-4) 美國 Equation - 使用 actualScr
+            let mdrd_base = 175 * Math.pow(actualScr, -1.154) * Math.pow(age, -0.203);
+            if (!isMale) {
+                mdrd_base *= 0.742; // 女性係數
+            }
+            // 實際 MDRD-4 美國結果
+            const mdrd_us = mdrd_base;
+            document.getElementById('result-mdrd').textContent = mdrd_us.toFixed(2);
+            
+            // eGFR (Taiwanese MDRD) - 使用實際 Scr 數值
+            // 係數 0.945
+            const taiwaneseFactor = 0.945; 
+            const taiwanese_mdrd = mdrd_base * taiwaneseFactor;
+            document.getElementById('result-taiwan-mdrd').textContent = taiwanese_mdrd.toFixed(2);
+
+
+            // eGFR (CKD-EPI 2021 Equation) - 使用 actualScr
+            let kappa, alpha, femaleMultiplier = 1.0;
+
+            if (isMale) {
+                kappa = 0.9;
+                alpha = -0.302;
+            } else { // Female
+                kappa = 0.7;
+                alpha = -0.241;
+                femaleMultiplier = 1.012; // 2021 CKD-EPI 女性調整項
+            }
+            
+            const ratio = actualScr / kappa;
+            const term1 = Math.pow(Math.min(ratio, 1), alpha);
+            const term2 = Math.pow(Math.max(ratio, 1), -1.200);
+            const term3 = Math.pow(0.9938, age);
+
+            const ckdepi = 142 * term1 * term2 * term3 * femaleMultiplier;
+            document.getElementById('result-ckdepi').textContent = ckdepi.toFixed(2);
+
+
+            // eGFR (Schwartz Bedside 2009) - 使用 actualScr
+            const pediatricK = 0.413;
+            const schwartz = (pediatricK * heightCm) / actualScr;
+            document.getElementById('result-schwartz').textContent = schwartz.toFixed(2);
+            
+            
+            // eGFR (CKiD U25 Creatinine) - 使用 actualScr
+            const heightM_ckid = heightCm / 100; // 身高 (公尺), 僅 CKID 需要
+            let k;
+
+            if (age < 1 || age > 25) {
+                k = null;
+            } else if (isMale) {
+                if (age >= 1 && age < 12) {
+                    k = 39.0 * Math.pow(1.008, (age - 12));
+                } else if (age >= 12 && age < 18) {
+                    k = 39.0 * Math.pow(1.045, (age - 12));
+                } else if (age >= 18 && age <= 25) {
+                    k = 50.8;
+                }
+            } else { // Female
+                if (age >= 1 && age < 12) {
+                    k = 36.1 * Math.pow(1.008, (age - 12));
+                } else if (age >= 12 && age < 18) {
+                    k = 36.1 * Math.pow(1.023, (age - 12));
+                } else if (age >= 18 && age <= 25) {
+                    k = 41.4;
+                }
+            }
+
+            if (k !== null) {
+                // eGFR = k * (Height, m / Scr, mg/dL)
+                const ckid_u25 = k * (heightM_ckid / actualScr);
+                document.getElementById('result-ckid').textContent = ckid_u25.toFixed(2);
+            } else {
+                document.getElementById('result-ckid').textContent = 'N/A (年齡超出範圍)';
+            }
+
+
+            // 顯示結果區塊
+            resultsSection.classList.remove('hidden');
+        }
+
+
+        /**
+         * 使用 IBW 或 ABW 重算 ClCr
+         * @param {string} type - 'IBW' 或 'ABW'
+         */
+        function recalculateWithWeight(type) {
+            if (!validateInputs()) {
+                return;
+            }
+            
+            // 由於核心計算現在每次都更新 IBW/AdjBW，我們只需確保它們已計算即可
+            if (!isCalculated) {
+                 calculateRenalFunction('actual'); // 強制先執行一次計算來確定 IBW/AdjBW
+            }
+
+            if (type === 'IBW') {
+                if (calculatedIBW === null) {
+                    errorMessage.textContent = '理想體重 (IBW) 尚未計算。請先執行「執行計算 (實際體重)」。';
+                    errorMessage.classList.remove('hidden');
+                    return;
+                }
+                calculateRenalFunction('IBW');
+            } else if (type === 'ABW') {
+                // 如果 AdjBW 為 null，表示非肥胖患者，此時按鈕功能退化為使用實際體重重算
+                if (calculatedAdjBW === null) {
+                    errorMessage.textContent = '調整體重 (AdjBW) 不適用 (非肥胖患者)。ClCr 將使用實際體重重算。';
+                    errorMessage.classList.remove('hidden');
+                    calculateRenalFunction('actual'); 
+                    return;
+                }
+                calculateRenalFunction('ABW');
+            }
+            // 隱藏錯誤訊息 (如果重算成功)
+            errorMessage.classList.add('hidden');
+        }
+
+
+        // 當使用者在任一輸入欄位按 Enter 時，觸發計算
+        const inputs = document.querySelectorAll('#input-section input[type="number"]');
+        inputs.forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 阻止表單提交
+                    calculateRenalFunction('actual');
+                }
+            });
+        });
+
+        // 確保在頁面加載時先隱藏錯誤和結果
+        document.addEventListener('DOMContentLoaded', () => {
+             resultsSection.classList.add('hidden');
+             errorMessage.classList.add('hidden');
+             
+             // 確保 Scr 來源按鈕監聽器已設定
+             scrSourceRadios.forEach(radio => {
+                if (!radio.onchange) {
+                    radio.addEventListener('change', handleScrSourceChange);
+                }
+            });
+            
+             // 確保 IBW 方法按鈕監聽器已設定
+             ibwMethodRadios.forEach(radio => {
+                if (!radio.onchange) {
+                    radio.addEventListener('change', handleIbwMethodChange);
+                }
+            });
+            
+            // 初始化時禁用重算按鈕
+            calculateIBWBtn.disabled = true;
+            calculateABWBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>
