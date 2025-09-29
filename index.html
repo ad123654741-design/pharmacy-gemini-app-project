@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEIC 檔案批次轉換器 (優化版)</title>
+    <!-- 載入 Inter 字體 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0c0a09; /* Stone-950 */
+            color: #e5e5e5; /* Zinc-200 */
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex items-center justify-center min-h-screen">
+    <div class="bg-zinc-800 text-zinc-200 p-6 sm:p-10 rounded-2xl shadow-2xl w-full max-w-2xl border border-zinc-700">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center mb-0">HEIC 檔案批次轉換器</h1>
+        <p class="text-center text-zinc-500 mb-6 mt-1 text-xs">
+            其仁藥師 製作於 2025年9月
+        </p>
+        <p class="text-center text-zinc-400 mb-8 text-sm sm:text-base">
+            將您的 .heic 檔案批次轉換為高品質的 JPG 或 PNG 格式。
+        </p>
+
+        <!-- 檔案上傳區塊 -->
+        <div class="mb-6">
+            <label for="file-input" class="block text-sm sm:text-base font-medium mb-2 text-zinc-300">
+                1. 選擇 HEIC 檔案
+            </label>
+            <input type="file" id="file-input" multiple accept=".heic,.HEIC"
+                class="block w-full text-sm text-zinc-300
+                       file:mr-4 file:py-2 file:px-4
+                       file:rounded-full file:border-0
+                       file:text-sm file:font-semibold
+                       file:bg-violet-50 file:text-violet-700
+                       hover:file:bg-violet-100 cursor-pointer">
+        </div>
+
+        <!-- 格式選擇區塊 -->
+        <div class="mb-8 flex items-center gap-4">
+            <span class="text-sm sm:text-base font-medium text-zinc-300">2. 選擇輸出格式</span>
+            <div class="flex items-center gap-4">
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="format" value="image/jpeg" checked
+                        class="form-radio h-4 w-4 text-violet-600 bg-zinc-700 border-zinc-600 focus:ring-violet-500">
+                    <span class="ml-2 text-sm sm:text-base">JPG</span>
+                </label>
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="format" value="image/png"
+                        class="form-radio h-4 w-4 text-violet-600 bg-zinc-700 border-zinc-600 focus:ring-violet-500">
+                    <span class="ml-2 text-sm sm:text-base">PNG</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 轉換按鈕 -->
+        <button id="convert-btn" disabled
+            class="w-full bg-violet-600 text-white font-bold py-3 rounded-xl shadow-lg
+                   hover:bg-violet-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            3. 開始轉換
+        </button>
+
+        <!-- 狀態與結果區塊 -->
+        <div id="status" class="mt-8 text-center text-violet-400 font-medium hidden">
+            <svg class="animate-spin h-5 w-5 mr-3 inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="status-text">正在讀取檔案...</span>
+        </div>
+
+        <!-- 錯誤訊息 -->
+        <div id="error-message" class="mt-4 text-center text-red-400 font-medium hidden"></div>
+
+        <!-- 下載區塊 -->
+        <div id="download-header" class="mt-8 hidden">
+            <h2 class="text-xl font-bold mb-4">轉換完成，可供下載：</h2>
+            <button id="download-all-btn" class="mb-4 bg-lime-600 text-white font-bold py-2 px-4 rounded-xl shadow-lg
+                   hover:bg-lime-700 transition duration-300">
+                一鍵下載所有檔案 (.zip)
+            </button>
+        </div>
+        <div id="download-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </div>
+
+    <!-- 載入 heic2any 和 JSZip 函式庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.7.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('file-input');
+            const convertBtn = document.getElementById('convert-btn');
+            const statusDiv = document.getElementById('status');
+            const statusText = document.getElementById('status-text');
+            const downloadHeader = document.getElementById('download-header');
+            const downloadAllBtn = document.getElementById('download-all-btn');
+            const downloadList = document.getElementById('download-list');
+            const errorMessage = document.getElementById('error-message');
+
+            let filesToConvert = [];
+            let convertedBlobs = [];
+            let isConverting = false;
+
+            // 處理檔案輸入
+            fileInput.addEventListener('change', () => {
+                filesToConvert = Array.from(fileInput.files);
+                if (filesToConvert.length > 0) {
+                    convertBtn.disabled = false;
+                } else {
+                    convertBtn.disabled = true;
+                }
+                resetUI();
+            });
+
+            // 處理轉換按鈕點擊
+            convertBtn.addEventListener('click', () => {
+                if (filesToConvert.length === 0 || isConverting) return;
+
+                isConverting = true;
+                convertBtn.disabled = true;
+                statusDiv.classList.remove('hidden');
+                resetUI();
+
+                const outputFormat = document.querySelector('input[name="format"]:checked').value;
+                const outputExt = outputFormat.split('/')[1];
+                convertedBlobs = [];
+
+                // 開始處理佇列
+                processQueue(0, outputFormat, outputExt);
+            });
+            
+            // 處理一鍵下載
+            downloadAllBtn.addEventListener('click', () => {
+                if (convertedBlobs.length === 0) return;
+                
+                const zip = new JSZip();
+                convertedBlobs.forEach(item => {
+                    zip.file(item.filename, item.blob);
+                });
+
+                statusText.textContent = '正在打包所有檔案...';
+                zip.generateAsync({ type: "blob" })
+                    .then(function(content) {
+                        saveAs(content, "converted_images.zip");
+                        statusText.textContent = '打包完成！';
+                    })
+                    .catch(e => {
+                        console.error('打包失敗:', e);
+                        errorMessage.classList.remove('hidden');
+                        errorMessage.textContent = '打包檔案時發生錯誤。';
+                    });
+            });
+
+            function resetUI() {
+                downloadList.innerHTML = '';
+                downloadHeader.classList.add('hidden');
+                errorMessage.classList.add('hidden');
+            }
+
+            async function processQueue(index, outputFormat, outputExt) {
+                if (index >= filesToConvert.length) {
+                    // 佇列處理完成
+                    statusText.textContent = `所有檔案轉換完成！`;
+                    downloadHeader.classList.remove('hidden');
+                    convertBtn.disabled = false;
+                    isConverting = false;
+                    return;
+                }
+
+                const file = filesToConvert[index];
+                statusText.textContent = `正在轉換 ${file.name} (${index + 1}/${filesToConvert.length})...`;
+
+                try {
+                    const blob = await new Promise((resolve, reject) => {
+                        heic2any({
+                            blob: file,
+                            toType: outputFormat,
+                            quality: 1
+                        }).then(result => resolve(result)).catch(e => {
+                            console.error('轉換失敗:', e);
+                            reject(e);
+                        });
+                    });
+
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const originalName = file.name.split('.').slice(0, -1).join('.');
+                        const newFilename = `${originalName}.${outputExt}`;
+                        
+                        // 儲存 Blob 以供打包
+                        convertedBlobs.push({ blob: blob, filename: newFilename });
+                        
+                        // 創建下載連結與預覽
+                        const linkWrapper = document.createElement('div');
+                        linkWrapper.className = "bg-zinc-700 p-4 rounded-xl flex flex-col items-center space-y-3";
+                        
+                        // 預覽圖
+                        const previewImage = document.createElement('img');
+                        previewImage.src = url;
+                        previewImage.className = "rounded-lg w-full h-auto object-cover max-w-full max-h-48";
+                        previewImage.alt = newFilename;
+                        linkWrapper.appendChild(previewImage);
+
+                        // 下載連結
+                        const downloadLink = document.createElement('a');
+                        downloadLink.href = url;
+                        downloadLink.download = newFilename;
+                        downloadLink.textContent = newFilename;
+                        downloadLink.className = "text-violet-400 font-semibold text-center hover:underline";
+                        linkWrapper.appendChild(downloadLink);
+                        
+                        downloadList.appendChild(linkWrapper);
+                    } else {
+                        throw new Error(`無法轉換 ${file.name}`);
+                    }
+
+                    // 處理下一個檔案
+                    processQueue(index + 1, outputFormat, outputExt);
+                } catch (error) {
+                    errorMessage.classList.remove('hidden');
+                    errorMessage.textContent = `發生錯誤: 無法處理檔案 ${file.name}。請檢查檔案是否損壞。`;
+                    console.error('轉換過程中發生錯誤:', error);
+                    convertBtn.disabled = false;
+                    isConverting = false;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
