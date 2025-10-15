@@ -174,7 +174,7 @@
                                 </label>
                             </div>
                             <p id="height-formula-note" class="text-xs text-gray-500 mt-1 italic">
-                                註: Devine, Robinson, Miller 公式較不適用於 &lt;152cm 或未成年者。
+                                註: Devine, Robinson, Miller 公式較不適用於 &lt;152.4cm 或未成年者。
                             </p>
                         </div>
                     </div>
@@ -395,7 +395,7 @@
                             通常用於體重正常或體型較小的患者。
                         </li>
                         <li><strong>理想體重 (Ideal Body Weight, IBW):</strong> 
-                            主要用於<strong>肥胖</strong>患者（實際體重遠大於 IBW），因為肌酸酐主要由肌肉組織產生，脂肪組織的貢獻較小。使用實際體重可能導致 ClCr 被<strong>高估</strong>。
+                            理想體重的設計初衷是作為一個「健康體重」的參考標準，通常對應於BMI約20–25 kg/m²的範圍，因為肌酸酐主要由肌肉組織產生，脂肪組織的貢獻較小。過重者使用實際體重可能導致 ClCr 被<strong>高估</strong>。
                         </li>
                         <li><strong>調整體重 (Adjusted Body Weight, AdjBW):</strong> 
                             用於 BMI 過高或肥胖的患者。它是一個介於 IBW 和實際體重之間的折衷值，通常被認為在這些患者中計算 ClCr 時更為準確。
@@ -413,7 +413,7 @@
                         女性 IBW = 45.5 + 2.3 * (身高, 英吋 - 60)
                     </p>
                     <p class="text-xs text-rose-600 mt-1 font-bold">
-                        限制: 此類基於身高的公式假設正常成人體型，不適用於身高 <152cm (5呎)、未成年者或極度肥胖者。
+                        限制: 此類基於身高的公式假設正常成人體型，不適用於身高 <152.4cm (5呎)、未成年者或極度肥胖者。
                     </p>
                     <p class="text-xs text-gray-600 mt-1">未考慮體型: 假設所有人的身體密度和骨骼結構都相似，無法區分骨架大小或肌肉量差異。</p>
 
@@ -441,7 +441,7 @@
                         IBW (kg) = 理想 BMI (預設 ${DEFAULT_IDEAL_BMI}) * (身高 (m))²
                     </p>
                     <p class="text-xs text-gray-500 mt-1">
-                        適用對象: 尤其適用於因老化或疾病導致身高縮短的<strong>老年人</strong>，以及身高 &lt;152cm 的個體。
+                        適用對象: 尤其適用於因老化或疾病導致身高縮短的<strong>老年人</strong>，以及身高 &lt;152.4cm 的個體。
                     </p>
                     
                     <h4 class="font-semibold text-lg text-teal-700 mt-4">調整體重 (AdjBW)</h4>
@@ -785,7 +785,7 @@
             const selectedIbwMethod = document.querySelector('input[name="ibw-method"]:checked').value;
             let ibw;
             let ibwMethodLabel;
-            const inchesOver5Feet = Math.max(0, heightInches - 60);
+            const inchesOver5Feet = heightInches - 60;
             
             if (selectedIbwMethod === 'devine') {
                 if (isMale) {
@@ -816,7 +816,7 @@
 
             // 動態更新身高公式提示文字樣式
             const heightFormulaNote = document.getElementById('height-formula-note');
-            if (heightCm < 152) {
+            if (heightCm < 152.4) {
                 heightFormulaNote.classList.add('text-red-600', 'font-bold');
             } else {
                 heightFormulaNote.classList.remove('text-red-600', 'font-bold');
@@ -824,8 +824,8 @@
             
             // 動態更新 AdjBW 提示文字
             const adjbwNote = document.getElementById('adjbw-note');
-            if (actualWeightKg > 1.2 * ibw) {
-                adjbwNote.innerHTML = '目前ABW > 120% IBW，建議考慮以AdjBW估算ClCr，避免因使用IBW而低估給藥劑量。';
+            if (actualWeightKg > (1.2 * ibw)) {
+                adjbwNote.innerHTML = '目前ABW > 120% IBW，請視藥物與臨床狀況考慮以AdjBW估算ClCr。';
                 adjbwNote.className = 'text-xs text-red-600 mt-2 font-bold';
             } else {
                 adjbwNote.innerHTML = '註:調整體重 (AdjBW) 僅在實際體重超過理想體重 (IBW) 時才會計算顯示。';
