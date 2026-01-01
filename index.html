@@ -69,6 +69,14 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+            20%, 40%, 60%, 80% { transform: translateX(4px); }
+        }
+        .shake-animation {
+            animation: shake 0.4s ease-in-out;
+        }
     </style>
 </head>
 <body>
@@ -147,13 +155,11 @@
             Book: (props) => (
                 <IconBase {...props}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></IconBase>
             ),
-            // 新增 Instagram 圖示
             Instagram: (props) => (
                 <IconBase {...props}>
                     <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
                 </IconBase>
             ),
-            // 新增 Globe (網頁) 圖示
             Globe: (props) => (
                 <IconBase {...props}>
                     <circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
@@ -161,31 +167,37 @@
             ),
             Link: (props) => (
                 <IconBase {...props}><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></IconBase>
+            ),
+            // 新增 Lock 圖示
+            Lock: (props) => (
+                <IconBase {...props}>
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </IconBase>
             )
         };
 
         const { 
             Search, Stethoscope, Pill, BookOpen, Calculator, Activity, ExternalLink, Github, Menu, X, 
-            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link 
+            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock
         } = Icons;
 
         // ==========================================
         // 資料設定區
         // ==========================================
         
-        // --- 相關連結資料 (請在此編輯您的部落格與 IG) ---
         const socialLinksData = [
             {
                 id: 'blog',
                 title: '蝦仁藥師的部落格',
-                url: 'https://vocus.cc/user/@pharmacy', // 請填入部落格網址
+                url: 'https://vocus.cc/user/@pharmacy', 
                 icon: <Globe size={20} />,
                 color: 'bg-blue-50 text-blue-600 border-blue-100 hover:border-blue-300'
             },
             {
                 id: 'instagram',
                 title: '蝦仁藥師的Instagram',
-                url: 'https://www.instagram.com/pharmacy_shrimp/', // 請填入 IG 網址
+                url: 'https://www.instagram.com/pharmacy_shrimp/', 
                 icon: <Instagram size={20} />,
                 color: 'bg-pink-50 text-pink-600 border-pink-100 hover:border-pink-300'
             },
@@ -268,6 +280,72 @@
         // UI 元件
         // ==========================================
 
+        // 新增：登入驗證畫面元件
+        const LoginScreen = ({ onLogin }) => {
+            const [password, setPassword] = useState("");
+            const [error, setError] = useState("");
+            const [shake, setShake] = useState(false);
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (password === "789") {
+                    onLogin();
+                } else {
+                    setError("密碼錯誤，請重新輸入");
+                    setShake(true);
+                    setPassword("");
+                    setTimeout(() => setShake(false), 400); // 重置動畫狀態
+                }
+            };
+
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+                    <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full border border-white/50 relative overflow-hidden ${shake ? 'shake-animation' : ''}`}>
+                        
+                        {/* 頂部裝飾 */}
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-teal-400 to-blue-500"></div>
+
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="bg-teal-100 p-4 rounded-full text-teal-600 mb-4 shadow-inner">
+                                <Lock size={32} />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800">請輸入訪問密碼</h2>
+                            <p className="text-sm text-slate-500 mt-2 text-center">
+                                本網站僅供專業藥師內部使用<br/>請輸入授權碼以繼續
+                            </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            <div>
+                                <input
+                                    type="password"
+                                    className="block w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-center text-lg tracking-widest focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400 placeholder:tracking-normal placeholder:text-base"
+                                    placeholder="輸入密碼"
+                                    value={password}
+                                    onChange={(e) => {
+                                        setPassword(e.target.value);
+                                        if(error) setError("");
+                                    }}
+                                    autoFocus
+                                />
+                                {error && (
+                                    <p className="text-red-500 text-sm text-center mt-2 flex items-center justify-center gap-1 animate-[fadeIn_0.2s]">
+                                        <X size={14} /> {error}
+                                    </p>
+                                )}
+                            </div>
+                            <button 
+                                type="submit"
+                                className="w-full bg-slate-800 hover:bg-teal-600 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-slate-200 hover:shadow-teal-100 flex items-center justify-center gap-2"
+                            >
+                                進入網站 <ExternalLink size={16} />
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
         const Modal = ({ isOpen, onClose, title, children }) => {
             if (!isOpen) return null;
             return (
@@ -328,6 +406,7 @@
         );
 
         const App = () => {
+            const [isAuthenticated, setIsAuthenticated] = useState(false); // 新增驗證狀態
             const [searchTerm, setSearchTerm] = useState("");
             const [activeCategory, setActiveCategory] = useState("all");
             const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -335,21 +414,30 @@
             const [showGuide, setShowGuide] = useState(false);
             const [showLinks, setShowLinks] = useState(false);
 
+            // 如果未通過驗證，顯示登入畫面
+            if (!isAuthenticated) {
+                return (
+                    <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#f8fafc]">
+                        <div className="blob-bg"></div>
+                        {/* 讓背景稍微顯現但被蓋住 */}
+                        <div style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px', position: 'absolute', inset: 0, zIndex: -1 }}></div>
+                        <LoginScreen onLogin={() => setIsAuthenticated(true)} />
+                    </div>
+                );
+            }
+
             // 搜尋邏輯 (包含標籤搜尋)
             const filteredApps = appsData.filter(app => {
                 const term = searchTerm.toLowerCase();
                 const matchesTitle = app.title.toLowerCase().includes(term);
                 const matchesDesc = app.description.toLowerCase().includes(term);
-                // 新增：搜尋標籤
                 const matchesTags = app.tags.some(tag => tag.toLowerCase().includes(term));
-                
                 const matchesCategory = activeCategory === 'all' || app.category === activeCategory;
-                
                 return (matchesTitle || matchesDesc || matchesTags) && matchesCategory;
             });
 
             return (
-                <div className="min-h-screen flex flex-col relative overflow-x-hidden">
+                <div className="min-h-screen flex flex-col relative overflow-x-hidden animate-[fadeIn_0.5s_ease-out]">
                     {/* 背景光暈效果 */}
                     <div className="blob-bg"></div>
 
@@ -500,7 +588,7 @@
                             </div>
 
                             <h2 className="text-4xl md:text-6xl font-extrabold text-slate-800 mb-6 leading-tight tracking-tight animate-[fadeIn_0.7s_ease-out]">
-                                結合<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 inline-block">藥學專業</span>與<span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-600">數位科技</span><br/>
+                                結合<span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-600 inline-block">藥學專業</span>與<span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-blue-600 inline-block">數位科技</span><br/>
                                 提升醫療照護品質
                             </h2>
 
@@ -601,9 +689,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
