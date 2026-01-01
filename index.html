@@ -201,9 +201,10 @@
         const categories = [
             { id: 'all', name: '全部工具', icon: null },
             { id: 'clinical', name: '臨床計算', icon: <Calculator size={18} /> },
-            { id: 'education', name: '衛教資訊', icon: <BookOpen size={18} /> },
+            { id: 'education', name: '衛教工具', icon: <BookOpen size={18} /> },
+            { id: 'sup', name: '輔助管理', icon: <Activity size={18} /> },
+            { id: 'information', name: '臨床資訊', icon: <FlaskConical size={18} /> },
             { id: 'else', name: '其他工具', icon: <Activity size={18} /> },
-            { id: 'admin', name: '行政輔助', icon: <FlaskConical size={18} /> },
         ];
 
         const appsData = [
@@ -237,7 +238,7 @@
             {
                 id: 4,
                 title: "Naranjo Score ADR評估工具",
-                description: "評估藥物不良反應 (ADR) 與藥物之關聯性",
+                description: "評估藥物不良反應 (ADR) 與藥物之關聯性。",
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/ADR.html",
                 tags: ["ADR", "藥物不良反應"],
@@ -245,18 +246,18 @@
             },
             {
                 id: 5,
-                title: "管制藥品庫存預測",
-                description: "基於歷史消耗數據，預測下個月的管藥叫貨量。",
-                category: "admin",
-                url: "#",
-                tags: ["庫存", "管理"],
+                title: "CKD預後風險 智能評估系統",
+                description: "整合eGFR與UACR數據，即時生成KDIGO腎功能分級與臨床追蹤建議。",
+                category: "education",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/CKD%E5%88%86%E6%9C%9F.html",
+                tags: ["CKD", "腎功能"],
                 color: "bg-purple-100 text-purple-600"
             },
             {
                 id: 6,
                 title: "藥品外觀辨識輔助",
                 description: "透過特徵描述（顏色、形狀、刻痕），快速篩選可能的藥品清單。",
-                category: "admin",
+                category: "sup",
                 url: "#",
                 tags: ["辨識", "調劑"],
                 color: "bg-teal-100 text-teal-600"
@@ -600,4 +601,5 @@
     </script>
 </body>
 </html>
+
 
