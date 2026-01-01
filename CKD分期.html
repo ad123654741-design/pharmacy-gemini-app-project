@@ -1,325 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Activity, Calendar, AlertTriangle, ChevronRight, CheckSquare, X, Info, HeartPulse, Stethoscope, FileText, Calculator, ArrowRightCircle, Printer, Leaf, Utensils, Pill, Download, Eye } from 'lucide-react';
-
-const App = () => {
-  const [gfr, setGfr] = useState('');
-  const [uacr, setUacr] = useState('');
-  const [result, setResult] = useState(null);
-  
-  // Modals state
-  const [isRiskModalOpen, setIsRiskModalOpen] = useState(false);
-  const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
-  
-  // Report View State
-  const [showReportPreview, setShowReportPreview] = useState(false);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
-  const reportRef = useRef(null);
-
-  // Load external libraries for PDF generation
-  useEffect(() => {
-    const loadScript = (src) => {
-      return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) {
-          resolve();
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    };
-
-    Promise.all([
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'),
-      loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js')
-    ]).catch(err => console.error('Failed to load PDF libraries', err));
-  }, []);
-
-  // Risk Factors (Co-morbidities)
-  const [riskFactors, setRiskFactors] = useState({
-    hypertension: false,
-    diabetes: false,
-    obesity: false,
-    highUricAcid: false,
-    anemia: false,
-    acidosis: false, 
-    hyperphosphatemia: false, 
-    lowVitD: false, 
-  });
-
-  // Referral Criteria
-  const [referralFactors, setReferralFactors] = useState({
-    rapidDecline: false,
-    highProteinuria: false,
-    hematuria: false,
-    resistantHtn: false,
-    aki: false,
-    g4g5: false,
-    hyperkalemia: false,
-    stones: false,
-    hereditary: false,
-  });
-
-  // CKD Logic
-  const calculateRisk = () => {
-    const gVal = parseFloat(gfr);
-    const aVal = parseFloat(uacr);
-
-    if (isNaN(gVal) || isNaN(aVal)) {
-      setResult(null);
-      return;
-    }
-
-    // Determine G Stage
-    let gStage = '';
-    let gLabel = '';
-    let gIndex = 0; 
-    if (gVal >= 90) { gStage = 'G1'; gLabel = '腎功能正常或升高'; gIndex = 0; }
-    else if (gVal >= 60) { gStage = 'G2'; gLabel = '腎功能輕度下降'; gIndex = 1; }
-    else if (gVal >= 45) { gStage = 'G3a'; gLabel = '輕度至中度下降'; gIndex = 2; }
-    else if (gVal >= 30) { gStage = 'G3b'; gLabel = '中度至重度下降'; gIndex = 3; }
-    else if (gVal >= 15) { gStage = 'G4'; gLabel = '重度下降'; gIndex = 4; }
-    else { gStage = 'G5'; gLabel = '腎衰竭'; gIndex = 5; }
-
-    // Determine A Stage
-    let aStage = '';
-    let aLabel = '';
-    let aIndex = 0; 
-    if (aVal < 30) { aStage = 'A1'; aLabel = '正常至輕微增加'; aIndex = 0; }
-    else if (aVal <= 300) { aStage = 'A2'; aLabel = '中度增加'; aIndex = 1; }
-    else { aStage = 'A3'; aLabel = '重度增加'; aIndex = 2; }
-
-    // Determine Prognosis Color
-    let riskLevel = 1; 
-    if (gStage === 'G1' || gStage === 'G2') {
-      if (aStage === 'A1') riskLevel = 1;
-      else if (aStage === 'A2') riskLevel = 2;
-      else riskLevel = 3;
-    } else if (gStage === 'G3a') {
-      if (aStage === 'A1') riskLevel = 2;
-      else if (aStage === 'A2') riskLevel = 3;
-      else riskLevel = 4;
-    } else if (gStage === 'G3b') {
-      if (aStage === 'A1') riskLevel = 3;
-      else riskLevel = 4;
-    } else if (gStage === 'G4' || gStage === 'G5') {
-      riskLevel = 4;
-    }
-
-    // Determine Schedule Recommendation
-    let schedule = '';
-    if (riskLevel === 1) schedule = '建議每年追蹤 1 次 (若有 CKD 診斷)';
-    else if (riskLevel === 2) schedule = '建議每年追蹤 1 次';
-    else if (riskLevel === 3) schedule = '建議每 6 個月追蹤 1 次';
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CKD 預後風險智能評估系統</title>
     
-    // Custom overrides
-    if (gStage === 'G3a' || gStage === 'G3b' || gStage === 'G4') {
-        if (riskLevel >= 3) {
-            schedule = '建議每 3 個月追蹤 1 次 (視病情穩定度)';
-        }
-    }
-    if (gStage === 'G5') {
-        schedule = '建議每 2-4 週追蹤 1 次 (準備透析/移植評估)';
-    }
-
-    const riskConfig = {
-      1: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', title: '低風險 (Low Risk)', bar: 'bg-emerald-500', textClass: 'text-emerald-600', printColor: '#059669' },
-      2: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', title: '中度風險 (Moderate Risk)', bar: 'bg-yellow-500', textClass: 'text-yellow-600', printColor: '#d97706' },
-      3: { color: 'bg-orange-100 text-orange-800 border-orange-200', title: '高風險 (High Risk)', bar: 'bg-orange-500', textClass: 'text-orange-600', printColor: '#ea580c' },
-      4: { color: 'bg-red-100 text-red-800 border-red-200', title: '極高風險 (Very High Risk)', bar: 'bg-red-500', textClass: 'text-red-600', printColor: '#dc2626' },
-    };
-
-    setResult({
-      gStage, gLabel, gIndex,
-      aStage, aLabel, aIndex,
-      riskLevel,
-      schedule,
-      config: riskConfig[riskLevel]
-    });
-  };
-
-  useEffect(() => {
-    calculateRisk();
-  }, [gfr, uacr]);
-
-  const toggleRiskFactor = (key) => {
-    setRiskFactors(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const toggleReferralFactor = (key) => {
-    setReferralFactors(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  // --- REWRITTEN PDF GENERATION LOGIC (Optimized for No Cutoff & No Shifts) ---
-  const handleDownloadPdf = async () => {
-    if (!reportRef.current) return;
-    setIsGeneratingPdf(true);
-
-    try {
-        const { jsPDF } = window.jspdf;
-        const html2canvas = window.html2canvas;
-
-        if (!jsPDF || !html2canvas) {
-            alert("PDF 模組尚未載入完成，請稍候再試。");
-            setIsGeneratingPdf(false);
-            return;
-        }
-
-        // Wait a bit for layout to stabilize
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Initialize PDF (A4)
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pageWidth = 210; 
-        const pageHeight = 297; 
-        const margin = 15; // 15mm margin (Increased for safety)
-        const contentWidth = pageWidth - (margin * 2);
-        const contentHeightLimit = pageHeight - (margin * 2);
-        
-        let currentY = margin;
-
-        const sections = reportRef.current.querySelectorAll('.pdf-section');
-
-        for (let i = 0; i < sections.length; i++) {
-            const section = sections[i];
-
-            // Render individual section
-            const canvas = await html2canvas(section, {
-                scale: 2, // High resolution
-                useCORS: true,
-                logging: false,
-                backgroundColor: '#ffffff', // Force white to prevent transparent shifts
-                onclone: (clonedDoc) => {
-                    // Remove shadows in clone to prevent ghosting/shifts
-                    const clonedSection = clonedDoc.body.querySelector(`[data-section-id="${i}"]`);
-                    if (clonedSection) {
-                        clonedSection.style.boxShadow = 'none';
-                        clonedSection.style.borderColor = '#e2e8f0'; // Clean border
-                    }
-                }
-            });
-
-            const imgData = canvas.toDataURL('image/jpeg', 0.95);
-            const imgHeight = (canvas.height * contentWidth) / canvas.width;
-
-            // Page Break Logic
-            // If the section is taller than remaining space, ADD PAGE
-            if (currentY + imgHeight > contentHeightLimit) {
-                pdf.addPage();
-                currentY = margin; 
-            }
-
-            pdf.addImage(imgData, 'JPEG', margin, currentY, contentWidth, imgHeight);
-            
-            // Add gap between sections
-            currentY += imgHeight + 5; 
-        }
-        
-        pdf.save(`CKD_Report_${new Date().toISOString().slice(0,10)}.pdf`);
-
-    } catch (error) {
-        console.error("PDF Generation Error:", error);
-        alert("PDF 生成失敗，請改用瀏覽器列印功能。");
-    } finally {
-        setIsGeneratingPdf(false);
-    }
-  };
-
-  const activeRiskFactorCount = Object.values(riskFactors).filter(Boolean).length;
-  const activeReferralCount = Object.values(referralFactors).filter(Boolean).length;
-
-  // --- Education Content ---
-  const getEducationAdvice = () => {
-    if (!result) return null;
+    <!-- 1. 載入 Tailwind CSS (樣式庫) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    const advice = {
-        lifestyle: [],
-        nutrition: [],
-        medical: []
-    };
+    <!-- 2. 載入 PDF 生成工具 (html2canvas & jsPDF) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- 3. 載入 Babel (讓瀏覽器看懂 React JSX) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    // 1. Lifestyle
-    advice.lifestyle.push("戒菸：吸菸會增加蛋白尿與腎功能惡化風險，強烈建議戒菸。");
-    if (riskFactors.obesity) {
-        advice.lifestyle.push("體重控制：BMI > 24 屬過重，建議減重 (目標 BMI 18.5-24.9)。");
-    }
-    advice.lifestyle.push("規律運動：每週至少 150 分鐘中等強度有氧運動 (如快走)，避免久坐。");
-
-    // 2. Nutrition
-    const isHighProteinuria = result.aIndex >= 2 || referralFactors.highProteinuria || (parseFloat(uacr) > 300);
-
-    if (result.gIndex >= 3) { 
-        if (result.gIndex >= 4) {
-            advice.nutrition.push("極低蛋白飲食 (VLPD)：若在嚴格監控下，可考慮 0.3-0.4 g/kg/day 搭配酮酸胺基酸 (KA)。");
-        } 
-        advice.nutrition.push("低蛋白飲食 (LPD)：建議蛋白質攝取 0.6-0.8 g/kg/day，以延緩腎功能惡化。");
-        advice.nutrition.push("熱量攝取：每日需攝取 25-35 kcal/kg，避免熱量不足造成肌肉流失 (PEW)。");
-    } else {
-        if (isHighProteinuria) {
-            advice.nutrition.push("蛋白尿管理：建議蛋白質攝取維持 0.8 g/kg/day，以協助降低蛋白尿。");
-        } else {
-            advice.nutrition.push("正常蛋白飲食：避免過量蛋白質攝取 (> 1.3 g/kg/day)，以免增加腎臟過濾負擔。");
-        }
-    }
-    advice.nutrition.push("鹽分限制：每日鈉攝取量應 < 2000 mg (約 5g 食鹽)，以助血壓控制。");
-
-    if (riskFactors.hyperphosphatemia || result.gIndex >= 4) {
-        advice.nutrition.push("低磷飲食：避免加工肉品、含磷飲料、內臟及堅果，必要時使用磷結合劑。");
-    }
-    if (riskFactors.highUricAcid) {
-        advice.nutrition.push("低普林飲食：避免高湯、內臟、酒精 (尤其啤酒) 及含果糖飲料。");
-    }
-    if (referralFactors.hyperkalemia || result.gIndex >= 4) {
-        advice.nutrition.push("低鉀飲食：避免生食蔬菜、低鈉鹽、楊桃及高鉀水果 (香蕉、番茄、奇異果)。");
-    }
-
-    // 3. Medical
-    if (riskFactors.hypertension || referralFactors.resistantHtn) {
-        advice.medical.push("血壓控制：收縮壓目標 < 120 mmHg (KDIGO) 或 < 130/80 mmHg (台灣指引)。");
-    }
-    if (riskFactors.diabetes) {
-        advice.medical.push("血糖控制：HbA1c 目標通常 < 7.0%，視共病個別化調整。");
-        advice.medical.push("藥物治療：優先考慮使用 SGLT2i 或 Metformin (依 eGFR 調整)。");
-    }
-    if (riskFactors.anemia) {
-        advice.medical.push("貧血管理：Hb < 10 g/dL 應評估鐵劑或 ESA 治療。");
-    }
-    if (isHighProteinuria || result.gIndex >= 2) {
-         advice.medical.push("器官保護：建議使用 RAS 抑制劑 (ACEi/ARB) 延緩惡化。");
-    }
-
-    return advice;
-  };
-
-  const eduContent = getEducationAdvice();
-
-  // Heatmap Data
-  const heatmapData = [
-    [ { risk: 1, label: 'G1/A1' }, { risk: 2, label: 'G1/A2' }, { risk: 3, label: 'G1/A3' } ],
-    [ { risk: 1, label: 'G2/A1' }, { risk: 2, label: 'G2/A2' }, { risk: 3, label: 'G2/A3' } ],
-    [ { risk: 2, label: 'G3a/A1' }, { risk: 3, label: 'G3a/A2' }, { risk: 4, label: 'G3a/A3' } ],
-    [ { risk: 3, label: 'G3b/A1' }, { risk: 4, label: 'G3b/A2' }, { risk: 4, label: 'G3b/A3' } ],
-    [ { risk: 4, label: 'G4/A1' }, { risk: 4, label: 'G4/A2' }, { risk: 4, label: 'G4/A3' } ],
-    [ { risk: 4, label: 'G5/A1' }, { risk: 4, label: 'G5/A2' }, { risk: 4, label: 'G5/A3' } ]
-  ];
-
-  const getCellColor = (risk) => {
-    switch(risk) {
-      case 1: return 'bg-emerald-400/80';
-      case 2: return 'bg-yellow-400/80';
-      case 3: return 'bg-orange-400/80';
-      case 4: return 'bg-red-500/80';
-      default: return 'bg-slate-200';
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-cyan-100 selection:text-cyan-900 relative overflow-hidden app-container">
-      
-      {/* Styles */}
-      <style>{`
+    <!-- 自定義樣式 -->
+    <style>
+        /* 隱藏數字輸入框的上下箭頭 */
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { 
           -webkit-appearance: none; 
@@ -335,7 +33,7 @@ const App = () => {
         .animate-fade-in-up {
             animation: fade-in-up 0.5s ease-out forwards;
         }
-        /* Custom scrollbar for preview */
+        /* 預覽視窗卷軸樣式 */
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
         }
@@ -349,461 +47,770 @@ const App = () => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: #94a3b8; 
         }
-      `}</style>
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-      {/* Report Preview Mode */}
-      {showReportPreview && result && (
-        <div className="fixed inset-0 z-[999] bg-slate-100 flex flex-col items-center justify-center p-4">
-            <div className="w-full max-w-5xl flex justify-between items-center mb-4 px-4">
-                <h2 className="text-xl font-bold flex items-center text-slate-700">
-                    <FileText className="w-6 h-6 mr-2 text-blue-600" />
-                    衛教報告預覽
-                </h2>
-                <div className="flex space-x-3">
-                    <button 
-                        onClick={() => setShowReportPreview(false)}
-                        className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium transition-colors shadow-sm"
-                    >
-                        關閉
-                    </button>
-                    <button 
-                        onClick={handleDownloadPdf}
-                        disabled={isGeneratingPdf}
-                        className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-md hover:shadow-lg flex items-center transition-all disabled:opacity-50"
-                    >
-                        {isGeneratingPdf ? '生成中...' : (
-                            <>
-                                <Download className="w-4 h-4 mr-2" />
-                                下載 PDF
-                            </>
-                        )}
-                    </button>
+    <!-- 4. React 程式邏輯 -->
+    <script type="text/babel" data-type="module">
+        // 從 CDN 導入 React 模組
+        import React, { useState, useEffect, useRef } from 'https://esm.sh/react@18.2.0';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client';
+        // 從 CDN 導入圖標庫
+        import { Activity, Calendar, AlertTriangle, ChevronRight, CheckSquare, X, Info, HeartPulse, Stethoscope, FileText, Calculator, ArrowRightCircle, Printer, Leaf, Utensils, Pill, Download, Eye } from 'https://esm.sh/lucide-react@0.292.0';
+
+        const App = () => {
+            const [gfr, setGfr] = useState('');
+            const [uacr, setUacr] = useState('');
+            const [result, setResult] = useState(null);
+            
+            // Modals state
+            const [isRiskModalOpen, setIsRiskModalOpen] = useState(false);
+            const [isReferralModalOpen, setIsReferralModalOpen] = useState(false);
+            
+            // Report View State
+            const [showReportPreview, setShowReportPreview] = useState(false);
+            const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+            const reportRef = useRef(null);
+
+            // Risk Factors (Co-morbidities)
+            const [riskFactors, setRiskFactors] = useState({
+                hypertension: false,
+                diabetes: false,
+                obesity: false,
+                highUricAcid: false,
+                anemia: false,
+                acidosis: false, 
+                hyperphosphatemia: false, 
+                lowVitD: false, 
+            });
+
+            // Referral Criteria
+            const [referralFactors, setReferralFactors] = useState({
+                rapidDecline: false,
+                highProteinuria: false,
+                hematuria: false,
+                resistantHtn: false,
+                aki: false,
+                g4g5: false,
+                hyperkalemia: false,
+                stones: false,
+                hereditary: false,
+            });
+
+            // CKD Logic
+            const calculateRisk = () => {
+                const gVal = parseFloat(gfr);
+                const aVal = parseFloat(uacr);
+
+                if (isNaN(gVal) || isNaN(aVal)) {
+                setResult(null);
+                return;
+                }
+
+                // Determine G Stage
+                let gStage = '';
+                let gLabel = '';
+                let gIndex = 0; 
+                if (gVal >= 90) { gStage = 'G1'; gLabel = '腎功能正常或升高'; gIndex = 0; }
+                else if (gVal >= 60) { gStage = 'G2'; gLabel = '腎功能輕度下降'; gIndex = 1; }
+                else if (gVal >= 45) { gStage = 'G3a'; gLabel = '輕度至中度下降'; gIndex = 2; }
+                else if (gVal >= 30) { gStage = 'G3b'; gLabel = '中度至重度下降'; gIndex = 3; }
+                else if (gVal >= 15) { gStage = 'G4'; gLabel = '重度下降'; gIndex = 4; }
+                else { gStage = 'G5'; gLabel = '腎衰竭'; gIndex = 5; }
+
+                // Determine A Stage
+                let aStage = '';
+                let aLabel = '';
+                let aIndex = 0; 
+                if (aVal < 30) { aStage = 'A1'; aLabel = '正常至輕微增加'; aIndex = 0; }
+                else if (aVal <= 300) { aStage = 'A2'; aLabel = '中度增加'; aIndex = 1; }
+                else { aStage = 'A3'; aLabel = '重度增加'; aIndex = 2; }
+
+                // Determine Prognosis Color
+                let riskLevel = 1; 
+                if (gStage === 'G1' || gStage === 'G2') {
+                if (aStage === 'A1') riskLevel = 1;
+                else if (aStage === 'A2') riskLevel = 2;
+                else riskLevel = 3;
+                } else if (gStage === 'G3a') {
+                if (aStage === 'A1') riskLevel = 2;
+                else if (aStage === 'A2') riskLevel = 3;
+                else riskLevel = 4;
+                } else if (gStage === 'G3b') {
+                if (aStage === 'A1') riskLevel = 3;
+                else riskLevel = 4;
+                } else if (gStage === 'G4' || gStage === 'G5') {
+                riskLevel = 4;
+                }
+
+                // Determine Schedule Recommendation
+                let schedule = '';
+                if (riskLevel === 1) schedule = '建議每年追蹤 1 次 (若有 CKD 診斷)';
+                else if (riskLevel === 2) schedule = '建議每年追蹤 1 次';
+                else if (riskLevel === 3) schedule = '建議每 6 個月追蹤 1 次';
+                
+                // Custom overrides
+                if (gStage === 'G3a' || gStage === 'G3b' || gStage === 'G4') {
+                    if (riskLevel >= 3) {
+                        schedule = '建議每 3 個月追蹤 1 次 (視病情穩定度)';
+                    }
+                }
+                if (gStage === 'G5') {
+                    schedule = '建議每 2-4 週追蹤 1 次 (準備透析/移植評估)';
+                }
+
+                const riskConfig = {
+                1: { color: 'bg-emerald-100 text-emerald-800 border-emerald-200', title: '低風險 (Low Risk)', bar: 'bg-emerald-500', textClass: 'text-emerald-600', printColor: '#059669' },
+                2: { color: 'bg-yellow-100 text-yellow-800 border-yellow-200', title: '中度風險 (Moderate Risk)', bar: 'bg-yellow-500', textClass: 'text-yellow-600', printColor: '#d97706' },
+                3: { color: 'bg-orange-100 text-orange-800 border-orange-200', title: '高風險 (High Risk)', bar: 'bg-orange-500', textClass: 'text-orange-600', printColor: '#ea580c' },
+                4: { color: 'bg-red-100 text-red-800 border-red-200', title: '極高風險 (Very High Risk)', bar: 'bg-red-500', textClass: 'text-red-600', printColor: '#dc2626' },
+                };
+
+                setResult({
+                gStage, gLabel, gIndex,
+                aStage, aLabel, aIndex,
+                riskLevel,
+                schedule,
+                config: riskConfig[riskLevel]
+                });
+            };
+
+            useEffect(() => {
+                calculateRisk();
+            }, [gfr, uacr]);
+
+            const toggleRiskFactor = (key) => {
+                setRiskFactors(prev => ({ ...prev, [key]: !prev[key] }));
+            };
+
+            const toggleReferralFactor = (key) => {
+                setReferralFactors(prev => ({ ...prev, [key]: !prev[key] }));
+            };
+
+            // --- REWRITTEN PDF GENERATION LOGIC ---
+            const handleDownloadPdf = async () => {
+                if (!reportRef.current) return;
+                setIsGeneratingPdf(true);
+
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const html2canvas = window.html2canvas;
+
+                    if (!jsPDF || !html2canvas) {
+                        alert("PDF 模組尚未載入完成，請稍候再試。");
+                        setIsGeneratingPdf(false);
+                        return;
+                    }
+
+                    // Wait a bit for layout to stabilize
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Initialize PDF (A4)
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    const pageWidth = 210; 
+                    const pageHeight = 297; 
+                    const margin = 15; 
+                    const contentWidth = pageWidth - (margin * 2);
+                    const contentHeightLimit = pageHeight - (margin * 2);
+                    
+                    let currentY = margin;
+
+                    const sections = reportRef.current.querySelectorAll('.pdf-section');
+
+                    for (let i = 0; i < sections.length; i++) {
+                        const section = sections[i];
+
+                        // Render individual section
+                        const canvas = await html2canvas(section, {
+                            scale: 2, // High resolution
+                            useCORS: true,
+                            logging: false,
+                            backgroundColor: '#ffffff', // Force white
+                            onclone: (clonedDoc) => {
+                                // Remove shadows in clone to prevent ghosting/shifts
+                                const clonedSection = clonedDoc.body.querySelector(`[data-section-id="${i}"]`);
+                                if (clonedSection) {
+                                    clonedSection.style.boxShadow = 'none';
+                                    clonedSection.style.borderColor = '#e2e8f0'; 
+                                }
+                            }
+                        });
+
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        const imgHeight = (canvas.height * contentWidth) / canvas.width;
+
+                        // Page Break Logic
+                        if (currentY + imgHeight > contentHeightLimit) {
+                            pdf.addPage();
+                            currentY = margin; 
+                        }
+
+                        pdf.addImage(imgData, 'JPEG', margin, currentY, contentWidth, imgHeight);
+                        
+                        // Add gap between sections
+                        currentY += imgHeight + 5; 
+                    }
+                    
+                    pdf.save(`CKD_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+
+                } catch (error) {
+                    console.error("PDF Generation Error:", error);
+                    alert("PDF 生成失敗，請改用瀏覽器列印功能。");
+                } finally {
+                    setIsGeneratingPdf(false);
+                }
+            };
+
+            const activeRiskFactorCount = Object.values(riskFactors).filter(Boolean).length;
+            const activeReferralCount = Object.values(referralFactors).filter(Boolean).length;
+
+            // --- Education Content ---
+            const getEducationAdvice = () => {
+                if (!result) return null;
+                
+                const advice = {
+                    lifestyle: [],
+                    nutrition: [],
+                    medical: []
+                };
+
+                // 1. Lifestyle
+                advice.lifestyle.push("戒菸：吸菸會增加蛋白尿與腎功能惡化風險，強烈建議戒菸。");
+                if (riskFactors.obesity) {
+                    advice.lifestyle.push("體重控制：BMI > 24 屬過重，建議減重 (目標 BMI 18.5-24.9)。");
+                }
+                advice.lifestyle.push("規律運動：每週至少 150 分鐘中等強度有氧運動 (如快走)，避免久坐。");
+
+                // 2. Nutrition
+                const isHighProteinuria = result.aIndex >= 2 || referralFactors.highProteinuria || (parseFloat(uacr) > 300);
+
+                if (result.gIndex >= 3) { 
+                    if (result.gIndex >= 4) {
+                        advice.nutrition.push("極低蛋白飲食 (VLPD)：若在嚴格監控下，可考慮 0.3-0.4 g/kg/day 搭配酮酸胺基酸 (KA)。");
+                    } 
+                    advice.nutrition.push("低蛋白飲食 (LPD)：建議蛋白質攝取 0.6-0.8 g/kg/day，以延緩腎功能惡化。");
+                    advice.nutrition.push("熱量攝取：每日需攝取 25-35 kcal/kg，避免熱量不足造成肌肉流失 (PEW)。");
+                } else {
+                    if (isHighProteinuria) {
+                        advice.nutrition.push("蛋白尿管理：建議蛋白質攝取維持 0.8 g/kg/day，以協助降低蛋白尿。");
+                    } else {
+                        advice.nutrition.push("正常蛋白飲食：避免過量蛋白質攝取 (> 1.3 g/kg/day)，以免增加腎臟過濾負擔。");
+                    }
+                }
+                advice.nutrition.push("鹽分限制：每日鈉攝取量應 < 2000 mg (約 5g 食鹽)，以助血壓控制。");
+
+                if (riskFactors.hyperphosphatemia || result.gIndex >= 4) {
+                    advice.nutrition.push("低磷飲食：避免加工肉品、含磷飲料、內臟及堅果，必要時使用磷結合劑。");
+                }
+                if (riskFactors.highUricAcid) {
+                    advice.nutrition.push("低普林飲食：避免高湯、內臟、酒精 (尤其啤酒) 及含果糖飲料。");
+                }
+                if (referralFactors.hyperkalemia || result.gIndex >= 4) {
+                    advice.nutrition.push("低鉀飲食：避免生食蔬菜、低鈉鹽、楊桃及高鉀水果 (香蕉、番茄、奇異果)。");
+                }
+
+                // 3. Medical
+                if (riskFactors.hypertension || referralFactors.resistantHtn) {
+                    advice.medical.push("血壓控制：收縮壓目標 < 120 mmHg (KDIGO) 或 < 130/80 mmHg (台灣指引)。");
+                }
+                if (riskFactors.diabetes) {
+                    advice.medical.push("血糖控制：HbA1c 目標通常 < 7.0%，視共病個別化調整。");
+                    advice.medical.push("藥物治療：優先考慮使用 SGLT2i 或 Metformin (依 eGFR 調整)。");
+                }
+                if (riskFactors.anemia) {
+                    advice.medical.push("貧血管理：Hb < 10 g/dL 應評估鐵劑或 ESA 治療。");
+                }
+                if (isHighProteinuria || result.gIndex >= 2) {
+                    advice.medical.push("器官保護：建議使用 RAS 抑制劑 (ACEi/ARB) 延緩惡化。");
+                }
+
+                return advice;
+            };
+
+            const eduContent = getEducationAdvice();
+
+            // Heatmap Data
+            const heatmapData = [
+                [ { risk: 1, label: 'G1/A1' }, { risk: 2, label: 'G1/A2' }, { risk: 3, label: 'G1/A3' } ],
+                [ { risk: 1, label: 'G2/A1' }, { risk: 2, label: 'G2/A2' }, { risk: 3, label: 'G2/A3' } ],
+                [ { risk: 2, label: 'G3a/A1' }, { risk: 3, label: 'G3a/A2' }, { risk: 4, label: 'G3a/A3' } ],
+                [ { risk: 3, label: 'G3b/A1' }, { risk: 4, label: 'G3b/A2' }, { risk: 4, label: 'G3b/A3' } ],
+                [ { risk: 4, label: 'G4/A1' }, { risk: 4, label: 'G4/A2' }, { risk: 4, label: 'G4/A3' } ],
+                [ { risk: 4, label: 'G5/A1' }, { risk: 4, label: 'G5/A2' }, { risk: 4, label: 'G5/A3' } ]
+            ];
+
+            const getCellColor = (risk) => {
+                switch(risk) {
+                case 1: return 'bg-emerald-400/80';
+                case 2: return 'bg-yellow-400/80';
+                case 3: return 'bg-orange-400/80';
+                case 4: return 'bg-red-500/80';
+                default: return 'bg-slate-200';
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-50 font-sans text-slate-800 selection:bg-cyan-100 selection:text-cyan-900 relative overflow-hidden app-container">
+                
+                {/* Main App Background & UI */}
+                <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
+                    <div style={{
+                        width: '100%', height: '100%',
+                        backgroundImage: 'linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px)',
+                        backgroundSize: '24px 24px'
+                    }}></div>
                 </div>
-            </div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 z-50"></div>
 
-            {/* The Actual Report Area to be Captured */}
-            <div className="overflow-auto w-full h-full flex justify-center custom-scrollbar pb-10">
-                <div 
-                    ref={reportRef} 
-                    className="bg-white shadow-2xl w-[210mm] mx-auto text-slate-800 p-12 h-auto min-h-[297mm]"
-                >
-                    {/* SECTION 1: Header */}
-                    <div className="pdf-section mb-8" data-section-id="0">
-                        <div className="flex justify-between items-center border-b-2 border-slate-800 pb-6">
-                            <div>
-                                <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">慢性腎臟病 (CKD) 評估報告</h1>
-                                <p className="text-sm font-bold text-slate-600 mt-1">製作者: 蝦仁藥師 | 更新日期: 2026/1/1</p>
-                                <p className="text-sm text-slate-500 mt-2 font-medium">2025 台灣慢性腎臟病臨床指引 | 臨床決策輔助系統</p>
+                <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+                    
+                    {/* Header */}
+                    <header className="mb-10 text-center relative">
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
+                        <div className="relative z-10">
+                            <div className="inline-flex items-center justify-center p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-slate-200 mb-4">
+                                <Activity className="w-5 h-5 text-cyan-600 mr-2" />
+                                <span className="text-sm font-semibold text-slate-600 tracking-wide">2025 台灣慢性腎臟病臨床指引</span>
                             </div>
-                            <div className="text-right">
-                                <div className="text-xs text-slate-400 uppercase tracking-widest mb-1">Assessment Date</div>
-                                <div className="font-mono font-bold text-xl text-slate-700">{new Date().toLocaleDateString()}</div>
-                            </div>
+                            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-1">
+                                CKD 預後風險 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">智能評估系統</span>
+                            </h1>
+                            {/* Updated Author Info */}
+                            <p className="text-sm font-medium text-slate-500 mb-3">
+                                程式製作者: 蝦仁藥師 | 版本更新日期: 2026/01/01
+                            </p>
+                            <p className="text-slate-500 max-w-2xl mx-auto text-lg">
+                                整合 GFR 與 UACR 數據，即時生成 KDIGO 風險熱圖分級與臨床追蹤建議。
+                            </p>
                         </div>
-                    </div>
+                    </header>
 
-                    {/* SECTION 2: Data & Result */}
-                    <div className="pdf-section grid grid-cols-2 gap-8 mb-10" data-section-id="1">
-                        {/* Clinical Data - Remove shadow for cleaner print */}
-                        <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
-                             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">檢驗數據 Input Data</h3>
-                             <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <div className="text-sm text-slate-500 mb-1">eGFR (ml/min)</div>
-                                    <div className="text-3xl font-bold text-slate-800">{gfr}</div>
+                    {/* Main Content Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        {/* Left Column */}
+                        <div className="lg:col-span-5 space-y-6">
+                            <div className="bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-white overflow-hidden ring-1 ring-slate-100">
+                                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                                    <h2 className="font-bold text-slate-700 flex items-center">
+                                        <Stethoscope className="w-5 h-5 mr-2 text-cyan-600" />
+                                        臨床數據輸入
+                                    </h2>
+                                    {/* [維護說明] 若要修改腎功能計算機連結，請更改下方的 href 網址 */}
+                                    <a 
+                                        href="https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F-%E8%9D%A6%E4%BB%81%E8%97%A5%E5%B8%AB.html" 
+                                        className="flex items-center text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md transition-colors border border-blue-200"
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                    >
+                                        <Calculator className="w-3 h-3 mr-1.5" />
+                                        腎功能計算
+                                    </a>
                                 </div>
-                                <div>
-                                    <div className="text-sm text-slate-500 mb-1">UACR (mg/g)</div>
-                                    <div className="text-3xl font-bold text-slate-800">{uacr}</div>
-                                </div>
-                             </div>
-                        </div>
-                        {/* Result */}
-                        <div className="p-6 border-l-8 rounded-r-xl bg-slate-50" style={{ borderColor: result.config.printColor }}>
-                             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">評估結果 Assessment</h3>
-                             <div className="flex justify-between items-end">
-                                <div>
-                                    <div className="text-4xl font-extrabold text-slate-900 mb-1">{result.gStage} <span className="text-slate-300">/</span> {result.aStage}</div>
-                                    <div className="text-lg font-bold" style={{ color: result.config.printColor }}>{result.config.title}</div>
-                                </div>
-                             </div>
-                             <div className="mt-4 pt-3 border-t border-slate-200/50 text-sm text-slate-600 font-medium">
-                                {result.schedule}
-                             </div>
-                        </div>
-                    </div>
-
-                    {/* SECTION 3: Risk Factors & Referral */}
-                    <div className="pdf-section mb-10" data-section-id="2">
-                         <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
-                            <Activity className="w-5 h-5 mr-2" />
-                            共病與轉診風險評估
-                         </h3>
-                         <div className="grid grid-cols-2 gap-8">
-                            <div className="border border-slate-200 rounded-lg p-5 bg-white">
-                                <h4 className="font-bold text-sm text-slate-700 mb-3 bg-slate-100 inline-block px-2 py-1 rounded">已勾選危險因子</h4>
-                                {activeRiskFactorCount > 0 ? (
-                                    <ul className="list-disc ml-4 text-sm text-slate-700 space-y-1.5">
-                                        {Object.entries(riskFactors).filter(([_, v]) => v).map(([k, _]) => {
-                                            const labels = {
-                                                hypertension: '高血壓', diabetes: '糖尿病', obesity: '肥胖',
-                                                highUricAcid: '高尿酸血症', anemia: '貧血', acidosis: '代謝性酸中毒',
-                                                hyperphosphatemia: '高血磷', lowVitD: '低維生素 D'
-                                            };
-                                            return <li key={k}>{labels[k]}</li>;
-                                        })}
-                                    </ul>
-                                ) : <div className="text-sm text-slate-400 italic py-2">無勾選項目</div>}
-                            </div>
-                            <div className="border border-slate-200 rounded-lg p-5 bg-white">
-                                 <h4 className="font-bold text-sm text-slate-700 mb-3 bg-red-50 text-red-700 inline-block px-2 py-1 rounded">轉診建議指標</h4>
-                                 {activeReferralCount > 0 ? (
-                                    <div className="text-red-700 font-bold text-sm leading-relaxed">
-                                        <div className="flex items-center mb-2">
-                                            <AlertTriangle className="w-4 h-4 mr-2" />
-                                            符合 {activeReferralCount} 項指標
-                                        </div>
-                                        <p>建議轉診至腎臟專科進行進階評估。</p>
-                                    </div>
-                                 ) : <div className="text-sm text-emerald-600 flex items-center py-2"><CheckSquare className="w-4 h-4 mr-2"/>目前未符合主要轉診指標</div>}
-                            </div>
-                         </div>
-                    </div>
-
-                    {/* Education Content */}
-                    {eduContent && (
-                        <>
-                        <div className="pdf-section mb-4" data-section-id="3">
-                            <h3 className="text-lg font-bold text-slate-800 flex items-center border-b-2 border-slate-100 pb-2">
-                                <FileText className="w-5 h-5 mr-2 text-blue-600" />
-                                2025 指引個人化衛教建議
-                            </h3>
-                        </div>
-
-                        {/* SECTION 4: Nutrition Card */}
-                        <div className="pdf-section mb-6" data-section-id="4">
-                            <div className="bg-green-50/50 p-5 rounded-lg border border-green-100">
-                                <h4 className="font-bold text-slate-800 mb-3 flex items-center">
-                                    <Utensils className="w-4 h-4 mr-2 text-green-600" />
-                                    營養照護建議
-                                </h4>
-                                <ul className="list-disc ml-5 space-y-2 text-sm text-slate-700">
-                                    {eduContent.nutrition.map((item, idx) => <li key={idx} className="leading-relaxed">{item}</li>)}
-                                </ul>
-                            </div>
-                        </div>
-
-                        {/* SECTION 5: Lifestyle & Medical Grid */}
-                        <div className="pdf-section grid grid-cols-2 gap-6 mb-8" data-section-id="5">
-                            {/* Lifestyle */}
-                            <div className="bg-slate-50 p-5 rounded-lg border border-slate-100">
-                                <h4 className="font-bold text-slate-800 mb-3 flex items-center">
-                                    <Leaf className="w-4 h-4 mr-2 text-green-600" />
-                                    生活型態調整
-                                </h4>
-                                <ul className="list-disc ml-5 space-y-2 text-sm text-slate-700">
-                                    {eduContent.lifestyle.map((item, idx) => <li key={idx} className="leading-relaxed">{item}</li>)}
-                                </ul>
-                            </div>
-
-                            {/* Medical */}
-                            {eduContent.medical.length > 0 && (
-                                <div className="bg-blue-50/50 p-5 rounded-lg border border-blue-100">
-                                    <h4 className="font-bold text-slate-800 mb-3 flex items-center">
-                                        <Stethoscope className="w-4 h-4 mr-2 text-blue-600" />
-                                        治療目標與管理
-                                    </h4>
-                                    <ul className="list-disc ml-5 space-y-2 text-sm text-slate-700">
-                                        {eduContent.medical.map((item, idx) => <li key={idx} className="leading-relaxed">{item}</li>)}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
-                        </>
-                    )}
-
-                    {/* SECTION 6: Footer - Ensure margin top to push to bottom if space allows, but in PDF flow it just follows */}
-                    <div className="pdf-section mt-10 border-t border-slate-200 pt-8 flex justify-between items-end" data-section-id="6">
-                        <div className="text-[10px] text-slate-400">
-                            <p>本報告由 AI 輔助系統生成，內容僅供醫療衛教參考。</p>
-                            <p>實際醫療處置請務必遵照主治醫師囑咐。</p>
-                        </div>
-                        <div className="text-right">
-                             <div className="inline-flex items-center justify-center p-1.5 bg-slate-100 rounded text-slate-400">
-                                <Activity className="w-4 h-4 mr-1" />
-                                <span className="text-[10px] font-bold">CKD Clinical Tool</span>
-                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-      )}
-
-      {/* Main App Background & UI */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-40">
-           <div style={{
-             width: '100%', height: '100%',
-             backgroundImage: 'linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px)',
-             backgroundSize: '24px 24px'
-           }}></div>
-      </div>
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 z-50"></div>
-
-      <div className="relative z-10 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        
-        {/* Header */}
-        <header className="mb-10 text-center relative">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl animate-pulse pointer-events-none"></div>
-            <div className="relative z-10">
-                <div className="inline-flex items-center justify-center p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-slate-200 mb-4">
-                    <Activity className="w-5 h-5 text-cyan-600 mr-2" />
-                    <span className="text-sm font-semibold text-slate-600 tracking-wide">2025 台灣慢性腎臟病臨床指引</span>
-                </div>
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-1">
-                    CKD 預後風險 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-600">智能評估系統</span>
-                </h1>
-                {/* Updated Author Info */}
-                <p className="text-sm font-medium text-slate-500 mb-3">
-                    程式製作者: 蝦仁藥師 | 版本更新日期: 2026/01/01
-                </p>
-                <p className="text-slate-500 max-w-2xl mx-auto text-lg">
-                    整合 GFR 與 UACR 數據，即時生成 KDIGO 風險熱圖分級與臨床追蹤建議。
-                </p>
-            </div>
-        </header>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column */}
-            <div className="lg:col-span-5 space-y-6">
-                <div className="bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-white overflow-hidden ring-1 ring-slate-100">
-                    <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-                        <h2 className="font-bold text-slate-700 flex items-center">
-                            <Stethoscope className="w-5 h-5 mr-2 text-cyan-600" />
-                            臨床數據輸入
-                        </h2>
-                        {/* [維護說明] 若要修改腎功能計算機連結，請更改下方的 href 網址 */}
-                        <a 
-                            href="https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F-%E8%9D%A6%E4%BB%81%E8%97%A5%E5%B8%AB.html" 
-                            className="flex items-center text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-md transition-colors border border-blue-200"
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                        >
-                            <Calculator className="w-3 h-3 mr-1.5" />
-                            腎功能計算
-                        </a>
-                    </div>
-                    <div className="p-6 space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">腎絲球過濾率 (eGFR)</label>
-                            <div className="relative">
-                                <input type="number" value={gfr} onChange={(e) => setGfr(e.target.value)} onWheel={(e) => e.target.blur()} placeholder="輸入數值 (例如: 45)" className="block w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-cyan-500 transition-all text-lg font-semibold text-slate-900"/>
-                                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"><span className="text-slate-400 text-sm">ml/min</span></div>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">尿液白蛋白/肌酸酐比值 (UACR)</label>
-                            <div className="relative">
-                                <input type="number" value={uacr} onChange={(e) => setUacr(e.target.value)} onWheel={(e) => e.target.blur()} placeholder="輸入數值 (例如: 150)" className="block w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-cyan-500 transition-all text-lg font-semibold text-slate-900"/>
-                                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"><span className="text-slate-400 text-sm">mg/g</span></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-slate-50 p-4 border-t border-slate-100 space-y-3">
-                        <button onClick={() => setIsRiskModalOpen(true)} className="w-full group flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-400 hover:shadow-md transition-all">
-                            <div className="flex items-center text-slate-700 font-medium"><FileText className="w-5 h-5 mr-3 text-indigo-500" />評估 CKD 惡化因子</div>
-                            <div className="flex items-center">{activeRiskFactorCount > 0 && <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full mr-2">{activeRiskFactorCount}</span>}<ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" /></div>
-                        </button>
-                        <button onClick={() => setIsReferralModalOpen(true)} className="w-full group flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg hover:border-red-400 hover:shadow-md transition-all">
-                            <div className="flex items-center text-slate-700 font-medium"><ArrowRightCircle className="w-5 h-5 mr-3 text-red-500" />轉診標準檢核 (9大指標)</div>
-                            <div className="flex items-center">{activeReferralCount > 0 && <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full mr-2">{activeReferralCount}</span>}<ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-red-500" /></div>
-                        </button>
-                    </div>
-                </div>
-                <div className="bg-white/60 backdrop-blur rounded-xl p-5 border border-slate-200 text-sm text-slate-600">
-                    <h3 className="font-semibold text-slate-800 mb-2 flex items-center"><Info className="w-4 h-4 mr-2" />使用說明</h3>
-                    <ul className="space-y-1 ml-6 list-disc marker:text-slate-300">
-                        <li>輸入 GFR 與 UACR 取得 KDIGO 分級。</li>
-                        <li>點擊「轉診標準檢核」確認是否需轉介腎臟科。</li>
-                        <li>點擊右側「報告預覽 / PDF」按鈕可下載報告。</li>
-                    </ul>
-                </div>
-            </div>
-
-            {/* Right Column */}
-            <div className="lg:col-span-7">
-                {result ? (
-                    <div className="space-y-6 animate-fade-in-up">
-                        <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-500 ${result.config.border} bg-white`}>
-                            <div className={`h-3 w-full ${result.config.bar}`}></div>
-                            <div className="p-6 sm:p-8">
-                                <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6">
+                                <div className="p-6 space-y-6">
                                     <div>
-                                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold mb-3 ${result.config.color}`}><HeartPulse className="w-4 h-4 mr-2" />{result.config.title}</div>
-                                        <h3 className="text-3xl font-extrabold text-slate-900">{result.gStage} <span className="text-slate-300 mx-2">/</span> {result.aStage}</h3>
-                                        <p className="text-slate-500 mt-1 font-medium">{result.gLabel} • {result.aLabel}</p>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">腎絲球過濾率 (eGFR)</label>
+                                        <div className="relative">
+                                            <input type="number" value={gfr} onChange={(e) => setGfr(e.target.value)} onWheel={(e) => e.target.blur()} placeholder="輸入數值 (例如: 45)" className="block w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-cyan-500 transition-all text-lg font-semibold text-slate-900"/>
+                                            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"><span className="text-slate-400 text-sm">ml/min</span></div>
+                                        </div>
                                     </div>
-                                    <div className="mt-4 sm:mt-0 p-4 bg-slate-50 rounded-lg border border-slate-100 min-w-[140px] text-center">
-                                         <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">CKD 預後分級</div>
-                                         <div className={`text-xl font-bold ${result.config.textClass}`}>{result.riskLevel === 1 ? '低風險' : result.riskLevel === 2 ? '中度風險' : result.riskLevel === 3 ? '高風險' : '極高風險'}</div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-2">尿液白蛋白/肌酸酐比值 (UACR)</label>
+                                        <div className="relative">
+                                            <input type="number" value={uacr} onChange={(e) => setUacr(e.target.value)} onWheel={(e) => e.target.blur()} placeholder="輸入數值 (例如: 150)" className="block w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-cyan-500 transition-all text-lg font-semibold text-slate-900"/>
+                                            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none"><span className="text-slate-400 text-sm">mg/g</span></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="border-t border-slate-100 my-6"></div>
-                                <div className="space-y-6">
-                                    <div className="flex items-start">
-                                        <div className="flex-shrink-0 mr-4"><div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><Calendar className="w-6 h-6" /></div></div>
-                                        <div>
-                                            <h4 className="text-lg font-bold text-slate-800 mb-1">建議追蹤時程</h4>
-                                            <p className="text-slate-600 leading-relaxed font-medium bg-blue-50/50 p-3 rounded-lg border border-blue-100 inline-block">{result.schedule}</p>
-                                        </div>
-                                    </div>
-                                    {activeReferralCount > 0 && (
-                                        <div className="flex items-start animate-pulse">
-                                            <div className="flex-shrink-0 mr-4"><div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600"><ArrowRightCircle className="w-6 h-6" /></div></div>
-                                            <div className="flex-1">
-                                                <h4 className="text-lg font-bold text-red-700 mb-1">轉診建議</h4>
-                                                <div className="bg-red-50 p-3 rounded-lg border border-red-200"><p className="text-red-800 font-bold">符合 {activeReferralCount} 項轉介指標：建議轉診至腎臟專科</p></div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    {eduContent && (
-                                        <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-                                            <h4 className="text-lg font-bold text-slate-800 mb-4 flex items-center"><Leaf className="w-5 h-5 mr-2 text-emerald-600" />個人化衛教建議 (依據 2025 指引)</h4>
-                                            <div className="space-y-4">
-                                                <div className="flex gap-3"><div className="mt-1"><Utensils className="w-4 h-4 text-slate-400" /></div><div><span className="block font-bold text-slate-700 text-sm">營養建議</span><ul className="text-sm text-slate-600 list-disc ml-4 space-y-1 mt-1">{eduContent.nutrition.slice(0, 3).map((item, i) => <li key={i}>{item}</li>)}{eduContent.nutrition.length > 3 && <li>... (詳見匯出報告)</li>}</ul></div></div>
-                                                <div className="flex gap-3"><div className="mt-1"><Pill className="w-4 h-4 text-slate-400" /></div><div><span className="block font-bold text-slate-700 text-sm">治療目標</span><ul className="text-sm text-slate-600 list-disc ml-4 space-y-1 mt-1">{eduContent.medical.slice(0, 2).map((item, i) => <li key={i}>{item}</li>)}</ul></div></div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
-                                    <button onClick={() => setShowReportPreview(true)} className="inline-flex items-center px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg shadow-md transition-all hover:shadow-lg font-bold">
-                                        <Eye className="w-4 h-4 mr-2" />
-                                        報告預覽 / 下載 PDF
+                                <div className="bg-slate-50 p-4 border-t border-slate-100 space-y-3">
+                                    <button onClick={() => setIsRiskModalOpen(true)} className="w-full group flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg hover:border-indigo-400 hover:shadow-md transition-all">
+                                        <div className="flex items-center text-slate-700 font-medium"><FileText className="w-5 h-5 mr-3 text-indigo-500" />評估 CKD 惡化因子</div>
+                                        <div className="flex items-center">{activeRiskFactorCount > 0 && <span className="bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded-full mr-2">{activeRiskFactorCount}</span>}<ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-500" /></div>
+                                    </button>
+                                    <button onClick={() => setIsReferralModalOpen(true)} className="w-full group flex items-center justify-between px-4 py-3 bg-white border border-slate-200 rounded-lg hover:border-red-400 hover:shadow-md transition-all">
+                                        <div className="flex items-center text-slate-700 font-medium"><ArrowRightCircle className="w-5 h-5 mr-3 text-red-500" />轉診標準檢核 (9大指標)</div>
+                                        <div className="flex items-center">{activeReferralCount > 0 && <span className="bg-red-100 text-red-700 text-xs font-bold px-2 py-0.5 rounded-full mr-2">{activeReferralCount}</span>}<ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-red-500" /></div>
                                     </button>
                                 </div>
                             </div>
+                            <div className="bg-white/60 backdrop-blur rounded-xl p-5 border border-slate-200 text-sm text-slate-600">
+                                <h3 className="font-semibold text-slate-800 mb-2 flex items-center"><Info className="w-4 h-4 mr-2" />使用說明</h3>
+                                <ul className="space-y-1 ml-6 list-disc marker:text-slate-300">
+                                    <li>輸入 GFR 與 UACR 取得 KDIGO 分級。</li>
+                                    <li>點擊「轉診標準檢核」確認是否需轉介腎臟科。</li>
+                                    <li>點擊右側「報告預覽 / PDF」按鈕可下載報告。</li>
+                                </ul>
+                            </div>
                         </div>
-                        {/* Heatmap (Keeping simplified for brevity in this update) */}
-                        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 overflow-hidden">
-                            <h4 className="text-sm font-bold text-slate-500 mb-4 flex items-center uppercase tracking-wide"><Activity className="w-4 h-4 mr-2" />KDIGO Prognosis Heat Map</h4>
-                            <div className="relative overflow-x-auto">
-                                <div className="min-w-[400px]">
-                                    <div className="grid grid-cols-4 gap-1 mb-1 text-center text-xs font-bold text-slate-600">
-                                        <div className="flex items-end justify-center pb-2 text-slate-400">GFR \ ACR</div>
-                                        <div className="bg-slate-100 py-2 rounded">A1<br/><span className="text-[10px] font-normal">&lt;30</span></div>
-                                        <div className="bg-slate-100 py-2 rounded">A2<br/><span className="text-[10px] font-normal">30-300</span></div>
-                                        <div className="bg-slate-100 py-2 rounded">A3<br/><span className="text-[10px] font-normal">&gt;300</span></div>
-                                    </div>
-                                    {heatmapData.map((row, rIndex) => (
-                                        <div key={rIndex} className="grid grid-cols-4 gap-1 mb-1">
-                                            <div className="flex flex-col justify-center items-center bg-slate-50 text-xs font-bold text-slate-600 rounded p-1">
-                                                <span>{['G1', 'G2', 'G3a', 'G3b', 'G4', 'G5'][rIndex]}</span>
-                                                <span className="text-[9px] text-slate-400 font-normal">{['>90', '60-89', '45-59', '30-44', '15-29', '<15'][rIndex]}</span>
+
+                        {/* Right Column */}
+                        <div className="lg:col-span-7">
+                            {result ? (
+                                <div className="space-y-6 animate-fade-in-up">
+                                    <div className={`rounded-xl shadow-lg border-2 overflow-hidden transition-all duration-500 ${result.config.border} bg-white`}>
+                                        <div className={`h-3 w-full ${result.config.bar}`}></div>
+                                        <div className="p-6 sm:p-8">
+                                            <div className="flex flex-col sm:flex-row sm:items-start justify-between mb-6">
+                                                <div>
+                                                    <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold mb-3 ${result.config.color}`}><HeartPulse className="w-4 h-4 mr-2" />{result.config.title}</div>
+                                                    <h3 className="text-3xl font-extrabold text-slate-900">{result.gStage} <span className="text-slate-300 mx-2">/</span> {result.aStage}</h3>
+                                                    <p className="text-slate-500 mt-1 font-medium">{result.gLabel} • {result.aLabel}</p>
+                                                </div>
+                                                <div className="mt-4 sm:mt-0 p-4 bg-slate-50 rounded-lg border border-slate-100 min-w-[140px] text-center">
+                                                    <div className="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-1">CKD 預後分級</div>
+                                                    <div className={`text-xl font-bold ${result.config.textClass}`}>{result.riskLevel === 1 ? '低風險' : result.riskLevel === 2 ? '中度風險' : result.riskLevel === 3 ? '高風險' : '極高風險'}</div>
+                                                </div>
                                             </div>
-                                            {row.map((cell, cIndex) => {
-                                                const isActive = result && result.gIndex === rIndex && result.aIndex === cIndex;
-                                                return (<div key={cIndex} className={`h-12 flex items-center justify-center rounded transition-all duration-300 relative ${getCellColor(cell.risk)} ${isActive ? 'ring-4 ring-slate-800 z-10 scale-105 shadow-xl' : 'opacity-80 hover:opacity-100'}`}>{isActive && (<div className="absolute inset-0 flex items-center justify-center"><div className="bg-white rounded-full p-1 shadow-sm"><div className="w-2 h-2 bg-slate-900 rounded-full animate-pulse"></div></div></div>)}</div>);
-                                            })}
+                                            <div className="border-t border-slate-100 my-6"></div>
+                                            <div className="space-y-6">
+                                                <div className="flex items-start">
+                                                    <div className="flex-shrink-0 mr-4"><div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600"><Calendar className="w-6 h-6" /></div></div>
+                                                    <div>
+                                                        <h4 className="text-lg font-bold text-slate-800 mb-1">建議追蹤時程</h4>
+                                                        <p className="text-slate-600 leading-relaxed font-medium bg-blue-50/50 p-3 rounded-lg border border-blue-100 inline-block">{result.schedule}</p>
+                                                    </div>
+                                                </div>
+                                                {activeReferralCount > 0 && (
+                                                    <div className="flex items-start animate-pulse">
+                                                        <div className="flex-shrink-0 mr-4"><div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600"><ArrowRightCircle className="w-6 h-6" /></div></div>
+                                                        <div className="flex-1">
+                                                            <h4 className="text-lg font-bold text-red-700 mb-1">轉診建議</h4>
+                                                            <div className="bg-red-50 p-3 rounded-lg border border-red-200"><p className="text-red-800 font-bold">符合 {activeReferralCount} 項轉介指標：建議轉診至腎臟專科</p></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {eduContent && (
+                                                    <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+                                                        <h4 className="text-lg font-bold text-slate-800 mb-4 flex items-center"><Leaf className="w-5 h-5 mr-2 text-emerald-600" />個人化衛教建議 (依據 2025 指引)</h4>
+                                                        <div className="space-y-4">
+                                                            <div className="flex gap-3"><div className="mt-1"><Utensils className="w-4 h-4 text-slate-400" /></div><div><span className="block font-bold text-slate-700 text-sm">營養建議</span><ul className="text-sm text-slate-600 list-disc ml-4 space-y-1 mt-1">{eduContent.nutrition.slice(0, 3).map((item, i) => <li key={i}>{item}</li>)}{eduContent.nutrition.length > 3 && <li>... (詳見匯出報告)</li>}</ul></div></div>
+                                                            <div className="flex gap-3"><div className="mt-1"><Pill className="w-4 h-4 text-slate-400" /></div><div><span className="block font-bold text-slate-700 text-sm">治療目標</span><ul className="text-sm text-slate-600 list-disc ml-4 space-y-1 mt-1">{eduContent.medical.slice(0, 2).map((item, i) => <li key={i}>{item}</li>)}</ul></div></div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="mt-8 pt-6 border-t border-slate-100 flex justify-end">
+                                                <button onClick={() => setShowReportPreview(true)} className="inline-flex items-center px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg shadow-md transition-all hover:shadow-lg font-bold">
+                                                    <Eye className="w-4 h-4 mr-2" />
+                                                    報告預覽 / 下載 PDF
+                                                </button>
+                                            </div>
                                         </div>
-                                    ))}
-                                    <div className="flex justify-between items-center mt-3 text-[10px] text-slate-500 px-2">
-                                        <div className="flex items-center"><div className="w-2 h-2 bg-emerald-400 rounded-full mr-1"></div> 低風險</div>
-                                        <div className="flex items-center"><div className="w-2 h-2 bg-yellow-400 rounded-full mr-1"></div> 中度風險</div>
-                                        <div className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-1"></div> 高風險</div>
-                                        <div className="flex items-center"><div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div> 極高風險</div>
+                                    </div>
+                                    {/* Heatmap (Keeping simplified for brevity in this update) */}
+                                    <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 overflow-hidden">
+                                        <h4 className="text-sm font-bold text-slate-500 mb-4 flex items-center uppercase tracking-wide"><Activity className="w-4 h-4 mr-2" />KDIGO Prognosis Heat Map</h4>
+                                        <div className="relative overflow-x-auto">
+                                            <div className="min-w-[400px]">
+                                                <div className="grid grid-cols-4 gap-1 mb-1 text-center text-xs font-bold text-slate-600">
+                                                    <div className="flex items-end justify-center pb-2 text-slate-400">GFR \ ACR</div>
+                                                    <div className="bg-slate-100 py-2 rounded">A1<br/><span className="text-[10px] font-normal">&lt;30</span></div>
+                                                    <div className="bg-slate-100 py-2 rounded">A2<br/><span className="text-[10px] font-normal">30-300</span></div>
+                                                    <div className="bg-slate-100 py-2 rounded">A3<br/><span className="text-[10px] font-normal">&gt;300</span></div>
+                                                </div>
+                                                {heatmapData.map((row, rIndex) => (
+                                                    <div key={rIndex} className="grid grid-cols-4 gap-1 mb-1">
+                                                        <div className="flex flex-col justify-center items-center bg-slate-50 text-xs font-bold text-slate-600 rounded p-1">
+                                                            <span>{['G1', 'G2', 'G3a', 'G3b', 'G4', 'G5'][rIndex]}</span>
+                                                            <span className="text-[9px] text-slate-400 font-normal">{['>90', '60-89', '45-59', '30-44', '15-29', '<15'][rIndex]}</span>
+                                                        </div>
+                                                        {row.map((cell, cIndex) => {
+                                                            const isActive = result && result.gIndex === rIndex && result.aIndex === cIndex;
+                                                            return (<div key={cIndex} className={`h-12 flex items-center justify-center rounded transition-all duration-300 relative ${getCellColor(cell.risk)} ${isActive ? 'ring-4 ring-slate-800 z-10 scale-105 shadow-xl' : 'opacity-80 hover:opacity-100'}`}>{isActive && (<div className="absolute inset-0 flex items-center justify-center"><div className="bg-white rounded-full p-1 shadow-sm"><div className="w-2 h-2 bg-slate-900 rounded-full animate-pulse"></div></div></div>)}</div>);
+                                                        })}
+                                                    </div>
+                                                ))}
+                                                <div className="flex justify-between items-center mt-3 text-[10px] text-slate-500 px-2">
+                                                    <div className="flex items-center"><div className="w-2 h-2 bg-emerald-400 rounded-full mr-1"></div> 低風險</div>
+                                                    <div className="flex items-center"><div className="w-2 h-2 bg-yellow-400 rounded-full mr-1"></div> 中度風險</div>
+                                                    <div className="flex items-center"><div className="w-2 h-2 bg-orange-400 rounded-full mr-1"></div> 高風險</div>
+                                                    <div className="flex items-center"><div className="w-2 h-2 bg-red-500 rounded-full mr-1"></div> 極高風險</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-white/50 border-2 border-dashed border-slate-300 rounded-xl text-center p-8">
+                                    <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4"><Activity className="w-8 h-8 text-slate-400" /></div>
+                                    <h3 className="text-lg font-bold text-slate-600 mb-2">請輸入臨床數據</h3>
+                                    <p className="text-slate-500 max-w-xs mb-6">請在左側面板輸入 GFR 與 UACR 數值。<br/>若未知 eGFR，可點選左上角「腎功能計算」按鈕。</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <footer className="mt-16 border-t border-slate-200 pt-8 pb-12 text-center">
+                        <p className="text-slate-400 text-xs">本工具依據 2025 台灣慢性腎臟病臨床指引設計，僅供醫療專業人員輔助評估使用，不應作為單一診斷依據。<br/>Designed for clinical reference.</p>
+                    </footer>
+                </div>
+
+                {/* Report Preview Mode (Fix: Added bg-slate-100 and removed full height constraints to prevent cut-off) */}
+                {showReportPreview && result && (
+                    <div className="fixed inset-0 z-[999] bg-slate-100 flex flex-col items-center justify-center p-4">
+                        <div className="w-full max-w-5xl flex justify-between items-center mb-4 px-4">
+                            <h2 className="text-xl font-bold flex items-center text-slate-700">
+                                <FileText className="w-6 h-6 mr-2 text-blue-600" />
+                                衛教報告預覽
+                            </h2>
+                            <div className="flex space-x-3">
+                                <button 
+                                    onClick={() => setShowReportPreview(false)}
+                                    className="px-4 py-2 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg text-slate-700 font-medium transition-colors shadow-sm"
+                                >
+                                    關閉
+                                </button>
+                                <button 
+                                    onClick={handleDownloadPdf}
+                                    disabled={isGeneratingPdf}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold shadow-md hover:shadow-lg flex items-center transition-all disabled:opacity-50"
+                                >
+                                    {isGeneratingPdf ? '生成中...' : (
+                                        <>
+                                            <Download className="w-4 h-4 mr-2" />
+                                            下載 PDF
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* The Actual Report Area to be Captured */}
+                        <div className="overflow-auto w-full h-full flex justify-center custom-scrollbar pb-10">
+                            <div 
+                                ref={reportRef} 
+                                className="bg-white shadow-2xl w-[210mm] mx-auto text-slate-800 p-12 h-auto min-h-[297mm]"
+                            >
+                                {/* SECTION 1: Header */}
+                                <div className="pdf-section mb-8" data-section-id="0">
+                                    <div className="flex justify-between items-center border-b-2 border-slate-800 pb-6">
+                                        <div>
+                                            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">慢性腎臟病 (CKD) 評估報告</h1>
+                                            <p className="text-sm font-bold text-slate-600 mt-1">製作者: 蝦仁藥師 | 更新日期: 2026/1/1</p>
+                                            <p className="text-sm text-slate-500 mt-2 font-medium">2025 台灣慢性腎臟病臨床指引 | 臨床決策輔助系統</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-xs text-slate-400 uppercase tracking-widest mb-1">Assessment Date</div>
+                                            <div className="font-mono font-bold text-xl text-slate-700">{new Date().toLocaleDateString()}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SECTION 2: Data & Result */}
+                                <div className="pdf-section grid grid-cols-2 gap-8 mb-10" data-section-id="1">
+                                    {/* Clinical Data */}
+                                    <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">檢驗數據 Input Data</h3>
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <div>
+                                                <div className="text-sm text-slate-500 mb-1">eGFR (ml/min)</div>
+                                                <div className="text-3xl font-bold text-slate-800">{gfr}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm text-slate-500 mb-1">UACR (mg/g)</div>
+                                                <div className="text-3xl font-bold text-slate-800">{uacr}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Result */}
+                                    <div className="p-6 border-l-8 rounded-r-xl bg-slate-50" style={{ borderColor: result.config.printColor }}>
+                                        <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 border-b border-slate-200 pb-2">評估結果 Assessment</h3>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <div className="text-4xl font-extrabold text-slate-900 mb-1">{result.gStage} <span className="text-slate-300">/</span> {result.aStage}</div>
+                                                <div className="text-lg font-bold" style={{ color: result.config.printColor }}>{result.config.title}</div>
+                                            </div>
+                                        </div>
+                                        <div className="mt-4 pt-3 border-t border-slate-200/50 text-sm text-slate-600 font-medium">
+                                            {result.schedule}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SECTION 3: Risk Factors & Referral */}
+                                <div className="pdf-section mb-10" data-section-id="2">
+                                    <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                                        <Activity className="w-5 h-5 mr-2" />
+                                        共病與轉診風險評估
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                                            <h4 className="font-bold text-sm text-slate-700 mb-3 bg-slate-100 inline-block px-2 py-1 rounded">已勾選危險因子</h4>
+                                            {activeRiskFactorCount > 0 ? (
+                                                <ul className="list-disc ml-4 text-sm text-slate-700 space-y-1.5">
+                                                    {Object.entries(riskFactors).filter(([_, v]) => v).map(([k, _]) => {
+                                                        const labels = {
+                                                            hypertension: '高血壓', diabetes: '糖尿病', obesity: '肥胖',
+                                                            highUricAcid: '高尿酸血症', anemia: '貧血', acidosis: '代謝性酸中毒',
+                                                            hyperphosphatemia: '高血磷', lowVitD: '低維生素 D'
+                                                        };
+                                                        return <li key={k}>{labels[k]}</li>;
+                                                    })}
+                                                </ul>
+                                            ) : <div className="text-sm text-slate-400 italic py-2">無勾選項目</div>}
+                                        </div>
+                                        <div className="border border-slate-200 rounded-lg p-5 bg-white">
+                                            <h4 className="font-bold text-sm text-slate-700 mb-3 bg-red-50 text-red-700 inline-block px-2 py-1 rounded">轉診建議指標</h4>
+                                            {activeReferralCount > 0 ? (
+                                                <div className="text-red-700 font-bold text-sm leading-relaxed">
+                                                    <div className="flex items-center mb-2">
+                                                        <AlertTriangle className="w-4 h-4 mr-2" />
+                                                        符合 {activeReferralCount} 項指標
+                                                    </div>
+                                                    <p>建議轉診至腎臟專科進行進階評估。</p>
+                                                </div>
+                                            ) : <div className="text-sm text-emerald-600 flex items-center py-2"><CheckSquare className="w-4 h-4 mr-2"/>目前未符合主要轉診指標</div>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Education Content */}
+                                {eduContent && (
+                                    <>
+                                    <div className="pdf-section mb-4" data-section-id="3">
+                                        <h3 className="text-lg font-bold text-slate-800 flex items-center border-b-2 border-slate-100 pb-2">
+                                            <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                                            2025 指引個人化衛教建議
+                                        </h3>
+                                    </div>
+
+                                    {/* SECTION 4: Nutrition Card */}
+                                    <div className="pdf-section mb-6" data-section-id="4">
+                                        <div className="bg-green-50/50 p-5 rounded-lg border border-green-100">
+                                            <h4 className="font-bold text-slate-800 mb-3 flex items-center">
+                                                <Utensils className="w-4 h-4 mr-2 text-green-600" />
+                                                營養照護建議
+                                            </h4>
+                                            <ul className="list-disc ml-5 space-y-2 text-sm text-slate-700">
+                                                {eduContent.nutrition.map((item, idx) => <li key={idx} className="leading-relaxed">{item}</li>)}
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    {/* SECTION 5: Lifestyle & Medical Grid */}
+                                    <div className="pdf-section grid grid-cols-2 gap-6 mb-8" data-section-id="5">
+                                        {/* Lifestyle */}
+                                        <div className="bg-slate-50 p-5 rounded-lg border border-slate-100">
+                                            <h4 className="font-bold text-slate-800 mb-3 flex items-center">
+                                                <Leaf className="w-4 h-4 mr-2 text-green-600" />
+                                                生活型態調整
+                                            </h4>
+                                            <ul className="list-disc ml-5 space-y-2 text-sm text-slate-700">
+                                                {eduContent.lifestyle.map((item, idx) => <li key={idx} className="leading-relaxed">{item}</li>)}
+                                            </ul>
+                                        </div>
+
+                                        {/* Medical */}
+                                        {eduContent.medical.length > 0 && (
+                                            <div className="bg-blue-50/50 p-5 rounded-lg border border-blue-100">
+                                                <h4 className="font-bold text-slate-800 mb-3 flex items-center">
+                                                    <Stethoscope className="w-4 h-4 mr-2 text-blue-600" />
+                                                    治療目標與管理
+                                                </h4>
+                                                <ul className="list-disc ml-5 space-y-2 text-sm text-slate-700">
+                                                    {eduContent.medical.map((item, idx) => <li key={idx} className="leading-relaxed">{item}</li>)}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+                                    </>
+                                )}
+
+                                {/* SECTION 6: Footer */}
+                                <div className="pdf-section mt-10 border-t border-slate-200 pt-8 flex justify-between items-end" data-section-id="6">
+                                    <div className="text-[10px] text-slate-400">
+                                        <p>本報告由 AI 輔助系統生成，內容僅供醫療衛教參考。</p>
+                                        <p>實際醫療處置請務必遵照主治醫師囑咐。</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="inline-flex items-center justify-center p-1.5 bg-slate-100 rounded text-slate-400">
+                                            <Activity className="w-4 h-4 mr-1" />
+                                            <span className="text-[10px] font-bold">CKD Clinical Tool</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                ) : (
-                    <div className="h-full min-h-[400px] flex flex-col items-center justify-center bg-white/50 border-2 border-dashed border-slate-300 rounded-xl text-center p-8">
-                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4"><Activity className="w-8 h-8 text-slate-400" /></div>
-                        <h3 className="text-lg font-bold text-slate-600 mb-2">請輸入臨床數據</h3>
-                        <p className="text-slate-500 max-w-xs mb-6">請在左側面板輸入 GFR 與 UACR 數值。<br/>若未知 eGFR，可點選左上角「腎功能計算」按鈕。</p>
+                )}
+
+                {/* Modals */}
+                {isRiskModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsRiskModalOpen(false)}>
+                        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()}>
+                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                                <h3 className="text-xl font-bold text-slate-800">CKD 惡化因子綜合評量</h3>
+                                <button onClick={() => setIsRiskModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500"><X className="w-5 h-5" /></button>
+                            </div>
+                            <div className="p-6 max-h-[60vh] overflow-y-auto">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    {[
+                                        { id: 'hypertension', label: '高血壓', sub: 'SBP > 130/80' },
+                                        { id: 'diabetes', label: '糖尿病', sub: 'HbA1c 控制不佳' },
+                                        { id: 'obesity', label: '肥胖', sub: 'BMI > 27' },
+                                        { id: 'highUricAcid', label: '高尿酸血症', sub: 'Uric Acid 高' },
+                                        { id: 'anemia', label: '貧血', sub: 'Hb < 13(M)/12(F)' },
+                                        { id: 'acidosis', label: '代謝性酸中毒', sub: 'HCO3 < 22' },
+                                        { id: 'hyperphosphatemia', label: '高血磷', sub: 'P > 4.5' },
+                                        { id: 'lowVitD', label: '低維生素 D', sub: '需補充' },
+                                    ].map((factor) => (
+                                        <div key={factor.id} onClick={() => toggleRiskFactor(factor.id)} className={`cursor-pointer p-3 rounded-lg border-2 flex items-start ${riskFactors[factor.id] ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 hover:border-indigo-200 bg-white'}`}>
+                                            <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border ${riskFactors[factor.id] ? 'bg-indigo-500 border-indigo-500' : 'bg-white border-slate-300'}`}>{riskFactors[factor.id] && <CheckSquare className="w-3.5 h-3.5 text-white" />}</div>
+                                            <div className="ml-3"><div className={`font-bold ${riskFactors[factor.id] ? 'text-indigo-800' : 'text-slate-700'}`}>{factor.label}</div><div className="text-xs text-slate-400 mt-0.5">{factor.sub}</div></div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                                <div className="text-sm font-medium text-slate-600">已勾選: <span className="text-indigo-600 font-bold text-lg">{activeRiskFactorCount}</span> 項</div>
+                                <button onClick={() => setIsRiskModalOpen(false)} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">完成</button>
+                            </div>
+                        </div>
                     </div>
                 )}
-            </div>
-        </div>
 
-        <footer className="mt-16 border-t border-slate-200 pt-8 pb-12 text-center">
-            <p className="text-slate-400 text-xs">本工具依據 2025 台灣慢性腎臟病臨床指引設計，僅供醫療專業人員輔助評估使用，不應作為單一診斷依據。<br/>Designed for clinical reference.</p>
-        </footer>
-      </div>
-
-      {/* Modals */}
-      {isRiskModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsRiskModalOpen(false)}>
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()}>
-                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-slate-800">CKD 惡化因子綜合評量</h3>
-                    <button onClick={() => setIsRiskModalOpen(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500"><X className="w-5 h-5" /></button>
-                </div>
-                <div className="p-6 max-h-[60vh] overflow-y-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {[
-                            { id: 'hypertension', label: '高血壓', sub: 'SBP > 130/80' },
-                            { id: 'diabetes', label: '糖尿病', sub: 'HbA1c 控制不佳' },
-                            { id: 'obesity', label: '肥胖', sub: 'BMI > 27' },
-                            { id: 'highUricAcid', label: '高尿酸血症', sub: 'Uric Acid 高' },
-                            { id: 'anemia', label: '貧血', sub: 'Hb < 13(M)/12(F)' },
-                            { id: 'acidosis', label: '代謝性酸中毒', sub: 'HCO3 < 22' },
-                            { id: 'hyperphosphatemia', label: '高血磷', sub: 'P > 4.5' },
-                            { id: 'lowVitD', label: '低維生素 D', sub: '需補充' },
-                        ].map((factor) => (
-                            <div key={factor.id} onClick={() => toggleRiskFactor(factor.id)} className={`cursor-pointer p-3 rounded-lg border-2 flex items-start ${riskFactors[factor.id] ? 'border-indigo-500 bg-indigo-50' : 'border-slate-100 hover:border-indigo-200 bg-white'}`}>
-                                <div className={`w-5 h-5 rounded flex-shrink-0 mt-0.5 flex items-center justify-center border ${riskFactors[factor.id] ? 'bg-indigo-500 border-indigo-500' : 'bg-white border-slate-300'}`}>{riskFactors[factor.id] && <CheckSquare className="w-3.5 h-3.5 text-white" />}</div>
-                                <div className="ml-3"><div className={`font-bold ${riskFactors[factor.id] ? 'text-indigo-800' : 'text-slate-700'}`}>{factor.label}</div><div className="text-xs text-slate-400 mt-0.5">{factor.sub}</div></div>
+                {isReferralModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsReferralModalOpen(false)}>
+                        <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()}>
+                            <div className="bg-red-50 px-6 py-4 border-b border-red-100 flex justify-between items-center">
+                                <h3 className="text-xl font-bold text-red-900">腎臟科轉介準則</h3>
+                                <button onClick={() => setIsReferralModalOpen(false)} className="p-2 hover:bg-red-100 rounded-full text-red-500"><X className="w-5 h-5" /></button>
                             </div>
-                        ))}
-                    </div>
-                </div>
-                <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
-                     <div className="text-sm font-medium text-slate-600">已勾選: <span className="text-indigo-600 font-bold text-lg">{activeRiskFactorCount}</span> 項</div>
-                     <button onClick={() => setIsRiskModalOpen(false)} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium">完成</button>
-                </div>
-            </div>
-        </div>
-      )}
-
-      {isReferralModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsReferralModalOpen(false)}>
-            <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden" onClick={e => e.stopPropagation()}>
-                <div className="bg-red-50 px-6 py-4 border-b border-red-100 flex justify-between items-center">
-                    <h3 className="text-xl font-bold text-red-900">腎臟科轉介準則</h3>
-                    <button onClick={() => setIsReferralModalOpen(false)} className="p-2 hover:bg-red-100 rounded-full text-red-500"><X className="w-5 h-5" /></button>
-                </div>
-                <div className="p-6 max-h-[60vh] overflow-y-auto">
-                    <div className="space-y-3">
-                        {[
-                            { id: 'rapidDecline', label: 'eGFR 快速下降', sub: '> 5 ml/min/1.73m²/year' },
-                            { id: 'highProteinuria', label: '嚴重蛋白尿', sub: 'UPCR > 1000 mg/g 或 PCR > 500 mg/g' },
-                            { id: 'hematuria', label: '不明原因血尿', sub: '合併變形紅血球或紅血球圓柱體' },
-                            { id: 'resistantHtn', label: '頑固性高血壓', sub: '使用 4 種以上藥物仍無法控制' },
-                            { id: 'aki', label: '急性腎損傷 (AKI)', sub: 'eGFR 驟降或少尿' },
-                            { id: 'g4g5', label: '嚴重腎功能不全', sub: 'eGFR < 30 (Stage G4, G5)' },
-                            { id: 'hyperkalemia', label: '持續性高血鉀', sub: '血鉀難以控制' },
-                            { id: 'stones', label: '反覆或廣泛性腎結石', sub: '需評估代謝原因' },
-                            { id: 'hereditary', label: '遺傳性腎臟病', sub: '如多囊腎 (PKD)' },
-                        ].map((factor) => (
-                            <div key={factor.id} onClick={() => toggleReferralFactor(factor.id)} className={`cursor-pointer p-3 rounded-lg border-2 flex items-center ${referralFactors[factor.id] ? 'border-red-500 bg-red-50' : 'border-slate-100 hover:border-red-200 bg-white'}`}>
-                                <div className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border ${referralFactors[factor.id] ? 'bg-red-500 border-red-500' : 'bg-white border-slate-300'}`}>{referralFactors[factor.id] && <CheckSquare className="w-3.5 h-3.5 text-white" />}</div>
-                                <div className="ml-3 flex-1"><div className={`font-bold ${referralFactors[factor.id] ? 'text-red-800' : 'text-slate-700'}`}>{factor.label}</div><div className="text-xs text-slate-500">{factor.sub}</div></div>
+                            <div className="p-6 max-h-[60vh] overflow-y-auto">
+                                <div className="space-y-3">
+                                    {[
+                                        { id: 'rapidDecline', label: 'eGFR 快速下降', sub: '> 5 ml/min/1.73m²/year' },
+                                        { id: 'highProteinuria', label: '嚴重蛋白尿', sub: 'UPCR > 1000 mg/g 或 PCR > 500 mg/g' },
+                                        { id: 'hematuria', label: '不明原因血尿', sub: '合併變形紅血球或紅血球圓柱體' },
+                                        { id: 'resistantHtn', label: '頑固性高血壓', sub: '使用 4 種以上藥物仍無法控制' },
+                                        { id: 'aki', label: '急性腎損傷 (AKI)', sub: 'eGFR 驟降或少尿' },
+                                        { id: 'g4g5', label: '嚴重腎功能不全', sub: 'eGFR < 30 (Stage G4, G5)' },
+                                        { id: 'hyperkalemia', label: '持續性高血鉀', sub: '血鉀難以控制' },
+                                        { id: 'stones', label: '反覆或廣泛性腎結石', sub: '需評估代謝原因' },
+                                        { id: 'hereditary', label: '遺傳性腎臟病', sub: '如多囊腎 (PKD)' },
+                                    ].map((factor) => (
+                                        <div key={factor.id} onClick={() => toggleReferralFactor(factor.id)} className={`cursor-pointer p-3 rounded-lg border-2 flex items-center ${referralFactors[factor.id] ? 'border-red-500 bg-red-50' : 'border-slate-100 hover:border-red-200 bg-white'}`}>
+                                            <div className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border ${referralFactors[factor.id] ? 'bg-red-500 border-red-500' : 'bg-white border-slate-300'}`}>{referralFactors[factor.id] && <CheckSquare className="w-3.5 h-3.5 text-white" />}</div>
+                                            <div className="ml-3 flex-1"><div className={`font-bold ${referralFactors[factor.id] ? 'text-red-800' : 'text-slate-700'}`}>{factor.label}</div><div className="text-xs text-slate-500">{factor.sub}</div></div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        ))}
+                            <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                                <div className="text-sm font-medium text-slate-600">符合: <span className="text-red-600 font-bold text-lg">{activeReferralCount}</span> 項</div>
+                                <button onClick={() => setIsReferralModalOpen(false)} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">確認轉介檢核</button>
+                            </div>
+                        </div>
                     </div>
+                )}
                 </div>
-                <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
-                     <div className="text-sm font-medium text-slate-600">符合: <span className="text-red-600 font-bold text-lg">{activeReferralCount}</span> 項</div>
-                     <button onClick={() => setIsReferralModalOpen(false)} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium">確認轉介檢核</button>
-                </div>
-            </div>
-        </div>
-      )}
-    </div>
-  );
-};
+            );
+        };
 
-export default App;
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
