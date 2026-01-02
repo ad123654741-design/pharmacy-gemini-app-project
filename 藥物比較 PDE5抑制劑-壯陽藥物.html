@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>壯陽藥物臨床輔助工具 (ED Clinical Tools)</title>
+    <title>壯陽藥物比較表 (ED Clinical Tools)</title>
     
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -539,7 +539,7 @@
                 {/* 標題區塊 */}
                 <div className="text-center max-w-2xl mx-auto mb-12">
                 <h2 className="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight drop-shadow-sm">
-                    {activeTab === 'compare' && '全方位藥物數據比較'}
+                    {activeTab === 'compare' && '壯陽藥 PDE5抑制劑'}
                     {activeTab === 'wizard' && '智能選藥輔助系統'}
                     {activeTab === 'safety' && '重要臨床安全須知'}
                 </h2>
@@ -653,4 +653,5 @@
         root.render(<EDMedicationApp />);
     </script>
 </body>
+
 </html>
