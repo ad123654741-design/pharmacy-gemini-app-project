@@ -122,6 +122,23 @@
             color: #78350f; /* amber-900 */
             line-height: 1.6;
         }
+        
+        /* 危險警示區塊 */
+        .danger-alert {
+            background-color: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: none; /* 預設隱藏 */
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
 
         /* 隱藏數字箭頭 */
         input[type="number"]::-webkit-inner-spin-button, 
@@ -289,7 +306,6 @@
                                     <li><strong>成人正常 UOP：</strong> 應 > 0.5 mL/kg/hr (通常約 30-50 mL/hr)。</li>
                                     <li><strong>正平衡過多：</strong> 連續數日正平衡需評估肺水腫 (Crackles)、組織水腫及體重增加情形。</li>
                                     <li><strong>少尿 (Oliguria)：</strong> 連續 6 小時 UOP < 0.5 mL/kg/hr 為 AKI 風險指標，需評估是否為容量不足、阻塞或腎實質損傷。</li>
-                                    <li><strong>無感流失 (Insensible Loss)：</strong> 發燒或喘會增加水分流失，每日基礎無感流失約 600-800 mL。</li>
                                 </ul>
                             </div>
                         </div>
@@ -344,82 +360,120 @@
                                 <ul>
                                     <li><strong>影響流速因素：</strong> 點滴高度、軟針號數 (Gauge)、輸液黏滯度、病人姿勢均會影響實際流速，需定時巡視。</li>
                                     <li><strong>精準度：</strong> 重力滴注誤差較大，高警示藥物或電解質（如 KCl）強烈建議使用輸液幫浦 (Infusion Pump)。</li>
-                                    <li><strong>併發症觀察：</strong> 留意注射部位是否有紅腫熱痛（靜脈炎）或液體滲漏 (Extravasation)。</li>
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. 燒傷輸液 (Parkland & Brooke) -->
+                <!-- 3. 燒傷輸液 (Parkland & Brooke) - Updated -->
                 <div id="tab-burn" class="tab-content hidden animate-fade-in">
                     <header class="mb-8">
                         <h2 class="text-3xl font-bold text-slate-800 mb-2">燒傷輸液復甦</h2>
-                        <p class="text-slate-500">支援 Parkland 及 Modified Brooke 公式。</p>
+                        <p class="text-slate-500">成人/兒童專屬公式與防呆機制 (Safety Interlock)。</p>
                     </header>
+
+                    <!-- 防呆警示框 -->
+                    <div id="burn-safety-alert" class="danger-alert">
+                        <p class="font-bold text-red-700 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            安全警示：體重與病人分組不符！
+                        </p>
+                        <p class="text-sm text-red-600 mt-1">體重 < 30kg 請務必選擇「兒童模式」以計算維持輸液；體重 > 50kg 請確認是否為「成人」。錯誤公式可能導致休克或肺水腫。</p>
+                    </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
-                            <div class="input-group">
-                                <label>公式選擇 (Formula)</label>
-                                <select id="burn-formula" class="input-modern cursor-pointer">
-                                    <option value="4">Parkland (4 mL × kg × %)</option>
-                                    <option value="2">Modified Brooke (2 mL × kg × %)</option>
-                                </select>
-                            </div>
-                            <div class="input-group">
-                                <label>病人體重 (Weight)</label>
-                                <input type="number" id="burn-kg" class="input-modern" placeholder="kg">
-                            </div>
-                            <div class="input-group">
-                                <label>燒傷面積 (%TBSA)</label>
-                                <input type="number" id="burn-tbsa" class="input-modern" placeholder="%">
-                            </div>
-                             <div class="input-group">
-                                <label>病人分組</label>
-                                <select id="burn-type" class="input-modern cursor-pointer">
-                                    <option value="adult">成人 (Adult)</option>
+                            <!-- 1. 病人分組 (Trigger Safety Logic) -->
+                            <div class="input-group bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                                <label class="text-blue-800">1. 病人分組 (必選)</label>
+                                <select id="burn-type" class="input-modern cursor-pointer font-bold text-blue-900" onchange="updateBurnFormulas()">
+                                    <option value="adult" selected>成人 (Adult)</option>
                                     <option value="child">兒童 (Child)</option>
                                 </select>
                             </div>
+
+                            <div class="input-group mt-4">
+                                <label>2. 病人體重 (Weight)</label>
+                                <input type="number" id="burn-kg" class="input-modern" placeholder="kg" oninput="checkBurnSafety()">
+                            </div>
+                            <div class="input-group">
+                                <label>3. 燒傷面積 (%TBSA)</label>
+                                <input type="number" id="burn-tbsa" class="input-modern" placeholder="%">
+                            </div>
+
+                            <!-- 4. 公式 (Dynamic Options) -->
+                            <div class="input-group">
+                                <label>4. 復甦公式 (Resuscitation)</label>
+                                <select id="burn-formula" class="input-modern cursor-pointer">
+                                    <!-- Dynamic populated by JS -->
+                                </select>
+                            </div>
+                            
+                            <!-- 5. 維持輸液公式 (Child Only) -->
+                            <div id="burn-maint-select-group" class="input-group hidden bg-blue-50/50 p-2 rounded-lg border border-blue-100">
+                                <label class="text-blue-800 text-sm">5. 維持輸液公式 (Maintenance)</label>
+                                <select id="burn-maint-formula" class="input-modern cursor-pointer text-sm">
+                                    <option value="421">Holliday-Segar (4-2-1 Rule)</option>
+                                    <option value="100">Daily Volume (100-50-20 Rule)</option>
+                                </select>
+                            </div>
+
                             <button onclick="calculateBurn()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-orange-200 mt-2">
-                                計算 24h 總量
+                                計算 24h 復甦計畫
                             </button>
                         </div>
 
                         <div class="lg:col-span-8 space-y-4">
+                            <!-- 計算結果面板 -->
                             <div class="result-card rounded-2xl p-6">
-                                <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4">
-                                    <span class="text-slate-500 font-medium">預估 24 小時總輸液量 (Lactated Ringer's)</span>
-                                    <span id="res-burn-total" class="text-3xl font-bold text-slate-800">-- mL</span>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
-                                        <p class="text-xs font-bold text-orange-600 uppercase mb-1">前 8 小時 (50%)</p>
-                                        <p id="res-burn-8h-vol" class="text-xl font-bold text-slate-800">-- mL</p>
-                                        <p id="res-burn-8h-rate" class="text-sm text-slate-500 mt-1">速率: -- mL/hr</p>
+                                <!-- 復甦輸液 (LR) -->
+                                <div class="mb-6">
+                                    <p class="text-sm font-bold text-orange-600 uppercase tracking-widest mb-2">復甦輸液 (Resuscitation Fluid) - LR</p>
+                                    <div class="flex justify-between items-end border-b border-orange-200 pb-2 mb-2">
+                                        <span class="text-slate-500">24hr 總量</span>
+                                        <span id="res-burn-total" class="text-2xl font-bold text-slate-800">-- mL</span>
                                     </div>
-                                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                                        <p class="text-xs font-bold text-blue-600 uppercase mb-1">後 16 小時 (50%)</p>
-                                        <p id="res-burn-16h-vol" class="text-xl font-bold text-slate-800">-- mL</p>
-                                        <p id="res-burn-16h-rate" class="text-sm text-slate-500 mt-1">速率: -- mL/hr</p>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <p class="text-xs text-slate-400">前 8 小時速率</p>
+                                            <p id="res-burn-rate8" class="text-lg font-bold text-slate-700">-- mL/hr</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-slate-400">後 16 小時速率</p>
+                                            <p id="res-burn-rate16" class="text-lg font-bold text-slate-700">-- mL/hr</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 維持輸液 (Maintenance) - Child Only -->
+                                <div id="burn-maint-panel" class="hidden bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                    <p class="text-sm font-bold text-blue-600 uppercase tracking-widest mb-2 flex items-center gap-2">
+                                        <span class="text-lg">💧</span> 維持輸液 (Maintenance) - D5LR
+                                    </p>
+                                    <p class="text-xs text-blue-400 mb-2">需額外給予含糖輸液預防低血糖。</p>
+                                    
+                                    <div class="mb-2 pb-2 border-b border-blue-200/50">
+                                        <p class="text-[10px] text-slate-500 uppercase font-bold">計算公式邏輯</p>
+                                        <p id="res-burn-maint-logic" class="text-xs font-mono text-slate-600">--</p>
+                                    </div>
+
+                                    <div class="flex justify-between items-end">
+                                        <span class="text-slate-600 font-medium">固定速率</span>
+                                        <span id="res-burn-maint-rate" class="text-2xl font-bold text-blue-700">-- mL/hr</span>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- 臨床小提示 -->
-                            <div class="clinical-note">
-                                <h4>📚 復甦調整與注意事項</h4>
-                                <ul>
-                                    <li><strong>計算僅為起始值：</strong> 公式僅提供初步估算，必須依據每小時尿量 (UOP) 動態調整輸液速度。</li>
-                                    <li><strong>尿量目標 (UOP Target)：</strong>
-                                        <ul class="list-disc pl-4 mt-1">
-                                            <li id="burn-note-adult"><strong>成人：</strong> 維持 0.5 - 1.0 mL/kg/hr。</li>
-                                            <li id="burn-note-child"><strong>兒童 (<30kg)：</strong> 維持 1.0 - 1.5 mL/kg/hr。</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>特殊情況：</strong> 高壓電燒傷 (Electrical Injury) 需維持 UOP 75-100 mL/hr 以預防肌球蛋白尿造成的腎衰竭。</li>
-                                    <li><strong>兒童低血糖預防：</strong> 體重 < 30kg 的兒童肝醣儲存較少，除復甦液外，建議另外加上含糖維持輸液 (Maintenance Fluid with D5W) 以預防低血糖。</li>
+                            <!-- ⚠️ 公式限制與安全警示 -->
+                            <div class="clinical-note bg-red-50 border-red-400">
+                                <h4 class="text-red-700">⚠️ 公式限制與安全警示</h4>
+                                <ul class="text-red-800">
+                                    <li><strong>Modified Brooke (2 mL)：</strong> 適用於成人燒傷。優點是減少肺水腫與腹內高壓風險，但可能導致尿量不足，需嚴密監測。<span class="font-bold">不建議用於兒童</span>。</li>
+                                    <li><strong>Parkland (4 mL)：</strong> 傳統標準，適用於高壓電擊傷、吸入性嗆傷或延遲復甦者。缺點是液體過負荷 (Fluid Creep) 風險較高。</li>
+                                    <li><strong>ABA Pediatric (3 mL)：</strong> 美國燒傷學會 (ABA) 推薦兒童起始劑量。兒童體表面積大，散熱快且代謝高，<span class="font-bold">務必加上含糖維持輸液</span>。</li>
                                 </ul>
                             </div>
                         </div>
@@ -488,15 +542,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                     <!-- 臨床小提示 -->
-                     <div class="clinical-note mt-6">
-                        <h4>📚 安全給藥指引</h4>
-                        <ul>
-                            <li><strong>雙人核對：</strong> 升壓劑 (Inotropes/Vasopressors) 屬於高警示藥物，設定或調整幫浦時務必由兩位護理人員核對。</li>
-                            <li><strong>極限值 (Hard/Soft Limits)：</strong> 若使用智慧型幫浦 (Smart Pump)，請確保藥庫設定正確，切勿隨意跳過警示。</li>
-                            <li><strong>管路通暢：</strong> 此類藥物外滲可能導致組織壞死，建議盡量使用中心靜脈導管 (CVC)，若使用周邊靜脈需頻繁評估回血與注射部位。</li>
-                        </ul>
                     </div>
                 </div>
 
@@ -579,7 +624,6 @@
                                 <ul>
                                     <li><strong>CCr 計算：</strong> 採用 Cockcroft-Gault 公式，這仍是多數藥物原廠仿單建議的劑量調整依據 (非 eGFR)。</li>
                                     <li><strong>體重選用：</strong> 本計算機使用「實際體重」計算 CCr。若病人體重 > 130% IBW，部分文獻建議使用調整體重 (AdjBW)，請依臨床判斷。</li>
-                                    <li><strong>抗生素：</strong> Vancomycin, Aminoglycosides 等需依 CCr 延長給藥間隔或降低劑量。</li>
                                 </ul>
                             </div>
                         </div>
@@ -624,8 +668,6 @@
                                 <h4>📚 治療目標與意義</h4>
                                 <ul>
                                     <li><strong>敗血性休克：</strong> 依據 Surviving Sepsis Campaign 指引，初始復甦目標通常為 MAP ≥ 65 mmHg。</li>
-                                    <li><strong>創傷出血：</strong> 可能採取「允許性低血壓 (Permissive Hypotension)」，維持 MAP 50-60 mmHg 直到止血，以避免凝血塊被沖刷。</li>
-                                    <li><strong>腦傷 (TBI)：</strong> 為維持腦灌流壓 (CPP)，MAP 目標通常較高 (例如 > 80-90 mmHg)。</li>
                                 </ul>
                             </div>
                         </div>
@@ -674,8 +716,6 @@
                                 <h4>📚 孕期評估重點</h4>
                                 <ul>
                                     <li><strong>Naegele's Rule：</strong> 計算方式為 (LMP月份 - 3, 日期 + 7)。若週期非 28 天，每多一天 EDD +1，少一天 EDD -1。</li>
-                                    <li><strong>校正時機：</strong> 若 LMP 推算的預產期與早期超音波 (CRL) 測量差異過大（通常 > 7天），應以超音波結果校正 EDD。</li>
-                                    <li><strong>足月定義：</strong> 滿 37 週即視為足月；42 週以上為過期妊娠。</li>
                                 </ul>
                             </div>
                         </div>
@@ -820,27 +860,139 @@
             document.getElementById('res-drip-sec').textContent = secondsPerDrop.toFixed(1);
         }
 
-        // 3. Burn (Parkland & Modified Brooke)
+        // --- 3. Burn (Parkland & Modified Brooke) Safety & Logic ---
+
+        // Define formulas
+        const burnFormulas = {
+            adult: [
+                { val: 2, text: 'Modified Brooke (2 mL × kg × %)' },
+                { val: 4, text: 'Parkland (4 mL × kg × %)' }
+            ],
+            child: [
+                { val: 3, text: 'ABA Pediatric (3 mL × kg × %)' },
+                { val: 4, text: 'Parkland (4 mL × kg × %)' }
+            ]
+        };
+
+        // Initialize formulas on load
+        function initBurn() {
+            updateBurnFormulas();
+        }
+
+        function updateBurnFormulas() {
+            const type = document.getElementById('burn-type').value;
+            const select = document.getElementById('burn-formula');
+            
+            // Save current selection value if possible
+            const currentVal = select.value;
+            
+            // Clear existing
+            select.innerHTML = '';
+            
+            // Populate based on type
+            const options = burnFormulas[type];
+            options.forEach(opt => {
+                const el = document.createElement('option');
+                el.value = opt.val;
+                el.textContent = opt.text;
+                select.appendChild(el);
+            });
+            
+            // Toggle Maintenance Panel & Select visibility based on type
+            const maintPanel = document.getElementById('burn-maint-panel');
+            const maintSelectGroup = document.getElementById('burn-maint-select-group');
+            
+            if(type === 'child') {
+                maintPanel.classList.remove('hidden');
+                maintSelectGroup.classList.remove('hidden');
+            } else {
+                maintPanel.classList.add('hidden');
+                maintSelectGroup.classList.add('hidden');
+            }
+
+            checkBurnSafety(); // Re-check safety on type change
+        }
+
+        function checkBurnSafety() {
+            const type = document.getElementById('burn-type').value;
+            const kg = parseFloat(document.getElementById('burn-kg').value);
+            const alertBox = document.getElementById('burn-safety-alert');
+
+            if (isNaN(kg)) {
+                alertBox.style.display = 'none';
+                return;
+            }
+
+            // Safety Logic (Poka-yoke)
+            // Adult selected but weight < 30kg -> Warning
+            // Child selected but weight > 50kg -> Warning
+            if (type === 'adult' && kg < 30) {
+                alertBox.style.display = 'block';
+            } else if (type === 'child' && kg > 50) {
+                alertBox.style.display = 'block';
+            } else {
+                alertBox.style.display = 'none';
+            }
+        }
+
         function calculateBurn() {
             const formulaFactor = parseFloat(document.getElementById('burn-formula').value);
             const kg = parseFloat(document.getElementById('burn-kg').value);
             const tbsa = parseFloat(document.getElementById('burn-tbsa').value);
+            const type = document.getElementById('burn-type').value;
 
-            if (isNaN(kg) || isNaN(tbsa)) {
+            if (isNaN(kg) || isNaN(tbsa) || kg <= 0 || tbsa <= 0) {
                 alert("請輸入有效數值");
                 return;
             }
 
-            const total = formulaFactor * kg * tbsa;
-            const half = total / 2;
-            const rate8 = half / 8;
-            const rate16 = half / 16;
+            // 1. Resuscitation Fluid (LR)
+            const resusTotal = formulaFactor * kg * tbsa;
+            const resusHalf = resusTotal / 2;
+            const rate8 = resusHalf / 8;
+            const rate16 = resusHalf / 16;
 
-            document.getElementById('res-burn-total').textContent = Math.round(total) + " mL";
-            document.getElementById('res-burn-8h-vol').textContent = Math.round(half) + " mL";
-            document.getElementById('res-burn-8h-rate').textContent = `速率: ${Math.round(rate8)} mL/hr`;
-            document.getElementById('res-burn-16h-vol').textContent = Math.round(half) + " mL";
-            document.getElementById('res-burn-16h-rate').textContent = `速率: ${Math.round(rate16)} mL/hr`;
+            document.getElementById('res-burn-total').textContent = Math.round(resusTotal) + " mL";
+            document.getElementById('res-burn-rate8').textContent = Math.round(rate8) + " mL/hr";
+            document.getElementById('res-burn-rate16').textContent = Math.round(rate16) + " mL/hr";
+
+            // 2. Maintenance Fluid (D5LR) - For Children Only
+            if (type === 'child') {
+                const maintFormula = document.getElementById('burn-maint-formula').value;
+                let maintRate = 0;
+                let logicText = "";
+
+                if (maintFormula === "421") {
+                    // 4-2-1 Rule (Hourly Rate)
+                    if (kg <= 10) {
+                        maintRate = 4 * kg;
+                        logicText = `4 × ${kg} = ${maintRate}`;
+                    } else if (kg <= 20) {
+                        maintRate = 40 + 2 * (kg - 10);
+                        logicText = `40 + 2 × (${kg} - 10) = ${maintRate}`;
+                    } else {
+                        maintRate = 60 + 1 * (kg - 20);
+                        logicText = `60 + 1 × (${kg} - 20) = ${maintRate}`;
+                    }
+                } else if (maintFormula === "100") {
+                    // 100-50-20 Rule (Daily Volume / 24)
+                    let dailyVol = 0;
+                    if (kg <= 10) {
+                        dailyVol = 100 * kg;
+                        logicText = `(100 × ${kg}) / 24`;
+                    } else if (kg <= 20) {
+                        dailyVol = 1000 + 50 * (kg - 10);
+                        logicText = `(1000 + 50 × (${kg} - 10)) / 24`;
+                    } else {
+                        dailyVol = 1500 + 20 * (kg - 20);
+                        logicText = `(1500 + 20 × (${kg} - 20)) / 24`;
+                    }
+                    maintRate = dailyVol / 24;
+                }
+                
+                document.getElementById('res-burn-maint-logic').textContent = logicText;
+                document.getElementById('res-burn-maint-rate').textContent = Math.round(maintRate) + " mL/hr";
+            }
         }
 
         // 4. Weight Based Drip
@@ -1031,6 +1183,7 @@
 
         window.onload = () => {
             switchTab('io');
+            initBurn(); // Init Burn options
         }
 
     </script>
