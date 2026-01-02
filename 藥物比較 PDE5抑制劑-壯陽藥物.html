@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>壯陽藥物臨床輔助工具 (ED Clinical Tools)</title>
+    
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 設定 Tailwind 自定義動畫 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'fade-in-up': 'fadeInUp 0.6s ease-out',
+                        'blob': 'blob 7s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        blob: {
+                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
+                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- 引入 React 和 ReactDOM -->
+    <!-- 使用 Import Map 讓瀏覽器直接支援 ES Modules 導入 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "react": "https://esm.sh/react@18.2.0",
+            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+            "lucide-react": "https://esm.sh/lucide-react@0.263.1"
+        }
+    }
+    </script>
+    
+    <!-- 引入 Babel 用於在瀏覽器中編譯 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        /* 隱藏未編譯前的內容，避免閃爍 */
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen relative overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-700">
+    
+    <!-- [美化升級] 背景裝飾層 (Background Decorations) -->
+    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <!-- 主漸層背景 -->
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-blue-50"></div>
+        
+        <!-- 動態光暈效果 -->
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl mix-blend-multiply filter animate-blob"></div>
+        <div class="absolute top-0 right-1/4 w-96 h-96 bg-yellow-200/30 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-pink-200/30 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-4000"></div>
+        
+        <!-- 細緻網格紋理 (增加專業感) -->
+        <div class="absolute inset-0 opacity-[0.4]" style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 32px 32px;"></div>
+    </div>
+    
+    <!-- React 應用程式掛載點 -->
+    <div id="root" class="relative z-0"></div>
+
+    <!-- React 程式碼邏輯 -->
+    <script type="text/babel" data-type="module">
+        import React, { useState } from 'react';
+        import { createRoot } from 'react-dom/client';
+        import { 
+            Clock, AlertTriangle, Utensils, Zap, CheckCircle, Info, ArrowRight, 
+            ShieldAlert, Pill, ExternalLink, ChevronRight, Activity, FileText, 
+            FlaskConical, Building2, Scale 
+        } from 'lucide-react';
+
+        // =============================================================================
+        // [維護說明 - 請閱讀]
+        // 1. 若要更換「圖片」，請修改 imageUrl 欄位引號內的網址。
+        // 2. 若要更換「仿單連結」，請修改 link 欄位引號內的網址。
+        // 3. 圖片建議使用正方形或去背圖 (png)，顯示效果最佳。
+        // =============================================================================
+
+        // -----------------------------------------------------------------------------
+        // 資料設定：完整藥物比較表 (在此處修改藥物數據)
+        // -----------------------------------------------------------------------------
+        const drugs = [
+        {
+            id: 'viagra',
+            name: '威而鋼',
+            engName: 'Viagra',
+            ingredient: 'Sildenafil',
+            manufacturer: '輝瑞 (Pfizer)',
+            dosage: '25mg / 50mg / 100mg',
+            onset: '30 ~ 60 分鐘',
+            duration: '4 ~ 6 小時',
+            halfLife: '4 小時',
+            diet: '易受高脂食物影響 (延遲吸收)，建議空腹服用',
+            features: '硬度表現最優異，全球知名度最高，適合單次性行為使用。',
+            sideEffects: '頭痛、臉潮紅、胃不適、視力模糊 (藍視)、鼻塞',
+            contraindications: '絕對禁止與硝酸鹽類藥物 (Nitrates) 併用',
+            
+            // [維護說明]: 請在此處貼上您的「藥物仿單」網址 (例如 PDF 連結或衛福部網頁)
+            link: 'https://mcp.fda.gov.tw/im_detail_1/%E8%A1%9B%E7%BD%B2%E8%97%A5%E8%BC%B8%E5%AD%97%E7%AC%AC022382%E8%99%9F', 
+            
+            // [維護說明]: 請在此處貼上您的「藥物圖片」網址
+            // 如果圖片無法顯示，請確認網址是否為公開可存取，或改用 Base64 編碼
+            imageUrl: 'https://images.vocus.cc/cb8d4429-25c9-4078-92fe-84831a1d95ea.png',
+            
+            // 顏色主題設定 (建議不更動，以免影響視覺設計)
+            colorTheme: {
+                bg: 'bg-blue-50',
+                headerBg: 'bg-blue-100/60',
+                border: 'border-blue-200',
+                text: 'text-blue-700',
+                textLight: 'text-blue-600',
+                hover: 'hover:bg-blue-50/80',
+            }
+        },
+        {
+            id: 'cialis',
+            name: '犀利士',
+            engName: 'Cialis',
+            ingredient: 'Tadalafil',
+            manufacturer: '禮來 (Lilly)',
+            dosage: '5mg / 10mg / 20mg',
+            onset: '30 ~ 45 分鐘',
+            duration: '24 ~ 36 小時',
+            halfLife: '17.5 小時',
+            diet: '標準飲食下不受影響，不需空腹',
+            features: '藥效極長 (週末錠)，時間壓力小，另有 5mg 低劑量每日保養法。',
+            sideEffects: '頭痛、背痛、肌肉痠痛、消化不良、臉潮紅',
+            contraindications: '絕對禁止與硝酸鹽類藥物 (Nitrates) 併用',
+            
+            // [維護說明]: 請在此處貼上您的「藥物仿單」網址
+            link: 'https://mcp.fda.gov.tw/im_detail_1/%E8%A1%9B%E9%83%A8%E8%97%A5%E8%A3%BD%E5%AD%97%E7%AC%AC061550%E8%99%9F',
+            
+            // [維護說明]: 請在此處貼上您的「藥物圖片」網址
+            imageUrl: 'https://images.vocus.cc/904419c9-68bf-4da3-be31-9f6441aa2cd2.png',
+            
+            colorTheme: {
+                bg: 'bg-amber-50',
+                headerBg: 'bg-amber-100/60',
+                border: 'border-amber-200',
+                text: 'text-amber-700',
+                textLight: 'text-amber-600',
+                hover: 'hover:bg-amber-50/80',
+            }
+        },
+        {
+            id: 'levitra',
+            name: '樂威壯',
+            engName: 'Levitra',
+            ingredient: 'Vardenafil',
+            manufacturer: '拜耳 (Bayer)',
+            dosage: '5mg / 10mg / 20mg',
+            onset: '15 ~ 30 分鐘',
+            duration: '4 ~ 8 小時',
+            halfLife: '4 ~ 5 小時',
+            diet: '受高脂飲食影響較小 (優於威而鋼)',
+            features: '起效速度最快，硬度與威而鋼相當，適合糖尿病或年長患者。',
+            sideEffects: '臉潮紅、頭痛、鼻塞、消化不良',
+            contraindications: '絕對禁止與硝酸鹽類藥物 (Nitrates) 併用',
+            
+            // [維護說明]: 請在此處貼上您的「藥物仿單」網址
+            link: 'https://mcp.fda.gov.tw/im_detail_pdf/%E8%A1%9B%E7%BD%B2%E8%97%A5%E8%BC%B8%E5%AD%97%E7%AC%AC023803%E8%99%9F',
+            
+            // [維護說明]: 請在此處貼上您的「藥物圖片」網址
+            imageUrl: 'https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2F34617765-ce24-4995-9de1-41c960d58727.png&width=153&sign=zYJ6A5DzQjFPI38HPIgCXBsrrsRfzGDKkc3hQSA5IPE',
+            
+            colorTheme: {
+                bg: 'bg-orange-50',
+                headerBg: 'bg-orange-100/60',
+                border: 'border-orange-200',
+                text: 'text-orange-700',
+                textLight: 'text-orange-600',
+                hover: 'hover:bg-orange-50/80',
+            }
+        }
+        ];
+
+        // -----------------------------------------------------------------------------
+        // 子組件：高質感比較表 (表格呈現邏輯)
+        // -----------------------------------------------------------------------------
+        const ComparisonTable = () => {
+        // 定義表格的列 (如果您想新增比較項目，請在此處新增)
+        const rows = [
+            { label: '主要成分', icon: <FlaskConical className="w-4 h-4" />, key: 'ingredient' },
+            { label: '生產藥廠', icon: <Building2 className="w-4 h-4" />, key: 'manufacturer' },
+            { label: '建議劑量', icon: <Scale className="w-4 h-4" />, key: 'dosage' },
+            { label: '起效時間', icon: <Zap className="w-4 h-4" />, key: 'onset', highlight: true },
+            { label: '藥效維持', icon: <Clock className="w-4 h-4" />, key: 'duration', highlight: true },
+            { label: '半衰期', icon: <Activity className="w-4 h-4" />, key: 'halfLife' },
+            { label: '飲食影響', icon: <Utensils className="w-4 h-4" />, key: 'diet' },
+            { label: '常見副作用', icon: <AlertTriangle className="w-4 h-4" />, key: 'sideEffects' },
+            { label: '臨床特色', icon: <Info className="w-4 h-4" />, key: 'features' },
+        ];
+
+        return (
+            <div className="overflow-hidden bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 animate-fade-in-up">
+            <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                    <tr className="border-b border-slate-200">
+                    {/* 第一欄：固定標題區塊 */}
+                    <th className="p-6 bg-slate-50/90 w-48 align-bottom border-r border-slate-100 backdrop-blur-sm sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                        <div className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Comparison</div>
+                        <div className="text-2xl font-black text-slate-800">藥物比一比</div>
+                    </th>
+                    
+                    {/* 動態生成藥物表頭 */}
+                    {drugs.map(drug => (
+                        <th key={drug.id} className={`p-6 align-bottom relative group transition-colors duration-300 ${drug.colorTheme.headerBg} border-r border-slate-100 last:border-0`}>
+                        <div className="flex flex-col items-center gap-3">
+                            {/* 藥物圖片顯示區 (增加錯誤處理，若圖片失效顯示預設圖標) */}
+                            <div className="h-24 w-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
+                            <div className="relative w-24 h-24 flex items-center justify-center">
+                                {/* 圖片背景光暈特效 */}
+                                <div className={`absolute inset-0 bg-white/50 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
+                                
+                                {drug.imageUrl ? (
+                                <img 
+                                    src={drug.imageUrl} 
+                                    alt={drug.name}
+                                    className="relative z-10 w-full h-full object-contain drop-shadow-md"
+                                    onError={(e) => {
+                                        // [維護說明]: 圖片載入失敗時的後備顯示
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                    }}
+                                />
+                                ) : null}
+                                
+                                {/* 若圖片載入失敗，顯示此後備圖示 */}
+                                <div className="hidden absolute inset-0 z-0 flex items-center justify-center bg-slate-100 rounded-full text-slate-400" style={{display: drug.imageUrl ? 'none' : 'flex'}}>
+                                    <Pill className="w-10 h-10" />
+                                </div>
+                            </div>
+                            </div>
+                            
+                            {/* 藥名與連結按鈕 */}
+                            <div className="text-center z-10 mt-2">
+                            <a 
+                                href={drug.link} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className={`flex items-center justify-center gap-1.5 text-xl font-bold ${drug.colorTheme.text} hover:opacity-80 transition-opacity`}
+                                title="點擊前往仿單頁面"
+                            >
+                                {drug.name}
+                                <ExternalLink className="w-4 h-4 opacity-50" />
+                            </a>
+                            <div className={`text-sm font-medium ${drug.colorTheme.textLight} opacity-80`}>{drug.engName}</div>
+                            </div>
+                        </div>
+                        </th>
+                    ))}
+                    </tr>
+                </thead>
+                
+                <tbody className="text-slate-600 divide-y divide-slate-100">
+                    {rows.map((row, index) => (
+                    <tr key={row.key} className={`group transition-colors hover:bg-slate-50/50`}>
+                        {/* 左側標籤欄 (固定不動) */}
+                        <td className="p-4 bg-slate-50/90 font-bold text-slate-700 border-r border-slate-100 sticky left-0 z-10 backdrop-blur-sm shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                        <div className="flex items-center gap-2">
+                            <span className="p-1.5 rounded-md bg-white shadow-sm text-slate-500 ring-1 ring-slate-100">
+                            {row.icon}
+                            </span>
+                            {row.label}
+                        </div>
+                        </td>
+
+                        {/* 右側數據欄 (對應每個藥物) */}
+                        {drugs.map(drug => (
+                        <td key={`${drug.id}-${row.key}`} className={`p-4 border-r border-slate-100 last:border-0 align-middle leading-relaxed ${row.highlight ? 'font-bold' : ''}`}>
+                            {/* 這裡處理特殊的高亮顯示邏輯 (綠色/橘色標籤) */}
+                            <div className={`
+                            ${row.highlight && row.key === 'duration' && drug.id === 'cialis' ? 'text-green-600 bg-green-50 inline-block px-2 py-1 rounded' : ''}
+                            ${row.highlight && row.key === 'onset' && drug.id === 'levitra' ? 'text-orange-600 bg-orange-50 inline-block px-2 py-1 rounded' : ''}
+                            `}>
+                            {drug[row.key]}
+                            </div>
+                        </td>
+                        ))}
+                    </tr>
+                    ))}
+                    
+                    {/* 禁忌症特別警告列 (紅色背景) */}
+                    <tr className="bg-red-50/30 border-t-2 border-red-100">
+                    <td className="p-4 font-bold text-red-700 bg-red-50/90 border-r border-red-100 sticky left-0 z-10 backdrop-blur-sm">
+                        <div className="flex items-center gap-2">
+                        <span className="p-1.5 rounded-md bg-white shadow-sm text-red-500 ring-1 ring-red-100">
+                            <ShieldAlert className="w-4 h-4" />
+                        </span>
+                        絕對禁忌
+                        </div>
+                    </td>
+                    {drugs.map(drug => (
+                        <td key={`${drug.id}-contra`} className="p-4 border-r border-red-100 last:border-0 text-red-600 font-medium text-sm">
+                        {drug.contraindications}
+                        </td>
+                    ))}
+                    </tr>
+                </tbody>
+                </table>
+            </div>
+            <div className="bg-slate-50/90 p-3 text-center text-xs text-slate-400 border-t border-slate-200">
+                滑動表格以查看更多資訊 • 點擊藥物名稱可查看詳細仿單
+            </div>
+            </div>
+        );
+        };
+
+        // -----------------------------------------------------------------------------
+        // 子組件：智慧選藥助手 (問卷邏輯)
+        // -----------------------------------------------------------------------------
+        const RecommendationWizard = () => {
+        const [step, setStep] = useState(0);
+        const [answers, setAnswers] = useState({});
+        const [result, setResult] = useState(null);
+
+        const questions = [
+            {
+            id: 'duration',
+            text: '您希望藥效持續多久？',
+            icon: <Clock className="w-6 h-6 text-indigo-500" />,
+            options: [
+                { label: '只需應付單次約會 (4-6小時)', value: 'short', desc: '適合一般計畫性性行為' },
+                { label: '週末隨時待命 (36小時)', value: 'long', desc: '週五服用，週末無憂' }
+            ]
+            },
+            {
+            id: 'food',
+            text: '您習慣在浪漫晚餐(含油脂)後服藥嗎？',
+            icon: <Utensils className="w-6 h-6 text-indigo-500" />,
+            options: [
+                { label: '是，希望不受食物影響', value: 'food_friendly', desc: '我不喜歡空腹等待' },
+                { label: '否，我可以空腹/清淡飲食', value: 'fasting_ok', desc: '為了效果我可以忍受' }
+            ]
+            },
+            {
+            id: 'speed',
+            text: '您希望多快能進入狀況？',
+            icon: <Zap className="w-6 h-6 text-indigo-500" />,
+            options: [
+                { label: '越快越好 (15-30分鐘)', value: 'fast', desc: '臨時起意，刻不容緩' },
+                { label: '標準速度 (30-60分鐘)', value: 'normal', desc: '我有足夠的前戲時間' }
+            ]
+            }
+        ];
+
+        const handleSelect = (value) => {
+            const newAnswers = { ...answers, [questions[step].id]: value };
+            setAnswers(newAnswers);
+
+            if (step < questions.length - 1) {
+            setStep(step + 1);
+            } else {
+            calculateResult(newAnswers);
+            }
+        };
+
+        const calculateResult = (finalAnswers) => {
+            // [維護說明]: 這裡是推薦邏輯，您可以根據臨床經驗調整
+            if (finalAnswers.duration === 'long') {
+            setResult(drugs.find(d => d.id === 'cialis'));
+            } else if (finalAnswers.speed === 'fast') {
+            setResult(drugs.find(d => d.id === 'levitra'));
+            } else if (finalAnswers.food === 'food_friendly') {
+            setResult(drugs.find(d => d.id === 'cialis')); 
+            } else {
+            setResult(drugs.find(d => d.id === 'viagra'));
+            }
+        };
+
+        const reset = () => {
+            setStep(0);
+            setAnswers({});
+            setResult(null);
+        };
+
+        return (
+            <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-white/50 p-8 max-w-2xl mx-auto overflow-hidden relative">
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
+
+            {!result ? (
+                <div className="space-y-8 relative z-10">
+                <div className="flex justify-between items-end mb-2">
+                    <div>
+                    <span className="text-xs font-bold text-indigo-500 tracking-widest uppercase">Question {step + 1}</span>
+                    <h3 className="text-2xl font-bold text-slate-800 mt-1 flex items-center gap-2">
+                        {questions[step].icon}
+                        {questions[step].text}
+                    </h3>
+                    </div>
+                </div>
+                
+                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out" style={{ width: `${((step + 1) / questions.length) * 100}%` }}></div>
+                </div>
+
+                <div className="grid gap-4 mt-6">
+                    {questions[step].options.map((opt, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => handleSelect(opt.value)}
+                        className="group relative flex items-center justify-between p-5 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 transition-all shadow-sm hover:shadow-md text-left bg-white/50 backdrop-blur-sm"
+                    >
+                        <div>
+                        <div className="font-bold text-lg text-slate-700 group-hover:text-indigo-700">{opt.label}</div>
+                        <div className="text-sm text-slate-400 group-hover:text-indigo-400 mt-1">{opt.desc}</div>
+                        </div>
+                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
+                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
+                        </div>
+                    </button>
+                    ))}
+                </div>
+                </div>
+            ) : (
+                <div className="text-center animate-fade-in relative z-10">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-200">
+                    <CheckCircle className="w-10 h-10" />
+                </div>
+                <h3 className="text-3xl font-bold text-slate-800 mb-2">推薦藥物：{result.name}</h3>
+                <p className="text-slate-500 mb-8 max-w-md mx-auto">
+                    根據您的生活型態需求，我們認為 <strong>{result.engName}</strong> 最能滿足您的期望。
+                </p>
+                
+                <div className={`p-6 rounded-2xl ${result.colorTheme.bg} border ${result.colorTheme.border} mb-8 text-left shadow-inner`}>
+                    <div className="flex items-start gap-4 mb-4">
+                    <div className="shrink-0 w-24 h-24 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center p-2 relative">
+                        {/* 這裡也會顯示結果的藥物圖片 */}
+                        {result.imageUrl ? (
+                        <img src={result.imageUrl} alt={result.name} className="max-w-full max-h-full object-contain" />
+                        ) : (
+                        <Pill className="w-10 h-10 text-slate-300" />
+                        )}
+                    </div>
+                    <div>
+                        <h4 className={`font-bold text-lg ${result.colorTheme.text}`}>{result.name} ({result.engName})</h4>
+                        <p className="text-sm text-slate-600 mt-1">{result.features}</p>
+                    </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-4">
+                    <div className="bg-white/60 p-2 rounded text-center">
+                        <div className="text-xs text-slate-400 font-bold uppercase">起效</div>
+                        <div className="text-slate-700 font-bold text-sm">{result.onset}</div>
+                    </div>
+                    <div className="bg-white/60 p-2 rounded text-center">
+                        <div className="text-xs text-slate-400 font-bold uppercase">持續</div>
+                        <div className="text-slate-700 font-bold text-sm">{result.duration}</div>
+                    </div>
+                    <div className="bg-white/60 p-2 rounded text-center">
+                        <div className="text-xs text-slate-400 font-bold uppercase">飲食</div>
+                        <div className="text-slate-700 font-bold text-sm">{result.diet.substring(0, 4)}...</div>
+                    </div>
+                    </div>
+                </div>
+
+                <div className="flex gap-4 justify-center">
+                    <button onClick={reset} className="px-6 py-3 bg-white border border-slate-300 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
+                    重新測試
+                    </button>
+                    <a href={result.link} target="_blank" rel="noreferrer" className="px-6 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-300 flex items-center gap-2">
+                    查看詳細仿單 <ExternalLink className="w-4 h-4"/>
+                    </a>
+                </div>
+                </div>
+            )}
+            </div>
+        );
+        };
+
+        // -----------------------------------------------------------------------------
+        // 主程式 (整體頁面架構)
+        // -----------------------------------------------------------------------------
+        const EDMedicationApp = () => {
+        const [activeTab, setActiveTab] = useState('compare');
+
+        return (
+            <div className="min-h-screen font-sans text-slate-900 pb-12 selection:bg-indigo-100 selection:text-indigo-700">
+            
+            {/* 導覽列 (Navbar) */}
+            <nav className="bg-white/70 backdrop-blur-lg border-b border-white/40 sticky top-0 z-50">
+                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-br from-indigo-600 to-violet-600 p-2 rounded-xl shadow-md shadow-indigo-200">
+                    <Pill className="text-white w-5 h-5" />
+                    </div>
+                    <div>
+                    <h1 className="text-lg font-bold text-slate-800 tracking-tight">
+                        ED Clinical Tools
+                    </h1>
+                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Clinical Decision Support</p>
+                    </div>
+                </div>
+                
+                <div className="flex bg-slate-100/50 p-1 rounded-lg">
+                    {[
+                    { id: 'compare', label: '藥物比較' },
+                    { id: 'wizard', label: '選藥助手' },
+                    { id: 'safety', label: '安全警示' }
+                    ].map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                        activeTab === tab.id 
+                            ? 'bg-white shadow-sm ring-1 ring-black/5 text-indigo-600' 
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                    ))}
+                </div>
+                </div>
+            </nav>
+
+            {/* 主要內容區 */}
+            <main className="max-w-6xl mx-auto px-4 py-10">
+                
+                {/* 標題區塊 */}
+                <div className="text-center max-w-2xl mx-auto mb-12">
+                <h2 className="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight drop-shadow-sm">
+                    {activeTab === 'compare' && '全方位藥物數據比較'}
+                    {activeTab === 'wizard' && '智能選藥輔助系統'}
+                    {activeTab === 'safety' && '重要臨床安全須知'}
+                </h2>
+                <p className="text-lg text-slate-500 leading-relaxed">
+                    {activeTab === 'compare' && '針對 Sildenafil, Tadalafil, Vardenafil 三種主流成分的詳細臨床參數分析。'}
+                    {activeTab === 'wizard' && '透過生活型態問卷，精準推薦最適合患者的治療方案。'}
+                    {activeTab === 'safety' && '藥物交互作用檢核與心血管風險評估清單。'}
+                </p>
+                </div>
+
+                {/* 頁籤內容切換邏輯 */}
+                {activeTab === 'compare' && <ComparisonTable />}
+                
+                {activeTab === 'wizard' && (
+                <div className="animate-fade-in-up">
+                    <RecommendationWizard />
+                </div>
+                )}
+
+                {/* 安全警示內容 */}
+                {activeTab === 'safety' && (
+                <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
+                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border-l-8 border-red-500 overflow-hidden border border-white/50">
+                    <div className="p-8">
+                        <div className="flex items-start gap-6">
+                        <div className="bg-red-100 p-3 rounded-full shrink-0">
+                            <ShieldAlert className="w-8 h-8 text-red-600" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-red-700 mb-2">絕對禁忌 (Contraindications)</h3>
+                            <p className="text-slate-600 mb-4 leading-relaxed">
+                            PDE5 抑制劑會增強硝酸鹽類藥物的降血壓作用。若患者正在服用任何形式的<strong>硝酸鹽類藥物 (Nitrates)</strong>，如硝化甘油 (Nitroglycerin)、Isordil 等，<strong>絕對禁止</strong>服用本類藥物。
+                            </p>
+                            <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+                            <span className="text-xs font-bold text-red-500 uppercase tracking-wider block mb-2">交互作用後果</span>
+                            <span className="text-red-800 font-bold">可能導致嚴重的低血壓，甚至休克、死亡。</span>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 hover:shadow-md transition-shadow">
+                        <h4 className="font-bold text-slate-800 mb-4 flex items-center">
+                            <Activity className="w-5 h-5 text-amber-500 mr-2" />
+                            心血管風險評估
+                        </h4>
+                        <ul className="space-y-3">
+                            {['不穩定型心絞痛', '最近 6 個月內曾發生心肌梗塞或中風', '嚴重心律不整', '未控制的高血壓 (>170/100 mmHg)'].map((item, i) => (
+                            <li key={i} className="flex items-center text-sm text-slate-600">
+                                <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-3"></span>
+                                {item}
+                            </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 hover:shadow-md transition-shadow">
+                        <h4 className="font-bold text-slate-800 mb-4 flex items-center">
+                            <FileText className="w-5 h-5 text-blue-500 mr-2" />
+                            衛教重點
+                        </h4>
+                        <ul className="space-y-3">
+                            <li className="flex items-start text-sm text-slate-600">
+                            <ChevronRight className="w-4 h-4 text-blue-400 mr-2 shrink-0 mt-0.5" />
+                            必須有性刺激才會勃起，藥物僅是輔助血管擴張。
+                            </li>
+                            <li className="flex items-start text-sm text-slate-600">
+                            <ChevronRight className="w-4 h-4 text-blue-400 mr-2 shrink-0 mt-0.5" />
+                            大量飲酒會降低藥效並增加低血壓風險。
+                            </li>
+                            <li className="flex items-start text-sm text-slate-600">
+                            <ChevronRight className="w-4 h-4 text-blue-400 mr-2 shrink-0 mt-0.5" />
+                            如勃起時間超過 4 小時 (異常勃起)，請立即就醫。
+                            </li>
+                        </ul>
+                    </div>
+                    </div>
+                </div>
+                )}
+
+            </main>
+
+            {/* Footer */}
+            <footer className="max-w-6xl mx-auto px-4 py-8 mt-8 border-t border-slate-200/60">
+                <div className="flex flex-col md:flex-row justify-between items-center text-sm text-slate-400">
+                <div className="mb-4 md:mb-0 text-center md:text-left">
+                    <p className="font-medium text-slate-600">© 2026 ED Clinical Assistant</p>
+                    <p className="mt-1">本工具僅供醫療專業人員參考或衛教輔助，不得取代醫師專業診斷。</p>
+                </div>
+                <div className="flex items-center gap-6">
+                    <div className="text-right">
+                        <p className="text-xs uppercase tracking-widest mb-1">Created By</p>
+                        <p className="font-bold text-slate-700">蝦仁藥師</p>
+                    </div>
+                    <div className="h-8 w-px bg-slate-300"></div>
+                    <div className="text-right">
+                        <p className="text-xs uppercase tracking-widest mb-1">Last Update</p>
+                        <p className="font-bold text-slate-700">2026/01/02</p>
+                    </div>
+                </div>
+                </div>
+            </footer>
+            </div>
+        );
+        }
+
+        // 渲染應用程式
+        const root = createRoot(document.getElementById('root'));
+        root.render(<EDMedicationApp />);
+    </script>
+</body>
+</html>
