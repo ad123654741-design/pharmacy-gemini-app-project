@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>印章模擬器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 載入 Lucide Icons -->
+    <script type="module" src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* 引入思源宋體與 Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;500;700&family=Inter:wght@300;400&display=swap');
+
+        :root {
+            --bg-paper: #f9f8f4;
+            --text-ink: #2c2c2c;
+            --accent-red: #a83f39;
+            --border-color: #e6e2d8;
+        }
+
+        body {
+            font-family: 'Noto Serif TC', serif;
+            background-color: var(--bg-paper);
+            color: var(--text-ink);
+            background-image: radial-gradient(#e0ded8 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .font-sans {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 自定義滑桿樣式 */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 0 0 2px var(--bg-paper);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #dcd9d0;
+            border-radius: 2px;
+        }
+
+        input[type=range]:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 4px rgba(168, 63, 57, 0.2);
+        }
+
+        /* 顏色選擇器樣式 */
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            overflow: hidden;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+        }
+
+        /* 卡片與容器 */
+        .card {
+            background-color: #ffffff;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 預覽區紙張質感 */
+        #stampOutputContainer {
+            background-color: #fdfdfc;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            min-height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        #stampOutputImage {
+            max-width: 90%;
+            max-height: 90%;
+            /* 讓圖片混合模式更自然 */
+            mix-blend-mode: multiply; 
+        }
+
+        .btn-primary {
+            background-color: var(--text-ink);
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #000;
+            transform: translateY(-1px);
+        }
+        
+        .btn-outline {
+            border: 1px solid var(--text-ink);
+            color: var(--text-ink);
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+        .btn-outline:hover {
+            background-color: var(--text-ink);
+            color: #fff;
+        }
+        
+        .section-title {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            color: #5a5a5a;
+        }
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -6px;
+            width: 40px;
+            height: 1px;
+            background-color: var(--accent-red);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col p-6 md:p-12">
+
+    <div class="max-w-6xl mx-auto w-full">
+        <!-- 標題區 -->
+        <header class="text-center mb-12">
+            <div class="inline-flex items-center justify-center border border-gray-300 rounded-full px-4 py-1 mb-4 bg-white/50 backdrop-blur-sm">
+                <span class="text-xs text-gray-500 font-sans tracking-widest uppercase">Stamp Generator</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 tracking-wider mb-3">
+                印章模擬器
+            </h1>
+            <p class="text-gray-500 font-light tracking-wide text-sm md:text-base">
+                將您的影像，轉化成不同色彩與印記。
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+
+            <!-- 左側：控制面板 -->
+            <div class="lg:col-span-4 space-y-8">
+                
+                <div class="card rounded-lg p-8 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-[#a83f39]"></div>
+                    <h2 class="section-title text-lg">製印工坊</h2>
+                    
+                    <!-- 1. 圖片上傳 -->
+                    <div class="mb-8 group">
+                        <label class="block text-sm text-gray-500 mb-3 tracking-wide">
+                            01. 選擇圖樣
+                        </label>
+                        <div class="file-input-container">
+                            <input type="file" id="imageInput" accept="image/png, image/jpeg" 
+                                   onchange="handleImageUpload(event)"
+                                   class="hidden">
+                            <button onclick="document.getElementById('imageInput').click()" 
+                                    class="w-full h-32 border border-dashed border-gray-400 rounded-lg 
+                                           flex flex-col items-center justify-center text-gray-400
+                                           hover:border-gray-600 hover:text-gray-600 hover:bg-gray-50
+                                           transition duration-300 ease-in-out group-hover:shadow-inner">
+                                <i data-lucide="image-plus" class="w-8 h-8 mb-2 opacity-60"></i>
+                                <span class="text-xs tracking-wider">點擊上傳 PNG / JPG</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 2. 墨水顏色 -->
+                    <div class="mb-8">
+                        <label class="block text-sm text-gray-500 mb-3 tracking-wide">
+                            02. 調配墨色
+                        </label>
+                        <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+                            <div class="flex items-center space-x-3">
+                                <div class="relative">
+                                    <input type="color" id="inkColor" value="#a83f39" 
+                                           oninput="processImage()"
+                                           class="cursor-pointer transition-transform hover:scale-110">
+                                </div>
+                                <span class="font-sans text-xs text-gray-400 uppercase tracking-widest">Ink Color</span>
+                            </div>
+                            <span id="colorHexDisplay" class="font-sans text-xs font-medium text-gray-600">#A83F39</span>
+                        </div>
+                    </div>
+
+                    <!-- 3. 閾值 -->
+                    <div class="mb-8">
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="text-sm text-gray-500 tracking-wide">03. 刻印力度</label>
+                            <span id="thresholdValue" class="font-sans text-xs text-gray-400">128</span>
+                        </div>
+                        <input type="range" id="thresholdSlider" min="0" max="255" value="128" 
+                               oninput="updateThresholdDisplay(); processImage();">
+                        <div class="flex justify-between mt-2">
+                            <span class="text-[10px] text-gray-400">輕柔</span>
+                            <span class="text-[10px] text-gray-400">深刻</span>
+                        </div>
+                    </div>
+
+                    <!-- 4. 模糊 -->
+                    <div class="mb-8">
+                        <div class="flex justify-between items-end mb-3">
+                            <label class="text-sm text-gray-500 tracking-wide">04. 紙張滲透</label>
+                            <span id="blurValue" class="font-sans text-xs text-gray-400">0.0</span>
+                        </div>
+                        <input type="range" id="blurSlider" min="0" max="5" value="1.0" step="0.5"
+                               oninput="updateBlurDisplay(); processImage();">
+                         <div class="flex justify-between mt-2">
+                            <span class="text-[10px] text-gray-400">銳利</span>
+                            <span class="text-[10px] text-gray-400">陳舊暈染</span>
+                        </div>
+                    </div>
+
+                    <!-- 下載按鈕 -->
+                    <button id="downloadButton" onclick="downloadStamp()" disabled
+                            class="w-full btn-primary py-4 px-6 rounded text-sm tracking-[0.2em] font-medium 
+                                   disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 group">
+                        <span>收藏印記</span>
+                        <i data-lucide="arrow-down" class="w-4 h-4 transition-transform group-hover:translate-y-1"></i>
+                    </button>
+                    
+                    <p id="messageBox" class="text-center text-xs text-[#a83f39] mt-4 opacity-0 transition-opacity">
+                        <!-- JS 控制顯示 -->
+                    </p>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-400 font-sans tracking-widest">
+                        DESIGNED FOR MEMORIES
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- 右側：預覽區 -->
+            <div class="lg:col-span-8">
+                <div class="relative">
+                    <!-- 裝飾元素：角落標記 -->
+                    <div class="absolute -top-2 -left-2 w-4 h-4 border-t border-l border-gray-300"></div>
+                    <div class="absolute -top-2 -right-2 w-4 h-4 border-t border-r border-gray-300"></div>
+                    <div class="absolute -bottom-2 -left-2 w-4 h-4 border-b border-l border-gray-300"></div>
+                    <div class="absolute -bottom-2 -right-2 w-4 h-4 border-b border-r border-gray-300"></div>
+
+                    <div id="stampOutputContainer" class="shadow-2xl rounded-sm">
+                        <canvas id="imageCanvas" class="hidden"></canvas>
+                        
+                        <!-- 預設佔位符 -->
+                        <div id="placeholderText" class="text-center p-12 transition-opacity duration-500">
+                             <i data-lucide="stamp" class="w-12 h-12 text-gray-200 mx-auto mb-4"></i>
+                             <p class="text-gray-400 text-sm tracking-widest font-light">
+                                 請於最上方工坊上傳影像<br>預覽將於此處顯現
+                             </p>
+                        </div>
+
+                        <img id="stampOutputImage" 
+                             src="" 
+                             alt="印章模擬效果" 
+                             class="opacity-0 transition-opacity duration-700 hidden">
+                    </div>
+                </div>
+                
+                <div id="loadingIndicator" class="flex justify-center items-center mt-6 opacity-0 transition-opacity">
+                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce mx-1"></div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce mx-1" style="animation-delay: 0.1s"></div>
+                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce mx-1" style="animation-delay: 0.2s"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // 全局變數
+        const apiKey = ""; 
+        const imageCanvas = document.getElementById('imageCanvas');
+        const stampOutputImage = document.getElementById('stampOutputImage');
+        const placeholderText = document.getElementById('placeholderText');
+        
+        const thresholdSlider = document.getElementById('thresholdSlider');
+        const inkColorInput = document.getElementById('inkColor');
+        const blurSlider = document.getElementById('blurSlider'); 
+        const downloadButton = document.getElementById('downloadButton');
+        
+        const colorHexDisplay = document.getElementById('colorHexDisplay');
+        const thresholdValueDisplay = document.getElementById('thresholdValue');
+        const blurValueDisplay = document.getElementById('blurValue'); 
+        
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const messageBox = document.getElementById('messageBox');
+        
+        const ctx = imageCanvas.getContext('2d', { willReadFrequently: true });
+        let originalImage = null;
+
+        // --- 工具函數 ---
+
+        function hexToRgb(hex) {
+            const bigint = parseInt(hex.slice(1), 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return [r, g, b];
+        }
+
+        function applyBoxBlur(imageData, radius) {
+            if (radius <= 0) return imageData;
+            const data = imageData.data;
+            const width = imageData.width;
+            const height = imageData.height;
+            const newData = new Uint8ClampedArray(data.length);
+            const r = Math.floor(radius);
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    let sumR = 0, sumG = 0, sumB = 0, sumA = 0;
+                    let count = 0;
+                    for (let dy = -r; dy <= r; dy++) {
+                        for (let dx = -r; dx <= r; dx++) {
+                            const nx = x + dx;
+                            const ny = y + dy;
+                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+                                const index = (ny * width + nx) * 4;
+                                sumR += data[index];
+                                sumG += data[index + 1];
+                                sumB += data[index + 2];
+                                sumA += data[index + 3];
+                                count++;
+                            }
+                        }
+                    }
+                    const outputIndex = (y * width + x) * 4;
+                    newData[outputIndex] = sumR / count;
+                    newData[outputIndex + 1] = sumG / count;
+                    newData[outputIndex + 2] = sumB / count;
+                    newData[outputIndex + 3] = sumA / count;
+                }
+            }
+            return new ImageData(newData, width, height);
+        }
+
+        // --- 處理邏輯 ---
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            loadingIndicator.classList.remove('opacity-0');
+            messageBox.style.opacity = '0';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    originalImage = img;
+                    imageCanvas.width = img.width;
+                    imageCanvas.height = img.height;
+                    ctx.drawImage(img, 0, 0); 
+                    
+                    // UI 切換：隱藏佔位符，顯示圖片
+                    placeholderText.style.display = 'none';
+                    stampOutputImage.classList.remove('hidden');
+                    
+                    // 短暫延遲讓 UI 過渡更順暢
+                    setTimeout(() => {
+                        processImage();
+                        stampOutputImage.classList.remove('opacity-0');
+                        downloadButton.disabled = false;
+                        loadingIndicator.classList.add('opacity-0');
+                    }, 100);
+                };
+                img.onerror = () => {
+                    loadingIndicator.classList.add('opacity-0');
+                    showMessage('圖片載入失敗，請檢查檔案格式。');
+                    downloadButton.disabled = true;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateThresholdDisplay() {
+            thresholdValueDisplay.textContent = thresholdSlider.value;
+            colorHexDisplay.textContent = inkColorInput.value.toUpperCase();
+        }
+
+        function updateBlurDisplay() {
+            blurValueDisplay.textContent = parseFloat(blurSlider.value).toFixed(1);
+        }
+        
+        function showMessage(text) {
+            messageBox.textContent = text;
+            messageBox.style.opacity = '1';
+        }
+
+        function processImage() {
+            if (!originalImage) {
+                showMessage('請先選擇圖樣。');
+                downloadButton.disabled = true;
+                return;
+            }
+
+            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+            ctx.drawImage(originalImage, 0, 0);
+            let imageData = ctx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+
+            const blurRadius = parseFloat(blurSlider.value);
+            if (blurRadius > 0) {
+                imageData = applyBoxBlur(imageData, blurRadius);
+            }
+            
+            const threshold = parseInt(thresholdSlider.value, 10);
+            const inkRgb = hexToRgb(inkColorInput.value);
+            const data = imageData.data;
+            const inkR = inkRgb[0];
+            const inkG = inkRgb[1];
+            const inkB = inkRgb[2];
+
+            const maxNoiseOffset = (255 - threshold) / 5;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+                const alpha = data[i + 3];
+
+                const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                const noise = (Math.random() - 0.5) * maxNoiseOffset * 2; 
+                const dynamicLuminance = luminance + noise; 
+
+                if (dynamicLuminance < threshold && alpha > 0) {
+                    data[i] = inkR;
+                    data[i + 1] = inkG;
+                    data[i + 2] = inkB;
+                    data[i + 3] = 255; 
+                } else {
+                    data[i] = data[i + 1] = data[i + 2] = 0;
+                    data[i + 3] = 0; 
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            const newStampDataUrl = imageCanvas.toDataURL('image/png');
+            stampOutputImage.src = newStampDataUrl;
+            
+            // 保持樣式控制
+            stampOutputImage.style.maxWidth = '90%';
+            stampOutputImage.style.maxHeight = '90%';
+            
+            downloadButton.disabled = false;
+        }
+
+        function downloadStamp() {
+            if (!originalImage) {
+                showMessage('尚未生成印章。');
+                return;
+            }
+            processImage();
+            const dataURL = imageCanvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = dataURL;
+            link.download = `stamp_art_${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            updateThresholdDisplay();
+            updateBlurDisplay();
+        });
+
+    </script>
+</body>
+</html>
