@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>護理臨床計算工作站 Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+            background-color: #f0f4f8;
+            color: #334155;
+            overflow: hidden;
+        }
+
+        /* 背景特效 */
+        .bg-gradient-mesh {
+            background: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.15) 0px, transparent 50%);
+            background-size: 100% 100%;
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+        }
+
+        /* 側邊欄玻璃質感 */
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* 導航按鈕樣式 */
+        .nav-item {
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: #3b82f6;
+            transform: scaleY(0);
+            transition: transform 0.2s ease;
+            border-radius: 0 4px 4px 0;
+        }
+        .nav-item.active {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 600;
+        }
+        .nav-item.active::before {
+            transform: scaleY(1);
+        }
+
+        /* 輸入框美化 */
+        .input-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+        }
+        .input-modern {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+        .input-modern:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+        
+        /* 結果卡片 */
+        .result-card {
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border: 1px solid #fff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+
+        /* 臨床提示區塊 */
+        .clinical-note {
+            background-color: #fffbeb; /* amber-50 */
+            border-left: 4px solid #f59e0b; /* amber-500 */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        .clinical-note h4 {
+            color: #b45309; /* amber-700 */
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .clinical-note ul {
+            list-style-type: disc;
+            padding-left: 1.25rem;
+            font-size: 0.875rem;
+            color: #78350f; /* amber-900 */
+            line-height: 1.6;
+        }
+
+        /* 隱藏數字箭頭 */
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        /* 自定義捲軸 */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        
+        /* 動畫 */
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="h-screen flex text-slate-700">
+
+    <!-- 背景 -->
+    <div class="bg-gradient-mesh"></div>
+
+    <!-- 左側導航欄 (Desktop) -->
+    <aside class="w-64 glass-sidebar hidden md:flex flex-col h-full shadow-lg z-20">
+        <div class="p-6 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-blue-300 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-800 leading-tight">護理計算</h1>
+                    <p class="text-xs text-slate-500">Clinical Workstation</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 custom-scroll space-y-1 px-3">
+            <p class="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">輸液與監測</p>
+            <button onclick="switchTab('io')" id="nav-io" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm active">
+                <span class="text-lg">💧</span> I/O 液體平衡
+            </button>
+            <button onclick="switchTab('drip')" id="nav-drip" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm">
+                <span class="text-lg">💉</span> IV 滴速計算
+            </button>
+            <button onclick="switchTab('burn')" id="nav-burn" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm">
+                <span class="text-lg">🔥</span> 燒傷輸液復甦
+            </button>
+            
+            <p class="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-6">重症與身體評估</p>
+            <button onclick="switchTab('weight')" id="nav-weight" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm">
+                <span class="text-lg">💊</span> 高警示藥物滴注
+            </button>
+            <button onclick="switchTab('renal')" id="nav-renal" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm">
+                <span class="text-lg">⚖️</span> 體位與腎功能 (CCr)
+            </button>
+            <button onclick="switchTab('map')" id="nav-map" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm">
+                <span class="text-lg">❤️</span> 平均動脈壓 (MAP)
+            </button>
+
+            <p class="px-3 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-6">產科與檢驗</p>
+            <button onclick="switchTab('edd')" id="nav-edd" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm">
+                <span class="text-lg">🤰</span> 預產期計算 (EDD)
+            </button>
+            <button onclick="switchTab('lab')" id="nav-lab" class="nav-item w-full flex items-center gap-3 px-3 py-3 text-left rounded-lg text-sm">
+                <span class="text-lg">🧪</span> 校正數值 (Ca/Na/AG)
+            </button>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-100 text-center">
+            <p class="text-[10px] text-slate-400">製作者 : 蝦仁藥師 | 更新 : 2026/01/02</p>
+        </div>
+    </aside>
+
+    <!-- 主內容區 -->
+    <main class="flex-1 h-full overflow-hidden flex flex-col relative">
+        <!-- 手機版頂部導航 -->
+        <div class="md:hidden bg-white/90 backdrop-blur-md p-4 border-b flex justify-between items-center z-30">
+            <span class="font-bold text-slate-800">護理計算工作站</span>
+            <select onchange="switchTab(this.value)" class="bg-slate-100 text-sm p-2 rounded-lg border-none outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="io">💧 I/O 液體平衡</option>
+                <option value="drip">💉 IV 滴速計算</option>
+                <option value="burn">🔥 燒傷輸液</option>
+                <option value="weight">💊 高警示藥物</option>
+                <option value="renal">⚖️ 體位與腎功能</option>
+                <option value="map">❤️ 平均動脈壓</option>
+                <option value="edd">🤰 預產期計算</option>
+                <option value="lab">🧪 校正數值</option>
+            </select>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 custom-scroll">
+            <div class="max-w-6xl mx-auto w-full">
+                
+                <!-- 1. I/O 液體平衡 -->
+                <div id="tab-io" class="tab-content animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">液體平衡監測</h2>
+                        <p class="text-slate-500">計算 Intake/Output 平衡與每小時平均尿量 (UOP)。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- 輸入區 -->
+                        <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <div class="input-group">
+                                <label>總輸入量 (Intake)</label>
+                                <input type="number" id="io-intake" class="input-modern" placeholder="mL">
+                            </div>
+                            <div class="input-group">
+                                <label>總輸出量 (Output)</label>
+                                <input type="number" id="io-output" class="input-modern" placeholder="mL">
+                            </div>
+                            <div class="input-group">
+                                <label>統計時間 (Hours)</label>
+                                <input type="number" id="io-hours" class="input-modern" placeholder="小時">
+                            </div>
+                            <button onclick="calculateIO()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-blue-200 mt-2">
+                                計算平衡
+                            </button>
+                        </div>
+
+                        <!-- 結果區 -->
+                        <div class="lg:col-span-7 space-y-4">
+                            <div class="result-card rounded-2xl p-8 relative overflow-hidden">
+                                <div class="relative z-10">
+                                    <div class="grid grid-cols-2 gap-8">
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-400 uppercase">液體平衡 (Balance)</p>
+                                            <p id="res-io-balance" class="text-4xl font-bold text-slate-800 mt-1">--</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-bold text-slate-400 uppercase">平均時尿量 (UOP)</p>
+                                            <p id="res-io-uop" class="text-4xl font-bold text-slate-800 mt-1">--</p>
+                                            <p class="text-xs text-slate-500 mt-1">mL/hr</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 pt-6 border-t border-slate-200">
+                                        <p id="res-io-msg" class="flex items-center gap-2 text-slate-600 font-medium">
+                                            <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+                                            請輸入數值開始計算
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="absolute -right-6 -top-6 w-32 h-32 bg-blue-100 rounded-full blur-2xl opacity-60"></div>
+                            </div>
+                            
+                            <!-- 臨床小提示 -->
+                            <div class="clinical-note">
+                                <h4>📚 臨床判讀與注意事項</h4>
+                                <ul>
+                                    <li><strong>成人正常 UOP：</strong> 應 > 0.5 mL/kg/hr (通常約 30-50 mL/hr)。</li>
+                                    <li><strong>正平衡過多：</strong> 連續數日正平衡需評估肺水腫 (Crackles)、組織水腫及體重增加情形。</li>
+                                    <li><strong>少尿 (Oliguria)：</strong> 連續 6 小時 UOP < 0.5 mL/kg/hr 為 AKI 風險指標，需評估是否為容量不足、阻塞或腎實質損傷。</li>
+                                    <li><strong>無感流失 (Insensible Loss)：</strong> 發燒或喘會增加水分流失，每日基礎無感流失約 600-800 mL。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. IV 滴速計算 -->
+                <div id="tab-drip" class="tab-content hidden animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">IV 滴速計算</h2>
+                        <p class="text-slate-500">一般輸液管路重力滴速換算 (gtts/min)。</p>
+                    </header>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-5 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <div class="input-group">
+                                <label>輸液總量 (Volume)</label>
+                                <input type="number" id="iv-vol" class="input-modern" placeholder="mL">
+                            </div>
+                            <div class="input-group">
+                                <label>預計輸注時間 (Time)</label>
+                                <input type="number" id="iv-time" class="input-modern" placeholder="小時 (Hr)">
+                            </div>
+                            <div class="input-group">
+                                <label>滴係數 (Drop Factor)</label>
+                                <select id="iv-factor" class="input-modern cursor-pointer">
+                                    <option value="10">10 gtts/mL (一般成人)</option>
+                                    <option value="15">15 gtts/mL (一般成人)</option>
+                                    <option value="20">20 gtts/mL (精密輸液)</option>
+                                    <option value="60">60 gtts/mL (小兒/Micro)</option>
+                                </select>
+                            </div>
+                            <button onclick="calculateDrip()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200 mt-2">
+                                計算滴速
+                            </button>
+                        </div>
+
+                        <div class="lg:col-span-7">
+                            <div class="result-card rounded-2xl p-10 text-center relative overflow-hidden flex flex-col items-center justify-center min-h-[200px]">
+                                <p class="text-sm font-bold text-indigo-400 uppercase tracking-widest mb-2">目標滴速 (Target Rate)</p>
+                                <p id="res-drip" class="text-6xl font-bold text-slate-800">--</p>
+                                <p class="text-lg text-slate-500 mt-2">gtts/min (滴/分)</p>
+                                
+                                <div class="mt-8 p-4 bg-indigo-50 rounded-lg w-full max-w-sm">
+                                    <p class="text-indigo-800 font-medium text-sm">約每 <span id="res-drip-sec" class="font-bold">--</span> 秒 1 滴</p>
+                                </div>
+                            </div>
+
+                             <!-- 臨床小提示 -->
+                             <div class="clinical-note">
+                                <h4>📚 給藥注意事項</h4>
+                                <ul>
+                                    <li><strong>影響流速因素：</strong> 點滴高度、軟針號數 (Gauge)、輸液黏滯度、病人姿勢均會影響實際流速，需定時巡視。</li>
+                                    <li><strong>精準度：</strong> 重力滴注誤差較大，高警示藥物或電解質（如 KCl）強烈建議使用輸液幫浦 (Infusion Pump)。</li>
+                                    <li><strong>併發症觀察：</strong> 留意注射部位是否有紅腫熱痛（靜脈炎）或液體滲漏 (Extravasation)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 燒傷輸液 (Parkland & Brooke) -->
+                <div id="tab-burn" class="tab-content hidden animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">燒傷輸液復甦</h2>
+                        <p class="text-slate-500">支援 Parkland 及 Modified Brooke 公式。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <div class="input-group">
+                                <label>公式選擇 (Formula)</label>
+                                <select id="burn-formula" class="input-modern cursor-pointer">
+                                    <option value="4">Parkland (4 mL × kg × %)</option>
+                                    <option value="2">Modified Brooke (2 mL × kg × %)</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label>病人體重 (Weight)</label>
+                                <input type="number" id="burn-kg" class="input-modern" placeholder="kg">
+                            </div>
+                            <div class="input-group">
+                                <label>燒傷面積 (%TBSA)</label>
+                                <input type="number" id="burn-tbsa" class="input-modern" placeholder="%">
+                            </div>
+                             <div class="input-group">
+                                <label>病人分組</label>
+                                <select id="burn-type" class="input-modern cursor-pointer">
+                                    <option value="adult">成人 (Adult)</option>
+                                    <option value="child">兒童 (Child)</option>
+                                </select>
+                            </div>
+                            <button onclick="calculateBurn()" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-orange-200 mt-2">
+                                計算 24h 總量
+                            </button>
+                        </div>
+
+                        <div class="lg:col-span-8 space-y-4">
+                            <div class="result-card rounded-2xl p-6">
+                                <div class="flex justify-between items-end border-b border-slate-200 pb-4 mb-4">
+                                    <span class="text-slate-500 font-medium">預估 24 小時總輸液量 (Lactated Ringer's)</span>
+                                    <span id="res-burn-total" class="text-3xl font-bold text-slate-800">-- mL</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                                        <p class="text-xs font-bold text-orange-600 uppercase mb-1">前 8 小時 (50%)</p>
+                                        <p id="res-burn-8h-vol" class="text-xl font-bold text-slate-800">-- mL</p>
+                                        <p id="res-burn-8h-rate" class="text-sm text-slate-500 mt-1">速率: -- mL/hr</p>
+                                    </div>
+                                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                                        <p class="text-xs font-bold text-blue-600 uppercase mb-1">後 16 小時 (50%)</p>
+                                        <p id="res-burn-16h-vol" class="text-xl font-bold text-slate-800">-- mL</p>
+                                        <p id="res-burn-16h-rate" class="text-sm text-slate-500 mt-1">速率: -- mL/hr</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 臨床小提示 -->
+                            <div class="clinical-note">
+                                <h4>📚 復甦調整與注意事項</h4>
+                                <ul>
+                                    <li><strong>計算僅為起始值：</strong> 公式僅提供初步估算，必須依據每小時尿量 (UOP) 動態調整輸液速度。</li>
+                                    <li><strong>尿量目標 (UOP Target)：</strong>
+                                        <ul class="list-disc pl-4 mt-1">
+                                            <li id="burn-note-adult"><strong>成人：</strong> 維持 0.5 - 1.0 mL/kg/hr。</li>
+                                            <li id="burn-note-child"><strong>兒童 (<30kg)：</strong> 維持 1.0 - 1.5 mL/kg/hr。</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>特殊情況：</strong> 高壓電燒傷 (Electrical Injury) 需維持 UOP 75-100 mL/hr 以預防肌球蛋白尿造成的腎衰竭。</li>
+                                    <li><strong>兒童低血糖預防：</strong> 體重 < 30kg 的兒童肝醣儲存較少，除復甦液外，建議另外加上含糖維持輸液 (Maintenance Fluid with D5W) 以預防低血糖。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 高警示藥物滴注 -->
+                <div id="tab-weight" class="tab-content hidden animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">高警示藥物滴注</h2>
+                        <p class="text-slate-500">計算輸液幫浦 (Pump) 設定速率 (mcg/kg/min → mL/hr)。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="input-group">
+                                    <label>目標劑量</label>
+                                    <div class="relative">
+                                        <input type="number" id="wd-dose" class="input-modern pr-16" placeholder="0">
+                                        <span class="absolute right-3 top-3 text-xs text-slate-400">mcg/kg/min</span>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label>體重</label>
+                                    <div class="relative">
+                                        <input type="number" id="wd-kg" class="input-modern pr-8" placeholder="0">
+                                        <span class="absolute right-3 top-3 text-xs text-slate-400">kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="border-t border-slate-100 my-4 pt-4">
+                                <p class="text-xs font-bold text-slate-400 mb-3">藥物配方濃度</p>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="input-group">
+                                        <label>藥物總量 (mg)</label>
+                                        <input type="number" id="wd-mg" class="input-modern" placeholder="mg">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>稀釋體積 (mL)</label>
+                                        <input type="number" id="wd-vol" class="input-modern" placeholder="mL">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="calculateWeightDrip()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-red-200 mt-2">
+                                計算 Pump 速率
+                            </button>
+                        </div>
+
+                        <div class="lg:col-span-6">
+                            <div class="result-card rounded-2xl p-8 h-full flex flex-col justify-center border-l-4 border-l-red-500">
+                                <div>
+                                    <p class="text-sm font-bold text-slate-400 uppercase">藥物濃度 (Concentration)</p>
+                                    <p id="res-wd-conc" class="text-2xl font-bold text-slate-700 mt-1 mb-6">-- mcg/mL</p>
+                                    
+                                    <p class="text-sm font-bold text-red-500 uppercase">Pump 設定速率 (Rate)</p>
+                                    <p id="res-wd-rate" class="text-5xl font-bold text-red-600 mt-2">--</p>
+                                    <p class="text-lg text-slate-500 mt-1">mL/hr</p>
+                                </div>
+                                <div class="mt-8 p-3 bg-red-50 rounded text-xs text-red-700 flex gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    高警示藥物請務必執行雙人核對 (Double Check)。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- 臨床小提示 -->
+                     <div class="clinical-note mt-6">
+                        <h4>📚 安全給藥指引</h4>
+                        <ul>
+                            <li><strong>雙人核對：</strong> 升壓劑 (Inotropes/Vasopressors) 屬於高警示藥物，設定或調整幫浦時務必由兩位護理人員核對。</li>
+                            <li><strong>極限值 (Hard/Soft Limits)：</strong> 若使用智慧型幫浦 (Smart Pump)，請確保藥庫設定正確，切勿隨意跳過警示。</li>
+                            <li><strong>管路通暢：</strong> 此類藥物外滲可能導致組織壞死，建議盡量使用中心靜脈導管 (CVC)，若使用周邊靜脈需頻繁評估回血與注射部位。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 8. 新增: 體位與腎功能 (Renal & Body Metrics) -->
+                <div id="tab-renal" class="tab-content hidden animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">體位與腎功能評估</h2>
+                        <p class="text-slate-500">計算 BMI, BSA, IBW 以及肌酸酐清除率 (CCr)。</p>
+                    </header>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- 輸入區 -->
+                        <div class="lg:col-span-6 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <h3 class="font-bold text-slate-700 mb-4 border-b pb-2">基本資料</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="input-group">
+                                    <label>性別</label>
+                                    <select id="rb-gender" class="input-modern cursor-pointer">
+                                        <option value="male">男性 (Male)</option>
+                                        <option value="female">女性 (Female)</option>
+                                    </select>
+                                </div>
+                                <div class="input-group">
+                                    <label>年齡</label>
+                                    <input type="number" id="rb-age" class="input-modern" placeholder="歲">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="input-group">
+                                    <label>身高 (cm)</label>
+                                    <input type="number" id="rb-height" class="input-modern" placeholder="cm">
+                                </div>
+                                <div class="input-group">
+                                    <label>體重 (kg)</label>
+                                    <input type="number" id="rb-weight" class="input-modern" placeholder="kg">
+                                </div>
+                            </div>
+                            <div class="input-group">
+                                <label>血清肌酸酐 (Serum Cr)</label>
+                                <input type="number" id="rb-scr" class="input-modern" placeholder="mg/dL">
+                            </div>
+                            <button onclick="calculateRenalBody()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-200 mt-2">
+                                計算體位與腎功能
+                            </button>
+                        </div>
+                        
+                        <!-- 結果區 -->
+                        <div class="lg:col-span-6 space-y-4">
+                            <!-- 體位結果 -->
+                            <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                                <h4 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">體位指標 (Body Metrics)</h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-xs text-slate-500">BMI</p>
+                                        <p id="res-bmi" class="text-xl font-bold text-slate-800">--</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-slate-500">體表面積 (BSA)</p>
+                                        <p id="res-bsa" class="text-xl font-bold text-slate-800">-- m²</p>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <p class="text-xs text-slate-500">理想體重 (IBW)</p>
+                                        <p id="res-ibw" class="text-xl font-bold text-slate-800">-- kg</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 腎功能結果 -->
+                            <div class="result-card rounded-2xl p-6 relative overflow-hidden">
+                                <div class="relative z-10">
+                                    <p class="text-sm font-bold text-emerald-600 uppercase tracking-widest">肌酸酐清除率 (C-G Eq)</p>
+                                    <p id="res-ccr" class="text-4xl font-bold text-slate-800 mt-2 mb-2">--</p>
+                                    <p class="text-sm text-slate-500">mL/min</p>
+                                </div>
+                                <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-100 rounded-full blur-2xl opacity-60"></div>
+                            </div>
+
+                            <div class="clinical-note text-xs">
+                                <h4>📚 藥物劑量調整參考</h4>
+                                <ul>
+                                    <li><strong>CCr 計算：</strong> 採用 Cockcroft-Gault 公式，這仍是多數藥物原廠仿單建議的劑量調整依據 (非 eGFR)。</li>
+                                    <li><strong>體重選用：</strong> 本計算機使用「實際體重」計算 CCr。若病人體重 > 130% IBW，部分文獻建議使用調整體重 (AdjBW)，請依臨床判斷。</li>
+                                    <li><strong>抗生素：</strong> Vancomycin, Aminoglycosides 等需依 CCr 延長給藥間隔或降低劑量。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 平均動脈壓 (MAP) -->
+                <div id="tab-map" class="tab-content hidden animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">平均動脈壓 (MAP)</h2>
+                        <p class="text-slate-500">評估器官灌流的重要指標。公式: (SBP + 2×DBP) ÷ 3</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <div class="input-group">
+                                <label>收縮壓 (SBP)</label>
+                                <input type="number" id="map-sbp" class="input-modern" placeholder="mmHg">
+                            </div>
+                            <div class="input-group">
+                                <label>舒張壓 (DBP)</label>
+                                <input type="number" id="map-dbp" class="input-modern" placeholder="mmHg">
+                            </div>
+                            <button onclick="calculateMAP()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-teal-200 mt-2">
+                                計算 MAP
+                            </button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="result-card rounded-2xl p-8 flex flex-col justify-center items-center text-center">
+                                <p class="text-sm font-bold text-teal-600 uppercase tracking-widest">平均動脈壓</p>
+                                <p id="res-map-val" class="text-6xl font-bold text-slate-800 my-4">--</p>
+                                <p class="text-slate-500">mmHg</p>
+                                
+                                <div id="res-map-alert" class="mt-6 px-4 py-2 rounded-full text-sm font-bold hidden">
+                                    --
+                                </div>
+                            </div>
+                            
+                            <!-- 臨床小提示 -->
+                             <div class="clinical-note">
+                                <h4>📚 治療目標與意義</h4>
+                                <ul>
+                                    <li><strong>敗血性休克：</strong> 依據 Surviving Sepsis Campaign 指引，初始復甦目標通常為 MAP ≥ 65 mmHg。</li>
+                                    <li><strong>創傷出血：</strong> 可能採取「允許性低血壓 (Permissive Hypotension)」，維持 MAP 50-60 mmHg 直到止血，以避免凝血塊被沖刷。</li>
+                                    <li><strong>腦傷 (TBI)：</strong> 為維持腦灌流壓 (CPP)，MAP 目標通常較高 (例如 > 80-90 mmHg)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. 預產期計算 (EDD) -->
+                <div id="tab-edd" class="tab-content hidden animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">預產期計算 (EDD)</h2>
+                        <p class="text-slate-500">使用 Naegele's Rule 推算預產期與妊娠週數。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
+                            <div class="input-group">
+                                <label>最後一次月經首日 (LMP)</label>
+                                <input type="date" id="edd-lmp" class="input-modern">
+                            </div>
+                            <div class="input-group">
+                                <label>平均月經週期 (Cycle Length)</label>
+                                <input type="number" id="edd-cycle" class="input-modern" value="28" placeholder="天數 (預設28)">
+                                <p class="text-xs text-slate-400 mt-1">若不確定請維持 28 天</p>
+                            </div>
+                            <button onclick="calculateEDD()" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-pink-200 mt-2">
+                                計算預產期
+                            </button>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="result-card rounded-2xl p-8 flex flex-col justify-center relative overflow-hidden">
+                                <div class="relative z-10">
+                                    <p class="text-sm font-bold text-pink-500 uppercase tracking-widest">預產期 (EDD)</p>
+                                    <p id="res-edd-date" class="text-3xl font-bold text-slate-800 mt-2 mb-6">--</p>
+                                    
+                                    <div class="border-t border-slate-200 pt-4">
+                                        <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">目前妊娠週數 (GA)</p>
+                                        <p id="res-edd-ga" class="text-4xl font-bold text-slate-800 mt-2">--</p>
+                                    </div>
+                                </div>
+                                <div class="absolute -right-6 -top-6 w-32 h-32 bg-pink-100 rounded-full blur-2xl opacity-60"></div>
+                            </div>
+                            
+                            <!-- 臨床小提示 -->
+                             <div class="clinical-note">
+                                <h4>📚 孕期評估重點</h4>
+                                <ul>
+                                    <li><strong>Naegele's Rule：</strong> 計算方式為 (LMP月份 - 3, 日期 + 7)。若週期非 28 天，每多一天 EDD +1，少一天 EDD -1。</li>
+                                    <li><strong>校正時機：</strong> 若 LMP 推算的預產期與早期超音波 (CRL) 測量差異過大（通常 > 7天），應以超音波結果校正 EDD。</li>
+                                    <li><strong>足月定義：</strong> 滿 37 週即視為足月；42 週以上為過期妊娠。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. 檢驗數值 (Labs) -->
+                <div id="tab-lab" class="tab-content hidden animate-fade-in">
+                    <header class="mb-8">
+                        <h2 class="text-3xl font-bold text-slate-800 mb-2">檢驗數值校正</h2>
+                        <p class="text-slate-500">常用生化數值校正 (Ca, Na) 與間隙計算。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Corrected Calcium -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                            <h3 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2">校正鈣 (Corrected Calcium)</h3>
+                            <div class="space-y-4 flex-1">
+                                <div class="input-group">
+                                    <label>測量鈣 (Measured Ca)</label>
+                                    <input type="number" id="lab-ca" class="input-modern" placeholder="mg/dL">
+                                </div>
+                                <div class="input-group">
+                                    <label>白蛋白 (Albumin)</label>
+                                    <input type="number" id="lab-alb" class="input-modern" placeholder="g/dL">
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-slate-50 rounded-xl text-center">
+                                <p class="text-2xl font-bold text-indigo-600" id="res-lab-ca">--</p>
+                                <p class="text-xs text-slate-400">mg/dL</p>
+                            </div>
+                            <button onclick="calculateCa()" class="w-full mt-4 bg-slate-800 text-white py-2 rounded-lg hover:bg-slate-700">計算</button>
+                        </div>
+
+                        <!-- Corrected Sodium -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                            <h3 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2">高血糖校正鈉 (Corrected Na)</h3>
+                            <div class="space-y-4 flex-1">
+                                <div class="input-group">
+                                    <label>測量鈉 (Measured Na)</label>
+                                    <input type="number" id="lab-na-g" class="input-modern" placeholder="mEq/L">
+                                </div>
+                                <div class="input-group">
+                                    <label>血糖 (Glucose)</label>
+                                    <input type="number" id="lab-gluc" class="input-modern" placeholder="mg/dL">
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-slate-50 rounded-xl text-center">
+                                <p class="text-2xl font-bold text-indigo-600" id="res-lab-na-corr">--</p>
+                                <p class="text-xs text-slate-400">mEq/L</p>
+                            </div>
+                            <button onclick="calculateCorrectedNa()" class="w-full mt-4 bg-slate-800 text-white py-2 rounded-lg hover:bg-slate-700">計算</button>
+                             <div class="mt-2 text-[10px] text-slate-400">
+                                血糖每上升 100mg/dL，血鈉約下降 1.6 mEq/L。
+                            </div>
+                        </div>
+
+                        <!-- Anion Gap -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                            <h3 class="text-lg font-bold text-slate-700 mb-4 border-b pb-2">陰離子間隙 (Anion Gap)</h3>
+                            <div class="space-y-4 flex-1">
+                                <div class="input-group">
+                                    <label>鈉 (Na+)</label>
+                                    <input type="number" id="lab-na" class="input-modern" placeholder="mEq/L">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div class="input-group">
+                                        <label>氯 (Cl-)</label>
+                                        <input type="number" id="lab-cl" class="input-modern" placeholder="mEq/L">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>HCO3-</label>
+                                        <input type="number" id="lab-hco3" class="input-modern" placeholder="mEq/L">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 p-3 bg-slate-50 rounded-xl text-center">
+                                <p class="text-2xl font-bold text-indigo-600" id="res-lab-ag">--</p>
+                                <p class="text-xs text-slate-400">mEq/L (Normal: 8-12)</p>
+                            </div>
+                            <button onclick="calculateAG()" class="w-full mt-4 bg-slate-800 text-white py-2 rounded-lg hover:bg-slate-700">計算</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- 核心邏輯 ---
+
+        // 1. I/O 計算
+        function calculateIO() {
+            const intake = parseFloat(document.getElementById('io-intake').value);
+            const output = parseFloat(document.getElementById('io-output').value);
+            const hours = parseFloat(document.getElementById('io-hours').value);
+            
+            if (isNaN(intake) || isNaN(output) || isNaN(hours) || hours <= 0) {
+                alert("請輸入完整的有效數值");
+                return;
+            }
+
+            const balance = intake - output;
+            const uop = output / hours;
+            
+            const balEl = document.getElementById('res-io-balance');
+            const uopEl = document.getElementById('res-io-uop');
+            const msgEl = document.getElementById('res-io-msg');
+
+            // Balance 顯示
+            balEl.textContent = (balance > 0 ? "+" : "") + balance;
+            balEl.className = `text-4xl font-bold mt-1 ${balance > 0 ? 'text-blue-600' : (balance < 0 ? 'text-amber-500' : 'text-slate-800')}`;
+
+            // UOP 顯示
+            uopEl.textContent = uop.toFixed(1);
+            if (uop < 30) {
+                uopEl.className = "text-4xl font-bold mt-1 text-red-500";
+                msgEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-red-500"></span> ⚠ UOP 過低 (< 30 mL/hr)，請注意腎功能。`;
+            } else {
+                uopEl.className = "text-4xl font-bold mt-1 text-emerald-600";
+                msgEl.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 尿量正常。`;
+            }
+        }
+
+        // 2. IV Drip
+        function calculateDrip() {
+            const vol = parseFloat(document.getElementById('iv-vol').value);
+            const time = parseFloat(document.getElementById('iv-time').value);
+            const factor = parseFloat(document.getElementById('iv-factor').value);
+
+            if (isNaN(vol) || isNaN(time) || time <= 0) {
+                alert("請輸入有效數值");
+                return;
+            }
+
+            const minutes = time * 60;
+            const gtts = (vol * factor) / minutes;
+            const secondsPerDrop = 60 / gtts;
+
+            document.getElementById('res-drip').textContent = Math.round(gtts);
+            document.getElementById('res-drip-sec').textContent = secondsPerDrop.toFixed(1);
+        }
+
+        // 3. Burn (Parkland & Modified Brooke)
+        function calculateBurn() {
+            const formulaFactor = parseFloat(document.getElementById('burn-formula').value);
+            const kg = parseFloat(document.getElementById('burn-kg').value);
+            const tbsa = parseFloat(document.getElementById('burn-tbsa').value);
+
+            if (isNaN(kg) || isNaN(tbsa)) {
+                alert("請輸入有效數值");
+                return;
+            }
+
+            const total = formulaFactor * kg * tbsa;
+            const half = total / 2;
+            const rate8 = half / 8;
+            const rate16 = half / 16;
+
+            document.getElementById('res-burn-total').textContent = Math.round(total) + " mL";
+            document.getElementById('res-burn-8h-vol').textContent = Math.round(half) + " mL";
+            document.getElementById('res-burn-8h-rate').textContent = `速率: ${Math.round(rate8)} mL/hr`;
+            document.getElementById('res-burn-16h-vol').textContent = Math.round(half) + " mL";
+            document.getElementById('res-burn-16h-rate').textContent = `速率: ${Math.round(rate16)} mL/hr`;
+        }
+
+        // 4. Weight Based Drip
+        function calculateWeightDrip() {
+            const dose = parseFloat(document.getElementById('wd-dose').value);
+            const kg = parseFloat(document.getElementById('wd-kg').value);
+            const mg = parseFloat(document.getElementById('wd-mg').value);
+            const vol = parseFloat(document.getElementById('wd-vol').value);
+
+            if (isNaN(dose) || isNaN(kg) || isNaN(mg) || isNaN(vol) || vol === 0) {
+                alert("請輸入完整數值");
+                return;
+            }
+
+            const concMcgMl = (mg * 1000) / vol;
+            const demandMcgHr = dose * kg * 60;
+            const rate = demandMcgHr / concMcgMl;
+
+            document.getElementById('res-wd-conc').textContent = concMcgMl.toFixed(1) + " mcg/mL";
+            document.getElementById('res-wd-rate').textContent = rate.toFixed(1);
+        }
+
+        // 5. Renal & Body Metrics (New)
+        function calculateRenalBody() {
+            const gender = document.getElementById('rb-gender').value;
+            const age = parseFloat(document.getElementById('rb-age').value);
+            const height = parseFloat(document.getElementById('rb-height').value);
+            const weight = parseFloat(document.getElementById('rb-weight').value);
+            const scr = parseFloat(document.getElementById('rb-scr').value);
+            
+            // Check essential inputs for Body Metrics
+            if (isNaN(height) || isNaN(weight)) {
+                alert("請至少輸入身高與體重");
+                return;
+            }
+
+            // 1. BMI: kg / (m^2)
+            const heightM = height / 100;
+            const bmi = weight / (heightM * heightM);
+            document.getElementById('res-bmi').textContent = bmi.toFixed(1);
+
+            // 2. BSA (Mosteller): sqrt( kg * cm / 3600 )
+            const bsa = Math.sqrt((weight * height) / 3600);
+            document.getElementById('res-bsa').textContent = bsa.toFixed(2) + " m²";
+
+            // 3. IBW (Robinson formula)
+            // Male: 52 + 0.75 * (height - 152.4)
+            // Female: 49 + 0.67 * (height - 152.4)
+            // Only valid if height > 152.4 cm (5 feet) roughly
+            let ibw = 0;
+            if (height > 152.4) {
+                 const overHeight = height - 152.4;
+                 if (gender === 'male') {
+                     ibw = 52 + (0.75 * overHeight);
+                 } else {
+                     ibw = 49 + (0.67 * overHeight);
+                 }
+                 document.getElementById('res-ibw').textContent = ibw.toFixed(1) + " kg";
+            } else {
+                 document.getElementById('res-ibw').textContent = "N/A (<152cm)";
+            }
+
+            // 4. CCr (Cockcroft-Gault)
+            // ((140 - age) * weight) / (72 * SCr) (* 0.85 if female)
+            if (!isNaN(age) && !isNaN(scr) && scr > 0) {
+                let ccr = ((140 - age) * weight) / (72 * scr);
+                if (gender === 'female') {
+                    ccr *= 0.85;
+                }
+                document.getElementById('res-ccr').textContent = ccr.toFixed(1);
+            } else {
+                document.getElementById('res-ccr').textContent = "--";
+            }
+        }
+
+        // 6. MAP
+        function calculateMAP() {
+            const sbp = parseFloat(document.getElementById('map-sbp').value);
+            const dbp = parseFloat(document.getElementById('map-dbp').value);
+
+            if (isNaN(sbp) || isNaN(dbp)) {
+                alert("請輸入血壓數值");
+                return;
+            }
+
+            const map = (sbp + 2 * dbp) / 3;
+            const el = document.getElementById('res-map-val');
+            const alertEl = document.getElementById('res-map-alert');
+
+            el.textContent = Math.round(map);
+            
+            alertEl.classList.remove('hidden', 'bg-red-100', 'text-red-600', 'bg-teal-100', 'text-teal-600');
+            
+            if (map < 65) {
+                alertEl.textContent = "⚠ MAP < 65 mmHg，器官灌流可能不足";
+                alertEl.classList.add('bg-red-100', 'text-red-600', 'inline-block');
+            } else {
+                alertEl.textContent = "✔ 灌流壓力可接受";
+                alertEl.classList.add('bg-teal-100', 'text-teal-600', 'inline-block');
+            }
+        }
+        
+        // 7. EDD Calculation
+        function calculateEDD() {
+            const lmpInput = document.getElementById('edd-lmp').value;
+            const cycleDays = parseInt(document.getElementById('edd-cycle').value) || 28;
+
+            if (!lmpInput) {
+                alert("請選擇最後一次月經日期 (LMP)");
+                return;
+            }
+
+            const lmpDate = new Date(lmpInput);
+            const eddDate = new Date(lmpDate);
+            eddDate.setFullYear(eddDate.getFullYear() + 1);
+            eddDate.setMonth(eddDate.getMonth() - 3);
+            eddDate.setDate(eddDate.getDate() + 7);
+            
+            const adjustment = cycleDays - 28;
+            eddDate.setDate(eddDate.getDate() + adjustment);
+
+            const today = new Date();
+            const diffTime = today - lmpDate; 
+            const diffDaysTotal = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            
+            let gaText = "--";
+            if (diffDaysTotal >= 0) {
+                 const weeks = Math.floor(diffDaysTotal / 7);
+                 const days = diffDaysTotal % 7;
+                 gaText = `${weeks} 週 ${days} 天`;
+            } else {
+                 gaText = "尚未懷孕 (LMP 在未來)";
+            }
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' };
+            document.getElementById('res-edd-date').textContent = eddDate.toLocaleDateString('zh-TW', options);
+            document.getElementById('res-edd-ga').textContent = gaText;
+        }
+
+        // 8. Labs
+        function calculateCa() {
+            const ca = parseFloat(document.getElementById('lab-ca').value);
+            const alb = parseFloat(document.getElementById('lab-alb').value);
+
+            if (isNaN(ca) || isNaN(alb)) return;
+            const corrCa = ca + 0.8 * (4.0 - alb);
+            document.getElementById('res-lab-ca').textContent = corrCa.toFixed(2);
+        }
+
+        function calculateCorrectedNa() {
+            const na = parseFloat(document.getElementById('lab-na-g').value);
+            const gluc = parseFloat(document.getElementById('lab-gluc').value);
+
+            if (isNaN(na) || isNaN(gluc)) return;
+            // Formula: Measured Na + 1.6 * ((Glucose - 100) / 100)
+            // Only apply if Glucose > 100
+            if (gluc > 100) {
+                const corrNa = na + 1.6 * ((gluc - 100) / 100);
+                document.getElementById('res-lab-na-corr').textContent = corrNa.toFixed(1);
+            } else {
+                document.getElementById('res-lab-na-corr').textContent = na.toFixed(1);
+            }
+        }
+
+        function calculateAG() {
+            const na = parseFloat(document.getElementById('lab-na').value);
+            const cl = parseFloat(document.getElementById('lab-cl').value);
+            const hco3 = parseFloat(document.getElementById('lab-hco3').value);
+
+            if (isNaN(na) || isNaN(cl) || isNaN(hco3)) return;
+            const ag = na - (cl + hco3);
+            document.getElementById('res-lab-ag').textContent = ag.toFixed(1);
+        }
+
+        // --- 介面切換邏輯 ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            const activeNav = document.getElementById('nav-' + tabId);
+            if(activeNav) activeNav.classList.add('active');
+        }
+
+        window.onload = () => {
+            switchTab('io');
+        }
+
+    </script>
+</body>
+</html>
