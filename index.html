@@ -182,11 +182,12 @@
             ChevronRight: (props) => (
                 <IconBase {...props}><polyline points="9 18 15 12 9 6" /></IconBase>
             ),
-            // 新增 Flame (熱門) 圖示
+            // 新增 Flame (熱門) 圖示 - 更新為更明顯的火焰造型
             Flame: (props) => (
                 <IconBase {...props}>
-                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.148-.22-4.06.02-4.637C10.05 4.36 10.5 4.18 10.9 3.9c.1-.06.2-.12.28-.19C11.67 3.36 12.48 3 13.5 3c2.48 0 4.5 2.02 4.5 4.5 0 1.76-1.02 3.28-2.5 4.02C15.9 11.72 16 12.11 16 12.5a3.5 3.5 0 0 1-3.5 3.5c-1.93 0-3.5-1.57-3.5-3.5 0-.93.37-1.78.98-2.42" />
-                    <path d="M11 16a5 5 0 1 1 6 5c-2.76 0-5-2.24-5-5" />
+                    <path d="M12 2c0 4 3 6 3 9a3 3 0 0 1-6 0c0-3 3-5 3-9z" />
+                    <path d="M12 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4" fill="currentColor"/>
+                    <path d="M8.5 8.5C7.5 10 7 12 7 14a5 5 0 0 0 10 0c0-2.5-1.5-4.5-3-6" />
                 </IconBase>
             )
         };
@@ -331,8 +332,8 @@
                 id: 11,
                 title: "【藥學筆記】Statin臨床決策助手",
                 description: "依照臨床實證指引，彙整了Statin的相關資訊，方便快速了解藥物之間的差異與注意事項。",
-                category: "information",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Statin%20%E8%87%A8%E5%BA%8A%E6%B1%BA%E7%AD%96%E5%8A%A9%E6%89%87.html",
+                category: "clinical",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Statin%20%E8%87%A8%E5%BA%8A%E6%B1%BA%E7%AD%96%E5%8A%A9%E6%89%8B.html",
                 tags: ["降血脂", "血脂治療"],
                 color: "bg-orange-100 text-orange-600",
                 isPopular: true // 設定為熱門
@@ -809,5 +810,3 @@
     </script>
 </body>
 </html>
-
-
