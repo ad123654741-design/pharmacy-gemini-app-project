@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vancomycin TDM Calculator</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Hide spin buttons */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        body {
+            background-color: #f8fafc;
+            /* Grid Pattern */
+            background-image: linear-gradient(to right, rgba(203, 213, 225, 0.4) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* Printing Styles */
+        @media print {
+            @page { size: A4; margin: 1cm; }
+            body { background: white !important; -webkit-print-color-adjust: exact; color: black !important; }
+            .print-hidden { display: none !important; }
+            .print-shadow-none { box-shadow: none !important; }
+            .print-border-none { border: none !important; }
+            .print-block { display: block !important; }
+            .print-grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; display: grid !important; gap: 1rem; }
+            .print-bg-white { background: white !important; }
+            .print-overflow-visible { overflow: visible !important; }
+            .print-h-auto { height: auto !important; }
+            .print-text-black { color: black !important; }
+            
+            /* Add padding back for print to avoid text touching borders */
+            .print-p-4 { padding: 1rem !important; }
+            
+            .break-inside-avoid { break-inside: avoid; }
+            
+            /* Inputs in print mode */
+            input, select, textarea { 
+                border: none !important; 
+                background: transparent !important; 
+                padding: 0 !important; 
+                font-weight: bold; 
+                appearance: none; 
+                -moz-appearance: none; 
+                -webkit-appearance: none; 
+                color: black !important; 
+            }
+            input[type=range] { display: none; }
+            
+            /* Fix for SVG Graphs in PDF */
+            svg { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, memo } = React;
+        
+        // --- Inline Icons to avoid UMD dependency issues ---
+        const Icon = ({ children, className, ...props }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}>{children}</svg>
+        );
+        const Calculator = (props) => <Icon {...props}><rect width="16" height="20" x="4" y="2" rx="2" /><line x1="8" x2="16" y1="6" y2="6" /><line x1="16" x2="16" y1="14" y2="18" /><path d="M16 10h.01" /><path d="M12 10h.01" /><path d="M8 10h.01" /><path d="M12 14h.01" /><path d="M8 14h.01" /><path d="M12 18h.01" /><path d="M8 18h.01" /></Icon>;
+        const Activity = (props) => <Icon {...props}><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></Icon>;
+        const RefreshCw = (props) => <Icon {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5" /><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></Icon>;
+        const AlertCircle = (props) => <Icon {...props}><circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" /></Icon>;
+        const Info = (props) => <Icon {...props}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></Icon>;
+        const X = (props) => <Icon {...props}><path d="M18 6 6 18" /><path d="m6 6 12 12" /></Icon>;
+        const Printer = (props) => <Icon {...props}><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect width="12" height="8" x="6" y="14" /></Icon>;
+        const User = (props) => <Icon {...props}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></Icon>;
+        const FileText = (props) => <Icon {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" x2="8" y1="13" y2="13" /><line x1="16" x2="8" y1="17" y2="17" /><line x1="10" x2="8" y1="9" y2="9" /></Icon>;
+        const ChevronRight = (props) => <Icon {...props}><path d="m9 18 6-6-6-6" /></Icon>;
+        const Calendar = (props) => <Icon {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2" /><line x1="16" x2="16" y1="2" y2="6" /><line x1="8" x2="8" y1="2" y2="6" /><line x1="3" x2="21" y1="10" y2="10" /></Icon>;
+
+        // --- Constants & Explanations ---
+        const PARAM_INFO = {
+            crcl: {
+                title: "肌酸酐清除率 (CrCl)",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100">
+                        <p>CrCl = [(140 - Age) × Weight] / (72 × SCr)</p>
+                        <p className="mt-1 text-xs text-indigo-500">*若為女性，結果 × 0.85</p>
+                    </div>
+                ),
+                description: "使用 Cockcroft-Gault 公式估算腎功能。體重選用邏輯：若實際體重 < IBW，使用實際體重；若實際體重 > 1.2倍 IBW (肥胖)，使用調整體重 (ABW)；其餘情況使用理想體重 (IBW)。"
+            },
+            ibw: {
+                title: "理想體重 (IBW)",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100">
+                        <p>Male: 50 + 2.3 × (Height(in) - 60)</p>
+                        <p>Female: 45.5 + 2.3 × (Height(in) - 60)</p>
+                    </div>
+                ),
+                description: "使用 Devine Formula 計算。這是許多藥物動力學參數計算的基礎體重標準。"
+            },
+            vd: {
+                title: "分佈體積 (Vd)",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100">
+                        Vd = 0.7 L/kg × Actual Weight
+                    </div>
+                ),
+                description: "Vancomycin 的群體平均分佈體積約為 0.7 L/kg。此參數代表藥物在體內分佈的廣度，會受水腫、腹水等體液狀況影響。"
+            },
+            ke: {
+                title: "排除速率常數 (Ke)",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100">
+                        Ke = 0.00083 × CrCl + 0.0044
+                    </div>
+                ),
+                description: "採用 Matzke et al. (1984) 的迴歸方程式，根據腎功能 (CrCl) 來預估 Vancomycin 的排除速率。這是決定半衰期與給藥頻次的核心參數。"
+            },
+            halflife: {
+                title: "半衰期 (T1/2)",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100">
+                        T1/2 = 0.693 / Ke
+                    </div>
+                ),
+                description: "藥物在體內濃度減半所需的時間。"
+            },
+            peak: {
+                title: "預測波峰 (Peak)",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100 break-words">
+                        Cmax_ss = (Dose/T_inf) × (1-e⁻ᵏᵗⁱⁿᶠ) / [Vd×Ke × (1-e⁻ᵏᵗᵃᵘ)]
+                    </div>
+                ),
+                description: "基於單室間歇輸注模型 (One-compartment intermittent infusion model) 的穩態波峰濃度。建議治療區間通常為 25-40 mcg/mL。"
+            },
+            trough: {
+                title: "預測波谷 (Trough)",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100 break-words">
+                        Cmin_ss = Peak × e⁻ᵏ⁽ᵗᵃᵘ⁻ᵗⁱⁿᶠ⁾
+                    </div>
+                ),
+                description: "給藥間隔結束前（下一次給藥前）的最低濃度。這是臨床監測療效與毒性的最重要指標。一般感染建議 10-15 mcg/mL，嚴重感染（如骨髓炎、肺炎）建議 15-20 mcg/mL。"
+            },
+            auc: {
+                title: "AUC/MIC",
+                formula: (
+                    <div className="text-sm bg-indigo-50 p-2 rounded font-mono text-indigo-900 border border-indigo-100">
+                        AUC24 = Total Daily Dose / Clearance
+                    </div>
+                ),
+                description: "24小時曲線下面積。對於 Vancomycin，AUC/MIC 是預測療效的最佳指標。目標值為 400-600 mg·h/L (假設 MIC=1 mg/L)。"
+            }
+        };
+
+        // --- Sub-Components ---
+
+        const InputGroup = memo(({ label, value, onChange, placeholder, type = "text", step, readOnly = false, multiline = false }) => (
+            <div className="relative group">
+                <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1 uppercase tracking-wide group-focus-within:text-indigo-600 transition-colors print-text-black">
+                    {label}
+                </label>
+                
+                {/* EDIT MODE: Input or Textarea (Hidden in Print) */}
+                {!multiline ? (
+                    <input 
+                        type={type} 
+                        step={step}
+                        value={value} 
+                        onChange={onChange} 
+                        readOnly={readOnly}
+                        placeholder={placeholder}
+                        onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()} 
+                        className={`print-hidden w-full px-4 py-2.5 text-sm rounded-xl border-2 border-slate-300 bg-white
+                            focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 
+                            hover:border-slate-400 outline-none transition-all duration-200 font-bold text-slate-700
+                            placeholder:text-slate-400 shadow-sm ${readOnly ? 'opacity-60 cursor-not-allowed bg-slate-100' : ''}`} 
+                    />
+                ) : (
+                    <textarea 
+                        value={value} 
+                        onChange={onChange} 
+                        readOnly={readOnly}
+                        placeholder={placeholder}
+                        rows={3}
+                        className={`print-hidden w-full px-4 py-2.5 text-sm rounded-xl border-2 border-slate-300 bg-white
+                            focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 
+                            hover:border-slate-400 outline-none transition-all duration-200 font-bold text-slate-700
+                            placeholder:text-slate-400 shadow-sm resize-y ${readOnly ? 'opacity-60 cursor-not-allowed bg-slate-100' : ''}`} 
+                    />
+                )}
+
+                {/* PRINT MODE: Pure Text Div (Visible only in Print) */}
+                <div className="hidden print-block w-full text-sm font-bold text-black px-1 py-1 break-words whitespace-pre-wrap leading-relaxed">
+                    {value || '-'}
+                </div>
+            </div>
+        ));
+
+        const ResultCard = memo(({ label, value, unit, subtext, highlight = false, infoKey, onInfoClick }) => (
+            <div className={`relative p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-lg
+                ${highlight 
+                ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200' 
+                : 'bg-white border-slate-300 hover:border-indigo-300'} shadow-md break-inside-avoid group print:border print:border-slate-300 print:shadow-none print:bg-white`}
+            >
+                <div className="flex justify-between items-start">
+                    <div className="text-xs text-slate-500 uppercase tracking-wider font-bold">{label}</div>
+                    {infoKey && (
+                        <button 
+                        onClick={() => onInfoClick(infoKey)}
+                        className="text-slate-300 hover:text-indigo-600 transition-colors focus:outline-none print-hidden p-0.5 rounded-full hover:bg-indigo-50"
+                        >
+                        <Info className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                </div>
+                <div className={`text-2xl font-bold my-1.5 ${highlight ? 'text-indigo-700' : 'text-slate-800'} print:text-black`}>
+                    {typeof value === 'number' && !isNaN(value) ? value.toFixed(2) : '-'}
+                    <span className="text-xs font-normal text-slate-400 ml-1.5 print:text-slate-600">{unit}</span>
+                </div>
+                {subtext && <div className="text-[10px] text-slate-400 font-bold print:text-slate-600">{subtext}</div>}
+            </div>
+        ));
+
+        const PredictionCard = memo(({ label, value, unit, target, colorClass, infoKey, onInfoClick }) => (
+            <div className={`relative p-4 rounded-xl border-2 bg-white shadow-md hover:shadow-xl transition-all duration-200 border-l-[6px] ${colorClass} border-slate-200 print:bg-white print:shadow-none print:border print:border-slate-300 ${colorClass.replace('border-l-', 'print:border-l-')}`}>
+                <div className="flex justify-between items-start">
+                        <div className="text-xs font-bold uppercase text-slate-500">{label}</div>
+                        {infoKey && (
+                        <button onClick={() => onInfoClick(infoKey)} className="text-slate-300 hover:text-indigo-600 print-hidden transition-colors">
+                            <Info className="w-3.5 h-3.5" />
+                        </button>
+                        )}
+                </div>
+                
+                <div className="text-3xl font-extrabold text-slate-800 my-2 print:text-black">
+                    {typeof value === 'number' && !isNaN(value) ? value.toFixed(1) : '-'}
+                    <span className="text-xs font-normal text-slate-400 ml-1 print:text-slate-600">{unit}</span>
+                </div>
+                <div className="inline-flex items-center px-2 py-1 rounded bg-slate-100 text-[10px] font-bold text-slate-500 print:bg-slate-50 print:text-slate-700">
+                    Target: {target}
+                </div>
+            </div>
+        ));
+
+        const InfoModal = ({ activeInfo, setActiveInfo }) => {
+            if (!activeInfo) return null;
+            const content = PARAM_INFO[activeInfo];
+            if (!content) return null;
+
+            return (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm print-hidden animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-in zoom-in-95 duration-200 border-2 border-slate-200">
+                        <button onClick={() => setActiveInfo(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 transition-colors">
+                        <X className="w-5 h-5" />
+                        </button>
+                        
+                        <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                            <Activity className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-lg font-bold text-slate-900">{content.title}</h3>
+                        </div>
+                        
+                        <div className="space-y-5">
+                        <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Formula</label>
+                                {content.formula}
+                        </div>
+                        <div>
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 block">Description</label>
+                                <p className="text-sm text-slate-600 leading-relaxed font-medium">{content.description}</p>
+                        </div>
+                        </div>
+                        
+                        <div className="mt-8 pt-4 border-t border-slate-100 flex justify-end">
+                        <button onClick={() => setActiveInfo(null)} className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold transition-colors">
+                            Close
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Footer = () => (
+            <footer className="mt-12 py-6 border-t border-slate-300 text-center print-hidden">
+                <div className="text-xs text-slate-400 font-bold tracking-wide">
+                製作者 : 蝦仁藥師 | 更新日期 : 2026/01/03
+                </div>
+            </footer>
+        );
+
+        // --- Helper Functions ---
+        const parseInputValue = (val) => {
+            if (!val && val !== '0') return ''; 
+            const parsed = parseFloat(val);
+            return isNaN(parsed) ? '' : parsed;
+        };
+
+        // --- Main App Component ---
+        const App = () => {
+            // State
+            const [patient, setPatient] = useState({
+                name: '', bedNumber: '', mrn: '', physician: '', diagnosis: '',
+                gender: 'male', age: 60, height: 170, weight: 70, scr: 1.0,
+            });
+
+            const [dosing, setDosing] = useState({
+                loadingDose: '', maintenanceDose: 1000, interval: 12, infusionTime: 1,
+            });
+
+            const [assessmentDate, setAssessmentDate] = useState(() => new Date().toISOString().split('T')[0]);
+            const [pkParams, setPkParams] = useState(null);
+            const [prediction, setPrediction] = useState(null);
+            const [customKe, setCustomKe] = useState(''); 
+            const [customVd, setCustomVd] = useState(''); 
+            const [activeInfo, setActiveInfo] = useState(null);
+
+            // Calculations
+            useEffect(() => { calculatePK(); }, [patient.gender, patient.age, patient.height, patient.weight, patient.scr, customKe, customVd]);
+            useEffect(() => { calculatePrediction(); }, [pkParams, dosing]);
+
+            const calculatePK = () => {
+                const { gender, age, height, weight, scr } = patient;
+
+                if (typeof age !== 'number' || isNaN(age) || typeof height !== 'number' || isNaN(height) || typeof weight !== 'number' || isNaN(weight) || typeof scr !== 'number' || isNaN(scr) || scr === 0) {
+                    setPkParams(null);
+                    return;
+                }
+
+                const heightInInches = height / 2.54;
+                const heightOver60 = Math.max(0, heightInInches - 60);
+                let ibw = gender === 'male' ? 50 + 2.3 * heightOver60 : 45.5 + 2.3 * heightOver60;
+                const abw = ibw + 0.4 * (weight - ibw);
+                let weightForCrCl = ibw;
+                if (weight < ibw) weightForCrCl = weight;
+                if (weight > 1.2 * ibw) weightForCrCl = abw;
+                let crcl = ((140 - age) * weightForCrCl) / (72 * scr);
+                if (gender === 'female') crcl *= 0.85;
+                let ke = 0.00083 * crcl + 0.0044;
+                if (typeof customKe === 'number' && !isNaN(customKe)) ke = customKe;
+                let vd = 0.7 * weight;
+                if (typeof customVd === 'number' && !isNaN(customVd)) vd = customVd;
+                const halfLife = 0.693 / ke;
+
+                if (isNaN(crcl) || isNaN(ke) || isNaN(vd) || isNaN(halfLife)) {
+                    setPkParams(null);
+                    return;
+                }
+                setPkParams({ ibw, abw, weightForCalc: weightForCrCl, crcl, vd, ke, halfLife });
+            };
+
+            const calculatePrediction = () => {
+                if (!pkParams) { setPrediction(null); return; }
+                if (typeof dosing.maintenanceDose !== 'number' || isNaN(dosing.maintenanceDose) || typeof dosing.interval !== 'number' || isNaN(dosing.interval) || typeof dosing.infusionTime !== 'number' || isNaN(dosing.infusionTime) || dosing.infusionTime === 0) {
+                    setPrediction(null); return;
+                }
+
+                const { ke, vd } = pkParams;
+                const { maintenanceDose, interval, infusionTime } = dosing;
+                
+                if (ke === 0 || vd === 0) { setPrediction(null); return; }
+
+                const numerator = (maintenanceDose / infusionTime) * (1 - Math.exp(-ke * infusionTime));
+                const denominator = vd * ke * (1 - Math.exp(-ke * interval));
+                const peak = numerator / denominator;
+                const trough = peak * Math.exp(-ke * (interval - infusionTime));
+                const totalDailyDose = maintenanceDose * (24 / interval);
+                const clearance = ke * vd;
+                const auc = totalDailyDose / clearance;
+
+                if (isNaN(peak) || isNaN(trough) || isNaN(auc)) { setPrediction(null); return; }
+
+                const simulationDuration = 120; 
+                const timeStep = 0.5;
+                const points = [];
+                const doses = [];
+                for (let t = 0; t < simulationDuration; t += interval) {
+                    if (t === 0 && typeof dosing.loadingDose === 'number' && !isNaN(dosing.loadingDose)) {
+                        doses.push({ time: t, amount: dosing.loadingDose });
+                    } else {
+                        doses.push({ time: t, amount: maintenanceDose });
+                    }
+                }
+
+                for (let t = 0; t <= simulationDuration; t += timeStep) {
+                    let concentration = 0;
+                    doses.forEach(dose => {
+                        const timeSinceDose = t - dose.time;
+                        if (timeSinceDose < 0) return;
+                        if (timeSinceDose <= infusionTime) {
+                            const rate = dose.amount / infusionTime;
+                            const c_during = (rate / (vd * ke)) * (1 - Math.exp(-ke * timeSinceDose));
+                            concentration += c_during;
+                        } else {
+                            const rate = dose.amount / infusionTime;
+                            const c_end_inf = (rate / (vd * ke)) * (1 - Math.exp(-ke * infusionTime));
+                            concentration += c_end_inf * Math.exp(-ke * (timeSinceDose - infusionTime));
+                        }
+                    });
+                    points.push({ t, c: concentration });
+                }
+                setPrediction({ peak, trough, auc, simulationPoints: points });
+            };
+
+            const handlePatientChange = useCallback((field, value) => { setPatient(prev => ({ ...prev, [field]: value })); }, []);
+            const handleDosingChange = useCallback((field, value) => { setDosing(prev => ({ ...prev, [field]: value })); }, []);
+            
+            const handlePrint = () => {
+                window.focus();
+                setTimeout(() => { window.print(); }, 100);
+            };
+
+            const suggestLoadingDose = () => {
+                if (typeof patient.weight === 'number' && !isNaN(patient.weight)) {
+                    const raw = patient.weight * 25;
+                    const rounded = Math.round(raw / 250) * 250;
+                    setDosing(prev => ({ ...prev, loadingDose: rounded }));
+                }
+            };
+
+            return (
+                <div className="min-h-screen font-sans text-slate-800 relative print-bg-white selection:bg-indigo-100 selection:text-indigo-900 pb-8">
+                    <InfoModal activeInfo={activeInfo} setActiveInfo={setActiveInfo} />
+
+                    <header className="bg-gradient-to-r from-blue-700 to-indigo-800 text-white p-5 shadow-lg shadow-indigo-900/10 sticky top-0 z-40 print:relative print-shadow-none print-bg-white print-text-black print:border-b-4 print:border-slate-800 print:px-0">
+                        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                                <div className="bg-white/10 p-2 rounded-lg backdrop-blur-sm border border-white/10 print-border-none print:p-0">
+                                    <Activity className="w-6 h-6 text-white print-text-indigo-700" />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-bold tracking-tight leading-tight">Vancomycin TDM Report</h1>
+                                    <p className="text-blue-200 text-xs font-medium print-text-slate-500">Clinical Pharmacokinetics Assessment Tool</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-lg border border-white/10 print-border-none print-bg-white print:p-0">
+                                    <Calendar className="w-4 h-4 text-blue-200 print-text-slate-500" />
+                                    <label className="text-xs text-blue-100 font-medium whitespace-nowrap print-hidden">評估日期:</label>
+                                    <input 
+                                        type="date" 
+                                        value={assessmentDate}
+                                        onChange={(e) => setAssessmentDate(e.target.value)}
+                                        className="bg-transparent text-sm text-white font-bold outline-none border-none p-0 focus:ring-0 cursor-pointer print-text-black print:text-right" 
+                                    />
+                                </div>
+
+                                <div className="print-hidden flex items-center gap-2">
+                                    <button 
+                                        onClick={handlePrint}
+                                        className="flex items-center gap-2 bg-white text-indigo-700 hover:bg-blue-50 px-4 py-2 rounded-lg transition-all shadow-sm font-semibold text-sm active:scale-95 z-50 cursor-pointer border border-transparent hover:border-indigo-100"
+                                    >
+                                        <Printer className="w-4 h-4" />
+                                        匯出 PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-7xl mx-auto p-4 md:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10 print-block print:p-0">
+                        
+                        {/* INPUTS COLUMN */}
+                        <div className="lg:col-span-4 space-y-6 print:mb-8 print:w-full">
+                        
+                            <section className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-slate-300 overflow-hidden break-inside-avoid print-shadow-none print:border-2 print:border-slate-300 print-bg-white print-overflow-visible">
+                                <div className="bg-slate-100/80 px-5 py-3 border-b-2 border-slate-300 flex items-center justify-between print-bg-white print:px-0 print-border-none">
+                                    <h2 className="font-bold text-slate-700 flex items-center gap-2.5 text-sm print-text-black">
+                                        <User className="w-4 h-4 text-indigo-500 print-text-black" />
+                                        個案基本資料 (Demographics)
+                                    </h2>
+                                </div>
+                                <div className="p-5 space-y-4 print:p-4 print-text-black">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <InputGroup label="姓名 Name" value={patient.name} onChange={(e) => handlePatientChange('name', e.target.value)} />
+                                        <InputGroup label="病歷號 MRN" value={patient.mrn} onChange={(e) => handlePatientChange('mrn', e.target.value)} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <InputGroup label="病床 Bed" value={patient.bedNumber} onChange={(e) => handlePatientChange('bedNumber', e.target.value)} />
+                                        <InputGroup label="醫師 Physician" value={patient.physician} onChange={(e) => handlePatientChange('physician', e.target.value)} />
+                                    </div>
+                                    {/* Diagnosis field with multiline support */}
+                                    <InputGroup label="診斷 Diagnosis" value={patient.diagnosis} onChange={(e) => handlePatientChange('diagnosis', e.target.value)} multiline={true} />
+                                </div>
+                            </section>
+
+                            <section className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-slate-300 overflow-hidden break-inside-avoid print-shadow-none print:border-2 print:border-slate-300 print:mt-6 print-bg-white print-overflow-visible">
+                                <div className="bg-slate-100/80 px-5 py-3 border-b-2 border-slate-300 flex items-center justify-between print-bg-white print:px-0 print-border-none">
+                                    <h2 className="font-bold text-slate-700 flex items-center gap-2.5 text-sm print-text-black">
+                                        <FileText className="w-4 h-4 text-indigo-500 print-text-black" />
+                                        生理參數 (Parameters)
+                                    </h2>
+                                </div>
+                                <div className="p-5 space-y-5 print:p-4">
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <div className="print-hidden relative group">
+                                            <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1 uppercase tracking-wide">性別</label>
+                                            <div className="flex rounded-xl shadow-sm p-1 bg-slate-100 border-2 border-slate-300">
+                                                <button 
+                                                    onClick={() => handlePatientChange('gender', 'male')} 
+                                                    className={`flex-1 px-3 py-1.5 text-sm font-bold rounded-lg transition-all ${patient.gender === 'male' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                                >
+                                                    Male
+                                                </button>
+                                                <button 
+                                                    onClick={() => handlePatientChange('gender', 'female')} 
+                                                    className={`flex-1 px-3 py-1.5 text-sm font-bold rounded-lg transition-all ${patient.gender === 'female' ? 'bg-white text-pink-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                                >
+                                                    Female
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div className="hidden print-block">
+                                            <InputGroup label="性別" value={patient.gender === 'male' ? 'Male' : 'Female'} readOnly={true} />
+                                        </div>
+
+                                        <InputGroup label="年齡 Age (y)" type="number" value={patient.age} onChange={(e) => handlePatientChange('age', parseInputValue(e.target.value))} />
+                                        <InputGroup label="身高 Ht (cm)" type="number" value={patient.height} onChange={(e) => handlePatientChange('height', parseInputValue(e.target.value))} />
+                                        <InputGroup label="體重 Wt (kg)" type="number" value={patient.weight} onChange={(e) => handlePatientChange('weight', parseInputValue(e.target.value))} />
+                                        <div className="col-span-2">
+                                            <InputGroup label="SCr (mg/dL)" type="number" step="0.1" value={patient.scr} onChange={(e) => handlePatientChange('scr', parseInputValue(e.target.value))} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-slate-300 overflow-hidden break-inside-avoid print-shadow-none print:border-2 print:border-slate-300 print:mt-6 print-bg-white print-overflow-visible">
+                                <div className="bg-slate-100/80 px-5 py-3 border-b-2 border-slate-300 print-bg-white print:px-0 print-border-none">
+                                    <h2 className="font-bold text-slate-700 flex items-center gap-2.5 text-sm print-text-black">
+                                        <span className="w-1.5 h-4 bg-emerald-500 rounded-full print-hidden"></span>
+                                        給藥設計 (Regimen)
+                                    </h2>
+                                </div>
+                                <div className="p-5 space-y-5 print:p-4">
+                                    
+                                    <div className="bg-emerald-50/50 p-4 rounded-xl border-2 border-emerald-100 print-border-none print:p-0 print-bg-white">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <label className="block text-xs font-bold text-emerald-800 uppercase tracking-wide print-text-black">Loading Dose (mg)</label>
+                                            <button onClick={suggestLoadingDose} className="text-[10px] text-emerald-700 hover:text-emerald-900 font-bold hover:underline print-hidden transition-colors flex items-center gap-1">
+                                                <RefreshCw className="w-3 h-3" /> 建議 (25mg/kg)
+                                            </button>
+                                        </div>
+                                        {/* Loading Dose with Edit/Print Mode logic */}
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                step="250"
+                                                placeholder="選填 Optional"
+                                                value={dosing.loadingDose}
+                                                onChange={(e) => handleDosingChange('loadingDose', parseInputValue(e.target.value))}
+                                                onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()}
+                                                className="print-hidden w-full px-4 py-2 text-sm border-2 border-emerald-200 rounded-lg focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none bg-white text-emerald-900 font-bold placeholder:text-emerald-700/40"
+                                            />
+                                            <div className="hidden print-block w-full text-sm font-bold text-black px-1 leading-relaxed">
+                                                {dosing.loadingDose || '-'}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <InputGroup label="維持劑量 (mg)" type="number" step="250" value={dosing.maintenanceDose} onChange={(e) => handleDosingChange('maintenanceDose', parseInputValue(e.target.value))} />
+                                        
+                                        <div className="relative group">
+                                            <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1 uppercase tracking-wide print-text-black">頻次 Interval</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={dosing.interval}
+                                                    onChange={(e) => handleDosingChange('interval', parseInputValue(e.target.value))}
+                                                    className="print-hidden w-full px-4 py-2.5 text-sm rounded-xl border-2 border-slate-300 bg-white
+                                                    focus:bg-white focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 
+                                                    hover:border-slate-400 outline-none transition-all duration-200 font-bold text-slate-700 appearance-none cursor-pointer"
+                                                >
+                                                    {[6, 8, 12, 24, 48].map(h => <option key={h} value={h}>q{h}h</option>)}
+                                                    <option value={18}>q18h</option>
+                                                    <option value={36}>q36h</option>
+                                                </select>
+                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 print-hidden">
+                                                    <ChevronRight className="w-4 h-4 rotate-90" />
+                                                </div>
+                                                
+                                                {/* Print Mode Display for Interval */}
+                                                <div className="hidden print-block w-full text-sm font-bold text-black px-1 leading-relaxed">
+                                                    q{dosing.interval}h
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1.5 ml-1 uppercase tracking-wide print-text-black">輸注時間 (hr)</label>
+                                        <div className="flex items-center gap-3">
+                                            <input
+                                            type="range" min="0.5" max="4" step="0.5"
+                                            value={typeof dosing.infusionTime === 'number' ? dosing.infusionTime : 1}
+                                            onChange={(e) => handleDosingChange('infusionTime', parseInputValue(e.target.value))}
+                                            className="flex-1 h-1.5 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-indigo-600 print-hidden"
+                                            />
+                                            {/* Unified display for edit and print, just removing border in print */}
+                                            <span className="w-16 text-center text-sm font-bold text-indigo-700 bg-indigo-50 py-1 rounded-lg border-2 border-indigo-100 print-border-none print-bg-white print-text-black print-text-left print-pl-0 print-w-auto">
+                                                {dosing.infusionTime} h
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+                        
+                        </div>
+
+                        {/* RESULTS COLUMN */}
+                        <div className="lg:col-span-8 space-y-6 print:w-full">
+                            
+                            <section className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-slate-300 p-6 break-inside-avoid print-shadow-none print:border-2 print:border-slate-300 print:p-0 print-bg-white print-overflow-visible">
+                                <h3 className="text-lg font-bold text-slate-800 mb-5 flex items-center gap-2 print-text-black">
+                                    <Calculator className="w-5 h-5 text-slate-400 print-text-black" />
+                                    PK Parameters
+                                </h3>
+                                
+                                {pkParams ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print-grid-cols-4">
+                                        <ResultCard label="CrCl" value={pkParams.crcl} unit="ml/min" subtext="Cockcroft-Gault" infoKey="crcl" onInfoClick={setActiveInfo} />
+                                        <ResultCard label="IBW" value={pkParams.ibw} unit="kg" infoKey="ibw" onInfoClick={setActiveInfo} />
+                                        <ResultCard label="Vd" value={pkParams.vd} unit="L" subtext="0.7 L/kg" infoKey="vd" onInfoClick={setActiveInfo} />
+                                        <ResultCard label="Ke" value={pkParams.ke} unit="hr⁻¹" subtext="Matzke" infoKey="ke" onInfoClick={setActiveInfo} />
+                                        <ResultCard label="T1/2" value={pkParams.halfLife} unit="hr" infoKey="halflife" onInfoClick={setActiveInfo} />
+                                        <ResultCard label="Calc Wt" value={pkParams.weightForCalc} unit="kg" />
+                                        
+                                        <div className="col-span-2 bg-slate-50 rounded-xl p-3 border-2 border-slate-200 print-hidden">
+                                            <div className="text-[10px] font-bold text-slate-400 mb-2 flex items-center uppercase tracking-wide">
+                                                <RefreshCw className="w-3 h-3 mr-1" />
+                                                Manual Override
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <input placeholder={`Ke (${pkParams.ke.toFixed(4)})`} type="number" onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()} className="w-full text-xs p-2 rounded-lg border-2 border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none font-bold" value={customKe} onChange={e => setCustomKe(parseInputValue(e.target.value))} />
+                                                <input placeholder={`Vd (${pkParams.vd.toFixed(1)})`} type="number" onWheel={(e) => e.target instanceof HTMLElement && e.target.blur()} className="w-full text-xs p-2 rounded-lg border-2 border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none font-bold" value={customVd} onChange={e => setCustomVd(parseInputValue(e.target.value))} />
+                                            </div>
+                                        </div>
+                                        
+                                        {(customKe !== '' || customVd !== '') && (
+                                            <div className="hidden print-block col-span-2 p-2 border border-slate-200 rounded">
+                                                <div className="text-xs text-slate-500 font-bold print-text-black">Manual Overrides</div>
+                                                <div className="text-sm print-text-black">Ke: {customKe || '-'}, Vd: {customVd || '-'}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12 bg-slate-50/50 rounded-2xl border-2 border-dashed border-slate-300 text-slate-400 flex flex-col items-center justify-center">
+                                        <User className="w-10 h-10 mb-2 opacity-20" />
+                                        <p>請輸入左側完整病患資料以進行計算</p>
+                                    </div>
+                                )}
+                            </section>
+
+                            {prediction && pkParams && (
+                                <div className="space-y-6">
+                                    <section className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-indigo-100 p-6 break-inside-avoid print-shadow-none print:border-2 print:border-slate-300 print:p-0 print-bg-white print-overflow-visible">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2 print-text-black">
+                                                預測濃度 <span className="text-slate-400 font-normal text-sm print-text-slate-600">(Steady State)</span>
+                                            </h3>
+                                            <div className="text-right">
+                                                <div className="text-xs font-bold bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full border border-indigo-100 print-border-none print:p-0 print-bg-white print-text-black print:text-sm">
+                                                    Maintain: {dosing.maintenanceDose}mg q{dosing.interval}h
+                                                </div>
+                                                {typeof dosing.loadingDose === 'number' && !isNaN(dosing.loadingDose) && (
+                                                    <div className="text-[10px] text-emerald-600 mt-1.5 font-bold flex items-center justify-end gap-1 print-text-black">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 print-hidden"></div>
+                                                        + Loading: {dosing.loadingDose}mg
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 print-grid-cols-3">
+                                            <PredictionCard 
+                                                label="Peak" value={prediction.peak} unit="mcg/mL" target="25-40" 
+                                                colorClass="border-l-rose-500" infoKey="peak" onInfoClick={setActiveInfo}
+                                            />
+                                            <PredictionCard 
+                                                label="Trough" value={prediction.trough} unit="mcg/mL" target="10-20" 
+                                                colorClass="border-l-emerald-500" infoKey="trough" onInfoClick={setActiveInfo}
+                                            />
+                                            <PredictionCard 
+                                                label="AUC/MIC" value={prediction.auc} unit="" target="400-600" 
+                                                colorClass="border-l-amber-500" infoKey="auc" onInfoClick={setActiveInfo}
+                                            />
+                                        </div>
+                                    </section>
+
+                                    <section className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border-2 border-slate-300 p-6 flex flex-col break-inside-avoid print-shadow-none print:border-2 print:border-slate-300 print:p-0 print-bg-white print-overflow-visible">
+                                        <div className="mb-6 flex justify-between items-end">
+                                            <h3 className="text-sm font-bold text-slate-500 print-text-black">
+                                                濃度模擬 (120h)
+                                            </h3>
+                                            <div className="text-[10px] font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded print-text-slate-600 print-bg-white">
+                                                X: Time (hr) / Y: Conc (mcg/mL)
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="relative w-full h-72">
+                                            {(() => {
+                                            const points = prediction.simulationPoints;
+                                            if (!points || points.length === 0) return null;
+
+                                            const maxTime = 120;
+                                            const maxConcValue = Math.max(...points.map(p => p.c));
+                                            const maxConc = Math.max(50, (maxConcValue > 0 && isFinite(maxConcValue)) ? maxConcValue * 1.1 : 50);
+                                            
+                                            const width = 800;
+                                            const height = 300;
+
+                                            const scaleX = (t) => (t / maxTime) * width;
+                                            const scaleY = (c) => height - (c / maxConc) * height;
+
+                                            let d = `M ${scaleX(points[0].t)} ${scaleY(points[0].c)}`;
+                                            points.forEach(p => { 
+                                                    const x = scaleX(p.t);
+                                                    const y = scaleY(p.c);
+                                                    if (!isNaN(x) && !isNaN(y) && isFinite(x) && isFinite(y)) {
+                                                        d += ` L ${x} ${y}`; 
+                                                    }
+                                            });
+
+                                            const xGrids = []; for(let t=0; t<=maxTime; t+=12) xGrids.push(t);
+                                            const yGrids = []; for(let c=0; c<=maxConc; c+=10) yGrids.push(c);
+
+                                            return (
+                                                <svg viewBox={`0 0 ${width} ${height + 20}`} className="w-full h-full overflow-visible font-mono">
+                                                    {yGrids.map(c => (
+                                                        <g key={`y-${c}`}>
+                                                            <line x1={0} y1={scaleY(c)} x2={width} y2={scaleY(c)} stroke="#f1f5f9" strokeWidth="1" />
+                                                            <text x={-10} y={scaleY(c)} dy="4" textAnchor="end" fontSize="10" fill="#94a3b8" className="print:fill-slate-600">{c}</text>
+                                                        </g>
+                                                    ))}
+                                                    {xGrids.map(t => (
+                                                        <g key={`x-${t}`}>
+                                                            <line x1={scaleX(t)} y1={0} x2={scaleX(t)} y2={height} stroke="#f1f5f9" strokeWidth="1" />
+                                                            <text x={scaleX(t)} y={height + 15} textAnchor="middle" fontSize="10" fill="#94a3b8" className="print:fill-slate-600">{t}</text>
+                                                        </g>
+                                                    ))}
+                                                    
+                                                    <rect x={0} y={scaleY(20)} width={width} height={Math.max(0, scaleY(10) - scaleY(20))} fill="#d1fae5" opacity="0.5" />
+                                                    <text x={width - 10} y={scaleY(15)} textAnchor="end" fontSize="10" fill="#10b981" fontWeight="bold" className="print:fill-emerald-700">Target (10-20)</text>
+
+                                                    <path d={d} fill="none" stroke="#4f46e5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="drop-shadow-sm print:stroke-indigo-800" />
+
+                                                    {typeof dosing.loadingDose === 'number' && !isNaN(dosing.loadingDose) && (
+                                                        <g>
+                                                            <circle cx={scaleX(dosing.infusionTime)} cy={scaleY(points.find(p => p.t === dosing.infusionTime)?.c || 0)} r="4" fill="#10b981" stroke="white" strokeWidth="2" className="print:stroke-emerald-800" />
+                                                        </g>
+                                                    )}
+                                                </svg>
+                                            );
+                                            })()}
+                                        </div>
+                                    </section>
+                                </div>
+                            )}
+
+                            <div className="bg-amber-50 border-2 border-amber-200 rounded-xl p-4 flex gap-3 text-sm text-amber-800 break-inside-avoid print:border-2 print:border-slate-300 print:bg-white print-text-black print:text-xs print:mt-8">
+                                <AlertCircle className="w-5 h-5 flex-shrink-0 text-amber-500 print-hidden" />
+                                <div>
+                                <p className="font-bold mb-1 print-hidden">使用免責聲明</p>
+                                <p className="opacity-80">
+                                    本報告由自動化工具生成，僅供醫療專業人員參考。計算參數基於 Matzke Nomogram 與 Cockcroft-Gault 公式。
+                                    <br className="print-hidden"/>
+                                    請務必配合臨床判斷與血中濃度監測 (TDM) 結果進行最終劑量調整。
+                                </p>
+                                </div>
+                            </div>
+                            
+                            <Footer />
+
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
