@@ -181,12 +181,19 @@
             ),
             ChevronRight: (props) => (
                 <IconBase {...props}><polyline points="9 18 15 12 9 6" /></IconBase>
+            ),
+            // 新增 Flame (熱門) 圖示
+            Flame: (props) => (
+                <IconBase {...props}>
+                    <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.148-.22-4.06.02-4.637C10.05 4.36 10.5 4.18 10.9 3.9c.1-.06.2-.12.28-.19C11.67 3.36 12.48 3 13.5 3c2.48 0 4.5 2.02 4.5 4.5 0 1.76-1.02 3.28-2.5 4.02C15.9 11.72 16 12.11 16 12.5a3.5 3.5 0 0 1-3.5 3.5c-1.93 0-3.5-1.57-3.5-3.5 0-.93.37-1.78.98-2.42" />
+                    <path d="M11 16a5 5 0 1 1 6 5c-2.76 0-5-2.24-5-5" />
+                </IconBase>
             )
         };
 
         const { 
             Search, Stethoscope, Pill, BookOpen, Calculator, Activity, ExternalLink, Github, Menu, X, 
-            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight
+            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, Flame
         } = Icons;
 
         // ==========================================
@@ -235,7 +242,8 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%85%8E%E5%8A%9F%E8%83%BD%E8%A8%88%E7%AE%97%E6%A9%9F-%E8%9D%A6%E4%BB%81%E8%97%A5%E5%B8%AB.html", 
                 tags: ["劑量", "腎功能"],
-                color: "bg-blue-100 text-blue-600"
+                color: "bg-blue-100 text-blue-600",
+                isPopular: true // 設定為熱門
             },
             {
                 id: 2,
@@ -280,7 +288,8 @@
                 category: "clinical",
                 url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/%E8%AD%B7%E7%90%86%E8%87%A8%E5%BA%8A%E8%A8%88%E7%AE%97%E5%B7%A5%E4%BD%9C%E7%AB%99.html",
                 tags: ["滴速", "輸液", "EDD", "MAP"],
-                color: "bg-teal-100 text-teal-600"
+                color: "bg-teal-100 text-teal-600",
+                isPopular: true // 設定為熱門
             },
             {
                 id: 7,
@@ -322,10 +331,11 @@
                 id: 11,
                 title: "【藥學筆記】Statin臨床決策助手",
                 description: "依照臨床實證指引，彙整了Statin的相關資訊，方便快速了解藥物之間的差異與注意事項。",
-                category: "clinical",
-                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Statin%20%E8%87%A8%E5%BA%8A%E6%B1%BA%E7%AD%96%E5%8A%A9%E6%89%8B.html",
+                category: "information",
+                url: "https://ad123654741-design.github.io/pharmacy-gemini-app-project/Statin%20%E8%87%A8%E5%BA%8A%E6%B1%BA%E7%AD%96%E5%8A%A9%E6%89%87.html",
                 tags: ["降血脂", "血脂治療"],
                 color: "bg-orange-100 text-orange-600"
+                isPopular: true // 設定為熱門
             }
         ];
 
@@ -333,7 +343,6 @@
         // UI 元件
         // ==========================================
 
-        // 新增：登入驗證畫面元件
         const LoginScreen = ({ onLogin }) => {
             const [password, setPassword] = useState("");
             const [error, setError] = useState("");
@@ -422,7 +431,7 @@
         };
 
         const AppCard = ({ app }) => (
-            <div className="group bg-white rounded-2xl border border-slate-200 p-6 card-hover flex flex-col justify-between h-full relative overflow-hidden">
+            <div className={`group bg-white rounded-2xl border p-6 card-hover flex flex-col justify-between h-full relative overflow-hidden ${app.isPopular ? 'border-orange-200 ring-1 ring-orange-100' : 'border-slate-200'}`}>
                 {/* 裝飾性背景圓 */}
                 <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-slate-50 to-slate-100 rounded-full z-0 group-hover:scale-110 transition-transform duration-500"></div>
                 
@@ -431,9 +440,18 @@
                         <div className={`p-3.5 rounded-xl ${app.color} shadow-sm`}>
                             <Pill size={24} />
                         </div>
-                        <span className="text-xs font-semibold tracking-wide text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full">
-                            {categories.find(c => c.id === app.category)?.name || '工具'}
-                        </span>
+                        
+                        {/* 調整後的佈局：將 HOT 標籤和分類標籤並排顯示 */}
+                        <div className="flex items-center gap-2">
+                            {app.isPopular && (
+                                <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-md animate-pulse">
+                                    <Flame size={12} fill="currentColor" /> HOT
+                                </span>
+                            )}
+                            <span className="text-xs font-semibold tracking-wide text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full">
+                                {categories.find(c => c.id === app.category)?.name || '工具'}
+                            </span>
+                        </div>
                     </div>
                     <h3 className="text-xl font-bold text-slate-800 mb-2 group-hover:text-teal-700 transition-colors">{app.title}</h3>
                     <p className="text-slate-600 text-sm leading-relaxed mb-4">
@@ -458,7 +476,7 @@
             </div>
         );
 
-        // 修改這裡：改回每頁 12 個
+        // 每頁顯示 12 個
         const ITEMS_PER_PAGE = 12;
 
         const App = () => {
@@ -489,7 +507,7 @@
                 );
             }
 
-            // 搜尋邏輯 (包含標籤搜尋)
+            // 搜尋與篩選邏輯，並加入熱門置頂排序
             const filteredApps = appsData.filter(app => {
                 const term = searchTerm.toLowerCase();
                 const matchesTitle = app.title.toLowerCase().includes(term);
@@ -500,6 +518,10 @@
                 const matchesCategory = activeCategory === 'all' || app.category === activeCategory;
                 
                 return (matchesTitle || matchesDesc || matchesTags) && matchesCategory;
+            }).sort((a, b) => {
+                // 熱門項目置頂 (true 的排在前面)
+                // 如果 a 是熱門 (1) 且 b 不是 (0)， 0 - 1 = -1 (a 排在 b 前面)
+                return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
             });
 
             // Pagination Logic
@@ -787,9 +809,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
