@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>事後避孕藥臨床決策助手：2025 實證指引</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0f172a; /* Slate 900 */
+            --accent-color: #be185d;  /* Pink 700 */
+            --accent-light: #fce7f3;  /* Pink 100 */
+            --danger-color: #be123c;  /* Rose 700 */
+            --paper-bg: #ffffff;
+            --bg-color: #fdf2f8;      /* Light Pink bg */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #334155;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .serif { font-family: 'Noto Serif TC', serif; }
+
+        .journal-card {
+            background-color: var(--paper-bg);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            border-top: 6px solid var(--accent-color);
+        }
+
+        /* 標籤 Badge 樣式 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.2rem 0.4rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        @media (min-width: 768px) {
+            .badge { padding: 0.25rem 0.5rem; font-size: 0.8rem; }
+        }
+
+        .badge-mid { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .badge-high { background-color: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+        .badge-low { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        
+        .badge-warn { background-color: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+        .badge-safe { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .badge-gray { background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        /* Tab 樣式 */
+        .nav-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch; /* iOS momentum scrolling */
+        }
+        .nav-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f1f5f9;
+            padding: 0.5rem 0.8rem; /* Mobile optimized */
+            font-size: 0.85rem;     /* Mobile optimized */
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+        }
+        
+        @media (min-width: 768px) {
+            .tab-btn { padding: 0.6rem 1.2rem; font-size: 1rem; }
+        }
+
+        .tab-btn:active { transform: scale(0.98); }
+        .tab-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(190, 24, 93, 0.3);
+            font-weight: 700;
+        }
+
+        /* 資訊卡 */
+        .info-card {
+            border-left-width: 4px;
+            padding: 1.25rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            height: 100%;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid; 
+        }
+        .info-card-danger { border-left-color: var(--danger-color); background-color: #fff1f2; }
+        .info-card-strategy { border-left-color: #059669; background-color: #ecfdf5; }
+        .info-card-note { border-left-color: #3b82f6; background-color: #eff6ff; }
+        .info-card-indigo { border-left-color: #6366f1; background-color: #eef2ff; }
+        .info-card-orange { border-left-color: #f97316; background-color: #fff7ed; }
+        .info-card-pink { border-left-color: #ec4899; background-color: #fdf2f8; }
+        .info-card-purple { border-left-color: #9333ea; background-color: #faf5ff; }
+        .info-card-blue { border-left-color: #2563eb; background-color: #eff6ff; }
+        
+        /* 表格優化 */
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .modern-table th {
+            font-family: 'Noto Serif TC', serif;
+            color: #475569;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 0.75rem 0.5rem; /* Reduced padding for mobile */
+            text-align: left;
+            background-color: #f8fafc;
+            position: sticky;
+            top: 0;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+        .modern-table td {
+            padding: 0.75rem 0.5rem; /* Reduced padding for mobile */
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            background-color: white;
+            font-size: 0.85rem;
+        }
+        @media (min-width: 768px) {
+            .modern-table th, .modern-table td { padding: 1rem 0.75rem; font-size: 1rem; }
+        }
+        .modern-table tr:last-child td { border-bottom: none; }
+
+        /* MOA 樣式 */
+        .cell-container {
+            background-color: #fff1f2;
+            border: 2px solid #fecdd3;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            background-image: radial-gradient(circle, rgba(253, 226, 236, 0.5) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .timeline-container {
+            padding: 1.5rem 1rem;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .cycle-phase {
+            font-size: 0.7rem;
+            color: #9d174d;
+            font-weight: bold;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            background: rgba(255,255,255,0.9);
+            padding: 2px 10px;
+            border-radius: 20px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .moa-node {
+            background: white;
+            border: 1px solid #fda4af;
+            border-radius: 12px;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px -1px rgba(0,0,0,0.05);
+            position: relative;
+            width: 95%; /* Mobile width */
+            max-width: 280px;
+        }
+        .moa-node:active { transform: scale(0.98); background-color: #fff0f5; }
+        .moa-node.active-node {
+            border-color: #be185d;
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(190, 24, 93, 0.15);
+            z-index: 20;
+        }
+        .arrow-down {
+            width: 2px;
+            height: 24px;
+            background: #fda4af;
+            margin: 0 auto;
+            position: relative;
+        }
+        .arrow-down::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -4px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #fda4af;
+        }
+
+        /* Algorithm/Path Styles */
+        .algorithm-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        .algo-header {
+            background: #fdf2f8;
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            color: #831843;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #fce7f3;
+        }
+        .algo-body { padding: 1rem; }
+        .algo-number {
+            background: #db2777;
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        /* FAQ Styles */
+        .faq-item {
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .faq-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .faq-q { font-weight: 700; color: #334155; margin-bottom: 0.5rem; display: flex; gap: 0.5rem; }
+        .faq-a { color: #64748b; font-size: 0.9rem; line-height: 1.6; padding-left: 1.5rem; }
+
+        .tab-content { display: none; opacity: 0; transition: opacity 0.2s ease-in; }
+        .tab-content.active { display: block; opacity: 1; }
+        
+        .ref-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.7rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="p-3 md:p-8 min-h-screen flex justify-center items-start">
+
+    <main class="journal-card w-full max-w-7xl rounded-xl md:rounded-2xl p-4 md:p-10 relative overflow-hidden bg-white">
+        
+        <!-- Header -->
+        <header class="mb-6 md:mb-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-3 pb-4 md:pb-6 border-b border-pink-100">
+                <div>
+                    <h2 class="text-[10px] md:text-xs font-bold tracking-widest text-pink-600 uppercase mb-1 md:mb-2">Evidence-Based Medicine</h2>
+                    <h1 class="serif text-2xl md:text-4xl text-slate-900 leading-tight font-bold">
+                        事後避孕藥臨床助手
+                    </h1>
+                </div>
+                <div class="text-right hidden md:block">
+                    <p class="text-slate-400 text-sm font-light">Updated 2025 • Clinical Guide</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師 • 資料來源 : WHO / ACOG / RCOG</p>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-container mt-4 md:mt-6">
+                <button onclick="switchTab('comparison')" id="tab-comparison" class="tab-btn active">藥物比較</button>
+                <button onclick="switchTab('decision')" id="tab-decision" class="tab-btn">臨床決策</button>
+                <button onclick="switchTab('monographs')" id="tab-monographs" class="tab-btn">藥物個論</button>
+                <button onclick="switchTab('moa')" id="tab-moa" class="tab-btn">藥理機轉</button>
+                <button onclick="switchTab('obesity')" id="tab-obesity" class="tab-btn">肥胖與PK</button>
+                <button onclick="switchTab('yuzpe')" id="tab-yuzpe" class="tab-btn">Yuzpe法</button>
+                <button onclick="switchTab('safety')" id="tab-safety" class="tab-btn">副作用/DDI</button>
+                <button onclick="switchTab('counseling')" id="tab-counseling" class="tab-btn">衛教銜接</button>
+                <button onclick="switchTab('faq')" id="tab-faq" class="tab-btn">常見問答</button>
+            </nav>
+        </header>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 藥物比較 (Comparison) -->
+        <!-- ========================================== -->
+        <div id="content-comparison" class="tab-content active">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8">
+                <div class="p-4 rounded-xl bg-purple-50 border border-purple-100 text-center">
+                    <h3 class="text-purple-800 font-bold mb-1 text-sm md:text-base">UPA (艾伊樂/Ella)</h3>
+                    <p class="text-lg md:text-xl font-bold text-purple-600 my-1">5 天內有效</p>
+                    <p class="text-xs text-purple-700 opacity-80">延遲排卵效果最強</p>
+                </div>
+                <div class="p-4 rounded-xl bg-blue-50 border border-blue-100 text-center">
+                    <h3 class="text-blue-800 font-bold mb-1 text-sm md:text-base">LNG (安立婷/Plan B)</h3>
+                    <p class="text-lg md:text-xl font-bold text-blue-600 my-1">3 天內有效</p>
+                    <p class="text-xs text-blue-700 opacity-80">LH Surge 後無效</p>
+                </div>
+                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                    <h3 class="text-emerald-800 font-bold mb-1 text-sm md:text-base">Cu-IUD (含銅避孕器)</h3>
+                    <p class="text-lg md:text-xl font-bold text-emerald-600 my-1">> 99% 有效</p>
+                    <p class="text-xs text-emerald-700 opacity-80">唯一具抗著床機制</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-6 shadow-sm">
+                <table class="modern-table min-w-[600px] md:min-w-[800px]">
+                    <thead>
+                        <tr>
+                            <th class="w-[15%]">比較項目</th>
+                            <th class="w-[25%] text-purple-700">UPA (艾伊樂)</th>
+                            <th class="w-[25%] text-blue-700">LNG (安立婷)</th>
+                            <th class="w-[20%] text-slate-600">Yuzpe Method</th>
+                            <th class="w-[15%] text-emerald-700">Cu-IUD</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700 text-sm">
+                        <tr>
+                            <td class="font-bold">黃金給藥時間</td>
+                            <td><span class="badge badge-mid">120 小時 (5天)</span></td>
+                            <td>
+                                <span class="badge badge-high">72 小時 (3天)</span>
+                                <div class="text-[10px] text-slate-400 mt-1">超過72hr效果驟降</div>
+                            </td>
+                            <td><span class="badge badge-high">72 小時 (3天)</span></td>
+                            <td><span class="badge badge-safe">120 小時 (5天)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">標準劑量</td>
+                            <td>30 mg 單次</td>
+                            <td>1.5 mg 單次<br><span class="text-[10px] text-slate-400">(或 0.75 mg Q12H)</span></td>
+                            <td>EE + LNG<br><span class="text-[10px] text-slate-400">Q12H 共兩劑</span></td>
+                            <td>由醫師置入</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">預防受孕率<br><span class="text-[10px] text-slate-400">Prevented Fraction</span></td>
+                            <td class="font-bold text-base text-purple-700">62% - 85%</td>
+                            <td class="font-bold text-base text-blue-700">52% - 69%</td>
+                            <td class="text-slate-500">47% - 56%</td>
+                            <td class="font-bold text-base text-emerald-700">> 99%</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">懷孕率 (Failure)</td>
+                            <td>1.2% - 1.8%</td>
+                            <td>2.0% - 2.6%</td>
+                            <td>> 3.0% (高)</td>
+                            <td>< 0.1% (低)</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">機轉限制</td>
+                            <td><span class="badge badge-safe">LH 高峰前皆有效</span></td>
+                            <td><span class="badge badge-warn">LH 激增開始即無效</span></td>
+                            <td><span class="badge badge-warn">LH 激增開始即無效</span></td>
+                            <td><span class="badge badge-safe">最廣效 (含抗著床)</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">BMI 影響</td>
+                            <td>> 30 療效下降</td>
+                            <td><span class="text-rose-600 font-bold">> 26 療效顯著下降</span></td>
+                            <td>推測受影響</td>
+                            <td><span class="badge badge-safe">無影響</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-card info-card-blue mt-6">
+                <h4 class="font-bold text-blue-800 mb-2 text-sm md:text-base">📊 關於「預防受孕率 (Prevented Fraction)」</h4>
+                <div class="text-xs md:text-sm text-slate-700 space-y-2">
+                    <p>
+                        <strong>定義：</strong>此指標代表「原本預期會懷孕的人數中，有多少比例被成功阻止」。
+                    </p>
+                    <p class="bg-blue-50 p-2 rounded border border-blue-100">
+                        <strong>為何重要？</strong>單看失敗率 (Failure Rate) 可能會低估藥效，因為女性並非每天都會懷孕。
+                        例如：若在排卵期無保護性行為，預期懷孕率約 8% (即100人中有8人會懷孕)。若服用 UPA 後實際懷孕率降至 1-2%，則代表它阻止了大部分的預期懷孕，其預防受孕率約為 80%。
+                    </p>
+                </div>
+            </div>
+
+             <div class="ref-section">Ref: WHO Medical eligibility criteria; ACOG Practice Bulletin No. 152; Cochrane Database Syst Rev 2019.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 臨床決策流程 (Decision Tree) -->
+        <!-- ========================================== -->
+        <div id="content-decision" class="tab-content">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
+                
+                <!-- Step 1: Time -->
+                <div class="algorithm-card">
+                    <div class="algo-header">
+                        <div class="algo-number">1</div>
+                        <span>時間評估 (Timing)</span>
+                    </div>
+                    <div class="algo-body space-y-3">
+                        <p class="text-sm font-medium text-slate-700">性行為發生距今多久？</p>
+                        
+                        <div class="bg-green-50 p-3 rounded border border-green-100">
+                            <strong class="text-green-800 block mb-1 text-sm">< 72 小時</strong>
+                            <div class="text-xs text-green-700 space-y-1">
+                                可選用：<br>
+                                ✅ <strong>UPA</strong> (如: 艾伊樂/Ella)<br>
+                                ✅ <strong>LNG</strong> (如: 安立婷/Plan B)<br>
+                                ✅ <strong>IUD</strong>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50 p-3 rounded border border-amber-100">
+                            <strong class="text-amber-800 block mb-1 text-sm">72 - 120 小時</strong>
+                            <div class="text-xs text-amber-700 space-y-1">
+                                建議選項：<br>
+                                🌟 <strong>IUD (首選)</strong><br>
+                                🌟 <strong>UPA (次選)</strong><br>
+                                ⛔ LNG 效果極差，不建議
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Weight -->
+                <div class="algorithm-card">
+                    <div class="algo-header">
+                        <div class="algo-number">2</div>
+                        <span>體重/BMI 評估</span>
+                    </div>
+                    <div class="algo-body space-y-3">
+                        <p class="text-sm font-medium text-slate-700">是否過重？ (目測或詢問)</p>
+                        
+                        <div class="bg-rose-50 p-3 rounded border border-rose-100">
+                            <strong class="text-rose-800 block mb-1 text-sm">BMI > 26 或 體重 > 70kg</strong>
+                            <div class="text-xs text-rose-700">
+                                ⚠️ <strong>LNG 失敗率顯著上升</strong><br>
+                                建議改用 UPA 或 IUD。
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-50 p-3 rounded border border-slate-200">
+                            <strong class="text-slate-800 block mb-1 text-sm">BMI > 30 或 體重 > 85kg</strong>
+                            <div class="text-xs text-slate-600">
+                                ⚠️ <strong>LNG 與 UPA 效果皆受影響</strong><br>
+                                首選：IUD (不受體重影響)。<br>
+                                若拒絕 IUD，UPA 優於 LNG。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Interactions -->
+                <div class="algorithm-card">
+                    <div class="algo-header">
+                        <div class="algo-number">3</div>
+                        <span>交互作用 (Enzyme Inducers)</span>
+                    </div>
+                    <div class="algo-body space-y-3">
+                        <p class="text-sm font-medium text-slate-700">過去4週是否使用 CYP3A4 誘導劑？</p>
+                        <div class="text-[10px] text-slate-500 italic mb-2">
+                            (如 Rifampin, Carbamazepine, Phenytoin)
+                        </div>
+
+                        <div class="p-3 rounded border border-slate-200 bg-white shadow-sm">
+                            <strong class="text-slate-800 text-sm">若是：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600 mt-1 space-y-1">
+                                <li>首選：<strong>Cu-IUD</strong></li>
+                                <li>次選：<strong>LNG 雙倍劑量 (3mg)</strong> (RCOG 建議)</li>
+                                <li class="text-rose-600 font-bold">不建議使用 UPA</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-6 md:mt-8 info-card info-card-strategy">
+                <h4 class="font-bold text-teal-800 mb-2 text-sm md:text-base">💡 藥師快速決策總結</h4>
+                <div class="flex flex-col md:flex-row gap-2 md:gap-4 text-sm text-slate-700">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-teal-500 shrink-0"></span>
+                        <span><strong>最有效/不受限：</strong> 含銅 IUD</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-purple-500 shrink-0"></span>
+                        <span><strong>口服首選 (肥胖/延遲)：</strong> 艾伊樂</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"></span>
+                        <span><strong>傳統選擇 (72h內+瘦)：</strong> 安立婷</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ref-section">Ref: FSRH Clinical Guideline: Emergency Contraception (2020); CDC MEC 2016.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB NEW: 藥物個論 (Monographs) -->
+        <!-- ========================================== -->
+        <div id="content-monographs" class="tab-content">
+            <div class="mb-6">
+                <p class="text-sm text-slate-600 mb-4">此頁籤提供各類別藥物之詳細機轉、適用對象及臨床注意事項清單。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                
+                <!-- UPA -->
+                <div class="info-card info-card-purple h-full">
+                    <h4 class="font-bold text-purple-800 mb-3 text-lg border-b border-purple-200 pb-2">Ulipristal Acetate (UPA)</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <strong class="text-sm text-purple-700 block mb-1">🔍 藥理機轉</strong>
+                            <p class="text-sm text-slate-700 leading-relaxed">
+                                屬於選擇性黃體素受體調節劑 (SPRM)。能直接結合黃體素受體，產生拮抗作用。其特色在於即使 LH 激增 (LH surge) 已經開始但尚未達到排卵高峰時，仍能有效抑制卵泡破裂，將排卵延遲至少 5 天。
+                            </p>
+                        </div>
+                        <div>
+                            <strong class="text-sm text-purple-700 block mb-1">⚠️ 臨床注意事項</strong>
+                            <ul class="list-disc pl-4 text-sm text-slate-700 space-y-1">
+                                <li><strong>避孕藥交互作用：</strong>服藥後 5 天內禁用任何荷爾蒙避孕藥，以免降低療效。</li>
+                                <li><strong>哺乳：</strong>建議服藥後暫停哺乳 24 小時（RCOG/CDC 建議）或 1 週（仿單建議），多數指引傾向 24 小時足夠。</li>
+                                <li><strong>嚴重氣喘：</strong>不建議用於控制不佳的嚴重氣喘患者 (因具抗類固醇活性)。</li>
+                                <li><strong>肝腎功能：</strong>重度肝功能不全者不建議使用。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- LNG -->
+                <div class="info-card info-card-blue h-full">
+                    <h4 class="font-bold text-blue-800 mb-3 text-lg border-b border-blue-200 pb-2">Levonorgestrel (LNG)</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <strong class="text-sm text-blue-700 block mb-1">🔍 藥理機轉</strong>
+                            <p class="text-sm text-slate-700 leading-relaxed">
+                                合成的高劑量黃體素。主要透過負回饋機制，抑制下視丘-腦下垂體軸，阻止 LH 激增的發生。一旦 LH 激增程序啟動，此藥物便無法阻止排卵。對已受精的卵子無效。
+                            </p>
+                        </div>
+                        <div>
+                            <strong class="text-sm text-blue-700 block mb-1">⚠️ 臨床注意事項</strong>
+                            <ul class="list-disc pl-4 text-sm text-slate-700 space-y-1">
+                                <li><strong>體重限制：</strong>BMI > 26 或體重 > 70kg 療效顯著降低。</li>
+                                <li><strong>時間限制：</strong>嚴格建議在 72 小時內服用，越早越好。</li>
+                                <li><strong>哺乳：</strong>安全性高 (WHO MEC Category 1)，服藥後可立即哺乳。</li>
+                                <li><strong>週期頻率：</strong>同一週期內可重複使用，但可能造成經期混亂。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cu-IUD -->
+                <div class="info-card info-card-strategy h-full">
+                    <h4 class="font-bold text-teal-800 mb-3 text-lg border-b border-teal-200 pb-2">含銅避孕器 (Cu-IUD)</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <strong class="text-sm text-teal-700 block mb-1">🔍 藥理機轉</strong>
+                            <p class="text-sm text-slate-700 leading-relaxed">
+                                釋放銅離子造成子宮內環境產生無菌性發炎反應。銅離子對精子與卵子具有直接毒性，影響受精；同時改變子宮內膜環境，阻止受精卵著床。這是唯一在「排卵後」仍有效的緊急避孕方式。
+                            </p>
+                        </div>
+                        <div>
+                            <strong class="text-sm text-teal-700 block mb-1">⚠️ 臨床注意事項</strong>
+                            <ul class="list-disc pl-4 text-sm text-slate-700 space-y-1">
+                                <li><strong>禁忌症：</strong>骨盆腔感染 (PID)、威爾森氏症 (Wilson's disease)、不明原因陰道出血。</li>
+                                <li><strong>優勢：</strong>放置後可直接轉為長效避孕 (可達 5-10 年)。</li>
+                                <li><strong>缺點：</strong>需由醫師操作，可能造成經血量增加或經痛。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yuzpe -->
+                <div class="info-card info-card-orange h-full">
+                    <h4 class="font-bold text-orange-800 mb-3 text-lg border-b border-orange-200 pb-2">Yuzpe Method (替代療法)</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <strong class="text-sm text-orange-700 block mb-1">🔍 藥理機轉</strong>
+                            <p class="text-sm text-slate-700 leading-relaxed">
+                                利用高劑量的雌激素 (Ethinyl estradiol) 與黃體素 (Levonorgestrel) 聯合作用。高濃度荷爾蒙干擾 FSH 與 LH 的分泌，抑制或延遲排卵；同時造成子宮內膜組織學改變，不利於精子穿透與著床（但抗著床效果較弱且爭議）。
+                            </p>
+                        </div>
+                        <div>
+                            <strong class="text-sm text-orange-700 block mb-1">⚠️ 臨床注意事項</strong>
+                            <ul class="list-disc pl-4 text-sm text-slate-700 space-y-1">
+                                <li><strong>副作用極大：</strong>噁心 (50%) 與嘔吐 (20%) 機率極高，強烈建議搭配止吐藥。</li>
+                                <li><strong>定位：</strong>僅作為無法取得專用藥物時的最後手段。</li>
+                                <li><strong>血栓風險：</strong>因含雌激素，有血栓病史者需謹慎評估。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="ref-section">Ref: Goodman & Gilman's The Pharmacological Basis of Therapeutics; UpToDate: Emergency Contraception.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 藥理機轉 (MOA) - UPDATED VISUALS -->
+        <!-- ========================================== -->
+        <div id="content-moa" class="tab-content">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Diagram Container -->
+                <div class="lg:col-span-2 cell-container h-[500px] md:h-[600px] flex flex-col shadow-lg">
+                    <div class="bg-pink-100/80 border-b border-pink-200 p-3 flex justify-between items-center relative z-20">
+                        <div class="text-xs font-bold text-pink-800 tracking-wider uppercase ml-2">
+                            Ovulation Cycle Timeline
+                        </div>
+                    </div>
+
+                    <div class="timeline-container flex-grow overflow-y-auto">
+                        
+                        <!-- Phase 1 -->
+                        <div class="cycle-phase">濾泡期 Follicular Phase</div>
+                        
+                        <div class="moa-node" onclick="showMoaDetail(1)">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase mb-1">Unprotected Sex</div>
+                            <div class="text-sm md:text-base font-bold text-slate-700">精子進入 (Sperm Entry)</div>
+                            <div class="text-[10px] text-slate-500 mt-1">存活期可達 5 天</div>
+                        </div>
+                        
+                        <div class="arrow-down"></div>
+
+                        <!-- Phase 2 -->
+                        <div class="cycle-phase">排卵前訊號 LH Surge</div>
+
+                        <div class="moa-node border-l-4 border-l-blue-500" onclick="showMoaDetail(2)">
+                            <div class="flex justify-between items-start">
+                                <div class="text-left">
+                                    <div class="text-[10px] text-blue-600 font-bold uppercase">LH Surge 開始</div>
+                                    <div class="text-sm font-bold text-slate-800">黃體生成素激增</div>
+                                </div>
+                                <span class="badge badge-high text-[10px]">LNG 失效點</span>
+                            </div>
+                        </div>
+
+                        <div class="arrow-down"></div>
+
+                        <div class="moa-node border-l-4 border-l-purple-500" onclick="showMoaDetail(3)">
+                            <div class="flex justify-between items-start">
+                                <div class="text-left">
+                                    <div class="text-[10px] text-purple-600 font-bold uppercase">LH Surge 高峰</div>
+                                    <div class="text-sm font-bold text-slate-800">卵泡破裂前</div>
+                                </div>
+                                <span class="badge badge-mid text-[10px]">UPA 有效</span>
+                            </div>
+                        </div>
+
+                        <div class="arrow-down"></div>
+
+                        <!-- Phase 3 -->
+                        <div class="cycle-phase">排卵 Ovulation</div>
+
+                        <div class="moa-node opacity-90 bg-slate-50" onclick="showMoaDetail(4)">
+                            <div class="text-sm font-bold text-rose-700">排卵發生 (Ovulation)</div>
+                            <div class="text-[10px] text-slate-500">口服 EC 在此階段皆無效</div>
+                        </div>
+
+                        <div class="arrow-down"></div>
+
+                        <div class="moa-node border-l-4 border-l-emerald-500" onclick="showMoaDetail(5)">
+                            <div class="flex justify-between items-start">
+                                <div class="text-left">
+                                    <div class="text-[10px] text-emerald-600 font-bold uppercase">受精與著床</div>
+                                    <div class="text-sm font-bold text-slate-800">Implantation</div>
+                                </div>
+                                <span class="badge badge-safe text-[10px]">僅 IUD 有效</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 md:p-6 h-auto md:h-full shadow-sm flex flex-col">
+                        <div class="flex items-center gap-2 mb-3 border-b border-slate-100 pb-2">
+                            <span class="w-6 h-6 rounded-full bg-pink-100 flex items-center justify-center text-pink-500 text-xs">ℹ️</span>
+                            <h4 class="serif text-slate-800 font-bold text-base md:text-lg">Mechanism Detail</h4>
+                        </div>
+                        
+                        <div id="moa-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200 min-h-[100px]">
+                            <div>
+                                <p class="mb-1 font-bold text-slate-400">Interactive Timeline</p>
+                                <p class="text-xs">請點擊左側時間軸<br>查看藥物作用極限</p>
+                            </div>
+                        </div>
+
+                        <div id="moa-detail-content" class="hidden animate-fade-in">
+                            <h5 id="moa-title" class="text-pink-700 font-bold text-base md:text-lg mb-2"></h5>
+                            <div class="bg-pink-50 p-3 rounded-lg border border-pink-100 mb-3">
+                                <p id="moa-desc" class="text-slate-700 text-sm leading-relaxed"></p>
+                            </div>
+                            <div class="border-l-4 border-pink-500 pl-3">
+                                <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Clinical Implication</p>
+                                <p id="moa-impact" class="text-xs md:text-sm text-slate-600 font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ref-section">Ref: Glasier A. Lancet 2010; Gemzell-Danielsson K. Reprod Biol Endocrinol 2010.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 肥胖與PK (Obesity) -->
+        <!-- ========================================== -->
+        <div id="content-obesity" class="tab-content">
+            
+            <div class="mb-6 p-4 bg-rose-50 rounded-xl border border-rose-100 flex items-start gap-3">
+                <div class="text-2xl md:text-3xl">⚖️</div>
+                <div>
+                    <h3 class="font-bold text-rose-800 text-base md:text-lg">為何肥胖者容易避孕失敗？</h3>
+                    <p class="text-xs md:text-sm text-rose-700 mt-1">體重是口服 EC 失敗的最主要危險因子之一。指引建議藥師應主動評估體重。</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 mb-6">
+                
+                <div class="info-card info-card-note">
+                    <h4 class="font-bold text-blue-700 mb-3 text-base md:text-lg">藥物動力學 (PK) 改變</h4>
+                    <ul class="list-disc pl-4 space-y-2 text-sm text-slate-700">
+                        <li>
+                            <strong>分佈體積 (Vd) 增加：</strong><br>
+                            LNG 與 UPA 皆具脂溶性，容易被過多的脂肪組織「吸附」，導致血液中有效濃度不足。
+                        </li>
+                        <li>
+                            <strong>代謝清除率 (Clearance) 加速：</strong><br>
+                            肥胖者肝臟代謝活性可能改變，縮短藥物半衰期。
+                        </li>
+                        <li>
+                            <strong>SHBG 濃度降低：</strong><br>
+                            影響 LNG 的蛋白結合狀態，加速其代謝排除。
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="info-card info-card-danger">
+                    <h4 class="font-bold text-rose-700 mb-3 text-base md:text-lg">臨床數據與建議</h4>
+                    
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded border border-slate-200">
+                            <strong class="text-slate-800 text-sm">Levonorgestrel (安立婷/Plan B)</strong>
+                            <p class="text-xs text-slate-600 mt-1">
+                                體重 > 70-75 kg 時，失敗率增加 3-4 倍。<br>
+                                體重 > 80 kg 時，效果可能接近無效。
+                            </p>
+                            <div class="mt-2 text-[10px] text-rose-600 font-bold bg-rose-50 p-1 inline-block rounded">
+                                對策：部分指引建議雙倍劑量 (3mg)。
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-3 rounded border border-slate-200">
+                            <strong class="text-slate-800 text-sm">Ulipristal Acetate (艾伊樂/Ella)</strong>
+                            <p class="text-xs text-slate-600 mt-1">
+                                雖然也受體重影響，但在 BMI 26-30 區間仍優於 LNG。<br>
+                                直到 BMI > 35 才顯著失效。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ref-section">Ref: Praditpan P et al. Contraception 2017; Jatlaoui TC et al. 2016.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: Yuzpe 療法 -->
+        <!-- ========================================== -->
+        <div id="content-yuzpe" class="tab-content">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 md:p-6 rounded-r-lg mb-6 shadow-sm">
+                <h3 class="serif text-amber-900 font-bold text-lg md:text-xl mb-2 flex items-center gap-2">
+                    <span class="text-xl md:text-2xl">⚠️</span>
+                    替代療法 (Alternative Method)
+                </h3>
+                <p class="text-slate-700 leading-relaxed text-xs md:text-sm mb-3">
+                    Yuzpe 法副作用強烈（極易嘔吐）且避孕成功率較低。僅在無法取得專用事後避孕藥時使用。
+                </p>
+                <div class="bg-white/60 p-3 rounded border border-amber-200">
+                    <strong class="text-amber-900 text-xs md:text-sm block mb-1">🧪 藥物成分全名與單劑需求 (Target Dose)：</strong>
+                    <ul class="list-disc pl-4 text-xs md:text-sm text-slate-700 space-y-1">
+                        <li><strong>EE (Ethinyl Estradiol)：</strong> 單次劑量需滿 100 mcg (0.1mg)</li>
+                        <li><strong>LNG (Levonorgestrel)：</strong> 單次劑量需滿 0.5 mg</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-6 shadow-sm">
+                <table class="modern-table min-w-[500px] md:min-w-[600px]">
+                    <thead>
+                        <tr>
+                            <th class="w-1/3">藥物類型 (COC)</th>
+                            <th class="w-2/3">服用方法 (共需兩劑)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700 text-sm">
+                        <tr>
+                            <td class="font-bold">
+                                高劑量型<br>
+                                <span class="text-[10px] font-normal text-slate-500 block">EE 50mcg + LNG 0.25mg</span>
+                                <span class="text-[10px] text-slate-400 italic">ex: Nordiol (挪迪歐)</span>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-1 md:gap-2 flex-wrap">
+                                    <span class="badge badge-gray">第一劑: 2 顆</span>
+                                    <span class="text-slate-400 text-xs">➔ 12hr ➔</span>
+                                    <span class="badge badge-gray">第二劑: 2 顆</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">
+                                標準劑量型<br>
+                                <span class="text-[10px] font-normal text-slate-500 block">EE 30mcg + LNG 0.15mg</span>
+                                <span class="text-[10px] text-slate-400 italic">ex: Nordette (諾定)</span>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-1 md:gap-2 flex-wrap">
+                                    <span class="badge badge-gray">第一劑: 4 顆</span>
+                                    <span class="text-slate-400 text-xs">➔ 12hr ➔</span>
+                                    <span class="badge badge-gray">第二劑: 4 顆</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">
+                                低劑量型<br>
+                                <span class="text-[10px] font-normal text-slate-500 block">EE 20mcg + LNG 0.1mg</span>
+                                <span class="text-[10px] text-slate-400 italic">ex: Loette (樂免)</span>
+                            </td>
+                            <td>
+                                <div class="flex items-center gap-1 md:gap-2 flex-wrap">
+                                    <span class="badge badge-gray">第一劑: 5 顆</span>
+                                    <span class="text-slate-400 text-xs">➔ 12hr ➔</span>
+                                    <span class="badge badge-gray">第二劑: 5 顆</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="info-card info-card-strategy">
+                <h4 class="font-bold text-teal-700 mb-2">💊 處置建議</h4>
+                <ul class="list-disc pl-4 text-sm text-slate-600 space-y-1">
+                    <li><strong>止吐藥：</strong>強烈建議在服藥前 30-60 分鐘給予止吐劑。</li>
+                    <li><strong>補服：</strong>若服藥後 2-3 小時內嘔吐，需補服該劑量。</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: 副作用與DDI (Safety) -->
+        <!-- ========================================== -->
+        <div id="content-safety" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
+                
+                <div class="info-card info-card-danger">
+                    <h4 class="font-bold text-rose-700 mb-2">⛔ 交互作用 (Enzyme Inducers)</h4>
+                    <p class="text-sm text-slate-600 mb-2">酵素誘導劑會加速代謝，導致失敗。</p>
+                    <ul class="list-disc pl-4 text-sm text-slate-600 space-y-1 mb-4">
+                        <li>抗癲癇藥 (Carbamazepine, Phenytoin)</li>
+                        <li>抗結核藥 (Rifampin)</li>
+                        <li>抗愛滋藥 / 聖約翰草</li>
+                    </ul>
+                    <div class="bg-white p-2 rounded text-xs text-rose-800 border border-rose-200 font-bold">
+                        建議：改用 IUD 或 雙倍劑量 LNG (3mg)。避免使用 UPA。
+                    </div>
+                </div>
+
+                <div class="info-card info-card-orange">
+                    <h4 class="font-bold text-orange-700 mb-2">常見副作用</h4>
+                    <ul class="list-disc pl-4 text-sm text-slate-600 space-y-2">
+                        <li><strong>噁心/嘔吐：</strong> Yuzpe > LNG > UPA。</li>
+                        <li><strong>經期混亂：</strong> 下次月經可能提早或延後。若延後 > 7 天需驗孕。</li>
+                        <li><strong>不適：</strong> 頭痛、疲倦、腹痛 (通常24h內緩解)。</li>
+                    </ul>
+                </div>
+
+            </div>
+            
+            <div class="info-card info-card-note">
+                <h4 class="font-bold text-blue-700 mb-2">哺乳期安全性 (Breastfeeding)</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <strong class="text-sm text-slate-800">Levonorgestrel (LNG)</strong>
+                        <p class="text-xs text-slate-600 mt-1">
+                            <span class="badge badge-safe">安全</span><br>
+                            分泌量極少，服藥後可立即哺乳。
+                        </p>
+                    </div>
+                    <div>
+                        <strong class="text-sm text-slate-800">Ulipristal Acetate (UPA)</strong>
+                        <p class="text-xs text-slate-600 mt-1">
+                            <span class="badge badge-warn">需暫停</span><br>
+                            建議服藥後<strong>暫停哺乳 24 小時</strong> (擠出丟棄)。
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="ref-section">Ref: CDC Medical Eligibility Criteria for Contraceptive Use (2016).</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 7: 衛教與銜接 (Counseling) -->
+        <!-- ========================================== -->
+        <div id="content-counseling" class="tab-content">
+            
+            <div class="mb-6 p-4 bg-teal-50 rounded-xl border border-teal-200">
+                <h3 class="font-bold text-teal-800 text-lg flex items-center gap-2">
+                    <span class="text-2xl">🔄</span>
+                    常規避孕藥銜接 (Bridging)
+                </h3>
+                <p class="text-sm text-teal-700 mt-1 pl-9">服用 EC 後，如何開始使用事前避孕藥是避孕失敗的高風險點。</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                
+                <!-- LNG Start -->
+                <div class="algorithm-card border border-blue-200 shadow-sm">
+                    <div class="bg-blue-50 p-3 text-center border-b border-blue-100">
+                        <span class="badge badge-mid bg-blue-100 text-blue-700 border-blue-200 font-bold">若使用 LNG (如: 安立婷)</span>
+                    </div>
+                    
+                    <div class="p-4 flex flex-col items-center gap-2">
+                        <div class="p-2 md:p-3 bg-white border border-slate-200 rounded w-full text-center font-bold text-slate-700 text-sm">
+                            立即開始 (Quick Start)
+                        </div>
+                        <div class="text-xs text-slate-400">↓</div>
+                        <div class="p-2 md:p-3 bg-slate-50 border border-slate-200 rounded w-full text-center text-xs md:text-sm text-slate-600">
+                            可以馬上服用事前藥<br>(COC / POP)
+                        </div>
+                        <div class="text-xs text-slate-400">↓</div>
+                        <div class="p-2 md:p-3 bg-blue-50 border border-blue-200 rounded w-full text-center text-xs md:text-sm text-blue-800 font-bold">
+                            需搭配保險套 7 天
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPA Start -->
+                <div class="algorithm-card border border-purple-200 shadow-sm">
+                    <div class="bg-purple-50 p-3 text-center border-b border-purple-100">
+                        <span class="badge badge-mid bg-purple-100 text-purple-700 border-purple-200 font-bold">若使用 UPA (如: 艾伊樂)</span>
+                    </div>
+                    
+                    <div class="p-4 flex flex-col items-center gap-2">
+                        <div class="p-2 md:p-3 bg-white border border-rose-200 rounded w-full text-center font-bold text-rose-600 border-2 text-sm">
+                            必須等待 5 天
+                        </div>
+                        <div class="text-xs text-slate-400">↓</div>
+                        <div class="p-2 md:p-3 bg-slate-50 border border-slate-200 rounded w-full text-center text-xs md:text-sm text-slate-600">
+                            <span class="text-[10px] text-slate-500 block mb-1">外源性黃體素會抵銷 UPA</span>
+                            第 6 天才開始服用事前藥
+                        </div>
+                        <div class="text-xs text-slate-400">↓</div>
+                        <div class="p-2 md:p-3 bg-purple-50 border border-purple-200 rounded w-full text-center text-xs md:text-sm text-purple-800 font-bold">
+                            需搭配保險套 12-14 天
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-6 md:mt-8 bg-white border border-slate-200 rounded-xl p-4 md:p-6">
+                <h4 class="font-bold text-slate-700 mb-2">🤮 嘔吐補服原則</h4>
+                <div class="flex gap-4 items-center">
+                    <div class="text-2xl md:text-3xl">⏰</div>
+                    <div>
+                        <p class="text-xs md:text-sm text-slate-600">
+                            若在服藥後 <strong>2-3 小時內</strong> 嘔吐，藥物可能尚未完全吸收。
+                        </p>
+                        <p class="text-xs md:text-sm text-rose-600 font-bold mt-1">
+                            Action: 必須補服完整一劑。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ref-section">Ref: FSRH Clinical Guideline (2017); ACOG Practice Bulletin 152.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB NEW EXTRA: 常見問答 (FAQ) -->
+        <!-- ========================================== -->
+        <div id="content-faq" class="tab-content">
+            <div class="info-card h-full bg-white">
+                <h4 class="font-bold text-slate-800 mb-6 text-lg text-center">常見臨床問答 (FAQ)</h4>
+                
+                <div class="space-y-6">
+                    <div class="faq-item">
+                        <div class="faq-q">
+                            <span class="text-accent-color">Q.</span>
+                            吃了這個會流產嗎？是墮胎藥嗎？
+                        </div>
+                        <div class="faq-a">
+                            <strong>不會。</strong>事後避孕藥的主要機制是「抑制排卵」或「干擾受精」。一旦受精卵已經著床（懷孕建立），事後避孕藥（LNG/UPA）是無法終止妊娠的，它們與藥物流產使用的 RU-486 完全不同。
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-q">
+                            <span class="text-accent-color">Q.</span>
+                            萬一已經懷孕了，吃下去會傷害胎兒嗎？
+                        </div>
+                        <div class="faq-a">
+                            <strong>LNG (安立婷)：</strong>目前證據顯示不會對胎兒造成致畸胎風險。<br>
+                            <strong>UPA (艾伊樂)：</strong>目前人類數據有限，雖然動物實驗未見致畸胎性，但仍不建議在懷孕期間使用。若服用後發現懷孕，應諮詢醫師。
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-q">
+                            <span class="text-accent-color">Q.</span>
+                            吃完幾天後會出血，那是月經嗎？
+                        </div>
+                        <div class="faq-a">
+                            <strong>不一定。</strong>服藥後幾天內的點狀出血可能是撤退性出血 (Withdrawal bleeding)，不代表避孕成功。真正的月經通常會準時或延後幾天來。如果下次月經比預期晚了 7 天以上，務必驗孕。
+                        </div>
+                    </div>
+
+                    <div class="faq-item">
+                        <div class="faq-q">
+                            <span class="text-accent-color">Q.</span>
+                            可以常吃當作常規避孕嗎？
+                        </div>
+                        <div class="faq-a">
+                            <strong>極度不建議。</strong>事後避孕藥的失敗率遠高於保險套或事前藥，且容易造成嚴重經期混亂及荷爾蒙失調。它只能作為緊急補救措施。
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ref-section">Ref: ACOG Practice Bulletin 152; FDA Prescribing Information.</div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 md:mt-12 pt-6 border-t border-slate-200 text-center relative z-10">
+            <div class="max-w-4xl mx-auto px-4">
+                <p class="text-[10px] md:text-xs text-slate-400 leading-relaxed">
+                    <strong>免責聲明 (Disclaimer)：</strong><br>
+                    本工具僅供醫療專業人員參考。對於體重過重或超過黃金時間的病患，請優先考慮 IUD。
+                </p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // Tab Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + tabName).classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // MOA Logic
+        function showMoaDetail(step) {
+            const defaultText = document.getElementById('moa-text-default');
+            const detailContent = document.getElementById('moa-detail-content');
+            const title = document.getElementById('moa-title');
+            const desc = document.getElementById('moa-desc');
+            const impact = document.getElementById('moa-impact');
+            
+            // Highlight active node
+            document.querySelectorAll('.moa-node').forEach(el => el.classList.remove('active-node'));
+
+            defaultText.classList.add('hidden');
+            detailContent.classList.remove('hidden');
+
+            const data = {
+                1: {
+                    title: "Unprotected Sexual Intercourse",
+                    desc: "精子進入女性生殖道後，在適當的子宮頸黏液環境下，可存活長達 5 天。",
+                    impact: "這定義了事後避孕藥的「黃金 5 天 (120小時)」治療窗口。"
+                },
+                2: {
+                    title: "LH Surge 開始 (The Trigger)",
+                    desc: "當卵泡成熟，會誘發黃體生成素 (LH) 激增。",
+                    impact: "Levonorgestrel (LNG) 僅能抑制此 Surge。一旦 Surge 啟動，LNG 便無效，失敗率大增。"
+                },
+                3: {
+                    title: "LH Surge 高峰 (Peak)",
+                    desc: "Ulipristal Acetate (UPA) 能作用於卵泡上的黃體素受體，即使在 LH 開始上升但未達排卵閾值前，仍能抑制卵泡破裂。",
+                    impact: "因此 UPA 的有效時間窗比 LNG 更廣 (尤其在 72-120 小時)。"
+                },
+                4: {
+                    title: "排卵 (Ovulation)",
+                    desc: "一旦排卵發生，口服事後避孕藥 (LNG/UPA) 理論上皆已無效，因為它們無法阻止精卵結合。",
+                    impact: "若懷疑已排卵，口服藥僅能提供極有限的保護。"
+                },
+                5: {
+                    title: "受精與著床 (Implantation)",
+                    desc: "受精卵約需 5-7 天著床。含銅避孕器 (Cu-IUD) 能產生發炎反應，毒殺精卵並阻止著床。",
+                    impact: "Cu-IUD 是唯一能在排卵後、著床前發揮作用的 EC (>99% 有效)。"
+                }
+            };
+
+            if(data[step]) {
+                title.innerText = data[step].title;
+                desc.innerText = data[step].desc;
+                impact.innerText = data[step].impact;
+            }
+        }
+    </script>
+</body>
+</html>
