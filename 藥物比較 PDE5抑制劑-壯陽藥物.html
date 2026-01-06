@@ -3,655 +3,1087 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>壯陽藥物比較表 (ED Clinical Tools)</title>
-    
-    <!-- 引入 Tailwind CSS -->
+    <title>PDE5 抑制劑臨床指引</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- 設定 Tailwind 自定義動畫 -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    animation: {
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'fade-in-up': 'fadeInUp 0.6s ease-out',
-                        'blob': 'blob 7s infinite',
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' },
-                        },
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        blob: {
-                            '0%': { transform: 'translate(0px, 0px) scale(1)' },
-                            '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-                            '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-                            '100%': { transform: 'translate(0px, 0px) scale(1)' },
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-
-    <!-- 引入 React 和 ReactDOM -->
-    <!-- 使用 Import Map 讓瀏覽器直接支援 ES Modules 導入 -->
-    <script type="importmap">
-    {
-        "imports": {
-            "react": "https://esm.sh/react@18.2.0",
-            "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-            "lucide-react": "https://esm.sh/lucide-react@0.263.1"
-        }
-    }
-    </script>
-    
-    <!-- 引入 Babel 用於在瀏覽器中編譯 JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* 隱藏未編譯前的內容，避免閃爍 */
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        :root {
+            --primary-color: #1e3a8a; /* Blue 900 */
+            --accent-color: #3b82f6;  /* Blue 500 */
+            --accent-light: #dbeafe;  /* Blue 100 */
+            --danger-color: #be123c;  /* Rose 700 */
+            --paper-bg: #ffffff;
+            --bg-color: #f8fafc;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #334155;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .serif { font-family: 'Noto Serif TC', serif; }
+
+        .journal-card {
+            background-color: var(--paper-bg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border-top: 6px solid var(--accent-color);
+        }
+
+        /* 標籤 Badge 樣式 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .badge-mid { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .badge-high { background-color: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+        .badge-low { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+        
+        /* Drug Tags */
+        .pk-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid transparent; font-weight: 600;}
+        .pk-viagra { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; } /* Viagra Blue */
+        .pk-cialis { background: #fffbeb; color: #d97706; border-color: #fde68a; } /* Cialis Yellow/Orange */
+        .pk-levitra { background: #fff7ed; color: #c2410c; border-color: #fed7aa; } /* Levitra Orange */
+
+        /* Tab 樣式 (Block Style) */
+        .nav-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+        .nav-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f1f5f9;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .tab-btn:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+            font-weight: 700;
+        }
+
+        /* 統一風格的資訊卡 */
+        .info-card {
+            border-left-width: 4px;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: 100%;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid; 
+        }
+        .info-card-danger { border-left-color: var(--danger-color); background-color: #fff1f2; }
+        .info-card-strategy { border-left-color: var(--accent-color); background-color: #eff6ff; }
+        .info-card-note { border-left-color: #3b82f6; background-color: #eff6ff; }
+        .info-card-indigo { border-left-color: #6366f1; background-color: #eef2ff; }
+        .info-card-orange { border-left-color: #f97316; background-color: #fff7ed; }
+        .info-card-pink { border-left-color: #ec4899; background-color: #fdf2f8; }
+        
+        /* 表格優化 */
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .modern-table th {
+            font-family: 'Noto Serif TC', serif;
+            color: #475569;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            background-color: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.9rem;
+        }
+        .modern-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            background-color: white;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+        .modern-table tr:hover td { background-color: #f8fafc; }
+        .modern-table tr:last-child td { border-bottom: none; }
+        
+        /* Class 分隔線 */
+        .class-header td {
+            background-color: #f1f5f9;
+            font-weight: bold;
+            color: #334155;
+            padding-top: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        /* MOA 樣式優化 */
+        .cell-container {
+            background-color: #f1f5f9; 
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            background-image: 
+                linear-gradient(rgba(226, 232, 240, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .cell-cytosol {
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        .cell-membrane {
+            border-bottom: 6px solid #60a5fa; /* Endothelium Blue */
+            background: linear-gradient(to bottom, #eff6ff, #dbeafe);
+            padding: 0.75rem;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #1e40af;
+            font-weight: 800;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            position: relative;
+            z-index: 20;
+        }
+        .cell-nucleus {
+            margin-top: 2rem;
+            border: 2px solid #fca5a5; /* Smooth Muscle Red */
+            border-radius: 20px;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(4px);
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(252, 165, 165, 0.2);
+        }
+        .cell-nucleus::before {
+            content: 'Smooth Muscle Cell (Cytosol)';
+            position: absolute;
+            top: -12px;
+            left: 24px;
+            background: #fee2e2;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            color: #b91c1c;
+            font-weight: 800;
+            border: 1px solid #fecaca;
+        }
+        .moa-node {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            position: relative;
+        }
+        .moa-node:hover, .moa-node.active-node {
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.15);
+            transform: translateY(-3px);
+            z-index: 30;
+        }
+        .arrow-down {
+            width: 2px;
+            height: 24px;
+            background: #94a3b8;
+            margin: 0 auto;
+            position: relative;
+            opacity: 0.6;
+        }
+        .arrow-down::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -3px;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid #94a3b8;
+        }
+
+        /* Algorithm/Safety Card Styles */
+        .algorithm-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .algorithm-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .algo-header {
+            background: #f1f5f9;
+            padding: 1rem;
+            font-weight: 700;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .algo-body { padding: 1.5rem; }
+        
+        /* New Stepwise Guideline Styles */
+        .step-container {
+            position: relative;
+            padding-left: 2.5rem;
+            border-left: 2px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+        .step-container:last-child {
+            margin-bottom: 0;
+            border-left-color: transparent;
+        }
+        .step-circle {
+            position: absolute;
+            left: -1rem;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            background-color: var(--paper-bg);
+            border: 2px solid var(--accent-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--accent-color);
+            z-index: 10;
+        }
+        .step-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px -1px rgba(0,0,0,0.05);
+        }
+        .step-header {
+            padding: 1rem 1.5rem;
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .step-content {
+            padding: 1.5rem;
+        }
+
+        /* Risk Tag */
+        .risk-level-tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+        }
+
+        /* Tab Content Animation */
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in; }
+        .tab-content.active { display: block; opacity: 1; }
+        
+        .ref-section {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Drug Image Styling */
+        .drug-img-container {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 50%;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        .drug-img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen relative overflow-x-hidden selection:bg-indigo-100 selection:text-indigo-700">
-    
-    <!-- [美化升級] 背景裝飾層 (Background Decorations) -->
-    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <!-- 主漸層背景 -->
-        <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-blue-50"></div>
+<body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
+
+    <main class="journal-card w-full max-w-7xl rounded-2xl p-6 md:p-10 relative overflow-hidden bg-white">
         
-        <!-- 動態光暈效果 -->
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl mix-blend-multiply filter animate-blob"></div>
-        <div class="absolute top-0 right-1/4 w-96 h-96 bg-yellow-200/30 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-2000"></div>
-        <div class="absolute -bottom-32 left-1/3 w-96 h-96 bg-pink-200/30 rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-4000"></div>
-        
-        <!-- 細緻網格紋理 (增加專業感) -->
-        <div class="absolute inset-0 opacity-[0.4]" style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 32px 32px;"></div>
-    </div>
-    
-    <!-- React 應用程式掛載點 -->
-    <div id="root" class="relative z-0"></div>
+        <!-- Header -->
+        <header class="mb-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-slate-100">
+                <div>
+                    <h2 class="text-xs font-bold tracking-widest text-blue-600 uppercase mb-2">Evidence-Based Medicine</h2>
+                    <h1 class="serif text-3xl md:text-4xl text-slate-900 leading-tight font-bold">
+                        PDE5 抑制劑 (壯陽藥)
+                    </h1>
+                </div>
+                <div class="text-right hidden md:block">
+                    <p class="text-slate-400 text-sm font-light">Phosphodiesterase-5 Inhibitors</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師 • 更新日期 : 2026/01/06</p>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-container mt-6">
+                <button onclick="switchTab('compare')" id="tab-compare" class="tab-btn active">藥物比較 (Overview)</button>
+                <button onclick="switchTab('pk')" id="tab-pk" class="tab-btn">藥物動力學 (PK)</button>
+                <button onclick="switchTab('guideline')" id="tab-guideline" class="tab-btn">治療指引</button>
+                <button onclick="switchTab('safety')" id="tab-safety" class="tab-btn">禁忌與安全性</button>
+                <button onclick="switchTab('moa')" id="tab-moa" class="tab-btn">藥理機轉 (MOA)</button>
+                <button onclick="switchTab('special')" id="tab-special" class="tab-btn">特殊族群與衛教</button>
+            </nav>
+        </header>
 
-    <!-- React 程式碼邏輯 -->
-    <script type="text/babel" data-type="module">
-        import React, { useState } from 'react';
-        import { createRoot } from 'react-dom/client';
-        import { 
-            Clock, AlertTriangle, Utensils, Zap, CheckCircle, Info, ArrowRight, 
-            ShieldAlert, Pill, ExternalLink, ChevronRight, Activity, FileText, 
-            FlaskConical, Building2, Scale 
-        } from 'lucide-react';
+        <!-- ========================================== -->
+        <!-- TAB 1: 藥物比較 (Comparison) -->
+        <!-- ========================================== -->
+        <div id="content-compare" class="tab-content active">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <!-- Viagra -->
+                <div class="p-4 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-4">
+                    <div class="drug-img-container">
+                        <img src="https://images.vocus.cc/cb8d4429-25c9-4078-92fe-84831a1d95ea.png" alt="Viagra" class="drug-img">
+                    </div>
+                    <div>
+                        <h3 class="text-blue-800 font-bold text-sm">Viagra (威而鋼)</h3>
+                        <p class="text-[10px] text-blue-700 opacity-80">Sildenafil</p>
+                        <a href="https://mcp.fda.gov.tw/im_detail_1/%E8%A1%9B%E7%BD%B2%E8%97%A5%E8%BC%B8%E5%AD%97%E7%AC%AC022382%E8%99%9F" target="_blank" class="text-[10px] underline text-blue-600 mt-1 block">仿單連結</a>
+                    </div>
+                </div>
+                <!-- Cialis -->
+                <div class="p-4 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-4">
+                    <div class="drug-img-container">
+                        <img src="https://images.vocus.cc/904419c9-68bf-4da3-be31-9f6441aa2cd2.png" alt="Cialis" class="drug-img">
+                    </div>
+                    <div>
+                        <h3 class="text-amber-800 font-bold text-sm">Cialis (犀利士)</h3>
+                        <p class="text-[10px] text-amber-700 opacity-80">Tadalafil</p>
+                        <a href="https://mcp.fda.gov.tw/im_detail_1/%E8%A1%9B%E9%83%A8%E8%97%A5%E8%A3%BD%E5%AD%97%E7%AC%AC061550%E8%99%9F" target="_blank" class="text-[10px] underline text-amber-600 mt-1 block">仿單連結</a>
+                    </div>
+                </div>
+                <!-- Levitra -->
+                <div class="p-4 rounded-xl bg-orange-50 border border-orange-100 flex items-center gap-4">
+                    <div class="drug-img-container">
+                        <img src="https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2F34617765-ce24-4995-9de1-41c960d58727.png&width=153&sign=zYJ6A5DzQjFPI38HPIgCXBsrrsRfzGDKkc3hQSA5IPE" alt="Levitra" class="drug-img">
+                    </div>
+                    <div>
+                        <h3 class="text-orange-800 font-bold text-sm">Levitra (樂威壯)</h3>
+                        <p class="text-[10px] text-orange-700 opacity-80">Vardenafil</p>
+                        <a href="https://mcp.fda.gov.tw/im_detail_pdf/%E8%A1%9B%E7%BD%B2%E8%97%A5%E8%BC%B8%E5%AD%97%E7%AC%AC023803%E8%99%9F" target="_blank" class="text-[10px] underline text-orange-600 mt-1 block">仿單連結</a>
+                    </div>
+                </div>
+            </div>
 
-        // =============================================================================
-        // [維護說明 - 請閱讀]
-        // 1. 若要更換「圖片」，請修改 imageUrl 欄位引號內的網址。
-        // 2. 若要更換「仿單連結」，請修改 link 欄位引號內的網址。
-        // 3. 圖片建議使用正方形或去背圖 (png)，顯示效果最佳。
-        // =============================================================================
+            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
+                <table class="modern-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="w-[20%]">藥物 (Generic Name)</th>
+                            <th class="w-[15%]">建議劑量</th>
+                            <th class="w-[15%]">起效時間 (Onset)</th>
+                            <th class="w-[15%]">藥效維持 (Duration)</th>
+                            <th class="w-[35%]">臨床特色與飲食影響</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700 text-sm">
+                        
+                        <tr class="class-header sticky top-0 z-20">
+                            <td colspan="5" class="text-blue-700 bg-blue-50">Sildenafil (威而鋼) - 短效型</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">Viagra</td>
+                            <td>25, 50, 100 mg</td>
+                            <td>30-60 分鐘</td>
+                            <td>4-6 小時</td>
+                            <td class="text-xs text-slate-500">
+                                <span class="badge badge-high mb-1">受高脂食物影響大</span><br>
+                                硬度表現佳，知名度最高。建議空腹服用以達最佳效果。
+                            </td>
+                        </tr>
 
-        // -----------------------------------------------------------------------------
-        // 資料設定：完整藥物比較表 (在此處修改藥物數據)
-        // -----------------------------------------------------------------------------
-        const drugs = [
-        {
-            id: 'viagra',
-            name: '威而鋼',
-            engName: 'Viagra',
-            ingredient: 'Sildenafil',
-            manufacturer: '輝瑞 (Pfizer)',
-            dosage: '25mg / 50mg / 100mg',
-            onset: '30 ~ 60 分鐘',
-            duration: '4 ~ 6 小時',
-            halfLife: '4 小時',
-            diet: '易受高脂食物影響 (延遲吸收)，建議空腹服用',
-            features: '硬度表現最優異，全球知名度最高，適合單次性行為使用。',
-            sideEffects: '頭痛、臉潮紅、胃不適、視力模糊 (藍視)、鼻塞',
-            contraindications: '絕對禁止與硝酸鹽類藥物 (Nitrates) 併用',
-            
-            // [維護說明]: 請在此處貼上您的「藥物仿單」網址 (例如 PDF 連結或衛福部網頁)
-            link: 'https://mcp.fda.gov.tw/im_detail_1/%E8%A1%9B%E7%BD%B2%E8%97%A5%E8%BC%B8%E5%AD%97%E7%AC%AC022382%E8%99%9F', 
-            
-            // [維護說明]: 請在此處貼上您的「藥物圖片」網址
-            // 如果圖片無法顯示，請確認網址是否為公開可存取，或改用 Base64 編碼
-            imageUrl: 'https://images.vocus.cc/cb8d4429-25c9-4078-92fe-84831a1d95ea.png',
-            
-            // 顏色主題設定 (建議不更動，以免影響視覺設計)
-            colorTheme: {
-                bg: 'bg-blue-50',
-                headerBg: 'bg-blue-100/60',
-                border: 'border-blue-200',
-                text: 'text-blue-700',
-                textLight: 'text-blue-600',
-                hover: 'hover:bg-blue-50/80',
-            }
-        },
-        {
-            id: 'cialis',
-            name: '犀利士',
-            engName: 'Cialis',
-            ingredient: 'Tadalafil',
-            manufacturer: '禮來 (Lilly)',
-            dosage: '5mg / 10mg / 20mg',
-            onset: '30 ~ 45 分鐘',
-            duration: '24 ~ 36 小時',
-            halfLife: '17.5 小時',
-            diet: '標準飲食下不受影響，不需空腹',
-            features: '藥效極長 (週末錠)，時間壓力小，另有 5mg 低劑量每日保養法。',
-            sideEffects: '頭痛、背痛、肌肉痠痛、消化不良、臉潮紅',
-            contraindications: '絕對禁止與硝酸鹽類藥物 (Nitrates) 併用',
-            
-            // [維護說明]: 請在此處貼上您的「藥物仿單」網址
-            link: 'https://mcp.fda.gov.tw/im_detail_1/%E8%A1%9B%E9%83%A8%E8%97%A5%E8%A3%BD%E5%AD%97%E7%AC%AC061550%E8%99%9F',
-            
-            // [維護說明]: 請在此處貼上您的「藥物圖片」網址
-            imageUrl: 'https://images.vocus.cc/904419c9-68bf-4da3-be31-9f6441aa2cd2.png',
-            
-            colorTheme: {
-                bg: 'bg-amber-50',
-                headerBg: 'bg-amber-100/60',
-                border: 'border-amber-200',
-                text: 'text-amber-700',
-                textLight: 'text-amber-600',
-                hover: 'hover:bg-amber-50/80',
-            }
-        },
-        {
-            id: 'levitra',
-            name: '樂威壯',
-            engName: 'Levitra',
-            ingredient: 'Vardenafil',
-            manufacturer: '拜耳 (Bayer)',
-            dosage: '5mg / 10mg / 20mg',
-            onset: '15 ~ 30 分鐘',
-            duration: '4 ~ 8 小時',
-            halfLife: '4 ~ 5 小時',
-            diet: '受高脂飲食影響較小 (優於威而鋼)',
-            features: '起效速度最快，硬度與威而鋼相當，適合糖尿病或年長患者。',
-            sideEffects: '臉潮紅、頭痛、鼻塞、消化不良',
-            contraindications: '絕對禁止與硝酸鹽類藥物 (Nitrates) 併用',
-            
-            // [維護說明]: 請在此處貼上您的「藥物仿單」網址
-            link: 'https://mcp.fda.gov.tw/im_detail_pdf/%E8%A1%9B%E7%BD%B2%E8%97%A5%E8%BC%B8%E5%AD%97%E7%AC%AC023803%E8%99%9F',
-            
-            // [維護說明]: 請在此處貼上您的「藥物圖片」網址
-            imageUrl: 'https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2F34617765-ce24-4995-9de1-41c960d58727.png&width=153&sign=zYJ6A5DzQjFPI38HPIgCXBsrrsRfzGDKkc3hQSA5IPE',
-            
-            colorTheme: {
-                bg: 'bg-orange-50',
-                headerBg: 'bg-orange-100/60',
-                border: 'border-orange-200',
-                text: 'text-orange-700',
-                textLight: 'text-orange-600',
-                hover: 'hover:bg-orange-50/80',
-            }
-        }
-        ];
+                        <tr class="class-header sticky top-0 z-20">
+                            <td colspan="5" class="text-amber-700 bg-amber-50">Tadalafil (犀利士) - 長效型</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">Cialis</td>
+                            <td>10, 20 mg (按需)<br>2.5, 5 mg (每日)</td>
+                            <td>30-45 分鐘</td>
+                            <td class="font-bold text-emerald-600">24-36 小時</td>
+                            <td class="text-xs text-slate-500">
+                                <span class="badge badge-low mb-1">不受飲食影響</span><br>
+                                "週末錠"，減少時間壓力。5mg 可做為攝護腺肥大(BPH)共病治療。
+                            </td>
+                        </tr>
 
-        // -----------------------------------------------------------------------------
-        // 子組件：高質感比較表 (表格呈現邏輯)
-        // -----------------------------------------------------------------------------
-        const ComparisonTable = () => {
-        // 定義表格的列 (如果您想新增比較項目，請在此處新增)
-        const rows = [
-            { label: '主要成分', icon: <FlaskConical className="w-4 h-4" />, key: 'ingredient' },
-            { label: '生產藥廠', icon: <Building2 className="w-4 h-4" />, key: 'manufacturer' },
-            { label: '建議劑量', icon: <Scale className="w-4 h-4" />, key: 'dosage' },
-            { label: '起效時間', icon: <Zap className="w-4 h-4" />, key: 'onset', highlight: true },
-            { label: '藥效維持', icon: <Clock className="w-4 h-4" />, key: 'duration', highlight: true },
-            { label: '半衰期', icon: <Activity className="w-4 h-4" />, key: 'halfLife' },
-            { label: '飲食影響', icon: <Utensils className="w-4 h-4" />, key: 'diet' },
-            { label: '常見副作用', icon: <AlertTriangle className="w-4 h-4" />, key: 'sideEffects' },
-            { label: '臨床特色', icon: <Info className="w-4 h-4" />, key: 'features' },
-        ];
-
-        return (
-            <div className="overflow-hidden bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-white/50 animate-fade-in-up">
-            <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[800px]">
-                <thead>
-                    <tr className="border-b border-slate-200">
-                    {/* 第一欄：固定標題區塊 */}
-                    <th className="p-6 bg-slate-50/90 w-48 align-bottom border-r border-slate-100 backdrop-blur-sm sticky left-0 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
-                        <div className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Comparison</div>
-                        <div className="text-2xl font-black text-slate-800">藥物比一比</div>
-                    </th>
-                    
-                    {/* 動態生成藥物表頭 */}
-                    {drugs.map(drug => (
-                        <th key={drug.id} className={`p-6 align-bottom relative group transition-colors duration-300 ${drug.colorTheme.headerBg} border-r border-slate-100 last:border-0`}>
-                        <div className="flex flex-col items-center gap-3">
-                            {/* 藥物圖片顯示區 (增加錯誤處理，若圖片失效顯示預設圖標) */}
-                            <div className="h-24 w-full flex items-center justify-center transform group-hover:scale-110 transition-transform duration-300">
-                            <div className="relative w-24 h-24 flex items-center justify-center">
-                                {/* 圖片背景光暈特效 */}
-                                <div className={`absolute inset-0 bg-white/50 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                                
-                                {drug.imageUrl ? (
-                                <img 
-                                    src={drug.imageUrl} 
-                                    alt={drug.name}
-                                    className="relative z-10 w-full h-full object-contain drop-shadow-md"
-                                    onError={(e) => {
-                                        // [維護說明]: 圖片載入失敗時的後備顯示
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'flex';
-                                    }}
-                                />
-                                ) : null}
-                                
-                                {/* 若圖片載入失敗，顯示此後備圖示 */}
-                                <div className="hidden absolute inset-0 z-0 flex items-center justify-center bg-slate-100 rounded-full text-slate-400" style={{display: drug.imageUrl ? 'none' : 'flex'}}>
-                                    <Pill className="w-10 h-10" />
-                                </div>
-                            </div>
-                            </div>
-                            
-                            {/* 藥名與連結按鈕 */}
-                            <div className="text-center z-10 mt-2">
-                            <a 
-                                href={drug.link} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className={`flex items-center justify-center gap-1.5 text-xl font-bold ${drug.colorTheme.text} hover:opacity-80 transition-opacity`}
-                                title="點擊前往仿單頁面"
-                            >
-                                {drug.name}
-                                <ExternalLink className="w-4 h-4 opacity-50" />
-                            </a>
-                            <div className={`text-sm font-medium ${drug.colorTheme.textLight} opacity-80`}>{drug.engName}</div>
-                            </div>
-                        </div>
-                        </th>
-                    ))}
-                    </tr>
-                </thead>
-                
-                <tbody className="text-slate-600 divide-y divide-slate-100">
-                    {rows.map((row, index) => (
-                    <tr key={row.key} className={`group transition-colors hover:bg-slate-50/50`}>
-                        {/* 左側標籤欄 (固定不動) */}
-                        <td className="p-4 bg-slate-50/90 font-bold text-slate-700 border-r border-slate-100 sticky left-0 z-10 backdrop-blur-sm shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
-                        <div className="flex items-center gap-2">
-                            <span className="p-1.5 rounded-md bg-white shadow-sm text-slate-500 ring-1 ring-slate-100">
-                            {row.icon}
-                            </span>
-                            {row.label}
-                        </div>
-                        </td>
-
-                        {/* 右側數據欄 (對應每個藥物) */}
-                        {drugs.map(drug => (
-                        <td key={`${drug.id}-${row.key}`} className={`p-4 border-r border-slate-100 last:border-0 align-middle leading-relaxed ${row.highlight ? 'font-bold' : ''}`}>
-                            {/* 這裡處理特殊的高亮顯示邏輯 (綠色/橘色標籤) */}
-                            <div className={`
-                            ${row.highlight && row.key === 'duration' && drug.id === 'cialis' ? 'text-green-600 bg-green-50 inline-block px-2 py-1 rounded' : ''}
-                            ${row.highlight && row.key === 'onset' && drug.id === 'levitra' ? 'text-orange-600 bg-orange-50 inline-block px-2 py-1 rounded' : ''}
-                            `}>
-                            {drug[row.key]}
-                            </div>
-                        </td>
-                        ))}
-                    </tr>
-                    ))}
-                    
-                    {/* 禁忌症特別警告列 (紅色背景) */}
-                    <tr className="bg-red-50/30 border-t-2 border-red-100">
-                    <td className="p-4 font-bold text-red-700 bg-red-50/90 border-r border-red-100 sticky left-0 z-10 backdrop-blur-sm">
-                        <div className="flex items-center gap-2">
-                        <span className="p-1.5 rounded-md bg-white shadow-sm text-red-500 ring-1 ring-red-100">
-                            <ShieldAlert className="w-4 h-4" />
-                        </span>
-                        絕對禁忌
-                        </div>
-                    </td>
-                    {drugs.map(drug => (
-                        <td key={`${drug.id}-contra`} className="p-4 border-r border-red-100 last:border-0 text-red-600 font-medium text-sm">
-                        {drug.contraindications}
-                        </td>
-                    ))}
-                    </tr>
-                </tbody>
+                        <tr class="class-header sticky top-0 z-20">
+                            <td colspan="5" class="text-orange-700 bg-orange-50">Vardenafil (樂威壯) - 速效型</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">Levitra</td>
+                            <td>5, 10, 20 mg</td>
+                            <td class="font-bold text-rose-600">15-30 分鐘</td>
+                            <td>4-8 小時</td>
+                            <td class="text-xs text-slate-500">
+                                <span class="badge badge-mid mb-1">受高脂食物影響較小</span><br>
+                                起效最快。對糖尿病或攝護腺手術後患者效果可能較佳。
+                            </td>
+                        </tr>
+                    </tbody>
                 </table>
             </div>
-            <div className="bg-slate-50/90 p-3 text-center text-xs text-slate-400 border-t border-slate-200">
-                滑動表格以查看更多資訊 • 點擊藥物名稱可查看詳細仿單
+
+            <div class="info-card info-card-note">
+                 <h4 class="font-bold text-blue-700 mb-2">💡 臨床速記：如何選擇？</h4>
+                 <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                     <li><strong>硬度需求、單次性行為：</strong>首選 <span class="pk-tag pk-viagra">Sildenafil</span> (空腹使用)。</li>
+                     <li><strong>時間彈性、不喜計畫：</strong>首選 <span class="pk-tag pk-cialis">Tadalafil</span> (週末錠)。</li>
+                     <li><strong>臨時起意、快速見效：</strong>首選 <span class="pk-tag pk-levitra">Vardenafil</span>。</li>
+                 </ul>
             </div>
-            </div>
-        );
-        };
+             <div class="ref-section">Ref: EAU Guidelines on Sexual and Reproductive Health; AUA Guidelines.</div>
+        </div>
 
-        // -----------------------------------------------------------------------------
-        // 子組件：智慧選藥助手 (問卷邏輯)
-        // -----------------------------------------------------------------------------
-        const RecommendationWizard = () => {
-        const [step, setStep] = useState(0);
-        const [answers, setAnswers] = useState({});
-        const [result, setResult] = useState(null);
-
-        const questions = [
-            {
-            id: 'duration',
-            text: '您希望藥效持續多久？',
-            icon: <Clock className="w-6 h-6 text-indigo-500" />,
-            options: [
-                { label: '只需應付單次約會 (4-6小時)', value: 'short', desc: '適合一般計畫性性行為' },
-                { label: '週末隨時待命 (36小時)', value: 'long', desc: '週五服用，週末無憂' }
-            ]
-            },
-            {
-            id: 'food',
-            text: '您習慣在浪漫晚餐(含油脂)後服藥嗎？',
-            icon: <Utensils className="w-6 h-6 text-indigo-500" />,
-            options: [
-                { label: '是，希望不受食物影響', value: 'food_friendly', desc: '我不喜歡空腹等待' },
-                { label: '否，我可以空腹/清淡飲食', value: 'fasting_ok', desc: '為了效果我可以忍受' }
-            ]
-            },
-            {
-            id: 'speed',
-            text: '您希望多快能進入狀況？',
-            icon: <Zap className="w-6 h-6 text-indigo-500" />,
-            options: [
-                { label: '越快越好 (15-30分鐘)', value: 'fast', desc: '臨時起意，刻不容緩' },
-                { label: '標準速度 (30-60分鐘)', value: 'normal', desc: '我有足夠的前戲時間' }
-            ]
-            }
-        ];
-
-        const handleSelect = (value) => {
-            const newAnswers = { ...answers, [questions[step].id]: value };
-            setAnswers(newAnswers);
-
-            if (step < questions.length - 1) {
-            setStep(step + 1);
-            } else {
-            calculateResult(newAnswers);
-            }
-        };
-
-        const calculateResult = (finalAnswers) => {
-            // [維護說明]: 這裡是推薦邏輯，您可以根據臨床經驗調整
-            if (finalAnswers.duration === 'long') {
-            setResult(drugs.find(d => d.id === 'cialis'));
-            } else if (finalAnswers.speed === 'fast') {
-            setResult(drugs.find(d => d.id === 'levitra'));
-            } else if (finalAnswers.food === 'food_friendly') {
-            setResult(drugs.find(d => d.id === 'cialis')); 
-            } else {
-            setResult(drugs.find(d => d.id === 'viagra'));
-            }
-        };
-
-        const reset = () => {
-            setStep(0);
-            setAnswers({});
-            setResult(null);
-        };
-
-        return (
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-xl border border-white/50 p-8 max-w-2xl mx-auto overflow-hidden relative">
-            <div className="absolute -top-20 -right-20 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 pointer-events-none"></div>
-
-            {!result ? (
-                <div className="space-y-8 relative z-10">
-                <div className="flex justify-between items-end mb-2">
-                    <div>
-                    <span className="text-xs font-bold text-indigo-500 tracking-widest uppercase">Question {step + 1}</span>
-                    <h3 className="text-2xl font-bold text-slate-800 mt-1 flex items-center gap-2">
-                        {questions[step].icon}
-                        {questions[step].text}
-                    </h3>
-                    </div>
-                </div>
-                
-                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 transition-all duration-500 ease-out" style={{ width: `${((step + 1) / questions.length) * 100}%` }}></div>
-                </div>
-
-                <div className="grid gap-4 mt-6">
-                    {questions[step].options.map((opt, idx) => (
-                    <button
-                        key={idx}
-                        onClick={() => handleSelect(opt.value)}
-                        className="group relative flex items-center justify-between p-5 border border-slate-200 rounded-xl hover:border-indigo-500 hover:bg-indigo-50/50 transition-all shadow-sm hover:shadow-md text-left bg-white/50 backdrop-blur-sm"
-                    >
-                        <div>
-                        <div className="font-bold text-lg text-slate-700 group-hover:text-indigo-700">{opt.label}</div>
-                        <div className="text-sm text-slate-400 group-hover:text-indigo-400 mt-1">{opt.desc}</div>
-                        </div>
-                        <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-indigo-500 transition-colors">
-                        <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-white" />
-                        </div>
-                    </button>
-                    ))}
-                </div>
-                </div>
-            ) : (
-                <div className="text-center animate-fade-in relative z-10">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-600 text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-200">
-                    <CheckCircle className="w-10 h-10" />
-                </div>
-                <h3 className="text-3xl font-bold text-slate-800 mb-2">推薦藥物：{result.name}</h3>
-                <p className="text-slate-500 mb-8 max-w-md mx-auto">
-                    根據您的生活型態需求，我們認為 <strong>{result.engName}</strong> 最能滿足您的期望。
-                </p>
-                
-                <div className={`p-6 rounded-2xl ${result.colorTheme.bg} border ${result.colorTheme.border} mb-8 text-left shadow-inner`}>
-                    <div className="flex items-start gap-4 mb-4">
-                    <div className="shrink-0 w-24 h-24 bg-white rounded-xl shadow-sm border border-slate-100 flex items-center justify-center p-2 relative">
-                        {/* 這裡也會顯示結果的藥物圖片 */}
-                        {result.imageUrl ? (
-                        <img src={result.imageUrl} alt={result.name} className="max-w-full max-h-full object-contain" />
-                        ) : (
-                        <Pill className="w-10 h-10 text-slate-300" />
-                        )}
-                    </div>
-                    <div>
-                        <h4 className={`font-bold text-lg ${result.colorTheme.text}`}>{result.name} ({result.engName})</h4>
-                        <p className="text-sm text-slate-600 mt-1">{result.features}</p>
-                    </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 mt-4">
-                    <div className="bg-white/60 p-2 rounded text-center">
-                        <div className="text-xs text-slate-400 font-bold uppercase">起效</div>
-                        <div className="text-slate-700 font-bold text-sm">{result.onset}</div>
-                    </div>
-                    <div className="bg-white/60 p-2 rounded text-center">
-                        <div className="text-xs text-slate-400 font-bold uppercase">持續</div>
-                        <div className="text-slate-700 font-bold text-sm">{result.duration}</div>
-                    </div>
-                    <div className="bg-white/60 p-2 rounded text-center">
-                        <div className="text-xs text-slate-400 font-bold uppercase">飲食</div>
-                        <div className="text-slate-700 font-bold text-sm">{result.diet.substring(0, 4)}...</div>
-                    </div>
-                    </div>
-                </div>
-
-                <div className="flex gap-4 justify-center">
-                    <button onClick={reset} className="px-6 py-3 bg-white border border-slate-300 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors shadow-sm">
-                    重新測試
-                    </button>
-                    <a href={result.link} target="_blank" rel="noreferrer" className="px-6 py-3 bg-slate-900 text-white font-medium rounded-xl hover:bg-slate-800 transition-colors shadow-lg shadow-slate-300 flex items-center gap-2">
-                    查看詳細仿單 <ExternalLink className="w-4 h-4"/>
-                    </a>
-                </div>
-                </div>
-            )}
-            </div>
-        );
-        };
-
-        // -----------------------------------------------------------------------------
-        // 主程式 (整體頁面架構)
-        // -----------------------------------------------------------------------------
-        const EDMedicationApp = () => {
-        const [activeTab, setActiveTab] = useState('compare');
-
-        return (
-            <div className="min-h-screen font-sans text-slate-900 pb-12 selection:bg-indigo-100 selection:text-indigo-700">
+        <!-- ========================================== -->
+        <!-- TAB 2: 藥物動力學 (PK) -->
+        <!-- ========================================== -->
+        <div id="content-pk" class="tab-content">
             
-            {/* 導覽列 (Navbar) */}
-            <nav className="bg-white/70 backdrop-blur-lg border-b border-white/40 sticky top-0 z-50">
-                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="bg-gradient-to-br from-indigo-600 to-violet-600 p-2 rounded-xl shadow-md shadow-indigo-200">
-                    <Pill className="text-white w-5 h-5" />
-                    </div>
-                    <div>
-                    <h1 className="text-lg font-bold text-slate-800 tracking-tight">
-                        ED Clinical Tools
-                    </h1>
-                    <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Clinical Decision Support</p>
-                    </div>
-                </div>
-                
-                <div className="flex bg-slate-100/50 p-1 rounded-lg">
-                    {[
-                    { id: 'compare', label: '藥物比較' },
-                    { id: 'wizard', label: '選藥助手' },
-                    { id: 'safety', label: '安全警示' }
-                    ].map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
-                        activeTab === tab.id 
-                            ? 'bg-white shadow-sm ring-1 ring-black/5 text-indigo-600' 
-                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-                        }`}
-                    >
-                        {tab.label}
-                    </button>
-                    ))}
-                </div>
-                </div>
-            </nav>
-
-            {/* 主要內容區 */}
-            <main className="max-w-6xl mx-auto px-4 py-10">
-                
-                {/* 標題區塊 */}
-                <div className="text-center max-w-2xl mx-auto mb-12">
-                <h2 className="text-3xl font-extrabold text-slate-900 mb-4 tracking-tight drop-shadow-sm">
-                    {activeTab === 'compare' && '壯陽藥 PDE5抑制劑'}
-                    {activeTab === 'wizard' && '智能選藥輔助系統'}
-                    {activeTab === 'safety' && '重要臨床安全須知'}
-                </h2>
-                <p className="text-lg text-slate-500 leading-relaxed">
-                    {activeTab === 'compare' && '針對 Sildenafil, Tadalafil, Vardenafil 三種主流成分的詳細臨床參數分析。'}
-                    {activeTab === 'wizard' && '透過生活型態問卷，精準推薦最適合患者的治療方案。'}
-                    {activeTab === 'safety' && '藥物交互作用檢核與心血管風險評估清單。'}
-                </p>
-                </div>
-
-                {/* 頁籤內容切換邏輯 */}
-                {activeTab === 'compare' && <ComparisonTable />}
-                
-                {activeTab === 'wizard' && (
-                <div className="animate-fade-in-up">
-                    <RecommendationWizard />
-                </div>
-                )}
-
-                {/* 安全警示內容 */}
-                {activeTab === 'safety' && (
-                <div className="max-w-4xl mx-auto space-y-8 animate-fade-in-up">
-                    <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg border-l-8 border-red-500 overflow-hidden border border-white/50">
-                    <div className="p-8">
-                        <div className="flex items-start gap-6">
-                        <div className="bg-red-100 p-3 rounded-full shrink-0">
-                            <ShieldAlert className="w-8 h-8 text-red-600" />
-                        </div>
-                        <div>
-                            <h3 className="text-xl font-bold text-red-700 mb-2">絕對禁忌 (Contraindications)</h3>
-                            <p className="text-slate-600 mb-4 leading-relaxed">
-                            PDE5 抑制劑會增強硝酸鹽類藥物的降血壓作用。若患者正在服用任何形式的<strong>硝酸鹽類藥物 (Nitrates)</strong>，如硝化甘油 (Nitroglycerin)、Isordil 等，<strong>絕對禁止</strong>服用本類藥物。
-                            </p>
-                            <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-                            <span className="text-xs font-bold text-red-500 uppercase tracking-wider block mb-2">交互作用後果</span>
-                            <span className="text-red-800 font-bold">可能導致嚴重的低血壓，甚至休克、死亡。</span>
+            <!-- Duration Visualization -->
+             <div class="mb-8">
+                <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+                    <span class="bg-slate-800 text-white w-6 h-6 rounded flex items-center justify-center text-xs">1</span>
+                    藥效持續時間比較 (Duration of Action)
+                </h3>
+                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                    <p class="text-sm text-slate-500 mb-6">Tadalafil (Cialis) 的半衰期長達 17.5 小時，提供最長的治療窗口。</p>
+                    
+                    <div class="space-y-6">
+                        <!-- Cialis -->
+                        <div class="flex items-center gap-4">
+                            <div class="w-24 text-right text-sm font-bold text-amber-600">Cialis</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-8 overflow-hidden relative group">
+                                <div class="bg-amber-400 h-full rounded-r-full flex items-center justify-end pr-3 text-xs text-white font-bold animate-[width] duration-1000" style="width: 100%;">36 Hours</div>
                             </div>
                         </div>
+                        <!-- Viagra -->
+                        <div class="flex items-center gap-4">
+                            <div class="w-24 text-right text-sm font-bold text-blue-600">Viagra</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-8 overflow-hidden">
+                                <div class="bg-blue-500 h-full rounded-r-full flex items-center justify-end pr-3 text-xs text-white font-bold" style="width: 16%;">4-6 Hours</div>
+                            </div>
+                        </div>
+                        <!-- Levitra -->
+                        <div class="flex items-center gap-4">
+                            <div class="w-24 text-right text-sm font-bold text-orange-600">Levitra</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-8 overflow-hidden">
+                                <div class="bg-orange-500 h-full rounded-r-full flex items-center justify-end pr-3 text-xs text-white font-bold" style="width: 20%;">4-8 Hours</div>
+                            </div>
                         </div>
                     </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-6">
-                    <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 hover:shadow-md transition-shadow">
-                        <h4 className="font-bold text-slate-800 mb-4 flex items-center">
-                            <Activity className="w-5 h-5 text-amber-500 mr-2" />
-                            心血管風險評估
-                        </h4>
-                        <ul className="space-y-3">
-                            {['不穩定型心絞痛', '最近 6 個月內曾發生心肌梗塞或中風', '嚴重心律不整', '未控制的高血壓 (>170/100 mmHg)'].map((item, i) => (
-                            <li key={i} className="flex items-center text-sm text-slate-600">
-                                <span className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-3"></span>
-                                {item}
-                            </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-sm border border-white/50 hover:shadow-md transition-shadow">
-                        <h4 className="font-bold text-slate-800 mb-4 flex items-center">
-                            <FileText className="w-5 h-5 text-blue-500 mr-2" />
-                            衛教重點
-                        </h4>
-                        <ul className="space-y-3">
-                            <li className="flex items-start text-sm text-slate-600">
-                            <ChevronRight className="w-4 h-4 text-blue-400 mr-2 shrink-0 mt-0.5" />
-                            必須有性刺激才會勃起，藥物僅是輔助血管擴張。
-                            </li>
-                            <li className="flex items-start text-sm text-slate-600">
-                            <ChevronRight className="w-4 h-4 text-blue-400 mr-2 shrink-0 mt-0.5" />
-                            大量飲酒會降低藥效並增加低血壓風險。
-                            </li>
-                            <li className="flex items-start text-sm text-slate-600">
-                            <ChevronRight className="w-4 h-4 text-blue-400 mr-2 shrink-0 mt-0.5" />
-                            如勃起時間超過 4 小時 (異常勃起)，請立即就醫。
-                            </li>
-                        </ul>
-                    </div>
-                    </div>
                 </div>
-                )}
+             </div>
 
-            </main>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Food Effect Table -->
+                <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                    <h3 class="font-bold text-slate-800 text-lg mb-2 flex items-center gap-2 p-2">
+                        <span class="bg-slate-800 text-white w-6 h-6 rounded flex items-center justify-center text-xs">2</span>
+                        食物交互作用 (Food Interaction)
+                    </h3>
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>藥物</th>
+                                <th>高脂飲食影響</th>
+                                <th>建議</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm text-slate-700">
+                            <tr>
+                                <td class="font-bold text-blue-700">Viagra</td>
+                                <td><span class="badge badge-high">顯著延遲</span><br>Tmax 延後 60分鐘<br>Cmax 下降 29%</td>
+                                <td><strong>空腹服用</strong> (飯前1hr或飯後2hr)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-orange-700">Levitra</td>
+                                <td><span class="badge badge-mid">輕微影響</span><br>脂肪含量>57%時才顯著</td>
+                                <td>避免"極"油膩大餐即可</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-amber-700">Cialis</td>
+                                <td><span class="badge badge-low">無影響</span><br>藥動學參數未改變</td>
+                                <td>隨餐或空腹皆可</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-            {/* Footer */}
-            <footer className="max-w-6xl mx-auto px-4 py-8 mt-8 border-t border-slate-200/60">
-                <div className="flex flex-col md:flex-row justify-between items-center text-sm text-slate-400">
-                <div className="mb-4 md:mb-0 text-center md:text-left">
-                    <p className="font-medium text-slate-600">© 2026 ED Clinical Assistant</p>
-                    <p className="mt-1">本工具僅供醫療專業人員參考或衛教輔助，不得取代醫師專業診斷。</p>
+                <div class="info-card info-card-strategy">
+                    <h4 class="font-bold text-blue-700 mb-2">💡 治療失敗的常見原因</h4>
+                    <ul class="text-sm text-slate-600 list-disc pl-4 space-y-3">
+                        <li>
+                            <strong>缺乏性刺激 (Lack of Stimulation)</strong>：
+                            <br>PDE5 抑制劑並非春藥，必須配合性刺激 (Visual/Tactile) 才能誘發 NO 釋放，藥物才能起效。
+                        </li>
+                        <li>
+                            <strong>服用時機錯誤</strong>：
+                            <br>太晚服用 (還沒吸收) 或剛吃完大餐 (Viagra) 導致吸收不良。
+                        </li>
+                        <li>
+                            <strong>劑量不足</strong>：
+                            <br>初次可能需要嘗試幾次或調整劑量 (Titration) 才能達到最佳效果。
+                        </li>
+                    </ul>
                 </div>
-                <div className="flex items-center gap-6">
-                    <div className="text-right">
-                        <p className="text-xs uppercase tracking-widest mb-1">Created By</p>
-                        <p className="font-bold text-slate-700">蝦仁藥師</p>
-                    </div>
-                    <div className="h-8 w-px bg-slate-300"></div>
-                    <div className="text-right">
-                        <p className="text-xs uppercase tracking-widest mb-1">Last Update</p>
-                        <p className="font-bold text-slate-700">2026/01/02</p>
-                    </div>
-                </div>
-                </div>
-            </footer>
             </div>
-        );
+            <div class="ref-section">Ref: Goldstein et al. Oral Sildenafil; Porst et al. Tadalafil Clinical studies.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 治療指引 (Guidelines) - Completely Revamped -->
+        <!-- ========================================== -->
+        <div id="content-guideline" class="tab-content">
+            
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">ED 階梯式治療指引</h2>
+                    <p class="text-sm text-slate-500">依據 2024 EAU / AUA Guidelines 臨床建議</p>
+                </div>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                
+                <!-- Step 1: Initial Assessment -->
+                <div class="step-container">
+                    <div class="step-circle">1</div>
+                    <div class="step-card">
+                        <div class="step-header">
+                            <h3 class="font-bold text-slate-800">初始評估與共病控制 (Assessment & Optimization)</h3>
+                            <span class="badge badge-low">Foundation</span>
+                        </div>
+                        <div class="step-content grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <strong class="block text-sm text-blue-800 mb-2">可逆因子排除</strong>
+                                <ul class="list-disc pl-4 text-sm text-slate-600 space-y-1">
+                                    <li><strong>藥物影響：</strong>抗高血壓藥 (Thiazides, Beta-blockers)、抗憂鬱劑 (SSRIs)、抗精神病藥。</li>
+                                    <li><strong>荷爾蒙：</strong>睪固酮低下 (Hypogonadism)、高泌乳激素血症、甲狀腺異常。</li>
+                                    <li><strong>心理因素：</strong>焦慮、憂鬱、伴侶關係問題。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <strong class="block text-sm text-blue-800 mb-2">生活型態調整 (CVD Risk Reduction)</strong>
+                                <ul class="list-disc pl-4 text-sm text-slate-600 space-y-1">
+                                    <li>戒菸、減重、規律運動。</li>
+                                    <li>嚴格控制三高 (血糖 HbA1c < 7.0%、血壓、血脂)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: First Line Therapy -->
+                <div class="step-container">
+                    <div class="step-circle">2</div>
+                    <div class="step-card border-blue-200">
+                        <div class="step-header bg-blue-50">
+                            <h3 class="font-bold text-blue-900">第一線治療：PDE5 抑制劑 (Oral PDE5i)</h3>
+                            <span class="badge badge-mid">Standard of Care</span>
+                        </div>
+                        <div class="step-content">
+                            <p class="text-sm text-slate-600 mb-4">除非有絕對禁忌症 (Nitrates)，否則所有類型的 ED 皆建議以口服 PDE5i 作為第一線治療。</p>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div class="bg-white p-3 rounded border border-slate-200">
+                                    <strong class="text-sm text-slate-800">按需服用 (On-Demand)</strong>
+                                    <p class="text-xs text-slate-500 mt-1">Sildenafil (50-100mg) 或 Tadalafil (10-20mg)。適合性頻率較低 (< 2次/週) 患者。</p>
+                                </div>
+                                <div class="bg-white p-3 rounded border border-slate-200">
+                                    <strong class="text-sm text-slate-800">每日服用 (Daily Dosing)</strong>
+                                    <p class="text-xs text-slate-500 mt-1">Tadalafil (2.5-5mg)。適合性頻率高、按需服用副作用大、或合併攝護腺肥大 (LUTS) 患者。</p>
+                                </div>
+                            </div>
+
+                            <!-- Optimization / Salvage Strategy -->
+                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r">
+                                <h4 class="font-bold text-yellow-800 text-sm mb-2 flex items-center gap-2">⚠️ 治療無效時的黃金確認清單 (Checklist before Failure)</h4>
+                                <ul class="list-decimal pl-4 text-sm text-yellow-900 space-y-1">
+                                    <li><strong>藥物是否足量？</strong> 需嘗試至最大耐受劑量 (如 Viagra 100mg)。</li>
+                                    <li><strong>嘗試次數是否足夠？</strong> 建議至少嘗試 <strong>6~8 次</strong>性行為才能判定無效。</li>
+                                    <li><strong>服用方式是否正確？</strong> Sildenafil 需嚴格空腹；是否給予足夠前戲刺激？</li>
+                                    <li><strong>睪固酮是否正常？</strong> 若 Total T < 300 ng/dL，補充足量睪固酮可挽救 PDE5i 的療效。</li>
+                                    <li><strong>更換藥物？</strong> 約 15-20% 患者對某種 PDE5i 無效，換藥可能有效。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Second Line -->
+                <div class="step-container">
+                    <div class="step-circle">3</div>
+                    <div class="step-card">
+                        <div class="step-header">
+                            <h3 class="font-bold text-slate-800">第二線治療：局部給藥與輔具</h3>
+                            <span class="badge badge-low">Invasive / Device</span>
+                        </div>
+                        <div class="step-content grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="col-span-1 md:col-span-2">
+                                <strong class="block text-sm text-indigo-700 mb-1">陰莖海綿體注射 (ICI)</strong>
+                                <p class="text-sm text-slate-600 mb-2">使用 Alprostadil (PGE1) 或 Trimix (PGE1 + Papaverine + Phentolamine)。</p>
+                                <ul class="list-disc pl-4 text-xs text-slate-500">
+                                    <li><strong>優點：</strong>效果最強，不需神經完整性 (適合脊髓損傷)。</li>
+                                    <li><strong>缺點：</strong>疼痛、注射恐懼、陰莖纖維化、異常勃起風險。</li>
+                                </ul>
+                            </div>
+                            <div class="col-span-1 border-t md:border-t-0 md:border-l border-slate-100 md:pl-4 pt-4 md:pt-0">
+                                <strong class="block text-sm text-indigo-700 mb-1">真空吸引器 (VED)</strong>
+                                <p class="text-xs text-slate-500">適合不願藥物治療或多重共病年長者。需配合橡皮圈阻斷靜脈回流 (限30分鐘)。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Third Line -->
+                <div class="step-container">
+                    <div class="step-circle">4</div>
+                    <div class="step-card">
+                        <div class="step-header">
+                            <h3 class="font-bold text-slate-800">第三線治療：手術植入</h3>
+                            <span class="badge badge-high">Surgical</span>
+                        </div>
+                        <div class="step-content">
+                            <div class="flex items-start gap-3">
+                                <div class="text-2xl">🦾</div>
+                                <div>
+                                    <strong class="text-sm text-slate-800">人工陰莖植入術 (Penile Prosthesis)</strong>
+                                    <p class="text-sm text-slate-600 mt-1">當所有保守治療皆失敗時的最終手段。</p>
+                                    <p class="text-xs text-slate-500 mt-1">分為可折疊式 (Semirigid) 與可充氣式 (Inflatable)。病患滿意度極高 (>90%)，但具不可逆性 (海綿體組織被破壞)。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Clinical Pearls Section (Renamed & Refined) -->
+                <div class="mt-8 bg-white border border-emerald-200 rounded-xl p-6 shadow-sm">
+                    <h3 class="font-bold text-emerald-800 text-lg mb-4 flex items-center gap-2">
+                        <span class="bg-emerald-100 text-emerald-600 p-1 rounded">✦</span> 
+                        臨床實戰建議 (Clinical Practical Tips)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <strong class="text-sm text-emerald-700 block mb-1">難治型 ED：糖尿病 (DM)</strong>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                糖尿病患者因同時合併神經病變與血管內皮受損，對口服 PDE5i 反應較差 (由 70-80% 降至 50-60%)。
+                                <br><strong>策略：</strong>積極控制血糖、直接使用最大劑量、考慮每日服用 Tadalafil、或提早進入第二線注射治療。
+                            </p>
+                        </div>
+                        <div>
+                            <strong class="text-sm text-emerald-700 block mb-1">攝護腺根除手術後 (Post-Prostatectomy)</strong>
+                            <p class="text-xs text-slate-600 leading-relaxed">
+                                手術造成的「神經性暫時麻痺 (Neuropraxia)」可能持續 6-12 個月。
+                                <br><strong>陰莖復健 (Penile Rehab)：</strong>術後盡早開始使用每日低劑量 PDE5i (Tadalafil 5mg) 或 VED，目的是維持海綿體充氧，預防組織纖維化與長度縮短。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="ref-section text-center mt-8">
+                <strong>References:</strong> EAU Guidelines on Sexual and Reproductive Health (2024); AUA Guidelines on Erectile Dysfunction; Campbell-Walsh Urology.
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 禁忌與安全性 (Safety) -->
+        <!-- ========================================== -->
+        <div id="content-safety" class="tab-content">
+            
+            <!-- Absolute Contraindication - RED ALERT -->
+            <div class="bg-red-50 border-l-8 border-red-600 rounded-r-lg p-6 mb-8 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="text-3xl">🚫</div>
+                    <div>
+                        <h3 class="text-red-800 font-bold text-xl mb-2">絕對禁忌 (Absolute Contraindication)</h3>
+                        <p class="text-red-700 font-bold mb-2">禁止與任何形式的硝酸鹽類 (Nitrates) 併用</p>
+                        <p class="text-sm text-red-600 mb-2">包括：Nitroglycerin (NTG), Isosorbide dinitrate (Isordil), Isosorbide mononitrate (Imdur)。</p>
+                        <div class="bg-white/60 p-3 rounded border border-red-200 text-sm text-red-800">
+                            <strong>後果：</strong>兩者皆會增加 cGMP 路徑的血管擴張作用，併用可能導致<strong>嚴重低血壓</strong>、休克甚至死亡。若誤用，Sildenafil/Vardenafil 需間隔 24hr，Tadalafil 需間隔 48hr 才能給予 Nitrates。
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <!-- Side Effects Card -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm h-full flex flex-col">
+                    <div class="bg-indigo-50 p-4 border-b border-indigo-100">
+                        <h3 class="font-bold text-indigo-900 text-lg flex items-center gap-2">
+                            🤢 常見副作用 (Common Side Effects)
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-sm text-slate-600 mb-4">大多數副作用為血管擴張引起，通常是輕微且暫時的。</p>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="text-sm font-bold text-slate-700">頭痛 (Headache)</span>
+                                <span class="badge badge-mid text-sm">最常見 (>10%)</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="text-sm font-bold text-slate-700">臉部潮紅 (Flushing)</span>
+                                <span class="text-sm text-slate-500">血管擴張所致</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="text-sm font-bold text-slate-700">消化不良 (Dyspepsia)</span>
+                                <span class="text-sm text-slate-500">下食道括約肌放鬆</span>
+                            </div>
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <span class="text-sm font-bold text-slate-700">鼻塞 (Nasal Congestion)</span>
+                                <span class="text-sm text-slate-500">鼻黏膜充血</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-bold text-slate-700">背痛/肌肉痛</span>
+                                <span class="badge badge-mid text-sm">Cialis 特有</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rare But Serious Card -->
+                <div class="bg-white rounded-xl border border-orange-200 overflow-hidden shadow-sm h-full flex flex-col">
+                     <div class="bg-orange-50 p-4 border-b border-orange-100">
+                        <h3 class="font-bold text-orange-900 text-lg flex items-center gap-2">
+                            ⚠️ 罕見嚴重副作用 (Rare/Serious)
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                             <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                                <strong class="block text-slate-800 text-sm mb-1">視力異常 (Visual Disturbances)</strong>
+                                <p class="text-sm text-slate-600">Sildenafil 可能抑制 PDE6 (視網膜)。<br>症狀：藍視症 (Cyanopsia)、光敏感。若發生 <strong>NAION (缺血性視神經病變)</strong> 導致單眼無痛性視力喪失，需立即停藥就醫。</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                                <strong class="block text-slate-800 text-sm mb-1">異常勃起 (Priapism)</strong>
+                                <p class="text-sm text-slate-600">勃起持續超過 <strong>4 小時</strong>且伴隨疼痛。需立即急診抽血或注射解毒劑，否則可能導致海綿體纖維化與永久陽痿。</p>
+                            </div>
+                            <div class="bg-slate-50 p-3 rounded border border-slate-100">
+                                <strong class="block text-slate-800 text-sm mb-1">突發性耳聾</strong>
+                                <p class="text-sm text-slate-600">極罕見。若發生聽力減弱或耳鳴，應停藥。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="ref-section">Ref: FDA Drug Safety Communication; Viagra/Cialis Prescribing Information.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: 藥理機轉 (MOA) -->
+        <!-- ========================================== -->
+        <div id="content-moa" class="tab-content">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Diagram Container -->
+                <div class="lg:col-span-2 cell-container h-[550px] flex flex-col shadow-lg">
+                    
+                    <!-- Top: Endothelium -->
+                    <div class="bg-blue-50 border-b-4 border-blue-200 p-3 flex justify-between items-center relative z-20 h-16 shrink-0">
+                        <div class="text-xs font-bold text-blue-800 tracking-wider uppercase ml-2 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                            Vascular Endothelium / Nerve Terminals
+                        </div>
+                        <div class="flex gap-4 mr-8">
+                             <!-- NO Molecule -->
+                             <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full bg-white border-2 border-blue-500 shadow-md flex items-center justify-center text-[10px] font-bold text-blue-700">NO</div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Cell Membrane -->
+                    <div class="cell-membrane">SMOOTH MUSCLE CELL MEMBRANE</div>
+                    
+                    <!-- Cytosol -->
+                    <div class="cell-cytosol flex-grow grid grid-cols-2 gap-8 items-start justify-items-center pt-8">
+                        
+                        <!-- Pathway -->
+                        <div class="flex flex-col items-center gap-4 relative">
+                            <!-- Dashed line for pathway -->
+                            <div class="absolute top-0 bottom-0 left-1/2 w-0.5 border-l-2 border-dashed border-slate-300 -z-10"></div>
+                            
+                            <div class="moa-node w-48 border-blue-200" onclick="showMoaDetail(1)">
+                                <div class="text-[10px] text-blue-500 font-bold uppercase">Stimulation</div>
+                                <div class="text-sm font-bold text-slate-700">Nitric Oxide (NO)</div>
+                                <div class="text-[10px] text-slate-500">Sexual Arousal Required</div>
+                            </div>
+                            
+                            <div class="arrow-down"></div>
+
+                            <div class="moa-node w-56 border-l-4 border-l-teal-500 shadow-md" onclick="showMoaDetail(2)">
+                                <div class="text-[10px] text-teal-500 font-bold uppercase mb-1">Enzyme</div>
+                                <div class="text-base font-bold text-slate-800">Guanylate Cyclase</div>
+                                <div class="text-[10px] text-slate-500">GTP ➜ cGMP</div>
+                            </div>
+
+                            <div class="arrow-down"></div>
+
+                            <div class="moa-node w-48 bg-green-50 border-green-200" onclick="showMoaDetail(3)">
+                                <div class="text-sm font-bold text-green-700">cGMP Accumulation</div>
+                                <div class="text-[10px] text-green-600">Second Messenger</div>
+                            </div>
+                        </div>
+
+                        <!-- Nucleus Actions (Adapted to Smooth Muscle Action) -->
+                        <div class="flex flex-col items-center gap-6 justify-center h-full w-full">
+                            
+                            <!-- PDE5 Blockade -->
+                            <div class="w-full flex flex-col items-center gap-4">
+                                <div class="moa-node w-48 bg-red-50 border-red-200" onclick="showMoaDetail(4)">
+                                    <div class="text-[10px] text-red-600 font-bold uppercase">Mechanism</div>
+                                    <div class="text-sm font-bold text-red-800">PDE5 Inhibition</div>
+                                    <div class="text-[9px] text-red-600">Blocks cGMP breakdown</div>
+                                </div>
+                                
+                                <div class="text-2xl text-slate-300">⬇</div>
+
+                                <div class="cell-nucleus w-full flex flex-col items-center gap-2">
+                                    <div class="text-xs font-bold text-slate-400 mb-1">Physiological Effect</div>
+                                    <div class="flex w-full justify-between mt-2 gap-2">
+                                        <div class="moa-node w-28 bg-slate-50 border-slate-200 text-center" onclick="showMoaDetail(5)">
+                                            <div class="text-lg">⬇️</div>
+                                            <div class="text-[9px] font-bold text-slate-800">Calcium (Ca2+)</div>
+                                            <div class="text-[8px] text-slate-600">Intracellular</div>
+                                        </div>
+                                        <div class="moa-node w-28 bg-blue-50 border-blue-200 text-center" onclick="showMoaDetail(6)">
+                                            <div class="text-lg">🍆</div>
+                                            <div class="text-[9px] font-bold text-blue-800">Relaxation</div>
+                                            <div class="text-[8px] text-blue-600">Erection (Blood Inflow)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 h-full shadow-sm flex flex-col">
+                        <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                            <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">ℹ️</span>
+                            <h4 class="serif text-slate-800 font-bold text-lg">Mechanism Detail</h4>
+                        </div>
+                        
+                        <div id="moa-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                            <div>
+                                <p class="mb-2 font-bold text-slate-400">Interactive Diagram</p>
+                                <p>請點擊左側圖表中的方塊<br>以查看 PDE5 抑制劑勃起機轉</p>
+                            </div>
+                        </div>
+
+                        <div id="moa-detail-content" class="hidden animate-fade-in">
+                            <h5 id="moa-title" class="text-blue-700 font-bold text-lg mb-3"></h5>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 mb-4">
+                                <p id="moa-desc" class="text-slate-700 text-sm leading-relaxed"></p>
+                            </div>
+                            <div class="border-l-4 border-blue-500 pl-3">
+                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">Clinical Relevance</p>
+                                <p id="moa-impact" class="text-sm text-slate-600 font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="ref-section">Ref: Katzung Basic & Clinical Pharmacology; Goodman & Gilman's.</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: 特殊族群與衛教 (Special & Education) -->
+        <!-- ========================================== -->
+        <div id="content-special" class="tab-content">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                
+                <!-- Special Populations -->
+                <div class="info-card info-card-pink">
+                    <h4 class="font-bold text-pink-700 mb-4 text-lg">👴 特殊族群 (Special Populations)</h4>
+                    <div class="space-y-4">
+                        <div class="bg-white p-3 rounded border border-pink-100">
+                            <strong class="block text-slate-800 text-sm mb-1">老年人 (Elderly, >65歲)</strong>
+                            <p class="text-sm text-slate-600">代謝較慢，血中濃度可能較高。建議從<strong>最低劑量</strong>開始 (例如 Viagra 25mg)。</p>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-pink-100">
+                            <strong class="block text-slate-800 text-sm mb-1">腎功能不全 (Renal Impairment)</strong>
+                            <p class="text-sm text-slate-600">
+                                輕中度：通常不需調整。<br>
+                                重度 (CrCl < 30)：Viagra 25mg, Cialis 5mg (max 10mg/72h), Levitra 禁忌或慎用。
+                            </p>
+                        </div>
+                         <div class="bg-white p-3 rounded border border-pink-100">
+                            <strong class="block text-slate-800 text-sm mb-1">肝功能不全 (Hepatic Impairment)</strong>
+                            <p class="text-sm text-slate-600">Child-Pugh A/B：需減量使用。<br>Child-Pugh C (重度)：通常<strong>不建議使用</strong>。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cardiovascular Risk (Princeton Consensus) -->
+                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="bg-slate-100 p-4 border-b border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                            ❤️ 心血管風險評估 (Princeton III)
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div class="border-l-4 border-green-400 pl-4">
+                                <strong class="text-green-700 block text-base mb-1">低風險 (Low Risk)</strong>
+                                <p class="text-sm text-slate-600">無症狀心臟病、控制良好的高血壓。<br><span class="badge badge-low mt-1">可開始治療</span></p>
+                            </div>
+                            
+                            <div class="border-l-4 border-amber-400 pl-4">
+                                <strong class="text-amber-700 block text-base mb-1">中風險 (Indeterminate)</strong>
+                                <p class="text-sm text-slate-600">輕度心絞痛、近期曾心肌梗塞(>2~6週)。<br><span class="badge badge-mid mt-1">需心臟科評估運動耐受力</span></p>
+                            </div>
+
+                             <div class="border-l-4 border-red-400 pl-4">
+                                <strong class="text-red-700 block text-base mb-1">高風險 (High Risk)</strong>
+                                <p class="text-sm text-slate-600">不穩定心絞痛、未控制的高血壓、近期心肌梗塞/中風(<2週)。<br><span class="badge badge-high mt-1">禁止性行為與藥物治療</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+             <div class="ref-section">Ref: Princeton III Consensus Recommendations for the Management of Erectile Dysfunction and Cardiovascular Disease.</div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 pt-6 border-t border-slate-200 text-center">
+            <div class="max-w-4xl mx-auto px-4">
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    <strong>免責聲明 (Disclaimer)：</strong><br>
+                    本網站內容僅供醫療專業人員臨床參考與學術交流使用，旨在提供最新的實證醫學資訊整理。<br>
+                    所有內容不能取代醫師的專業臨床判斷。對於個別病患的診斷與治療，請務必諮詢合格醫師並依據實際臨床狀況進行評估。<br>
+                    製作者已盡力確保內容的準確性，但醫學知識更新迅速，恕不對資料的即時性與完整性負法律責任。
+                </p>
+                <p class="serif text-slate-400 text-xs italic mt-4">
+                    Designed for Medical Professionals • Use as Clinical Aid Only
+                </p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // Tab Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + tabName).classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
         }
 
-        // 渲染應用程式
-        const root = createRoot(document.getElementById('root'));
-        root.render(<EDMedicationApp />);
+        // MOA Logic
+        function showMoaDetail(step) {
+            const defaultText = document.getElementById('moa-text-default');
+            const detailContent = document.getElementById('moa-detail-content');
+            const title = document.getElementById('moa-title');
+            const desc = document.getElementById('moa-desc');
+            const impact = document.getElementById('moa-impact');
+            
+            // Highlight active node
+            document.querySelectorAll('.moa-node').forEach(el => el.classList.remove('active-node'));
+
+            defaultText.classList.add('hidden');
+            detailContent.classList.remove('hidden');
+
+            const data = {
+                1: {
+                    title: "Nitric Oxide (NO) Release",
+                    desc: "性刺激 (Sexual Stimulation) 使神經末梢與內皮細胞釋放一氧化氮 (NO)。",
+                    impact: "這是啟動勃起的必要條件。若無性刺激，藥物無效。"
+                },
+                2: {
+                    title: "Guanylate Cyclase Activation",
+                    desc: "NO 擴散進入平滑肌細胞，活化 Guanylate Cyclase (鳥苷酸環化酶)。此酶將 GTP 轉化為 cGMP。",
+                    impact: "cGMP 是細胞內傳遞訊號的關鍵第二信使。"
+                },
+                3: {
+                    title: "cGMP Accumulation",
+                    desc: "cGMP 濃度上升是造成勃起的關鍵。正常生理情況下，cGMP 會被 PDE5 酵素分解而失去作用。",
+                    impact: "cGMP 越多，勃起越強/持久。"
+                },
+                4: {
+                    title: "PDE5 Inhibition (藥物作用點)",
+                    desc: "威而鋼/犀利士等藥物能選擇性抑制 PDE5 酵素，阻止 cGMP 被分解。",
+                    impact: "使 cGMP 在平滑肌細胞內大量累積，增強並延長勃起反應。"
+                },
+                5: {
+                    title: "Calcium Decrease",
+                    desc: "高濃度的 cGMP 導致細胞內鈣離子 (Ca2+) 濃度下降。",
+                    impact: "降低肌肉張力。"
+                },
+                6: {
+                    title: "Relaxation & Erection",
+                    desc: "陰莖海綿體平滑肌鬆弛 (Relaxation)，動脈血管擴張，血液大量流入海綿體。",
+                    impact: "臨床表現：陰莖充血勃起。"
+                }
+            };
+
+            if(data[step]) {
+                title.innerText = data[step].title;
+                desc.innerText = data[step].desc;
+                impact.innerText = data[step].impact;
+            }
+        }
     </script>
 </body>
-
 </html>
