@@ -326,6 +326,51 @@
             color: #94a3b8;
             font-style: italic;
         }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(2px);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.open {
+            display: flex;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            position: relative;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
@@ -396,7 +441,14 @@
                             <th class="w-[10%]">濃度</th>
                             <th class="w-[20%]">常見商品名 (Brand)</th>
                             <th class="w-[20%]">劑型 (Vehicle)</th>
-                            <th class="w-[25%]">臨床備註</th>
+                            <th class="w-[25%]">
+                                <div class="flex items-center justify-between">
+                                    <span>臨床備註</span>
+                                    <button onclick="openHospitalModal()" class="text-xs font-medium bg-white text-slate-600 border border-slate-300 hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 py-1 px-3 rounded-lg transition-all shadow-sm">
+                                        本院品項
+                                    </button>
+                                </div>
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-700 text-sm">
@@ -993,8 +1045,8 @@
                     <div class="flex items-center gap-2 mb-4">
                         <div class="bg-orange-600 text-white font-bold px-3 py-1 rounded-md text-base">其他常見皮膚疾病</div>
                     </div>
-                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                         <!-- Hand Eczema -->
+                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                          <!-- Hand Eczema -->
                         <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <h5 class="font-bold text-slate-800 mb-2 flex items-center gap-2 text-base"><span class="text-xl">✋</span> 手部濕疹 / 汗皰疹 (Pompholyx)</h5>
                             <p class="text-sm text-slate-600 mb-2">角質層極厚，穿透困難。</p>
@@ -1024,8 +1076,8 @@
                             </div>
                         </div>
 
-                         <!-- Discoid Lupus -->
-                         <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                          <!-- Discoid Lupus -->
+                          <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <h5 class="font-bold text-slate-800 mb-2 flex items-center gap-2 text-base"><span class="text-xl">🦋</span> 圓盤狀紅斑性狼瘡 (DLE)</h5>
                             <p class="text-sm text-slate-600 mb-2">發炎性高，需強力抗發炎。</p>
                             <div class="flex gap-2">
@@ -1033,7 +1085,7 @@
                                 <span class="badge badge-low text-sm">臉部慎用</span>
                             </div>
                         </div>
-                     </div>
+                      </div>
                 </section>
             </div>
             <div class="ref-section">
@@ -1438,6 +1490,24 @@
 
     </main>
 
+    <!-- Hospital Items Modal -->
+    <div id="hospitalModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeHospitalModal()">&times;</span>
+            <h2 class="text-2xl font-bold mb-4 text-teal-800">本院類固醇品項整理</h2>
+            
+            <!-- TODO: 請在此處修改圖片連結 (Paste your image URL in the src attribute below) -->
+            <!-- 例如: src="https://example.com/my-hospital-steroids.jpg" -->
+            <img src="https://placehold.co/800x600?text=Please+Insert+Your+Hospital+Items+Image+Here" 
+                 alt="本院品項圖表" 
+                 class="w-full h-auto rounded shadow-sm border border-slate-200">
+            
+            <p class="text-sm text-slate-500 mt-4 text-center">
+                (請將本院品項圖片連結更新至程式碼中)
+            </p>
+        </div>
+    </div>
+
     <script>
         // Tab Logic
         function switchTab(tabName) {
@@ -1445,6 +1515,23 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById('content-' + tabName).classList.add('active');
             document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // Modal Logic
+        function openHospitalModal() {
+            document.getElementById('hospitalModal').classList.add('open');
+        }
+
+        function closeHospitalModal() {
+            document.getElementById('hospitalModal').classList.remove('open');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('hospitalModal');
+            if (event.target == modal) {
+                modal.classList.remove('open');
+            }
         }
 
         // MOA Logic
@@ -1503,6 +1590,3 @@
     </script>
 </body>
 </html>
-
-
-
