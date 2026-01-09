@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流感抗病毒藥物臨床指引</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0f172a; /* Slate 900 */
+            --accent-color: #0284c7;  /* Sky 600 */
+            --accent-light: #e0f2fe;  /* Sky 100 */
+            --danger-color: #be123c;  /* Rose 700 */
+            --paper-bg: #ffffff;
+            --bg-color: #f0f9ff;      /* Light Blue Bg */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #334155;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .serif { font-family: 'Noto Serif TC', serif; }
+
+        .journal-card {
+            background-color: var(--paper-bg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border-top: 6px solid var(--accent-color);
+        }
+
+        /* 標籤 Badge 樣式 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .badge-blue { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-rose { background-color: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+        .badge-green { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-purple { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; }
+        .badge-amber { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-orange { background-color: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+
+        /* Drug Tags */
+        .drug-tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; display: inline-block; margin-right: 4px; }
+        .dt-osel { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; } /* Oseltamivir */
+        .dt-balo { background: #fae8ff; color: #86198f; border: 1px solid #f0abfc; } /* Baloxavir */
+        .dt-pera { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; } /* Peramivir */
+        .dt-zana { background: #ecfccb; color: #3f6212; border: 1px solid #bef264; } /* Zanamivir */
+
+        /* Tab 樣式 */
+        .nav-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+        .nav-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f8fafc;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .tab-btn:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.3);
+            font-weight: 700;
+        }
+
+        /* 統一風格的資訊卡 */
+        .info-card {
+            border-left-width: 4px;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: 100%;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid; 
+        }
+        .info-card-blue { border-left-color: #3b82f6; background-color: #eff6ff; }
+        .info-card-danger { border-left-color: var(--danger-color); background-color: #fff1f2; }
+        .info-card-strategy { border-left-color: var(--accent-color); background-color: #f0f9ff; }
+        .info-card-purple { border-left-color: #9333ea; background-color: #faf5ff; }
+        .info-card-warning { border-left-color: #f59e0b; background-color: #fffbeb; }
+        .info-card-orange { border-left-color: #ea580c; background-color: #fff7ed; }
+        
+        /* 表格優化 */
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .modern-table th {
+            font-family: 'Noto Serif TC', serif;
+            color: #475569;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            background-color: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.9rem;
+        }
+        .modern-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            background-color: white;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+        }
+        .modern-table tr:hover td { background-color: #f8fafc; }
+        .modern-table tr:last-child td { border-bottom: none; }
+
+        /* MOA 4.0 樣式 - FIXED & OPTIMIZED */
+        .moa-container {
+            background-color: #f8fafc; 
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            height: 500px;
+        }
+        
+        .moa-membrane-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #ffe4e6;
+            border-bottom: 4px solid #fb7185;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .moa-membrane-label {
+            background: #fff;
+            padding: 2px 12px;
+            border-radius: 20px;
+            color: #be123c;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .moa-nucleus-zone {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70%;
+            height: 180px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 3px dashed #a5b4fc;
+            border-radius: 40px;
+            box-shadow: 0 10px 25px rgba(165, 180, 252, 0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 5;
+        }
+        
+        .moa-nucleus-label {
+            position: absolute;
+            top: -12px;
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+
+        /* Interactive Nodes - Using absolute with % to prevent breaking */
+        .moa-step-node {
+            position: absolute;
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 12px;
+            padding: 8px;
+            width: 140px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            z-index: 20;
+        }
+        
+        .moa-step-node:hover, .moa-step-node.active-step {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+            border-color: var(--accent-color);
+            z-index: 30;
+        }
+
+        .moa-step-num {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            background: #64748b;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.75rem;
+            line-height: 22px;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+        
+        .moa-step-node.active-step .moa-step-num {
+            background: var(--accent-color);
+        }
+
+        .moa-step-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #334155;
+            line-height: 1.2;
+        }
+        
+        .moa-step-drug {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            color: #be123c;
+            background: #fff1f2;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        /* SVG Overlay for Arrows */
+        .moa-svg-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .arrow-path {
+            fill: none;
+            stroke: #cbd5e1;
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+        }
+        .arrow-head {
+            fill: #cbd5e1;
+        }
+
+        /* Algorithm Styles */
+        .pathway-box {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            background: #fff;
+            position: relative;
+        }
+        .pathway-target-card {
+            text-align: center;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in; }
+        .tab-content.active { display: block; opacity: 1; }
+        
+        .ref-section {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+        
+        /* Action Button Styles */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-link {
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        .btn-link:hover { background-color: #dcfce7; }
+        
+        .btn-img {
+            background-color: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+        }
+        .btn-img:hover { background-color: #ffedd5; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
+
+    <main class="journal-card w-full max-w-7xl rounded-2xl p-6 md:p-10 relative overflow-hidden bg-white">
+        
+        <!-- Action Buttons Row -->
+        <div class="flex gap-3 mb-4 relative z-20">
+            <a href="#" target="_blank" class="action-btn btn-link" onclick="alert('請填入公費流感連結')">
+                <span>🔗</span> 公費流感抗病毒藥用藥條件
+            </a>
+            <a href="#" target="_blank" class="action-btn btn-img" onclick="alert('請填入本院品項圖片連結')">
+                <span>💊</span> 本院品項
+            </a>
+        </div>
+
+        <!-- Header -->
+        <header class="mb-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-slate-100">
+                <div>
+                    <h2 class="text-xs font-bold tracking-widest text-sky-600 uppercase mb-2">Evidence-Based Medicine</h2>
+                    <h1 class="serif text-3xl md:text-4xl text-slate-900 leading-tight font-bold">
+                        流感抗病毒藥物指引
+                    </h1>
+                </div>
+                <div class="text-right hidden md:block">
+                    <p class="text-slate-400 text-sm font-light">Influenza Antiviral Medications</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師 • 更新日期 : 2026/01/09</p>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-container mt-6">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active">藥物綜合比較</button>
+                <button onclick="switchTab('details')" id="tab-details" class="tab-btn">藥物臨床詳解</button>
+                <button onclick="switchTab('special')" id="tab-special" class="tab-btn">特殊族群與腎調整</button>
+                <button onclick="switchTab('strategy')" id="tab-strategy" class="tab-btn">治療與預防策略</button>
+                <button onclick="switchTab('danger')" id="tab-danger" class="tab-btn">危險徵兆與鑑別</button>
+                <button onclick="switchTab('pharmacy')" id="tab-pharmacy" class="tab-btn">管灌與磨粉</button>
+                <button onclick="switchTab('moa')" id="tab-moa" class="tab-btn">藥理機轉 (MOA)</button>
+            </nav>
+        </header>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 藥物綜合比較 (Overview) -->
+        <!-- ========================================== -->
+        <div id="content-overview" class="tab-content active">
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <!-- Oseltamivir Card -->
+                <div class="p-4 rounded-xl bg-blue-50 border border-blue-100 text-center">
+                    <h3 class="text-blue-800 font-bold mb-1 text-sm">口服首選 (Oral)</h3>
+                    <p class="text-xl font-bold text-blue-600 my-1">
+                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Oseltamivir</a>
+                    </p>
+                    <p class="text-[10px] text-blue-700 opacity-80">Tamiflu 克流感</p>
+                </div>
+                <!-- Baloxavir Card -->
+                <div class="p-4 rounded-xl bg-purple-50 border border-purple-100 text-center">
+                    <h3 class="text-purple-800 font-bold mb-1 text-sm">單次口服 (One-dose)</h3>
+                    <p class="text-xl font-bold text-purple-600 my-1">
+                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Baloxavir</a>
+                    </p>
+                    <p class="text-[10px] text-purple-700 opacity-80">Xofluza 紓伏效 (自費)</p>
+                </div>
+                <!-- Peramivir Card -->
+                <div class="p-4 rounded-xl bg-rose-50 border border-rose-100 text-center">
+                    <h3 class="text-rose-800 font-bold mb-1 text-sm">針劑 (IV Injection)</h3>
+                    <p class="text-xl font-bold text-rose-600 my-1">
+                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Peramivir</a>
+                    </p>
+                    <p class="text-[10px] text-rose-700 opacity-80">Rapiacta 瑞貝塔</p>
+                </div>
+                <!-- Zanamivir Card -->
+                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                    <h3 class="text-emerald-800 font-bold mb-1 text-sm">吸入劑 (Inhalation)</h3>
+                    <p class="text-xl font-bold text-emerald-600 my-1">
+                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Zanamivir</a>
+                    </p>
+                    <p class="text-[10px] text-emerald-700 opacity-80">Relenza 瑞樂沙</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
+                <table class="modern-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="w-[20%]">藥物 (Trade Name)</th>
+                            <th class="w-[15%]">作用機轉</th>
+                            <th class="w-[15%]">療程/途徑</th>
+                            <th class="w-[15%]">適用年齡 (治療)</th>
+                            <th class="w-[15%]">預防性投藥</th>
+                            <th class="w-[20%]">臨床優缺點</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700 text-sm">
+                        
+                        <!-- Oseltamivir -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-osel">Oseltamivir</span><br>
+                                <span class="text-xs text-slate-500">Tamiflu</span>
+                            </td>
+                            <td>NA Inhibitor</td>
+                            <td>
+                                <span class="badge badge-blue">BID x 5天</span><br>
+                                <span class="text-xs">口服膠囊/水劑</span>
+                            </td>
+                            <td>
+                                成人及<br>
+                                <strong>新生兒(足月)</strong>
+                            </td>
+                            <td>
+                                <span class="badge badge-blue">QD x 10天</span>
+                            </td>
+                            <td class="text-xs">
+                                <span class="text-emerald-600">● 臨床經驗最豐、孕婦首選</span><br>
+                                <span class="text-rose-600">● 噁心嘔吐副作用較高</span>
+                            </td>
+                        </tr>
+
+                        <!-- Baloxavir -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-balo">Baloxavir</span> <span class="badge badge-amber text-[10px] p-0.5">自費</span><br>
+                                <span class="text-xs text-slate-500">Xofluza</span>
+                            </td>
+                            <td>
+                                <strong>CEN Inhibitor</strong><br>
+                                <span class="text-[10px] text-slate-400">核酸內切酶抑制劑</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-purple">單次口服</span>
+                            </td>
+                            <td>
+                                ≥ 5 歲<br>
+                                <span class="text-[10px] text-slate-400">(PIDS指引)</span>
+                            </td>
+                            <td><span class="badge badge-purple">單次口服</span></td>
+                            <td class="text-xs">
+                                <span class="text-emerald-600">● 只需服藥一次、病毒降解快</span><br>
+                                <span class="text-rose-600">● 兒童易產生抗藥性</span>
+                            </td>
+                        </tr>
+
+                        <!-- Peramivir -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-pera">Peramivir</span> <span class="badge badge-amber text-[10px] p-0.5">自費</span><br>
+                                <span class="text-xs text-slate-500">Rapiacta</span>
+                            </td>
+                            <td>NA Inhibitor</td>
+                            <td>
+                                <span class="badge badge-rose">單次 IV</span><br>
+                                <span class="text-xs">亦可連續給藥(重症)</span>
+                            </td>
+                            <td>≥ 6 個月</td>
+                            <td><span class="text-slate-400">-</span></td>
+                            <td class="text-xs">
+                                <span class="text-emerald-600">● 適合無法口服/吸收不良者</span><br>
+                                <span class="text-rose-600">● 需醫護施打</span>
+                            </td>
+                        </tr>
+
+                        <!-- Zanamivir -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-zana">Zanamivir</span><br>
+                                <span class="text-xs text-slate-500">Relenza</span>
+                            </td>
+                            <td>NA Inhibitor</td>
+                            <td>
+                                <span class="badge badge-amber">BID x 5天</span><br>
+                                <span class="text-xs">吸入粉劑</span>
+                            </td>
+                            <td>≥ 7 歲</td>
+                            <td><span class="badge badge-amber">QD x 10天</span></td>
+                            <td class="text-xs">
+                                <span class="text-emerald-600">● 全身副作用少</span><br>
+                                <span class="text-rose-600">● 氣喘/COPD 忌用</span>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="ref-section">註：Oseltamivir 預防療程依據最新建議已修正為 10 天。</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 藥物臨床詳解 (Details) -->
+        <!-- ========================================== -->
+        <div id="content-details" class="tab-content">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Oseltamivir Card -->
+                <div class="info-card info-card-blue flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-blue-200 pb-2">
+                        <h3 class="font-bold text-blue-800 text-lg">Oseltamivir (Tamiflu)</h3>
+                        <span class="badge badge-blue">第一線標準</span>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>臨床定位：</strong>治療與預防的首選藥物，尤其適用於<strong>住院重症、孕婦及嬰幼兒</strong>。</p>
+                        <p><strong>副作用：</strong>最常見為噁心、嘔吐 (隨餐服用可減緩)。上市後有極少數神經精神事件報告 (尤其是兒童/青少年)，建議服藥期間留意異常行為。</p>
+                        <div class="bg-white p-2 rounded border border-blue-100">
+                            <strong class="block text-blue-700 mb-1">標準劑量 (腎功能正常)：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li><strong>成人治療：</strong>75 mg, BID × 5 天。</li>
+                                <li><strong>預防性投藥：</strong>75 mg, QD × <strong class="text-rose-600">10 天</strong>。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Baloxavir Card -->
+                <div class="info-card info-card-purple flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-purple-200 pb-2">
+                        <h3 class="font-bold text-purple-800 text-lg">Baloxavir (Xofluza)</h3>
+                        <div class="flex gap-2">
+                            <span class="badge badge-amber">自費藥物</span>
+                            <span class="badge badge-purple">單次口服</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>臨床定位：</strong>適用於<strong>單純性流感</strong>，尤其是門診病患或遵醫囑性差者。重症目前仍以 Oseltamivir 為主。</p>
+                        <div class="bg-purple-50 p-2 rounded border border-purple-200">
+                            <strong class="text-rose-600 block mb-1">⚠️ 重要交互作用：</strong>
+                            <p class="text-xs text-slate-600">避免與<strong>多價陽離子</strong> (鈣、鋁、鎂、鐵、鋅) 併用 (如胃藥、鈣片、維他命)，會導致失效。</p>
+                        </div>
+                        <div class="bg-white p-2 rounded border border-purple-100">
+                            <strong class="block text-purple-700 mb-1">劑量 (單次服用)：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li>體重 < 20 kg：<strong>20 mg</strong> (台灣兒童感染醫學會建議)<br>
+                                    <span class="text-[10px] text-slate-500">※ 部分國外指引建議 2 mg/kg</span>
+                                </li>
+                                <li>20 kg ≤ 體重 < 80 kg：<strong>40 mg</strong></li>
+                                <li>體重 ≥ 80 kg：<strong>80 mg</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Peramivir Card -->
+                <div class="info-card info-card-danger flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-rose-200 pb-2">
+                        <h3 class="font-bold text-rose-800 text-lg">Peramivir (Rapiacta)</h3>
+                        <div class="flex gap-2">
+                             <span class="badge badge-amber">自費藥物</span>
+                             <span class="badge badge-rose">針劑專用</span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>臨床定位：</strong>適用於<strong>無法口服</strong>、腸胃道吸收不良或意識不清的病患。</p>
+                        <div class="bg-rose-50 p-2 rounded border border-rose-200">
+                            <strong class="text-rose-800 block mb-1">💉 重症治療策略：</strong>
+                            <p class="text-xs text-slate-700">標準為單次注射 600mg。但針對<strong>重症患者</strong>，視臨床需求可<strong>連續給藥</strong> (如 600 mg QD，連續 5 天或以上)，以維持抗病毒效果。</p>
+                        </div>
+                        <p><strong>副作用：</strong>SJS、嚴重過敏反應較口服藥略高。</p>
+                    </div>
+                </div>
+
+                <!-- Zanamivir Card -->
+                <div class="info-card info-card-warning flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-amber-200 pb-2">
+                        <h3 class="font-bold text-amber-800 text-lg">Zanamivir (Relenza)</h3>
+                        <span class="badge badge-amber">吸入劑型</span>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>臨床定位：</strong>當懷疑對 Oseltamivir 有抗藥性時的替代選擇。</p>
+                         <div class="bg-white p-2 rounded border border-amber-100 mb-2">
+                            <strong class="block text-amber-700 mb-1">成分與規格：</strong>
+                            <p class="text-xs text-slate-600">Zanamivir 5mg/blister (每片旋達碟含4個劑量泡，共20mg)。</p>
+                        </div>
+                        <div class="bg-white p-2 rounded border border-amber-100">
+                            <strong class="block text-amber-700 mb-1">標準用法 (吸入)：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li><strong>成人與7歲以上兒童治療：</strong>每次吸入 2 泡 (10mg)，每日 2 次，共 5 天。</li>
+                                <li><strong>預防性投藥：</strong>每次吸入 2 泡 (10mg)，每日 1 次，共 10 天。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-amber-50 p-2 rounded border border-amber-200 mt-2">
+                            <strong class="text-amber-800 block mb-1">⛔ 絕對禁忌：</strong>
+                            <p class="text-xs text-slate-700"><strong>氣喘 (Asthma)</strong> 或 <strong>慢性阻塞性肺病 (COPD)</strong> 患者禁止使用。</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 特殊族群與腎調整 (Special Pops) -->
+        <!-- ========================================== -->
+        <div id="content-special" class="tab-content">
+            
+            <div class="space-y-8">
+                
+                <!-- Renal Table Section -->
+                <section>
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="bg-blue-600 text-white font-bold px-3 py-1 rounded-md text-base">腎功能不全劑量調整 (Renal Impairment)</div>
+                        <span class="text-xs text-slate-500">依據 Cockcroft-Gault 公式計算 CrCl</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Oseltamivir Renal -->
+                        <div class="overflow-hidden rounded-lg border border-blue-200 shadow-sm">
+                            <div class="bg-blue-50 p-2 border-b border-blue-100 font-bold text-blue-800 text-center text-sm">Oseltamivir (口服)</div>
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>CrCl (mL/min)</th>
+                                        <th>治療劑量 (5天)</th>
+                                        <th>預防劑量 (10天)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs">
+                                    <tr>
+                                        <td class="font-bold">> 60</td>
+                                        <td>75 mg BID</td>
+                                        <td>75 mg QD</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">31 - 60</td>
+                                        <td class="text-blue-600 font-bold">30 mg BID</td>
+                                        <td class="text-blue-600">30 mg QD</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">10 - 30</td>
+                                        <td class="text-blue-600 font-bold">30 mg QD</td>
+                                        <td class="text-blue-600">30 mg QOD (兩天一次)</td>
+                                    </tr>
+                                    <tr class="bg-slate-50">
+                                        <td class="font-bold">HD (洗腎)</td>
+                                        <td>透析後 30 mg</td>
+                                        <td>每兩次透析後 30 mg</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Peramivir Renal -->
+                        <div class="overflow-hidden rounded-lg border border-rose-200 shadow-sm">
+                            <div class="bg-rose-50 p-2 border-b border-rose-100 font-bold text-rose-800 text-center text-sm">Peramivir (針劑)</div>
+                            <table class="modern-table">
+                                <thead>
+                                    <tr>
+                                        <th>CrCl (mL/min)</th>
+                                        <th>建議劑量 (單次注射*)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-xs">
+                                    <tr>
+                                        <td class="font-bold">≥ 50</td>
+                                        <td>600 mg</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">30 - 49</td>
+                                        <td class="text-rose-600 font-bold">200 mg</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">10 - 29</td>
+                                        <td class="text-rose-600 font-bold">100 mg</td>
+                                    </tr>
+                                    <tr class="bg-slate-50">
+                                        <td class="font-bold">HD (洗腎)</td>
+                                        <td>透析後 100 mg</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="p-2 bg-rose-50 text-[10px] text-rose-800 italic">* 若臨床需連續給藥，請依此劑量原則每日給予。</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pediatric & Pregnancy -->
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Pediatric Table -->
+                    <div class="bg-white rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
+                        <div class="bg-emerald-50 p-3 border-b border-emerald-100">
+                            <h3 class="font-bold text-emerald-800 text-base flex items-center gap-2">
+                                👶 兒童體重劑量 (Oseltamivir)
+                            </h3>
+                        </div>
+                        <table class="modern-table text-xs">
+                            <thead>
+                                <tr>
+                                    <th>體重 (Weight)</th>
+                                    <th>治療劑量 (BID)</th>
+                                    <th>預防劑量 (QD)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>≤ 15 kg</td>
+                                    <td>30 mg</td>
+                                    <td>30 mg</td>
+                                </tr>
+                                <tr>
+                                    <td>> 15 - 23 kg</td>
+                                    <td>45 mg</td>
+                                    <td>45 mg</td>
+                                </tr>
+                                <tr>
+                                    <td>> 23 - 40 kg</td>
+                                    <td>60 mg</td>
+                                    <td>60 mg</td>
+                                </tr>
+                                <tr>
+                                    <td>> 40 kg</td>
+                                    <td>75 mg</td>
+                                    <td>75 mg</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="p-3 bg-emerald-50/50 text-xs text-emerald-700">
+                            * < 1 歲嬰兒治療劑量為 3 mg/kg/dose BID。
+                        </div>
+                    </div>
+
+                    <!-- Pregnancy Card -->
+                    <div class="bg-white rounded-xl border border-pink-200 shadow-sm overflow-hidden flex flex-col">
+                        <div class="bg-pink-50 p-3 border-b border-pink-100">
+                            <h3 class="font-bold text-pink-800 text-base flex items-center gap-2">
+                                🤰 孕婦與哺乳 (Pregnancy)
+                            </h3>
+                        </div>
+                        <div class="p-4 flex-grow flex flex-col justify-center gap-4">
+                            <div>
+                                <strong class="block text-pink-700 text-sm mb-1">首選藥物：Oseltamivir</strong>
+                                <p class="text-xs text-slate-600">孕婦為流感重症高風險群，不論週數，確診應立即給藥。安全性數據最充足，代謝物可通過胎盤保護胎兒。</p>
+                            </div>
+                            <div class="border-t border-pink-100 pt-3">
+                                <strong class="block text-slate-700 text-sm mb-1">其他選擇</strong>
+                                <ul class="list-disc pl-4 text-xs text-slate-600">
+                                    <li><strong>Zanamivir：</strong>次選，吸收少理論上安全。</li>
+                                    <li><strong>Baloxavir：</strong><span class="text-rose-600 font-bold">避免使用</span> (缺乏數據)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 治療與預防策略 (Strategy) -->
+        <!-- ========================================== -->
+        <div id="content-strategy" class="tab-content">
+            
+            <div class="space-y-6">
+                
+                <!-- 48HR Rule -->
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
+                    <div class="shrink-0 w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-3xl">
+                        ⏱️
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-indigo-800 mb-2">黃金治療期：48 小時</h3>
+                        <p class="text-slate-700 mb-2">所有抗病毒藥物在症狀發作 <strong>48 小時內</strong> 使用效果最佳，可顯著縮短病程。</p>
+                        <p class="text-sm text-slate-500">註：對於<strong>重症或住院患者</strong>，即使超過 48 小時仍建議立即投藥，以降低死亡率與併發症。</p>
+                    </div>
+                </div>
+
+                <!-- Decision Pathway -->
+                <div class="pathway-box shadow-sm border-slate-200">
+                    <h4 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">治療決策演算法</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- Mild/Outpatient -->
+                        <div class="flex flex-col h-full">
+                            <div class="bg-emerald-50 p-3 rounded-t-lg text-center border border-emerald-100">
+                                <span class="badge badge-green">一般門診 / 輕症</span>
+                            </div>
+                            <div class="p-4 border border-emerald-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
+                                <p class="text-sm text-slate-500 mb-2">無併發症風險</p>
+                                <div class="pathway-target-card border-emerald-200 bg-emerald-50 mb-2">
+                                    <span class="text-xs text-emerald-600 font-bold">首選</span>
+                                    <div class="text-sm font-bold text-emerald-800">Oseltamivir <br>or Baloxavir</div>
+                                </div>
+                                <p class="text-xs text-slate-600">Baloxavir 單次服用便利性高 (自費)</p>
+                            </div>
+                        </div>
+
+                        <!-- Severe/Inpatient -->
+                        <div class="flex flex-col h-full">
+                            <div class="bg-blue-50 p-3 rounded-t-lg text-center border border-blue-100">
+                                <span class="badge badge-blue">重症 / 住院</span>
+                            </div>
+                            <div class="p-4 border border-blue-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
+                                <p class="text-sm text-slate-500 mb-2">肺炎、缺氧、需住院</p>
+                                <div class="pathway-target-card border-blue-200 bg-blue-50 mb-2">
+                                    <span class="text-xs text-blue-600 font-bold">絕對首選</span>
+                                    <div class="text-sm font-bold text-blue-800">Oseltamivir</div>
+                                </div>
+                                <p class="text-xs text-slate-600">數據最充足。若無法口服或Oseltamivir無效，改用 Peramivir 連續注射。</p>
+                            </div>
+                        </div>
+
+                        <!-- Prophylaxis -->
+                        <div class="flex flex-col h-full">
+                            <div class="bg-amber-50 p-3 rounded-t-lg text-center border border-amber-100">
+                                <span class="badge badge-amber">預防性投藥</span>
+                            </div>
+                            <div class="p-4 border border-amber-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
+                                <p class="text-sm text-slate-500 mb-2">接觸確診者 48hr 內</p>
+                                <div class="pathway-target-card border-amber-200 bg-amber-50 mb-2">
+                                    <span class="text-xs text-amber-600 font-bold">高風險群</span>
+                                    <div class="text-sm font-bold text-amber-800">Oseltamivir QD<br>(10天)</div>
+                                </div>
+                                <p class="text-xs text-slate-600">適用機構群聚或高風險未打疫苗者</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB NEW 1: 危險徵兆與鑑別 (Danger Signs) -->
+        <!-- ========================================== -->
+        <div id="content-danger" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Danger Signs -->
+                <div class="info-card info-card-danger">
+                    <h3 class="font-bold text-rose-800 text-xl mb-4 flex items-center gap-2">
+                        <span>🚨</span> 流感重症危險徵兆 (Danger Signs)
+                    </h3>
+                    <p class="text-sm text-slate-600 mb-4">若病患出現以下任一徵兆，應立即轉診至大醫院或急診就醫：</p>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
+                            <strong class="text-rose-700 block mb-1">1. 呼吸系統異常</strong>
+                            <ul class="list-disc pl-5 text-sm text-slate-700">
+                                <li>呼吸困難、呼吸急促</li>
+                                <li>發紺 (缺氧、嘴唇發紫)</li>
+                                <li>血痰</li>
+                                <li>胸痛</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
+                            <strong class="text-rose-700 block mb-1">2. 神經系統異常</strong>
+                            <ul class="list-disc pl-5 text-sm text-slate-700">
+                                <li>意識改變 (嗜睡、昏迷)</li>
+                                <li>癲癇、痙攣</li>
+                                <li>肢體無力</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
+                            <strong class="text-rose-700 block mb-1">3. 循環與其他系統</strong>
+                            <ul class="list-disc pl-5 text-sm text-slate-700">
+                                <li>低血壓 (收縮壓 < 90mmHg)</li>
+                                <li>高燒持續 72 小時不退</li>
+                                <li>無法進食、劇烈嘔吐、脫水</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Differential Diagnosis Table -->
+                <div class="info-card info-card-blue">
+                    <h3 class="font-bold text-blue-800 text-xl mb-4 flex items-center gap-2">
+                        <span>🔍</span> 簡易臨床鑑別 (Differential Dx)
+                    </h3>
+                    <div class="overflow-x-auto rounded-lg border border-slate-200">
+                        <table class="modern-table text-sm">
+                            <thead>
+                                <tr>
+                                    <th>症狀</th>
+                                    <th class="text-blue-700">流感 (Flu)</th>
+                                    <th>一般感冒 (Cold)</th>
+                                    <th>COVID-19</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-bold">發病速度</td>
+                                    <td class="text-rose-600 font-bold bg-rose-50">極快 (突然高燒)</td>
+                                    <td>漸進式</td>
+                                    <td>漸進或快</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">發燒</td>
+                                    <td class="text-rose-600 font-bold bg-rose-50">常見高燒 > 38.5℃</td>
+                                    <td>少見</td>
+                                    <td>常見</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">全身痠痛</td>
+                                    <td class="text-rose-600 font-bold bg-rose-50">明顯且嚴重</td>
+                                    <td>輕微</td>
+                                    <td>常見</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">倦怠感</td>
+                                    <td class="text-rose-600 font-bold bg-rose-50">非常明顯 (虛脫)</td>
+                                    <td>輕微</td>
+                                    <td>常見</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">喉嚨痛</td>
+                                    <td>常見</td>
+                                    <td>常見</td>
+                                    <td>常見 (似刀割)</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">味嗅覺</td>
+                                    <td>正常</td>
+                                    <td>正常</td>
+                                    <td>可能喪失</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
+                        * 此表僅供參考，確診仍需依賴快篩 (Rapid Test) 或 PCR 核酸檢測。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB NEW 2: 管灌與磨粉 (Pharmaceutics) -->
+        <!-- ========================================== -->
+        <div id="content-pharmacy" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Oseltamivir Compounding -->
+                <div class="info-card info-card-orange">
+                    <h3 class="font-bold text-orange-800 text-xl mb-4 flex items-center gap-2">
+                        <span>💊</span> Oseltamivir 磨粉與泡製
+                    </h3>
+                    <p class="text-sm text-slate-700 mb-4">
+                        當病患無法吞嚥膠囊，且醫院無庫存口服懸液劑時，可依以下建議泡製 (Extemporaneous preparation)：
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-xl border border-orange-200">
+                            <strong class="text-orange-700 block mb-2 border-b border-orange-100 pb-1">方法 A：立即服用 (Bedside Mixing)</strong>
+                            <ol class="list-decimal pl-5 text-sm text-slate-700 space-y-1">
+                                <li>小心打開 Oseltamivir 膠囊，將粉末倒入小杯中。</li>
+                                <li>加入適量甜味液體掩蓋苦味 (如：糖漿、巧克力醬、煉乳、果汁)。</li>
+                                <li>攪拌均勻後，讓病患<span class="text-rose-600 font-bold">立即服用</span>。</li>
+                                <li>杯中殘留藥液，可再加少許水潤洗後喝下，確保劑量完整。</li>
+                            </ol>
+                        </div>
+
+                        <div class="bg-white p-4 rounded-xl border border-orange-200">
+                            <strong class="text-orange-700 block mb-2 border-b border-orange-100 pb-1">方法 B：藥局預先配置 (Pharmacy Bulk)</strong>
+                            <p class="text-xs text-slate-600 mb-2">若需預先配置成懸液劑 (6mg/mL)：</p>
+                            <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
+                                <li>將膠囊內容物溶於 Simple Syrup (單一糖漿) 或 Ora-Sweet 中。</li>
+                                <li><strong>保存期限：</strong>
+                                    <br>- 室溫 (25℃)：可保存 2 天。
+                                    <br>- 冷藏 (2-8℃)：可保存 17 天 (建議冷藏)。
+                                </li>
+                                <li>使用前務必振搖均勻。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NG Tube & Other Drugs -->
+                <div class="info-card info-card-warning">
+                    <h3 class="font-bold text-amber-800 text-xl mb-4 flex items-center gap-2">
+                        <span>🧪</span> 鼻胃管 (NG Tube) 與其他藥物
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <span class="badge badge-blue mb-2">Oseltamivir (Tamiflu)</span>
+                            <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                                <li><strong>可管灌。</strong></li>
+                                <li>建議打開膠囊，將粉末溶於溫水後灌入。</li>
+                                <li>注意粉末可能有些微不溶物，需充分攪拌避免阻塞管路。</li>
+                            </ul>
+                        </div>
+
+                        <hr class="border-amber-200">
+
+                        <div>
+                            <span class="badge badge-purple mb-2">Baloxavir (Xofluza)</span>
+                            <div class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-rose-600 text-sm block mb-1">⚠️ 磨粉/管灌注意事項：</strong>
+                                <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                                    <li>原廠建議<strong>整粒吞服</strong>。</li>
+                                    <li>臨床資料顯示，若必須管灌，可將藥錠粉碎後懸浮於水中給予，但應<strong>避免與含多價陽離子 (鈣、鎂、鐵)</strong> 的管灌營養品同時使用。</li>
+                                    <li>建議作法：管灌藥物前後暫停餵食營養品 (前後間隔至少 2 小時)，或確保該餐營養品不含高量鈣鎂。</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <hr class="border-amber-200">
+
+                        <div>
+                            <span class="badge badge-rose mb-2">Peramivir (Rapiacta)</span>
+                            <p class="text-sm text-slate-700">針劑藥物，無管灌問題。若病患無法使用腸胃道藥物，應優先考慮改用此藥。</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: 藥理機轉 (MOA) - V4.0 Re-designed (Fixed Layout) -->
+        <!-- ========================================== -->
+        <div id="content-moa" class="tab-content">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- MOA 4.0 Diagram -->
+                <div class="lg:col-span-2 moa-container shadow-lg">
+                    
+                    <!-- Membrane Top -->
+                    <div class="moa-membrane-top">
+                        <span class="moa-membrane-label">HOST CELL MEMBRANE</span>
+                    </div>
+
+                    <!-- SVG Overlay for Arrows (Responsive & Centered) -->
+                    <svg class="moa-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <!-- Path 1 -> 2: Top Left to Nucleus -->
+                        <path d="M 15,20 Q 15,70 50,70" class="arrow-path" />
+                        <polygon points="50,70 47,68 47,72" class="arrow-head" />
+
+                        <!-- Path 2 -> 3: Nucleus to Top Right -->
+                        <path d="M 50,70 Q 80,70 80,25" class="arrow-path" />
+                        <polygon points="80,25 78,28 82,28" class="arrow-head" />
+                        
+                         <!-- Path 3 -> 4: Exit -->
+                        <path d="M 80,25 L 95,25" class="arrow-path" stroke-dasharray="0" />
+                        <polygon points="95,25 92,22 92,28" class="arrow-head" />
+                    </svg>
+
+                    <!-- STEP 1: ENTRY (Top Left) -->
+                    <div class="moa-step-node" style="top: 15%; left: 5%;" onclick="showMoaDetail('Entry')">
+                        <span class="moa-step-num">1</span>
+                        <div class="moa-step-title">Entry & Uncoating</div>
+                    </div>
+
+                    <!-- STEP 2: REPLICATION (Center Bottom - Nucleus) -->
+                    <div class="moa-nucleus-zone">
+                        <span class="moa-nucleus-label">CELL NUCLEUS</span>
+                        <div class="moa-step-node has-drug" style="position: relative; z-index: 10;" onclick="showMoaDetail('Replication')">
+                            <span class="moa-step-num">2</span>
+                            <div class="moa-step-title">RNA Replication</div>
+                            <div class="moa-step-drug">Baloxavir (Xofluza)</div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: ASSEMBLY (Top Right) -->
+                    <div class="moa-step-node" style="top: 15%; right: 20%;" onclick="showMoaDetail('Assembly')">
+                        <span class="moa-step-num">3</span>
+                        <div class="moa-step-title">Assembly</div>
+                    </div>
+
+                    <!-- STEP 4: RELEASE (Far Right Edge) -->
+                    <div class="moa-step-node has-drug" style="top: 15%; right: 2%; width: 130px; border-color: #0284c7;" onclick="showMoaDetail('Release')">
+                        <span class="moa-step-num" style="background: #0284c7;">4</span>
+                        <div class="moa-step-title">Release</div>
+                        <div class="moa-step-drug" style="color: #0284c7; background: #e0f2fe;">Oseltamivir</div>
+                    </div>
+
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 h-full shadow-sm flex flex-col">
+                        <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                            <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">ℹ️</span>
+                            <h4 class="serif text-slate-800 font-bold text-lg">Mechanism Detail</h4>
+                        </div>
+                        
+                        <div id="moa-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                            <div>
+                                <p class="mb-2 font-bold text-slate-400">Interactive Cycle</p>
+                                <p>請點擊左側圖表中的步驟 (1-4)<br>查看詳細機轉與藥物作用點</p>
+                            </div>
+                        </div>
+
+                        <div id="moa-detail-content" class="hidden animate-fade-in">
+                            <h5 id="moa-title" class="text-sky-700 font-bold text-lg mb-3"></h5>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 mb-4">
+                                <p id="moa-desc" class="text-slate-700 text-sm leading-relaxed"></p>
+                            </div>
+                            <div class="border-l-4 border-sky-500 pl-3">
+                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">Clinical Impact</p>
+                                <p id="moa-impact" class="text-sm text-slate-600 font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="ref-section">Ref: NEJM 2018; 379:913-923 (Baloxavir Mechanism); CDC Influenza Treatment.</div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 pt-6 border-t border-slate-200 text-center">
+            <div class="max-w-4xl mx-auto px-4">
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    <strong>免責聲明：</strong>本網站內容僅供醫療專業人員參考。所有劑量與治療建議請依據病患實際狀況與最新仿單為準。
+                </p>
+                <p class="serif text-slate-400 text-xs italic mt-4">
+                    Clinical Guide based on TW CDC & IDSA Guidelines • 2025 Update
+                </p>
+            </div>
+        </footer>
+
+    </main>
+
+    <script>
+        // Tab Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + tabName).classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // MOA Logic
+        function showMoaDetail(step) {
+            const defaultText = document.getElementById('moa-text-default');
+            const detailContent = document.getElementById('moa-detail-content');
+            const title = document.getElementById('moa-title');
+            const desc = document.getElementById('moa-desc');
+            const impact = document.getElementById('moa-impact');
+            
+            // Highlight
+            document.querySelectorAll('.moa-step-node').forEach(el => el.classList.remove('active-step'));
+            event.currentTarget.classList.add('active-step');
+
+            defaultText.classList.add('hidden');
+            detailContent.classList.remove('hidden');
+
+            const data = {
+                'Entry': {
+                    title: "Step 1: Entry & Uncoating",
+                    desc: "流感病毒透過胞吞作用進入宿主細胞，接著 M2 離子通道打開，使病毒內部酸化，釋放出病毒核糖核蛋白 (vRNP)。",
+                    impact: "舊一代藥物 Amantadine 作用於此 (M2 inhibitor)，但目前 A 型流感對其抗藥性近乎 100%，臨床已不再使用。"
+                },
+                'Replication': {
+                    title: "Step 2: Viral Replication (Nucleus)",
+                    desc: "vRNP 進入細胞核進行複製。在此過程中，病毒聚合酶會進行 'Cap-snatching' (搶奪宿主 mRNA 的帽端) 以啟動轉錄。",
+                    impact: "🔴 Baloxavir (Xofluza) 直接抑制此步驟的 PA 蛋白，從「源頭」阻斷病毒複製。因此病毒量下降速度比傳統藥物更快。"
+                },
+                'Assembly': {
+                    title: "Step 3: Viral Assembly",
+                    desc: "新複製的病毒 RNA 與蛋白質在細胞質與細胞膜處重新組裝，準備形成新的病毒顆粒。",
+                    impact: "此階段主要涉及病毒結構蛋白的合成與運送。"
+                },
+                'Release': {
+                    title: "Step 4: Viral Release (Budding)",
+                    desc: "新病毒顆粒要脫離宿主細胞時，需藉由神經胺酸酶 (Neuraminidase) 切斷與細胞膜的連結。",
+                    impact: "🔵 Oseltamivir, Zanamivir, Peramivir 抑制此酵素，將病毒「鎖」在感染細胞表面，無法擴散感染鄰近細胞。"
+                }
+            };
+
+            if(data[step]) {
+                title.innerText = data[step].title;
+                desc.innerText = data[step].desc;
+                impact.innerText = data[step].impact;
+            }
+        }
+    </script>
+</body>
+</html>
