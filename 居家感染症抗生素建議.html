@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>臺灣居家感染症抗生素指引</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #0f172a; /* Slate 900 */
+            --accent-color: #0d9488;  /* Teal 600 */
+            --accent-light: #ccfbf1;  /* Teal 100 */
+            --danger-color: #be123c;  /* Rose 700 */
+            --paper-bg: #ffffff;
+            --bg-color: #f0fdfa;      /* Light Teal Bg */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #334155;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .serif { font-family: 'Noto Serif TC', serif; }
+
+        .journal-card {
+            background-color: var(--paper-bg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            border-top: 6px solid var(--accent-color);
+        }
+
+        /* 標籤 Badge 樣式 */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+        .badge-blue { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-rose { background-color: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+        .badge-green { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-purple { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; }
+        .badge-amber { background-color: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        
+        /* New Rx Block Styles (處方色塊) */
+        .rx-block { 
+            display: block; 
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            margin-bottom: 6px; 
+            font-size: 0.9rem; 
+            border-left: 4px solid transparent; 
+            line-height: 1.4;
+            transition: transform 0.1s;
+        }
+        .rx-block:hover { transform: translateX(2px); }
+        
+        .rx-oral { background: #eff6ff; border-left-color: #3b82f6; color: #1e3a8a; border: 1px solid #dbeafe; } /* Oral - Blue */
+        .rx-iv { background: #fff1f2; border-left-color: #be123c; color: #881337; border: 1px solid #ffe4e6; } /* IV - Rose */
+        .rx-cif { background: #f5f3ff; border-left-color: #7c3aed; color: #4c1d95; border: 1px solid #ede9fe; } /* cIF - Purple */
+        
+        .rx-name { font-weight: 700; display: block; margin-bottom: 2px; }
+        .rx-detail { font-size: 0.85rem; opacity: 0.9; }
+
+        /* Drug Tags (Legacy / Inline use) */
+        .drug-tag { font-size: 0.75rem; padding: 2px 8px; border-radius: 999px; font-weight: 700; display: inline-block; margin-right: 4px; }
+        .dt-oral { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; } 
+        .dt-iv { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; }
+        .dt-cif { background: #f3e8ff; color: #6b21a8; border: 1px solid #d8b4fe; }
+
+        /* Tab 樣式 */
+        .nav-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+        .nav-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f8fafc;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .tab-btn:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3);
+            font-weight: 700;
+        }
+
+        /* 統一風格的資訊卡 */
+        .info-card {
+            border-left-width: 4px;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: 100%;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid; 
+        }
+        .info-card-blue { border-left-color: #3b82f6; background-color: #eff6ff; }
+        .info-card-danger { border-left-color: var(--danger-color); background-color: #fff1f2; }
+        .info-card-green { border-left-color: #10b981; background-color: #ecfdf5; }
+        .info-card-warning { border-left-color: #f59e0b; background-color: #fffbeb; }
+        .info-card-purple { border-left-color: #7e22ce; background-color: #f3e8ff; }
+        .info-card-slate { border-left-color: #64748b; background-color: #f1f5f9; }
+        
+        /* 表格優化 */
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .modern-table th {
+            font-family: 'Noto Serif TC', serif;
+            color: #475569;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            background-color: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.9rem;
+        }
+        .modern-table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+            background-color: white;
+            transition: background-color 0.2s;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        .modern-table tr:hover td { background-color: #f8fafc; }
+        .modern-table tr:last-child td { border-bottom: none; }
+
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in; }
+        .tab-content.active { display: block; opacity: 1; }
+        
+        /* Action Button Styles */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-link { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .btn-link:hover { background-color: #dcfce7; }
+        
+        .btn-img { background-color: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+        .btn-img:hover { background-color: #ffedd5; }
+        
+        /* Diagnosis Button */
+        .btn-diag {
+            background-color: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe;
+            font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 4px;
+            transition: all 0.2s;
+        }
+        .btn-diag:hover { background-color: #c7d2fe; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 50;
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px);
+            transition: opacity 0.3s;
+        }
+        .modal-content {
+            background: white; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh;
+            overflow-y: auto; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            transform: scale(0.95); transition: transform 0.2s;
+        }
+        .modal-header {
+            padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;
+            background-color: #f8fafc; position: sticky; top: 0; z-index: 10;
+        }
+        .modal-body { padding: 1.5rem; font-size: 0.9rem; line-height: 1.6; color: #334155; }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
+
+    <main class="journal-card w-full max-w-7xl rounded-2xl p-6 md:p-10 relative overflow-hidden bg-white">
+        
+        <!-- Action Buttons Row -->
+        <div class="flex gap-3 mb-4 relative z-20">
+            <button onclick="window.open('https://www.nhi.gov.tw/ch/dl-71878-46e49ed5ca684db898b1423307227f81-1.pdf', '_blank')" class="action-btn btn-link">
+                <span>📄</span> 查看原始指引 PDF
+            </button>
+            <button onclick="openHospitalModal()" class="action-btn btn-img">
+                <span>💊</span> 常用藥物列表
+            </button>
+        </div>
+
+        <!-- Header -->
+        <header class="mb-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-slate-100">
+                <div>
+                    <h2 class="text-xs font-bold tracking-widest text-teal-600 uppercase mb-2">Home-based Medical Care</h2>
+                    <h1 class="serif text-3xl md:text-4xl text-slate-900 leading-tight font-bold">
+                        居家感染症抗生素建議
+                    </h1>
+                </div>
+                <div class="text-right hidden md:block">
+                    <p class="text-slate-400 text-sm font-light">Empirical Parenteral Antibiotics Guidelines</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">Version 1.0 • 2024/06/06</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師</p>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-container mt-6">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active">核心原則</button>
+                <button onclick="switchTab('pneumonia')" id="tab-pneumonia" class="tab-btn">肺炎 (Pneumonia)</button>
+                <button onclick="switchTab('uti')" id="tab-uti" class="tab-btn">泌尿道感染 (UTI)</button>
+                <button onclick="switchTab('ssti')" id="tab-ssti" class="tab-btn">軟組織感染 (SSTI)</button>
+                <button onclick="switchTab('danger')" id="tab-danger" class="tab-btn text-rose-600 font-bold">危險徵兆與MDRO</button>
+                <button onclick="switchTab('practical')" id="tab-practical" class="tab-btn">劑量與輸注數據</button>
+                <button onclick="switchTab('definitions')" id="tab-definitions" class="tab-btn">名詞定義</button>
+            </nav>
+        </header>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 核心原則 (Overview) -->
+        <!-- ========================================== -->
+        <div id="content-overview" class="tab-content active">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Principle Card -->
+                <div class="info-card info-card-green">
+                    <h3 class="font-bold text-emerald-800 text-lg mb-3">用藥順序原則</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">1</span>
+                            <div>
+                                <p class="font-bold text-slate-700">由窄效 到 廣效</p>
+                                <p class="text-xs text-slate-500">Narrow Spectrum → Broad Spectrum</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-bold">2</span>
+                            <div>
+                                <p class="font-bold text-slate-700">由口服 到 靜脈注射</p>
+                                <p class="text-xs text-slate-500">Oral → IV Injection → 24hr cIF</p>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-emerald-100 mt-2">
+                            <strong class="text-emerald-700 text-xs block mb-1">💡 居家特殊性：</strong>
+                            <p class="text-sm text-slate-600">推廣 <strong>24小時持續靜脈輸注 (24hr cIF)</strong>，以維持血中濃度並減少給藥頻次，適合在宅照護人力配置。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5Ds Card -->
+                <div class="info-card info-card-blue">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3">抗生素使用 5Ds 原則</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-blue shrink-0">Diagnosis</span>
+                            <span class="text-sm text-slate-700">正確診斷 (盡可能留取檢體培養)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-blue shrink-0">Drug</span>
+                            <span class="text-sm text-slate-700">正確藥品 (考量抗藥性與滲透度)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-blue shrink-0">Dosage</span>
+                            <span class="text-sm text-slate-700">正確劑量 (依腎功能調整)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-blue shrink-0">Duration</span>
+                            <span class="text-sm text-slate-700">正確期程 (避免過長療程)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="badge badge-blue shrink-0">De-escalation</span>
+                            <span class="text-sm text-slate-700">適時降階 (根據培養結果調整)</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 text-center">
+                <h4 class="font-bold text-slate-700 mb-2">制定單位</h4>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <span class="badge bg-white border border-slate-200">臺灣感染症醫學會</span>
+                    <span class="badge bg-white border border-slate-200">臺灣急診醫學會</span>
+                    <span class="badge bg-white border border-slate-200">臺灣家庭醫學醫學會</span>
+                    <span class="badge bg-white border border-slate-200">臺灣在宅醫療學會</span>
+                    <span class="badge bg-white border border-slate-200">藥師公會全聯會</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 肺炎治療 (Pneumonia) -->
+        <!-- ========================================== -->
+        <div id="content-pneumonia" class="tab-content">
+            
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 border-l-4 border-teal-500 pl-3">肺炎 (Pneumonia) 治療建議</h3>
+                <button onclick="showDiagnosis('pneumonia')" class="btn-diag">
+                    📖 診斷與定義說明
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <!-- Severity Score -->
+                <div class="lg:col-span-1 info-card info-card-warning">
+                    <h3 class="font-bold text-amber-800 text-lg mb-2">嚴重度評估 (CRB-65)</h3>
+                    <p class="text-xs text-slate-500 mb-3">每項1分，總分越高風險越高</p>
+                    <ul class="space-y-2 text-sm text-slate-700">
+                        <li class="flex items-center gap-2">🧠 <span><strong>C</strong>onfusion (意識混亂)</span></li>
+                        <li class="flex items-center gap-2">🌬️ <span><strong>R</strong>espiratory rate ≥ 30/min</span></li>
+                        <li class="flex items-center gap-2">💓 <span><strong>B</strong>lood pressure < 90/60 mmHg</span></li>
+                        <li class="flex items-center gap-2">👴 <span><strong>65</strong> Age ≥ 65 years</span></li>
+                    </ul>
+                    <div class="mt-4 pt-3 border-t border-amber-200">
+                        <p class="text-rose-600 font-bold text-sm">⚠️ CRB-65 ≥ 4 分：建議轉醫院治療</p>
+                    </div>
+                </div>
+
+                <!-- Treatment Table -->
+                <div class="lg:col-span-2 overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th class="w-[20%]">分類</th>
+                                <th class="w-[40%]">口服治療建議</th>
+                                <th class="w-[40%]">居家注射治療建議 (IV/cIF)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <strong class="text-slate-700">CAP 輕症</strong><br>
+                                    <span class="text-xs text-slate-500">CRB-65: 0-1分</span>
+                                </td>
+                                <td>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Amoxicillin</span>
+                                        <span class="rx-detail">1g Q8H (5-7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Augmentin</span>
+                                        <span class="rx-detail">1g BID PC 或 625mg TID PC (5-7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Cefuroxime</span>
+                                        <span class="rx-detail">500mg Q12H (5-7天)</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-xs text-slate-400 block mb-2">通常不需注射。若無法服藥：</span>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Penicillin G</span>
+                                        <span class="rx-detail">18-24 MU (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Cefuroxime</span>
+                                        <span class="rx-detail">4.5g (7天)</span>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong class="text-slate-700">CAP 中重度</strong><br>
+                                    <span class="text-xs text-slate-500">CRB-65: 2-3分</span>
+                                </td>
+                                <td>
+                                    <span class="text-xs text-slate-500 block mb-2">若需口服降階：</span>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Levofloxacin</span>
+                                        <span class="rx-detail">750mg QD AC (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Moxifloxacin</span>
+                                        <span class="rx-detail">400mg QD AC (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Nemonoxacin</span>
+                                        <span class="rx-detail">500mg QD AC (7天)</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="rx-block rx-iv">
+                                        <span class="rx-name">IV Ceftriaxone</span>
+                                        <span class="rx-detail">2g QD (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Penicillin G</span>
+                                        <span class="rx-detail">18-24 MU (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Cefuroxime</span>
+                                        <span class="rx-detail">4.5g (7天)</span>
+                                    </div>
+                                    <div class="text-xs text-amber-700 mt-2 bg-amber-50 p-2 rounded border border-amber-200">
+                                        <strong>※ 需合併口服覆蓋非典型菌：</strong><br>
+                                        <div class="mt-1 flex gap-2 flex-wrap">
+                                            <span class="bg-white px-2 py-1 rounded border border-amber-100">Doxycycline 100mg BID (7天)</span>
+                                            <span class="bg-white px-2 py-1 rounded border border-amber-100">Azithromycin 500mg QD (3天)</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong class="text-slate-700">HCAP</strong><br>
+                                    <span class="text-xs text-slate-500">機構/長期臥床/管路</span>
+                                </td>
+                                <td>-</td>
+                                <td>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Cefepime</span>
+                                        <span class="rx-detail">6g (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Ceftazidime</span>
+                                        <span class="rx-detail">6g (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Pip-Taz</span>
+                                        <span class="rx-detail">18g (7天)</span>
+                                    </div>
+                                    <div class="text-xs text-slate-500 mt-1">長期臥床者建議留院治療尤佳。</div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <strong class="text-slate-700">吸入性肺炎</strong><br>
+                                    <span class="text-xs text-slate-500">需覆蓋厭氧菌</span>
+                                </td>
+                                <td>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Augmentin (875/125)</span>
+                                        <span class="rx-detail">1000mg BID PC (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Augmentin (500/125)</span>
+                                        <span class="rx-detail">625mg TID PC (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Cefuroxime + Metronidazole</span>
+                                        <span class="rx-detail">Cefu 500mg Q12H + Metro 500mg Q8H (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-oral">
+                                        <span class="rx-name">Moxifloxacin</span>
+                                        <span class="rx-detail">400mg QD AC (7天)</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="rx-block rx-iv">
+                                        <span class="rx-name">IV Moxifloxacin</span>
+                                        <span class="rx-detail">400mg QD (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-iv">
+                                        <span class="rx-name">IV Ceftriaxone + Metronidazole</span>
+                                        <span class="rx-detail">Ceftri 2g QD + Metro 500mg Q8H (7天)</span>
+                                    </div>
+                                    <div class="rx-block rx-cif">
+                                        <span class="rx-name">cIF Cefuroxime + Metronidazole</span>
+                                        <span class="rx-detail">Cefu 4500mg + Metro 500mg Q8H (7天)</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 泌尿道感染 (UTI) -->
+        <!-- ========================================== -->
+        <div id="content-uti" class="tab-content">
+            
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 border-l-4 border-purple-500 pl-3">泌尿道感染 (UTI) 治療建議</h3>
+                <button onclick="showDiagnosis('uti')" class="btn-diag">
+                    📖 診斷與定義說明
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Pathogens (New) -->
+                <div class="info-card info-card-blue">
+                    <h3 class="font-bold text-blue-800 text-lg mb-2">常見致病菌</h3>
+                    <ul class="list-disc pl-4 text-sm text-slate-700 space-y-1">
+                        <li><em>Escherichia coli</em> (最常見)</li>
+                        <li><em>Klebsiella pneumoniae</em></li>
+                        <li><em>Proteus mirabilis</em></li>
+                        <li><em>Staphylococcus saprophyticus</em></li>
+                    </ul>
+                </div>
+
+                <!-- Referral Criteria (New) -->
+                <div class="info-card info-card-purple">
+                    <h3 class="font-bold text-purple-800 text-lg mb-2">建議轉診/留院標準</h3>
+                    <ul class="list-disc pl-4 text-sm text-slate-700 space-y-1">
+                        <li><strong>敗血症徵象 (Sepsis)</strong></li>
+                        <li><strong>尿路阻塞</strong> (結石、腫瘤)</li>
+                        <li><strong>腎膿瘍</strong> (Renal abscess)</li>
+                        <li><strong>急性腎衰竭</strong> (AKI)</li>
+                        <li><strong>多重抗藥性菌株</strong> (MDRO)</li>
+                    </ul>
+                </div>
+
+                <!-- Resistance Warning -->
+                <div class="info-card info-card-danger">
+                    <h3 class="font-bold text-rose-800 text-lg mb-2 flex items-center gap-2">
+                        <span>🚨</span> 抗藥性警示
+                    </h3>
+                    <p class="text-slate-700 text-sm">
+                        <em>E. coli</em> 對 <strong>Fluoroquinolones</strong> (Levofloxacin等) 抗藥性高 (>10%)。
+                        <br><strong>不建議</strong>作為第一線經驗性用藥，除非已確認感受性。
+                    </p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg border border-slate-200">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-[20%]">診斷分類</th>
+                            <th class="w-[45%]">建議藥物 (劑量/天數)</th>
+                            <th class="w-[35%]">備註</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong>膀胱炎 / 尿道炎</strong><br>
+                                <span class="badge badge-green mt-1">Uncomplicated</span>
+                            </td>
+                            <td>
+                                <div class="rx-block rx-oral">
+                                    <span class="rx-name">Baktar (TMP/SMX)</span>
+                                    <span class="rx-detail">2# (160/800mg) BID (3天)</span>
+                                </div>
+                                <div class="rx-block rx-oral">
+                                    <span class="rx-name">Augmentin</span>
+                                    <span class="rx-detail">1g BID PC 或 625mg TID PC (3-7天)</span>
+                                </div>
+                                <div class="rx-block rx-oral">
+                                    <span class="rx-name">Cefuroxime</span>
+                                    <span class="rx-detail">500mg Q12H (3-7天)</span>
+                                </div>
+                                <div class="rx-block rx-oral">
+                                    <span class="rx-name">Cephalexin</span>
+                                    <span class="rx-detail">500mg QID (3-7天)</span>
+                                </div>
+                                <div class="rx-block rx-oral">
+                                    <span class="rx-name">Fosfomycin</span>
+                                    <span class="rx-detail">3g (單次粉劑)</span>
+                                </div>
+                                <div class="text-xs text-rose-600 mt-2 bg-rose-50 p-2 rounded border border-rose-100">
+                                    <strong>※ 僅在感受性有效時使用：</strong><br>
+                                    Ofloxacin 400mg BID (3天)<br>
+                                    Ciprofloxacin 500mg BID (3天)<br>
+                                    Levofloxacin 750mg QD (3天)
+                                </div>
+                            </td>
+                            <td class="text-sm text-slate-600">
+                                通常不需注射。<br>
+                                懷孕婦女首選：Cephalexin, Augmentin, Fosfomycin。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>腎盂腎炎</strong><br>
+                                <span class="badge badge-blue mt-1">Uncomplicated</span>
+                            </td>
+                            <td>
+                                <div class="rx-block rx-iv">
+                                    <span class="rx-name">IV Ceftriaxone</span>
+                                    <span class="rx-detail">2g QD (7天)</span>
+                                </div>
+                                <div class="rx-block rx-iv">
+                                    <span class="rx-name">IV Gentamicin / Amikacin</span>
+                                    <span class="rx-detail">5-15mg/kg QD (7天)</span>
+                                </div>
+                                <div class="rx-block rx-cif">
+                                    <span class="rx-name">cIF Cefazolin</span>
+                                    <span class="rx-detail">6g 24hr (7天)</span>
+                                </div>
+                                <div class="rx-block rx-cif">
+                                    <span class="rx-name">cIF Cefuroxime</span>
+                                    <span class="rx-detail">4.5g 24hr (7天)</span>
+                                </div>
+                                <div class="mt-2 text-xs text-slate-500">口服降階選項：</div>
+                                <div class="rx-block rx-oral">
+                                    <span class="rx-name">TMP/SMX</span>
+                                    <span class="rx-detail">2# BID (14天) (若敏感)</span>
+                                </div>
+                                <div class="rx-block rx-oral">
+                                    <span class="rx-name">Cefixime</span>
+                                    <span class="rx-detail">400mg QD (10-14天)</span>
+                                </div>
+                            </td>
+                            <td class="text-sm text-slate-600">
+                                男性 UTI 建議參考此分類治療。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>ESBL 風險</strong><br>
+                                <span class="badge badge-rose mt-1">近90天有紀錄</span>
+                            </td>
+                            <td>
+                                <div class="rx-block rx-iv">
+                                    <span class="rx-name">IV Ertapenem</span>
+                                    <span class="rx-detail">1g QD (7天)</span>
+                                </div>
+                                <div class="rx-block rx-iv">
+                                    <span class="rx-name">IV Amikacin</span>
+                                    <span class="rx-detail">15mg/kg QD (7天)</span>
+                                </div>
+                            </td>
+                            <td class="text-sm text-slate-600">
+                                Levofloxacin 僅在確認細菌感受性有效時使用。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <strong>CA-UTI</strong><br>
+                                <span class="text-xs">導尿管相關</span>
+                            </td>
+                            <td>
+                                <span class="text-sm">參照腎盂腎炎治療 (療程7-14天)。</span>
+                            </td>
+                            <td class="text-sm text-slate-600">
+                                <strong>關鍵：</strong>應盡移除或更換導尿管。<br>無症狀菌尿症 (CA-ABU) 不需治療。
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 軟組織感染 (SSTI) -->
+        <!-- ========================================== -->
+        <div id="content-ssti" class="tab-content">
+            
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800 border-l-4 border-emerald-500 pl-3">軟組織感染 (SSTI) 治療建議</h3>
+                <button onclick="showDiagnosis('ssti')" class="btn-diag">
+                    📖 診斷與定義說明
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Cellulitis -->
+                <div class="info-card info-card-blue">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3">蜂窩性組織炎 / 丹毒</h3>
+                    <div class="bg-white p-3 rounded border border-blue-100 mb-3">
+                        <strong class="text-blue-700 text-xs block mb-2">一般建議 (Mild/Moderate) (5-7天)</strong>
+                        <div class="rx-block rx-oral">
+                            <span class="rx-name">Oral Cephalexin</span>
+                            <span class="rx-detail">500mg QID</span>
+                        </div>
+                        <div class="rx-block rx-oral">
+                            <span class="rx-name">Oral Dicloxacillin</span>
+                            <span class="rx-detail">500mg QID</span>
+                        </div>
+                        <div class="rx-block rx-oral">
+                            <span class="rx-name">Oral Clindamycin</span>
+                            <span class="rx-detail">300mg QID</span>
+                        </div>
+                        <div class="rx-block rx-iv">
+                            <span class="rx-name">IV Ceftriaxone</span>
+                            <span class="rx-detail">2g QD</span>
+                        </div>
+                        <div class="rx-block rx-cif">
+                            <span class="rx-name">cIF Penicillin G</span>
+                            <span class="rx-detail">18 MU</span>
+                        </div>
+                        <div class="rx-block rx-cif">
+                            <span class="rx-name">cIF Cefazolin</span>
+                            <span class="rx-detail">6g (24hr)</span>
+                        </div>
+                        <div class="rx-block rx-cif">
+                            <span class="rx-name">cIF Clindamycin</span>
+                            <span class="rx-detail">1800mg (24hr)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DFI -->
+                <div class="info-card info-card-warning">
+                    <h3 class="font-bold text-amber-800 text-lg mb-3">糖尿病足感染 (DFI)</h3>
+                    <div class="bg-white p-3 rounded border border-amber-100 mb-3">
+                        <strong class="text-amber-700 text-xs block mb-2">混合感染需覆蓋厭氧菌 (7-14天)</strong>
+                        <div class="rx-block rx-oral">
+                            <span class="rx-name">Oral Augmentin</span>
+                            <span class="rx-detail">1g BID / 625mg TID</span>
+                        </div>
+                        <div class="rx-block rx-oral">
+                            <span class="rx-name">Oral Cephalexin / Dicloxacillin / Clindamycin</span>
+                            <span class="rx-detail">(單用，視菌種)</span>
+                        </div>
+                        <div class="rx-block rx-iv">
+                            <span class="rx-name">IV Ceftriaxone</span>
+                            <span class="rx-detail">2g QD (+ Clindamycin 若需厭氧菌)</span>
+                        </div>
+                        <div class="rx-block rx-cif">
+                            <span class="rx-name">cIF Cefazolin</span>
+                            <span class="rx-detail">6g 24hr (+ Clindamycin 若需厭氧菌)</span>
+                        </div>
+                        <div class="rx-block rx-cif">
+                            <span class="rx-name">cIF Clindamycin</span>
+                            <span class="rx-detail">1800mg 24hr</span>
+                        </div>
+                        <div class="rx-block rx-cif">
+                            <span class="rx-name">cIF Cefuroxime</span>
+                            <span class="rx-detail">4.5g 24hr</span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-amber-700 font-bold">若合併周邊動脈阻塞 (PAD)，感染極易深入筋膜，務必加強厭氧菌治療 (如合併 Clindamycin)。</p>
+                </div>
+                
+                <!-- Bites & Abscess -->
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="info-card info-card-green">
+                        <h3 class="font-bold text-emerald-800 text-lg mb-3">動物/人咬傷 (Bites)</h3>
+                        <div class="text-sm text-slate-700">
+                             <p class="mb-2">需覆蓋口腔菌群 (Pasteurella, Eikenella, Anaerobes) (5-7天)。</p>
+                             <div class="rx-block rx-oral">
+                                <span class="rx-name">Augmentin (首選)</span>
+                                <span class="rx-detail">1g BID / 625mg TID</span>
+                             </div>
+                             <div class="rx-block rx-oral">
+                                <span class="rx-name">Doxycycline</span>
+                                <span class="rx-detail">100mg BID</span>
+                             </div>
+                             <div class="rx-block rx-oral">
+                                <span class="rx-name">Cefuroxime + Clindamycin</span>
+                                <span class="rx-detail">Cefu 500mg + Clinda 300mg TID</span>
+                             </div>
+                             <div class="rx-block rx-oral">
+                                <span class="rx-name">Clindamycin</span>
+                                <span class="rx-detail">300mg TID</span>
+                             </div>
+                             <div class="rx-block rx-iv">
+                                <span class="rx-name">IV Ceftriaxone + Clindamycin</span>
+                                <span class="rx-detail">Ceftri 2g + Clinda 300mg</span>
+                             </div>
+                             <div class="rx-block rx-oral">
+                                <span class="rx-name">Moxifloxacin</span>
+                                <span class="rx-detail">400mg QD</span>
+                             </div>
+                        </div>
+                    </div>
+                    <div class="info-card info-card-purple">
+                        <h3 class="font-bold text-purple-800 text-lg mb-3">皮膚膿瘍 (Abscess)</h3>
+                        <div class="text-sm text-slate-700">
+                             <p class="mb-2 font-bold text-purple-600">主要治療為切開引流 (I&D)。</p>
+                             <p class="mb-2">抗生素為輔助治療 (5-7天)，首選覆蓋 <span class="font-bold">S. aureus</span>：</p>
+                             <div class="rx-block rx-oral">
+                                <span class="rx-name">TMP/SMX</span>
+                                <span class="rx-detail">2# BID (每次2顆, 每日2次)</span>
+                             </div>
+                             <div class="rx-block rx-oral">
+                                <span class="rx-name">Doxycycline</span>
+                                <span class="rx-detail">100mg BID</span>
+                             </div>
+                             <div class="rx-block rx-iv">
+                                <span class="rx-name">IV Ceftriaxone</span>
+                                <span class="rx-detail">2g QD</span>
+                             </div>
+                             <div class="rx-block rx-cif">
+                                <span class="rx-name">cIF Cefazolin</span>
+                                <span class="rx-detail">6g 24hr</span>
+                             </div>
+                             <div class="rx-block rx-cif">
+                                <span class="rx-name">cIF Clindamycin</span>
+                                <span class="rx-detail">1800mg 24hr</span>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tetanus Table -->
+            <div class="info-card info-card-blue mt-6">
+                <h3 class="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2">
+                    <span>💉</span> 受傷後破傷風預防建議 (Tetanus Prophylaxis)
+                </h3>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="modern-table text-sm">
+                        <thead>
+                            <tr class="bg-slate-50">
+                                <th rowspan="2" class="border-r border-slate-200">疫苗接種史</th>
+                                <th colspan="2" class="text-center border-b border-slate-200 border-r">乾淨小傷口</th>
+                                <th colspan="2" class="text-center">所有其他傷口 (汙染/深)</th>
+                            </tr>
+                            <tr class="bg-slate-50">
+                                <th class="text-center">類毒素 (Vaccine)</th>
+                                <th class="text-center border-r border-slate-200">免疫球蛋白 (TIG)</th>
+                                <th class="text-center">類毒素 (Vaccine)</th>
+                                <th class="text-center">免疫球蛋白 (TIG)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="border-r border-slate-200">不確定 或 < 3 劑</td>
+                                <td class="text-center font-bold text-rose-600 bg-rose-50">需要</td>
+                                <td class="text-center border-r border-slate-200 text-slate-400">不需要</td>
+                                <td class="text-center font-bold text-rose-600 bg-rose-50">需要</td>
+                                <td class="text-center font-bold text-rose-600 bg-rose-50">需要</td>
+                            </tr>
+                            <tr>
+                                <td class="border-r border-slate-200">≥ 3 劑</td>
+                                <td class="text-center">
+                                    不需要<br>
+                                    <span class="text-xs text-slate-500">(若超過10年需追加)</span>
+                                </td>
+                                <td class="text-center border-r border-slate-200 text-slate-400">不需要</td>
+                                <td class="text-center">
+                                    不需要<br>
+                                    <span class="text-xs text-slate-500">(若超過5年需追加)</span>
+                                </td>
+                                <td class="text-center text-slate-400">不需要</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: 危險徵兆與 MDRO (Referral) -->
+        <!-- ========================================== -->
+        <div id="content-danger" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Red Flags -->
+                <div class="info-card info-card-danger">
+                    <h3 class="font-bold text-rose-800 text-xl mb-4 flex items-center gap-2">
+                        <span>🚑</span> 建議轉診/留院治療標準
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
+                            <strong class="text-rose-700 block mb-1">1. 生命徵象不穩定 (qSOFA ≥ 2)</strong>
+                            <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
+                                <li>意識改變 (Altered mental status)</li>
+                                <li>呼吸速率 ≥ 22 /min</li>
+                                <li>收縮壓 ≤ 100 mmHg</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
+                            <strong class="text-rose-700 block mb-1">2. 嚴重感染徵兆</strong>
+                            <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
+                                <li>Sepsis (全身性發炎反應 SIRS)</li>
+                                <li><strong>SSTI:</strong> 懷疑壞死性筋膜炎 (Vibrio vulnificus, Aeromonas, Clostridium spp.)、Fournier's gangrene</li>
+                                <li><strong>UTI:</strong> 腎膿瘍、急性腎衰竭</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
+                            <strong class="text-rose-700 block mb-1">3. 宿主危險因子</strong>
+                            <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
+                                <li>免疫不全 (化療、移植、HIV、糖尿病控制差)</li>
+                                <li><strong>近期 (90天內) 有 MDRO 紀錄</strong></li>
+                                <li>居家無法自理、無人照顧、依從性差</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MDRO Definitions (Complete) -->
+                <div class="info-card info-card-warning">
+                    <h3 class="font-bold text-amber-800 text-xl mb-4 flex items-center gap-2">
+                        <span>🦠</span> 多重抗藥性微生物 (MDRO) 定義
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-3">若病人近期培養出以下菌種，屬高風險群，建議調整經驗性抗生素並考慮轉診：</p>
+                    <div class="overflow-y-auto max-h-[600px] pr-2">
+                        <ul class="space-y-3">
+                            <li class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-amber-700 text-sm block">ESBL-E</strong>
+                                <span class="text-xs text-slate-600 block mb-1">Extended-spectrum β-lactamases-producing Enterobacterales</span>
+                            </li>
+                            
+                            <li class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-amber-700 text-sm block">AmpC-E</strong>
+                                <span class="text-xs text-slate-600 block mb-1">AmpC β-lactamases-producing Enterobacterales</span>
+                                <span class="text-[10px] text-slate-400 block bg-slate-50 p-1 rounded">
+                                    常見菌種：<em>Enterobacter cloacae</em>, <em>Klebsiella aerogenes</em>, <em>Citrobacter freundii</em>
+                                </span>
+                            </li>
+
+                            <li class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-amber-700 text-sm block">CRE / CPE</strong>
+                                <span class="text-xs text-slate-600 block mb-1">Carbapenem-resistant Enterobacterales</span>
+                                <span class="text-[10px] text-slate-400 block">對任何 Carbapenem (Ertapenem, Imipenem, Meropenem) 不具感受性。</span>
+                            </li>
+
+                            <li class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-amber-700 text-sm block">CRAB / CRPA</strong>
+                                <span class="text-xs text-slate-600 block">Carbapenem-resistant <em>A. baumannii</em> / <em>P. aeruginosa</em></span>
+                            </li>
+
+                            <li class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-amber-700 text-sm block">VRE</strong>
+                                <span class="text-xs text-slate-600 block mb-1">Vancomycin-resistant Enterococci</span>
+                                <span class="text-[10px] text-slate-400 block">對 Vancomycin 或 Teicoplanin 不具感受性。</span>
+                            </li>
+
+                            <li class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-amber-700 text-sm block">VISA</strong>
+                                <span class="text-xs text-slate-600 block mb-1">Vancomycin-intermediate <em>Staphylococcus aureus</em></span>
+                                <span class="text-[10px] text-slate-400 block">Vancomycin MIC = 4-8 mg/L 或 Teicoplanin MIC = 16 mg/L。</span>
+                            </li>
+
+                             <li class="bg-white p-3 rounded border border-amber-200">
+                                <strong class="text-amber-700 text-sm block">VRSA</strong>
+                                <span class="text-xs text-slate-600 block mb-1">Vancomycin-resistant <em>Staphylococcus aureus</em></span>
+                                <span class="text-[10px] text-slate-400 block">Vancomycin MIC ≥ 16 mg/L 或 Teicoplanin MIC ≥ 32 mg/L。</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 6: 實務操作數據 (Practical Data) -->
+        <!-- ========================================== -->
+        <div id="content-practical" class="tab-content">
+            
+            <!-- Renal Dosing -->
+            <section class="mb-8">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="bg-teal-600 text-white font-bold px-3 py-1 rounded-md text-base">腎功能劑量調整 (Renal Dosing)</div>
+                    <span class="text-xs text-slate-500">依據 CCr (mL/min) 調整</span>
+                </div>
+                
+                <div class="overflow-x-auto rounded-lg border border-teal-200 shadow-sm mb-6">
+                    <table class="modern-table text-sm">
+                        <thead>
+                            <tr class="bg-teal-50">
+                                <th>藥物</th>
+                                <th>> 50 (正常)</th>
+                                <th>10 - 50 (腎不全)</th>
+                                <th>< 10 / HD (洗腎)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-bold">Cefazolin (24hr cIF)</td>
+                                <td>6000 mg</td>
+                                <td>3000 mg</td>
+                                <td>1000 mg QD (非cIF)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold">Ceftriaxone (IV)</td>
+                                <td>2000 mg QD</td>
+                                <td>2000 mg QD</td>
+                                <td>2000 mg QD</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold">Ertapenem (IV)</td>
+                                <td>1000 mg QD</td>
+                                <td>500 mg QD (CCr<30)</td>
+                                <td>500 mg QD</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold">Amikacin (IV)</td>
+                                <td>15 mg/kg QD</td>
+                                <td>延長給藥間隔</td>
+                                <td>7.5 mg/kg (洗腎後)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 24hr cIF Info -->
+            <section>
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="bg-purple-600 text-white font-bold px-3 py-1 rounded-md text-base">藥物配製與穩定性詳情 (Reconstitution Details)</div>
+                </div>
+                
+                <div class="overflow-x-auto rounded-lg border border-purple-200 shadow-sm mb-6">
+                    <table class="modern-table text-sm">
+                        <thead>
+                            <tr class="bg-purple-50">
+                                <th>藥物</th>
+                                <th>建議稀釋液</th>
+                                <th>稀釋後濃度</th>
+                                <th>穩定性/備註</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="font-bold text-purple-900">Cefazolin</td>
+                                <td>NS / D5W</td>
+                                <td>20 mg/mL</td>
+                                <td><span class="text-emerald-600 font-bold">穩定</span> (pH 4.8-5.5)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-purple-900">Ceftriaxone</td>
+                                <td>D5W / NS</td>
+                                <td>20-40 mg/mL</td>
+                                <td>需滴注 30 分鐘以上</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-purple-900">Cefepime</td>
+                                <td>D5W / NS</td>
+                                <td>40 mg/mL</td>
+                                <td>24hr cIF 穩定</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-purple-900">Penicillin G</td>
+                                <td>NS / 0.45%S</td>
+                                <td>40,000 - 100,000 UI/mL</td>
+                                <td>高劑量需監測電解質</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-purple-900">Ertapenem</td>
+                                <td>NS (勿用D5W)</td>
+                                <td>20 mg/mL</td>
+                                <td>需滴注 30 分鐘以上</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-rose-50 p-4 rounded-xl border border-rose-200">
+                    <strong class="text-rose-800 block mb-2">血管炎風險 (Phlebitis)</strong>
+                    <p class="text-sm text-slate-700 mb-2">部分藥物若滲透壓過高 (>600 mOsm/L) 或 pH 值極端，易造成靜脈炎。</p>
+                    <ul class="list-disc pl-4 text-sm text-slate-700">
+                        <li><strong>高風險：</strong>Vancomycin, Ciprofloxacin, Amphotericin B.</li>
+                        <li><strong>相對安全：</strong>居家常用之 Beta-lactams (如 Cefazolin, Ceftriaxone)。</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 7: 名詞定義 (Definitions) -->
+        <!-- ========================================== -->
+        <div id="content-definitions" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div class="info-card info-card-blue">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3">居家感染症注射型抗生素</h3>
+                    <p class="text-sm text-slate-700 leading-relaxed">
+                        係指任何於醫院之外施行之注射抗生素治療，包含靜脈注射 (Intravenous, IV)、24小時持續靜脈輸注 (24hr cIF)、皮下注射 (Subcutaneous) 及肌肉注射 (Intramuscular)。
+                        <br><br>
+                        * 24小時持續靜脈輸注 (24hr cIF) 建議以國際期刊曾經報導之藥物為主，唯考量廠牌間產品之差異，使用前仍建議諮詢藥劑專家意見。
+                    </p>
+                </div>
+
+                <div class="info-card info-card-green">
+                    <h3 class="font-bold text-emerald-800 text-lg mb-3">肌酸酐廓清率 (CCr)</h3>
+                    <div class="bg-white p-3 rounded border border-emerald-100">
+                        <strong class="text-emerald-700 text-sm block mb-1">Cockcroft-Gault Equation</strong>
+                        <p class="text-xs font-mono bg-slate-50 p-2 rounded mb-2">
+                            (140 - Age) × Weight (kg)<br>
+                            --------------------------<br>
+                            72 × Serum Cr (mg/dL)
+                        </p>
+                        <p class="text-xs text-slate-500">* 女性 (Women) 需乘以 0.85</p>
+                    </div>
+                </div>
+
+                <div class="info-card info-card-danger">
+                    <h3 class="font-bold text-rose-800 text-lg mb-3">重症與敗血症相關評估</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-rose-300 pl-3">
+                            <strong class="text-rose-700 block text-sm">qSOFA (quick SOFA)</strong>
+                            <ul class="text-xs text-slate-700 list-disc pl-4 mt-1">
+                                <li>意識改變 (Consciousness alteration)</li>
+                                <li>呼吸速率 (Respiratory rate) > 22 /min</li>
+                                <li>收縮壓 (Systolic BP) ≤ 100 mmHg</li>
+                            </ul>
+                        </div>
+
+                        <div class="border-l-4 border-rose-300 pl-3">
+                            <strong class="text-rose-700 block text-sm">SIRS (全身性發炎反應)</strong>
+                            <ul class="text-xs text-slate-700 list-disc pl-4 mt-1">
+                                <li>體溫 > 38°C 或 < 36°C</li>
+                                <li>心跳 > 90 /min</li>
+                                <li>呼吸 > 20 /min 或 PaCO2 < 32 mmHg</li>
+                                <li>WBC > 12000 或 < 4000 或 Band form > 10%</li>
+                            </ul>
+                        </div>
+
+                        <div class="border-l-4 border-rose-300 pl-3">
+                            <strong class="text-rose-700 block text-sm">SOFA 評估項目</strong>
+                            <p class="text-xs text-slate-600 mt-1">
+                                1. 呼吸 (Respiration): PaO2/FiO2 < 400<br>
+                                2. 凝血 (Coagulation): Platelet < 150 x10³/µL<br>
+                                3. 肝臟 (Liver): Bilirubin ≥ 1.2 mg/dL<br>
+                                4. 心血管 (Cardiovascular): MAP < 70 mmHg<br>
+                                5. 腎臟 (Renal): Cr ≥ 1.2 mg/dL<br>
+                                6. 中樞神經 (CNS): GCS < 15
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card info-card-warning">
+                    <h3 class="font-bold text-amber-800 text-lg mb-3">其他重要定義</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <strong class="text-amber-700 text-sm border-b border-amber-200 pb-1 inline-block mb-1">控制不佳之糖尿病</strong>
+                            <p class="text-xs text-slate-700">
+                                依照美國糖尿病協會 (ADA) 之定義，係指糖化血色素 (HbA1c) 無法控制在 <strong>7.0% 以下</strong>。
+                            </p>
+                        </div>
+                        <div>
+                            <strong class="text-amber-700 text-sm border-b border-amber-200 pb-1 inline-block mb-1">糖尿病足部潰瘍 (DFU)</strong>
+                            <p class="text-xs text-slate-700">
+                                通常涉及表皮及部分真皮層，常發生於合併<strong>周邊神經病變 (Peripheral neuropathy)</strong> 及<strong>周邊動脈疾病 (PAD)</strong> 之患者。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 pt-6 border-t border-slate-200 text-center">
+            <div class="max-w-4xl mx-auto px-4">
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    <strong>免責聲明：</strong>本網站內容僅供醫療專業人員參考。所有劑量與治療建議請依據病患實際狀況、腎功能數據與最新仿單為準。
+                </p>
+                <p class="serif text-slate-400 text-xs italic mt-4">
+                    Based on 2024 Taiwan Guidelines for Empirical Parenteral Antibiotics out of Hospital.
+                </p>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Hospital Modal -->
+    <div id="hospital-items-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header bg-orange-50">
+                <h3 class="font-bold text-lg text-orange-800 flex items-center gap-2">
+                    <span>💊</span> 本院抗生素品項
+                </h3>
+                <button onclick="closeModal('hospital-items-modal')" class="text-slate-400 hover:text-slate-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="flex flex-col items-center justify-center text-slate-400 min-h-[200px] border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
+                    <p class="text-sm">請在此處插入醫院抗生素列表圖片</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diagnosis Modal -->
+    <div id="diagnosis-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="diag-title" class="font-bold text-lg text-slate-800">診斷與定義</h3>
+                <button onclick="closeModal('diagnosis-modal')" class="text-slate-400 hover:text-slate-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div id="diag-body" class="modal-body space-y-4">
+                <!-- Content injected via JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById('content-' + tabName).classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // Modal Logic
+        function openHospitalModal() {
+            const modal = document.getElementById('hospital-items-modal');
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.style.opacity = '1'; modal.firstElementChild.style.transform = 'scale(1)'; }, 10);
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.style.opacity = '0';
+            modal.firstElementChild.style.transform = 'scale(0.95)';
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
+        }
+
+        function showDiagnosis(type) {
+            const modal = document.getElementById('diagnosis-modal');
+            const title = document.getElementById('diag-title');
+            const body = document.getElementById('diag-body');
+            
+            let content = '';
+            
+            if (type === 'pneumonia') {
+                title.innerText = '肺炎 (Pneumonia) 診斷與分類';
+                content = `
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <strong class="text-blue-800 block mb-2">1. 肺炎診斷標準</strong>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><strong>急性下呼吸道症狀：</strong>咳嗽、膿痰、氣促、喘鳴、胸痛。</li>
+                            <li><strong>新的胸腔病徵：</strong>聽診囉音 (Crackles)、敲診濁音。</li>
+                            <li><strong>全身性症狀：</strong>發燒 (>38℃)、寒顫、疲倦。</li>
+                            <li><strong>影像學 (若有)：</strong>新出現的肺浸潤 (Infiltration)。</li>
+                        </ul>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="border-l-4 border-emerald-400 pl-3">
+                            <strong class="block text-slate-700">社區型肺炎 (CAP)</strong>
+                            <p class="text-slate-500 text-xs">指在醫院外感染的肺炎，不屬於 HCAP 的範疇。</p>
+                        </div>
+                        <div class="border-l-4 border-amber-400 pl-3">
+                            <strong class="block text-slate-700">健康照護相關肺炎 (HCAP)</strong>
+                            <p class="text-slate-500 text-xs">
+                                病人符合下列任一情況：<br>
+                                1. 住安養/長照機構者。<br>
+                                2. 90天內曾住院 > 2天。<br>
+                                3. 30天內接受過靜脈注射治療、化療、傷口照護。<br>
+                                4. 洗腎病人。
+                            </p>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'uti') {
+                title.innerText = '泌尿道感染 (UTI) 診斷與分類';
+                content = `
+                    <div class="bg-purple-50 p-4 rounded-lg mb-4">
+                        <strong class="text-purple-800 block mb-2">1. 臨床症狀</strong>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><strong>膀胱炎 (Cystitis)：</strong>頻尿、急尿、解尿痛、恥骨上疼痛。</li>
+                            <li><strong>腎盂腎炎 (Pyelonephritis)：</strong>發燒 (>38℃)、寒顫、腰痛 (Flank pain)、敲擊痛 (CV angle tenderness)。</li>
+                            <li><strong>尿道炎 (Urethritis)：</strong>尿道分泌物、排尿痛，需考慮性傳染病。</li>
+                        </ul>
+                    </div>
+                    <div class="bg-rose-50 p-4 rounded-lg mb-4">
+                         <strong class="text-rose-800 block mb-2">2. 複雜性泌尿道感染 (Complicated UTI)</strong>
+                         <p class="text-xs mb-2">凡符合以下任一條件即視為複雜性：</p>
+                         <ul class="list-disc pl-5 space-y-1 text-xs">
+                            <li>男性、懷孕婦女、兒童</li>
+                            <li>功能或解剖異常 (結石、阻塞、神經性膀胱)</li>
+                            <li>免疫不全 (糖尿病、腎衰竭)</li>
+                            <li>近期器械操作或留置導尿管</li>
+                         </ul>
+                    </div>
+                `;
+            } else if (type === 'ssti') {
+                title.innerText = '軟組織感染 (SSTI) 診斷與定義';
+                content = `
+                    <div class="space-y-4">
+                        <div class="border-l-4 border-blue-400 pl-3">
+                            <strong class="block text-slate-700">嚴重度分級</strong>
+                            <ul class="list-disc pl-5 text-sm text-slate-600 mt-1">
+                                <li><strong>Mild:</strong> 只有局部症狀，無全身性徵兆。</li>
+                                <li><strong>Moderate:</strong> 局部症狀 + 全身性徵兆 (發燒、心跳快、白血球升)。</li>
+                                <li><strong>Severe:</strong> 嚴重全身徵兆、免疫不全、壞死性筋膜炎徵象 (劇痛、皮下氣腫)。</li>
+                            </ul>
+                        </div>
+                        <div class="border-l-4 border-purple-400 pl-3">
+                            <strong class="block text-slate-700">皮膚膿瘍 (Abscess)</strong>
+                            <p class="text-slate-600 text-sm">
+                                真皮層或皮下組織的膿液堆積。特徵為波動感 (Fluctuant) 的紅腫結節。
+                                <br><span class="text-purple-600 font-bold">治療關鍵是切開引流 (I&D)。</span>
+                            </p>
+                        </div>
+                        <div class="border-l-4 border-amber-400 pl-3">
+                            <strong class="block text-slate-700">糖尿病足感染 (DFI)</strong>
+                            <p class="text-slate-600 text-sm">
+                                發生在糖尿病患者足部的感染，常伴隨周邊神經病變或血管病變。
+                                <br>若有深部組織(骨頭、肌腱)暴露，需懷疑骨髓炎。
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            body.innerHTML = content;
+            modal.style.display = 'flex';
+            setTimeout(() => { modal.style.opacity = '1'; modal.firstElementChild.style.transform = 'scale(1)'; }, 10);
+        }
+
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', function(e) {
+                if (e.target === this) closeModal(this.id);
+            });
+        });
+    </script>
+</body>
+</html>
