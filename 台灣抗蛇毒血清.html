@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣抗蛇毒血清臨床指引</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #334155; /* Slate 700 */
+            --bg-color: #f8fafc;      /* Slate 50 - Neutral Low Saturation */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Noto Sans TC', sans-serif;
+            color: #334155;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        .serif { font-family: 'Noto Serif TC', serif; }
+
+        .journal-card {
+            background-color: #ffffff;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+            border-top: 6px solid #475569; /* Neutral Grey Header */
+        }
+
+        /* 標籤 Badge 樣式 - 對應修正後的血清顏色 (Low Saturation) */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        /* 1. 抗出血性 (龜殼花/赤尾鮐) -> 紅色 */
+        .badge-hemorrhagic { background-color: #ffe4e6; color: #9f1239; border: 1px solid #fecdd3; } /* Rose */
+        .dt-hemorrhagic { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; }
+        .info-card-hemorrhagic { border-left-color: #e11d48; background-color: #fff1f2; }
+
+        /* 2. 抗神經性 (雨傘節/飯匙倩) -> 黃色 (使用 Amber 以確保閱讀清晰度) */
+        .badge-neuro { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; } /* Amber */
+        .dt-neuro { background: #fffbeb; color: #d97706; border: 1px solid #fcd34d; }
+        .info-card-neuro { border-left-color: #f59e0b; background-color: #fffbf0; }
+
+        /* 3. 抗百步蛇 -> 綠色 */
+        .badge-acutus { background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; } /* Emerald */
+        .dt-acutus { background: #d1fae5; color: #059669; border: 1px solid #6ee7b7; }
+        .info-card-acutus { border-left-color: #10b981; background-color: #f0fdf9; }
+
+        /* 4. 抗鎖鏈蛇 -> 紫色 */
+        .badge-russell { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; } /* Purple */
+        .dt-russell { background: #f3e8ff; color: #9333ea; border: 1px solid #c084fc; }
+        .info-card-russell { border-left-color: #a855f7; background-color: #faf5ff; }
+
+        .badge-neutral { background-color: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+        /* Serum Tags Base */
+        .drug-tag { font-size: 0.85rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; display: inline-block; margin-right: 4px; width: 100%; text-align: center;}
+
+        /* Tab 樣式 */
+        .nav-container {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+        .nav-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 500;
+            color: #64748b;
+            background-color: #f8fafc;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .tab-btn:hover {
+            background-color: #e2e8f0;
+            color: #1e293b;
+            transform: translateY(-1px);
+        }
+
+        .tab-btn.active {
+            background-color: #475569;
+            color: white;
+            border-color: #475569;
+            box-shadow: 0 4px 6px -1px rgba(71, 85, 105, 0.3);
+            font-weight: 700;
+        }
+
+        /* 統一風格的資訊卡 */
+        .info-card {
+            border-left-width: 4px;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            height: 100%;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid; 
+        }
+        .info-card-warning { border-left-color: #f59e0b; background-color: #fffbeb; }
+        
+        /* 表格優化 */
+        .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .modern-table th {
+            font-family: 'Noto Serif TC', serif;
+            color: #475569;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            background-color: #f8fafc;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            font-size: 0.95rem;
+        }
+        .modern-table td {
+            padding: 1rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+            background-color: white;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .modern-table tr:hover td { background-color: #f8fafc; }
+        .modern-table tr:last-child td { border-bottom: none; }
+
+        /* Snake Name Uniform Style */
+        .snake-name {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #334155;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .snake-sub {
+            font-size: 0.8rem;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        /* DIAGNOSTIC MAP */
+        .diag-container {
+            background-color: #f8fafc; 
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+            height: 500px;
+        }
+        
+        .diag-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #e2e8f0;
+            border-bottom: 4px solid #64748b;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .diag-label {
+            background: #fff;
+            padding: 2px 12px;
+            border-radius: 20px;
+            color: #475569;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Interactive Nodes */
+        .diag-node {
+            position: absolute;
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 12px;
+            padding: 10px;
+            width: 160px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            z-index: 20;
+        }
+        
+        .diag-node:hover, .diag-node.active-step {
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+            border-color: #475569;
+            z-index: 30;
+        }
+
+        .diag-icon {
+            display: inline-block;
+            font-size: 1.5rem;
+            margin-bottom: 4px;
+        }
+        
+        .diag-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
+            line-height: 1.2;
+        }
+        
+        .diag-subtitle {
+            font-size: 0.7rem;
+            margin-top: 4px;
+            color: #64748b;
+        }
+
+        /* SVG Overlay for Arrows */
+        .moa-svg-overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .arrow-path {
+            fill: none;
+            stroke: #cbd5e1;
+            stroke-width: 2;
+            stroke-dasharray: 6 4;
+        }
+        .arrow-head {
+            fill: #cbd5e1;
+        }
+
+        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in; }
+        .tab-content.active { display: block; opacity: 1; }
+        
+        .ref-section {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-style: italic;
+        }
+        
+        /* Action Button Styles */
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-link {
+            background-color: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-link:hover { background-color: #e2e8f0; }
+        
+        .btn-img {
+            background-color: #fff7ed;
+            color: #9a3412;
+            border: 1px solid #fed7aa;
+        }
+        .btn-img:hover { background-color: #ffedd5; }
+
+        /* Snake Card Styles */
+        .snake-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .snake-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .snake-img-wrapper {
+            width: 100%;
+            height: 180px;
+            overflow: hidden;
+            background-color: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .snake-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.3s ease;
+        }
+        .snake-card:hover .snake-img-wrapper img {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
+
+    <main class="journal-card w-full max-w-7xl rounded-2xl p-6 md:p-10 relative overflow-hidden bg-white">
+        
+        <!-- Action Buttons Row -->
+        <div class="flex gap-3 mb-4 relative z-20">
+            <a href="https://wd.vghtpe.gov.tw/CT/Fpage.action?muid=14452&fid=13253" target="_blank" class="action-btn btn-link">
+                <span>🔗</span> 臺北榮總臨床毒藥物諮詢中心
+            </a>
+            <a href="https://www.pcc-vghtpe.tw/antidote/page_list.php?Class1=18" target="_blank" class="action-btn btn-img">
+                <span>📦</span> 全國解毒劑儲備網
+            </a>
+        </div>
+
+        <!-- Header -->
+        <header class="mb-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-slate-100">
+                <div>
+                    <h2 class="text-xs font-bold tracking-widest text-slate-500 uppercase mb-2">Clinical Toxicology Guide</h2>
+                    <h1 class="serif text-3xl md:text-4xl text-slate-800 leading-tight font-bold">
+                        台灣抗蛇毒血清
+                    </h1>
+                </div>
+                <div class="text-right hidden md:block">
+                    <p class="text-slate-400 text-sm font-light">Taiwan Snake Antivenom Management</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">資料來源 : 疾管署 / 台北榮總臨床毒物科</p>
+                    <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師 更新日期 : 2026/01/09</p>
+                </div>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="nav-container mt-6">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active">血清綜合比較</button>
+                <button onclick="switchTab('details')" id="tab-details" class="tab-btn">四大血清詳解</button>
+                <button onclick="switchTab('syndromic')" id="tab-syndromic" class="tab-btn">鑑別診斷流程</button>
+                <button onclick="switchTab('snakes')" id="tab-snakes" class="tab-btn">毒蛇辨識圖鑑</button>
+                <button onclick="switchTab('admin')" id="tab-admin" class="tab-btn">給藥與過敏處置</button>
+                <button onclick="switchTab('education')" id="tab-education" class="tab-btn">藥檔與衛教</button> <!-- 新增頁籤按鈕 -->
+                <button onclick="switchTab('others')" id="tab-others" class="tab-btn">其他臨床重點</button>
+                <button onclick="switchTab('special')" id="tab-special" class="tab-btn">特殊族群</button>
+            </nav>
+        </header>
+
+        <!-- ========================================== -->
+        <!-- TAB 1: 血清綜合比較 (Overview) -->
+        <!-- ========================================== -->
+        <div id="content-overview" class="tab-content active">
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <!-- FH (Red) -->
+                <div class="p-4 rounded-xl bg-rose-50 border border-rose-100 text-center">
+                    <h3 class="text-rose-800 font-bold mb-1 text-sm">抗出血性血清 (紅色)</h3>
+                    <p class="text-lg font-bold text-rose-600 my-1 leading-tight">
+                        抗龜殼花及<br>赤尾鮐蛇毒血清
+                    </p>
+                    <p class="text-[10px] text-rose-700 opacity-80 mt-1">龜殼花 / 赤尾青竹絲</p>
+                </div>
+                <!-- NC (Yellow) -->
+                <div class="p-4 rounded-xl bg-amber-50 border border-amber-100 text-center">
+                    <h3 class="text-amber-800 font-bold mb-1 text-sm">抗神經性血清 (黃色)</h3>
+                    <p class="text-lg font-bold text-amber-600 my-1 leading-tight">
+                        抗雨傘節及<br>飯匙倩蛇毒血清
+                    </p>
+                    <p class="text-[10px] text-amber-700 opacity-80 mt-1">雨傘節 / 眼鏡蛇</p>
+                </div>
+                <!-- DA (Green) -->
+                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                    <h3 class="text-emerald-800 font-bold mb-1 text-sm">抗百步蛇毒血清 (綠色)</h3>
+                    <p class="text-lg font-bold text-emerald-600 my-1 leading-tight">
+                        抗百步蛇毒血清
+                    </p>
+                    <p class="text-[10px] text-emerald-700 opacity-80 mt-1">百步蛇 (專用)</p>
+                </div>
+                <!-- DS (Purple) -->
+                <div class="p-4 rounded-xl bg-purple-50 border border-purple-100 text-center">
+                    <h3 class="text-purple-800 font-bold mb-1 text-sm">抗鎖鏈蛇毒血清 (紫色)</h3>
+                    <p class="text-lg font-bold text-purple-600 my-1 leading-tight">
+                        抗鎖鏈蛇毒血清
+                    </p>
+                    <p class="text-[10px] text-purple-700 opacity-80 mt-1">鎖鏈蛇 (專用)</p>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
+                <table class="modern-table min-w-full">
+                    <thead>
+                        <tr>
+                            <th class="w-[25%]">血清名稱</th>
+                            <th class="w-[25%]">涵蓋蛇種</th>
+                            <th class="w-[10%]">外盒顏色</th>
+                            <th class="w-[15%]">建議劑量</th>
+                            <th class="w-[25%]">臨床特徵</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-slate-700 text-sm">
+                        
+                        <!-- FH (Red) -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-hemorrhagic">抗龜殼花及赤尾鮐蛇毒血清</span><br>
+                                <span class="text-xs text-slate-500 pl-1">(俗稱: 抗出血性血清)</span>
+                            </td>
+                            <td>
+                                <span class="snake-name">龜殼花</span>
+                                <span class="snake-name">赤尾青竹絲</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-hemorrhagic">紅色</span>
+                            </td>
+                            <td>
+                                <span class="text-rose-700 font-bold text-xs">赤尾鮐 1-2 瓶</span><br>
+                                <span class="text-rose-700 font-bold text-xs">龜殼花 2-4 瓶</span>
+                            </td>
+                            <td class="text-xs">
+                                <span class="text-slate-600">● 腫脹、疼痛、瘀血</span><br>
+                                <span class="text-slate-600">● 中和出血性毒素</span>
+                            </td>
+                        </tr>
+
+                        <!-- NC (Yellow) -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-neuro">抗雨傘節及飯匙倩蛇毒血清</span><br>
+                                <span class="text-xs text-slate-500 pl-1">(俗稱: 抗神經性血清)</span>
+                            </td>
+                            <td>
+                                <span class="snake-name">雨傘節</span>
+                                <span class="snake-name">眼鏡蛇 (飯匙倩)</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-neuro">黃色</span>
+                            </td>
+                            <td>
+                                <span class="text-amber-700 font-bold text-xs">雨傘節 2-4 瓶</span><br>
+                                <span class="text-amber-700 font-bold text-xs">眼鏡蛇 6-10 瓶</span>
+                            </td>
+                            <td class="text-xs">
+                                <span class="text-amber-600">● 神經毒素 (呼吸衰竭)</span><br>
+                                <span class="text-slate-600">● 眼鏡蛇兼具組織壞死</span>
+                            </td>
+                        </tr>
+
+                        <!-- DA (Green) -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-acutus">抗百步蛇毒血清</span>
+                            </td>
+                            <td>
+                                <span class="snake-name">百步蛇</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-acutus">綠色</span>
+                            </td>
+                            <td>
+                                <span class="text-emerald-700 font-bold">2-4 瓶</span>
+                            </td>
+                            <td class="text-xs">
+                                <span class="text-slate-600">● 劇烈疼痛、水泡血泡</span><br>
+                                <span class="text-emerald-600">● 嚴重凝血功能異常</span>
+                            </td>
+                        </tr>
+
+                        <!-- DS (Purple) -->
+                        <tr>
+                            <td>
+                                <span class="drug-tag dt-russell">抗鎖鏈蛇毒血清</span>
+                            </td>
+                            <td>
+                                <span class="snake-name">鎖鏈蛇</span>
+                            </td>
+                            <td>
+                                <span class="badge badge-russell">紫色</span>
+                            </td>
+                            <td>
+                                <span class="text-purple-700 font-bold">2-4 瓶</span>
+                            </td>
+                            <td class="text-xs">
+                                <span class="text-purple-600">● 嚴重的腎臟傷害</span><br>
+                                <span class="text-slate-600">● DIC 全身性出血</span>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+            <div class="ref-section">註：抗鎖鏈蛇毒血清為罕見藥物，配置院所須具備腎功能監測能力。</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 2: 四大血清詳解 (Details) -->
+        <!-- ========================================== -->
+        <div id="content-details" class="tab-content">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- FH Card (Red) -->
+                <div class="info-card info-card-hemorrhagic flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-rose-200 pb-2">
+                        <h3 class="font-bold text-rose-800 text-lg">抗龜殼花及赤尾鮐蛇毒血清 (紅色)</h3>
+                        <span class="badge badge-hemorrhagic">No.1 常見</span>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>適用蛇種：</strong><span class="snake-name inline">龜殼花</span>、<span class="snake-name inline">赤尾青竹絲</span>。</p>
+                         <div class="bg-rose-50 p-2 rounded border border-rose-200">
+                            <strong class="text-rose-800 block mb-1">治療原理：</strong>
+                            <p class="text-xs text-slate-600">中和導致疼痛、腫脹、出血、水泡及凝血功能異常等出血性毒素。</p>
+                        </div>
+                        <div class="bg-white p-2 rounded border border-rose-100">
+                            <strong class="block text-rose-700 mb-1">建議劑量與處置：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li><strong>赤尾青竹絲：</strong>建議 <strong>1-2 瓶</strong>。症狀通常較輕微，若腫脹不明顯可觀察。</li>
+                                <li><strong>龜殼花：</strong>建議 <strong>2-4 瓶</strong>。毒性較強，易造成組織壞死。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NC Card (Yellow) -->
+                <div class="info-card info-card-neuro flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-amber-200 pb-2">
+                        <h3 class="font-bold text-amber-800 text-lg">抗雨傘節及飯匙倩蛇毒血清 (黃色)</h3>
+                        <span class="badge badge-neuro">最危險</span>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>適用蛇種：</strong><span class="snake-name inline">雨傘節</span>、<span class="snake-name inline">眼鏡蛇 (飯匙倩)</span>。</p>
+                         <div class="bg-amber-50 p-2 rounded border border-amber-200">
+                            <strong class="text-amber-800 block mb-1">治療原理：</strong>
+                            <p class="text-xs text-slate-600">中和神經性毒素（阻斷神經傳導、造成肌肉無力、麻痺、吞嚥困難及呼吸衰竭）。</p>
+                        </div>
+                        <div class="bg-white p-2 rounded border border-amber-100">
+                            <strong class="text-amber-800 block mb-1">建議劑量與注意事項：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li><strong>眼鏡蛇：</strong>建議 <strong>6-10 瓶</strong>。台灣眼鏡蛇主要造成<strong>嚴重潰爛與組織壞死</strong>，劑量需較高。</li>
+                                <li><strong>雨傘節：</strong>建議 <strong>2-4 瓶</strong>。傷口不痛，注意呼吸衰竭徵兆，必要時插管。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DA Card (Green) -->
+                <div class="info-card info-card-acutus flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-emerald-200 pb-2">
+                        <h3 class="font-bold text-emerald-800 text-lg">抗百步蛇毒血清 (綠色)</h3>
+                        <span class="badge badge-acutus">致死率高</span>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>適用蛇種：</strong><span class="snake-name inline">百步蛇 (專用)</span>。</p>
+                        <div class="bg-emerald-50 p-2 rounded border border-emerald-200">
+                            <strong class="text-emerald-800 block mb-1">治療原理：</strong>
+                            <p class="text-xs text-slate-600">中和造成劇烈疼痛、迅速腫脹、水泡、血泡及全身凝血功能嚴重異常的毒素。</p>
+                        </div>
+                        <div class="bg-white p-2 rounded border border-emerald-100 mb-2">
+                            <strong class="block text-emerald-700 mb-1">建議劑量與監測：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li>建議劑量：<strong>2-4 瓶</strong>。</li>
+                                <li>重點監測：血小板 (Platelet) 下降、凝血功能 (PT/APTT) 延長。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DS Card (Purple) -->
+                <div class="info-card info-card-russell flex flex-col gap-3">
+                    <div class="flex justify-between items-center border-b border-purple-200 pb-2">
+                        <h3 class="font-bold text-purple-800 text-lg">抗鎖鏈蛇毒血清 (紫色)</h3>
+                        <span class="badge badge-russell">花東/南部</span>
+                    </div>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p><strong>適用蛇種：</strong><span class="snake-name inline">鎖鏈蛇 (專用)</span>。</p>
+                        <div class="bg-purple-50 p-2 rounded border border-purple-200">
+                            <strong class="text-purple-800 block mb-1">治療原理：</strong>
+                            <p class="text-xs text-slate-600">改善全身性出血、凝血功能異常及<strong>嚴重的腎臟傷害</strong>。目標是改善擴散性血管內凝血（DIC）。</p>
+                        </div>
+                         <div class="bg-white p-2 rounded border border-purple-100">
+                            <strong class="text-purple-800 block mb-1">建議劑量與注意事項：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li>建議劑量：<strong>2-4 瓶</strong>。</li>
+                                <li>特殊注意：屬罕見藥物。醫療院所必須具備<strong>腎功能監測能力</strong>，密切注意 AKI 與排尿量。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: 鑑別診斷流程 (Syndromic Approach) -->
+        <!-- ========================================== -->
+        <div id="content-syndromic" class="tab-content">
+            
+            <!-- 新增：臺北榮總流程圖按鈕 -->
+            <button onclick="openPccModal()" class="w-full mb-6 py-3 px-4 bg-teal-600 hover:bg-teal-700 text-white rounded-lg shadow-md font-bold flex items-center justify-center gap-2 transition-all">
+                <span>📋</span> 臺北榮總臨床毒藥物諮詢中心-毒蛇咬傷處置流程
+            </button>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Interactive Map Container -->
+                <div class="lg:col-span-2 diag-container shadow-lg">
+                    
+                    <!-- Header -->
+                    <div class="diag-header">
+                        <span class="diag-label">SYNDROMIC DIAGNOSIS</span>
+                    </div>
+
+                    <!-- SVG Overlay for Arrows -->
+                    <svg class="moa-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <!-- Unknown Snake -> Pain/Swelling -->
+                        <path d="M 50,15 Q 25,30 20,40" class="arrow-path" />
+                        <polygon points="20,40 18,37 22,37" class="arrow-head" />
+
+                        <!-- Unknown Snake -> Neuro -->
+                        <path d="M 50,15 Q 75,30 80,40" class="arrow-path" />
+                        <polygon points="80,40 78,37 82,37" class="arrow-head" />
+                        
+                        <!-- Pain/Swelling -> Tissue Necrosis -->
+                        <path d="M 20,55 Q 20,65 30,75" class="arrow-path" />
+
+                         <!-- Neuro -> Paralysis -->
+                        <path d="M 80,55 Q 80,65 70,75" class="arrow-path" />
+                    </svg>
+
+                    <!-- STEP 1: START -->
+                    <div class="diag-node" style="top: 10%; left: 50%; transform: translateX(-50%); width: 140px; border-color: #334155;" onclick="showDetail('Start')">
+                        <div class="diag-icon">🐍</div>
+                        <div class="diag-title">毒蛇咬傷<br>種類不明</div>
+                    </div>
+
+                    <!-- BRANCH A: Pain & Swelling (Red) -->
+                    <div class="diag-node" style="top: 40%; left: 10%; border-color: #be123c;" onclick="showDetail('Hemo')">
+                        <div class="diag-icon">🩸</div>
+                        <div class="diag-title" style="color:#be123c;">劇痛、腫脹<br>出血毒性</div>
+                    </div>
+
+                    <!-- BRANCH B: Neuro Symptoms (Amber) -->
+                    <div class="diag-node" style="top: 40%; right: 10%; border-color: #b45309;" onclick="showDetail('Neuro')">
+                        <div class="diag-icon">🧠</div>
+                        <div class="diag-title" style="color:#b45309;">傷口不痛<br>神經毒性</div>
+                    </div>
+
+                    <!-- Outcome A1: Cobra (Yellow/Amber - Necrotic) -->
+                    <div class="diag-node" style="bottom: 10%; left: 25%; border-color: #d97706;" onclick="showDetail('Cobra')">
+                        <div class="diag-title">組織潰爛壞死</div>
+                        <div class="diag-subtitle">眼鏡蛇 (用黃色血清)</div>
+                    </div>
+
+                    <!-- Outcome B1: Russell's (Purple - Renal) -->
+                    <div class="diag-node" style="bottom: 10%; right: 25%; border-color: #7e22ce;" onclick="showDetail('Russell')">
+                        <div class="diag-title">伴隨腎衰竭</div>
+                        <div class="diag-subtitle">鎖鏈蛇 (用紫色血清)</div>
+                    </div>
+
+                </div>
+
+                <!-- Detail Panel -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white border border-slate-200 rounded-xl p-6 h-full shadow-sm flex flex-col">
+                        <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                            <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">💡</span>
+                            <h4 class="serif text-slate-800 font-bold text-lg">診斷建議</h4>
+                        </div>
+                        
+                        <div id="diag-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                            <div>
+                                <p class="mb-2 font-bold text-slate-400">Interactive Guide</p>
+                                <p>請點擊左側流程圖的節點<br>查看對應的判斷邏輯與建議</p>
+                            </div>
+                        </div>
+
+                        <div id="diag-detail-content" class="hidden animate-fade-in">
+                            <h5 id="diag-title" class="text-slate-700 font-bold text-lg mb-3"></h5>
+                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 mb-4">
+                                <p id="diag-desc" class="text-slate-700 text-sm leading-relaxed"></p>
+                            </div>
+                            <div class="border-l-4 border-slate-400 pl-3">
+                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">建議處置</p>
+                                <p id="diag-impact" class="text-sm text-slate-600 font-medium"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             <div class="ref-section">Ref: 台北榮總臨床毒藥物諮詢中心 - 毒蛇咬傷臨床治療指引。</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB NEW: 毒蛇辨識圖鑑 (Snake ID) -->
+        <!-- ========================================== -->
+        <div id="content-snakes" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- 赤尾青竹絲 -->
+                <div class="snake-card border-green-200">
+                    <div class="snake-img-wrapper">
+                        <!-- !! 請將下方的 src 替換為您的圖片網址 (赤尾青竹絲) !! -->
+                        <img src="https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2F9714791a-21ab-40d9-a227-f11a15957a96.png&width=740&sign=w-JI15gW3KGUmckXObwTy9XKVDrrFeABnDJNtc_fByA" alt="赤尾青竹絲" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-green-800 text-lg mb-1">赤尾青竹絲</h4>
+                        <p class="text-xs text-slate-500 italic mb-2">Trimeresurus stejnegeri</p>
+                        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                            <li><strong>外觀：</strong>頭部呈三角形，全身翠綠，眼睛紅色（赤尾鮐）。</li>
+                            <li><strong>特徵：</strong>尾巴末端呈磚紅色。腹側有一條白色或紅白相間的側線。</li>
+                            <li><strong>習性：</strong>喜攀爬樹木或待在潮濕處。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 龜殼花 -->
+                <div class="snake-card border-amber-200">
+                    <div class="snake-img-wrapper">
+                         <!-- !! 請將下方的 src 替換為您的圖片網址 (龜殼花) !! -->
+                         <img src="https://images.vocus.cc/a5a379fa-36fa-45fe-82f1-fd941c926165.png" alt="龜殼花" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-amber-900 text-lg mb-1">龜殼花</h4>
+                        <p class="text-xs text-slate-500 italic mb-2">Protobothrops mucrosquamatus</p>
+                        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                            <li><strong>外觀：</strong>頭大呈銳角三角形。</li>
+                            <li><strong>特徵：</strong>背部中央有一行深咖啡色、波浪狀或不規則的斑紋，形似龜殼花紋。</li>
+                            <li><strong>習性：</strong>具攻擊性，常見於住家周圍或廢棄物堆。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 雨傘節 -->
+                <div class="snake-card border-slate-200">
+                    <div class="snake-img-wrapper">
+                        <!-- !! 請將下方的 src 替換為您的圖片網址 (雨傘節) !! -->
+                        <img src="https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2Fada2e996-710b-4652-9913-1620c1571afb.png&width=740&sign=cBwfhXvdpnWGcrjR0rpqnLX1_Mw8ty8pbdpYgAco0AY" alt="雨傘節" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-slate-900 text-lg mb-1">雨傘節</h4>
+                        <p class="text-xs text-slate-500 italic mb-2">Bungarus multicinctus</p>
+                        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                            <li><strong>外觀：</strong>頭部橢圓形（非三角形），黑白相間環紋明顯。</li>
+                            <li><strong>特徵：</strong>背部中央鱗片呈六角形擴大。</li>
+                            <li><strong>習性：</strong>性情溫馴，但毒性極強（神經毒）。夜行性。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 眼鏡蛇 -->
+                <div class="snake-card border-slate-300">
+                    <div class="snake-img-wrapper">
+                         <!-- !! 請將下方的 src 替換為您的圖片網址 (眼鏡蛇) !! -->
+                         <img src="https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2F91d32f43-7bb4-4499-9135-d51b7099b7b5.png&width=740&sign=c9sbJXkrGPs1314hrM3yjajJXkD9o95KuNZSrBxg9zE" alt="眼鏡蛇" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-slate-800 text-lg mb-1">眼鏡蛇 (飯匙倩)</h4>
+                        <p class="text-xs text-slate-500 italic mb-2">Naja atra</p>
+                        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                            <li><strong>外觀：</strong>受驚嚇時頸部會擴張並抬起身體。</li>
+                            <li><strong>特徵：</strong>擴張的頸背部有白色橫紋（像眼鏡或面具）。</li>
+                            <li><strong>習性：</strong>日間活動為主，受威脅會發出噴氣聲。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 百步蛇 -->
+                <div class="snake-card border-rose-200">
+                    <div class="snake-img-wrapper">
+                         <!-- !! 請將下方的 src 替換為您的圖片網址 (百步蛇) !! -->
+                         <img src="https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2F3c58e7ab-f487-476f-b9f1-8cca762d4769.png&width=740&sign=qodVq13ekC8VYq6hJtChht4W6c_yeSJIfJYyrFva8I0" alt="百步蛇" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-rose-900 text-lg mb-1">百步蛇</h4>
+                        <p class="text-xs text-slate-500 italic mb-2">Deinagkistrodon acutus</p>
+                        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                            <li><strong>外觀：</strong>頭部巨大呈三角形，吻端向上尖翹（翹鼻）。</li>
+                            <li><strong>特徵：</strong>身體兩側有三角形深褐色斑紋（像御飯糰）。</li>
+                            <li><strong>習性：</strong>體型粗壯，攻擊速度極快。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 鎖鏈蛇 -->
+                <div class="snake-card border-purple-200">
+                    <div class="snake-img-wrapper">
+                         <!-- !! 請將下方的 src 替換為您的圖片網址 (鎖鏈蛇) !! -->
+                         <img src="https://resize-image.vocus.cc/resize?compression=6&norotation=true&url=https%3A%2F%2Fimages.vocus.cc%2F4e26279c-5d95-4c73-b571-f90079c0ceb0.png&width=740&sign=C6OI_TWOjNUYYito1N74J4xQmyn4KpbXbIOKWYo8fDs" alt="鎖鏈蛇" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h4 class="font-bold text-purple-900 text-lg mb-1">鎖鏈蛇</h4>
+                        <p class="text-xs text-slate-500 italic mb-2">Daboia siamensis</p>
+                        <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                            <li><strong>外觀：</strong>身體底色為灰褐色。</li>
+                            <li><strong>特徵：</strong>背部有三縱列暗色、鑲白邊的橢圓形或圓形斑紋，形似鎖鏈。</li>
+                            <li><strong>習性：</strong>受驚嚇時會發出很大的嘶嘶聲。</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+            <div class="ref-section">圖片來源請參考各大醫院毒藥物中心或相關生物圖鑑。實際辨識請務必小心，勿靠近毒蛇。</div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 4: 給藥與過敏處置 (Administration) -->
+        <!-- ========================================== -->
+        <div id="content-admin" class="tab-content">
+            <div class="space-y-6">
+                
+                <!-- Skin Test Warning (Modified Icon) -->
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
+                    <!-- Icon container modified - No circle background -->
+                    <div class="shrink-0 text-6xl text-rose-600">
+                        🚫
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">不建議常規做皮膚測試 (No Skin Test)</h3>
+                        <p class="text-slate-700 mb-2">台北榮總臨床毒物科指引明確建議：<span class="font-bold underline">不要</span>進行皮膚敏感測試。</p>
+                        <ul class="list-disc pl-5 text-sm text-slate-600">
+                            <li>皮試陰性仍可能過敏 (False Negative)。</li>
+                            <li>皮試陽性仍必須給藥 (血清是唯一解藥)。</li>
+                            <li>會延誤黃金給藥時間。</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Admin Protocol -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Dosing & Prep -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+                        <h3 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
+                            <span>💉</span> 給藥方式 (Administration)
+                        </h3>
+                        <ul class="space-y-4 text-sm text-slate-700">
+                            <li class="flex gap-2 border-b border-slate-100 pb-2">
+                                <span class="font-bold min-w-[4rem] text-teal-700">唯一途徑</span>
+                                <span><strong class="text-slate-900">靜脈輸注 (IV Infusion)</strong>。<br><span class="text-xs text-rose-600">※ 嚴禁局部注射或肌肉注射 (見下方說明)。</span></span>
+                            </li>
+                            <li class="flex gap-2 border-b border-slate-100 pb-2">
+                                <span class="font-bold min-w-[4rem] text-teal-700">配製法</span>
+                                <span>將凍晶溶於 <strong>50~100 mL</strong> N/S 中 (兒童可減量至 20-50 mL)。<br><span class="text-xs text-slate-500">註：若不稀釋直接 IV 推注 (IV push)，副作用風險較高，僅限於極度緊急狀況且由專家評估。</span></span>
+                            </li>
+                            <li class="flex gap-2">
+                                <span class="font-bold min-w-[4rem] text-teal-700">輸注速率</span>
+                                <span>
+                                    採 <strong>"Start Low, Go Slow"</strong> 原則：
+                                    <ul class="list-decimal pl-4 mt-1 space-y-1">
+                                        <li><strong>前 10-15 分鐘 (測試劑量)：</strong>極慢速滴注 (如 1 mL/min 或更慢)，嚴密監測過敏反應。</li>
+                                        <li><strong>若無不適：</strong>調快滴速，於 <strong>30-60 分鐘內</strong> 輸注完畢。</li>
+                                    </ul>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Anaphylaxis & Serum Sickness -->
+                    <div class="bg-white rounded-xl border border-rose-200 shadow-sm p-5">
+                        <h3 class="font-bold text-rose-800 mb-3 flex items-center gap-2">
+                            <span>⚡</span> 過敏反應處置
+                        </h3>
+                        <div class="text-sm text-slate-700 space-y-4">
+                            <div>
+                                <strong class="block text-rose-700 mb-1">1. 立即性過敏 (Anaphylaxis)</strong>
+                                <p class="text-xs mb-1">發生於輸注中或剛結束。</p>
+                                <ul class="list-disc pl-5 text-xs">
+                                    <li>暫停輸注。</li>
+                                    <li class="font-bold text-rose-700">注射前在病人身邊備妥 1:1000 Epinephrine 針劑，以便產生過敏時緊急使用。</li>
+                                    <li>若發生過敏休克，給予 <strong>IM Epinephrine</strong> (成人 0.3-0.5mg)。</li>
+                                    <li>給予 Antihistamine & Steroid。</li>
+                                    <li>症狀穩定後，評估風險重新慢速輸注 (Save life first)。</li>
+                                </ul>
+                            </div>
+                            <div class="border-t border-rose-100 pt-3">
+                                <strong class="block text-slate-700 mb-1">2. 血清病 (Serum Sickness)</strong>
+                                <p class="text-xs mb-1">發生於注射後 <strong>5-14 天</strong> (延遲反應)。</p>
+                                <ul class="list-disc pl-5 text-xs text-slate-600">
+                                    <li>症狀：發燒、蕁麻疹、關節痛、淋巴腫大。</li>
+                                    <li>處置：口服類固醇 (Steroids) 與抗組織胺，治療約 1-2 週。</li>
+                                    <li>衛教：出院時需告知病患此可能性。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Myth Busting Section (New) -->
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mt-4">
+                    <h3 class="font-bold text-amber-900 text-lg mb-3 flex items-center gap-2">
+                        <span>💡</span> 觀念釐清：為什麼網路上說可以局部/肌肉注射？
+                    </h3>
+                    <p class="text-sm text-slate-700 mb-3 font-medium">
+                        那是舊觀念！現代指引強烈建議 <span class="text-rose-700 font-bold">不要</span> 這樣做，理由如下：
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div class="bg-white p-3 rounded border border-amber-100">
+                            <strong class="text-amber-800 block mb-1">1. 局部注射 (Local Injection) 的危害</strong>
+                            <ul class="list-disc pl-5 text-slate-600 space-y-1 text-xs">
+                                <li><strong>無效：</strong>毒素吸收極快，局部注射無法有效攔截已進入循環的毒素。</li>
+                                <li><strong>危險：</strong>將額外的液體注入已腫脹的組織，會急劇增加組織壓力，誘發或惡化 <strong class="text-rose-600">腔室症候群 (Compartment Syndrome)</strong>，導致截肢風險。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-amber-100">
+                            <strong class="text-amber-800 block mb-1">2. 肌肉注射 (IM) 的缺點</strong>
+                            <ul class="list-disc pl-5 text-slate-600 space-y-1 text-xs">
+                                <li><strong>吸收太慢：</strong>血清是大分子蛋白，IM 吸收極差且不穩定，無法達到即時中和大量毒素的效果。</li>
+                                <li><strong>例外情況：</strong>只有在「無法建立靜脈管路」且「必須長途轉送」的極端野外狀況下，才不得不考慮 IM，但在醫療院所內 <strong class="text-teal-700">IV 是唯一標準</strong>。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB NEW: 藥檔與衛教 (Drug Info & Education) -->
+        <!-- ========================================== -->
+        <div id="content-education" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Storage & Stability -->
+                <div class="info-card" style="border-left-color: #3b82f6; background-color: #eff6ff;">
+                    <h3 class="font-bold text-blue-800 text-lg mb-3 flex items-center gap-2">
+                        <span>🧊</span> 藥物保存與安定性 (Storage)
+                    </h3>
+                    <ul class="text-sm text-slate-700 space-y-3">
+                        <li class="flex gap-2">
+                            <span class="font-bold min-w-[5rem] text-blue-700">儲存條件：</span>
+                            <span>需存放於 <strong>2 ~ 8°C</strong> 冰箱冷藏。</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="font-bold min-w-[5rem] text-blue-700">注意事項：</span>
+                            <span><strong>不可冷凍 (Do not freeze)</strong>，結凍會破壞蛋白質結構導致失效。避免陽光直射。</span>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="font-bold min-w-[5rem] text-blue-700">配製後：</span>
+                            <span>凍晶溶解後應盡速使用。若無法立即使用，應置於冷藏並在數小時內用完 (建議依各醫院無菌調配規範)。</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Pharmacology -->
+                <div class="info-card" style="border-left-color: #64748b; background-color: #f8fafc;">
+                    <h3 class="font-bold text-slate-800 text-lg mb-3 flex items-center gap-2">
+                        <span>🔬</span> 藥理與機轉 (Pharmacology)
+                    </h3>
+                    <ul class="text-sm text-slate-700 space-y-2">
+                        <li><strong>成分：</strong>精製馬血清免疫球蛋白之 <strong>F(ab')2</strong> 片段。</li>
+                        <li><strong>機轉：</strong>與血液中流動的毒素結合，使其失去毒性並易於被身體代謝排除。</li>
+                        <li><strong>限制：</strong>只能中和「未結合」的毒素。對於已經與神經受體結合造成麻痺，或已造成組織壞死的傷害，血清無法逆轉，只能防止惡化。這也是為何<strong>「盡早給藥」</strong>至關重要的原因。</li>
+                    </ul>
+                </div>
+
+                <!-- Serum Sickness Education (Patient Handout) -->
+                <div class="md:col-span-2 info-card" style="border-left-color: #f59e0b; background-color: #fffbeb;">
+                    <h3 class="font-bold text-amber-900 text-lg mb-3 flex items-center gap-2">
+                        <span>📝</span> 出院衛教：遲發性過敏 (血清病)
+                    </h3>
+                    <div class="bg-white p-4 rounded-lg border border-amber-200">
+                        <p class="text-sm text-slate-700 mb-3 font-bold">
+                            請務必告知病患：即使住院期間無過敏，出院後仍可能發生「血清病 (Serum Sickness)」。
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <strong class="text-amber-700 block mb-1">發生時間：</strong>
+                                <p class="text-slate-600">通常在注射後 <strong>5 ~ 14 天</strong> 出現。</p>
+                            </div>
+                            <div>
+                                <strong class="text-amber-700 block mb-1">主要症狀：</strong>
+                                <ul class="list-disc pl-5 text-slate-600">
+                                    <li>發燒 (Fever)</li>
+                                    <li>全身性蕁麻疹/皮疹 (Urticaria/Rash)</li>
+                                    <li>關節痛 (Arthralgia)</li>
+                                    <li>淋巴結腫大</li>
+                                </ul>
+                            </div>
+                            <div class="md:col-span-2 border-t border-amber-100 pt-2 mt-1">
+                                <strong class="text-amber-700 block mb-1">處理方式：</strong>
+                                <p class="text-slate-600">若出現上述症狀，請立即回診。醫師通常會開立口服類固醇 (Steroids) 與抗組織胺治療約 1-2 週，預後通常良好。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB NEW: 其他臨床重點 (Other Clinical Info) -->
+        <!-- ========================================== -->
+        <div id="content-others" class="tab-content">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- Lab Monitoring -->
+                <div class="info-card info-card-warning">
+                    <h3 class="font-bold text-slate-800 text-lg mb-3">🧪 實驗室監測 (Lab Data)</h3>
+                    <ul class="text-sm text-slate-700 space-y-3">
+                        <li>
+                            <strong class="text-rose-700">出血性毒蛇 (赤尾/龜殼/百步)：</strong>
+                            <br>重點監測 CBC (Platelet), PT/APTT/INR, Fibrinogen, D-Dimer。
+                        </li>
+                        <li>
+                            <strong class="text-amber-700">神經性/壞死性毒蛇 (雨傘/眼鏡)：</strong>
+                            <br>監測 ABG (呼吸衰竭徵兆), CPK (肌肉溶解), Renal Function。
+                        </li>
+                        <li>
+                            <strong class="text-purple-700">鎖鏈蛇：</strong>
+                            <br>必須監測 Renal Function (Cr, BUN), Urine Analysis (血尿/蛋白尿), 尿量。
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Compartment Syndrome -->
+                <div class="info-card info-card-hemorrhagic">
+                    <h3 class="font-bold text-slate-800 text-lg mb-3">⚠️ 腔室症候群 (Compartment Syndrome)</h3>
+                    <div class="text-sm text-slate-700 space-y-2">
+                        <p>龜殼花與眼鏡蛇咬傷較易發生。若懷疑，應測量腔室壓力 (P > 30-40 mmHg 為警訊)。</p>
+                        <div class="bg-white p-3 rounded border border-rose-100">
+                            <strong class="block text-rose-700 mb-1">5P 徵兆：</strong>
+                            <ul class="list-disc pl-5 text-xs text-slate-600">
+                                <li><strong>Pain:</strong> 劇痛 (尤其被動拉扯肌肉時 Pain on passive stretch)</li>
+                                <li><strong>Pallor:</strong> 蒼白</li>
+                                <li><strong>Paresthesia:</strong> 麻木感</li>
+                                <li><strong>Paralysis:</strong> 麻痺</li>
+                                <li><strong>Pulselessness:</strong> 無脈搏 (晚期徵兆)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wound Care & Infection -->
+                <div class="info-card info-card-neuro">
+                    <h3 class="font-bold text-slate-800 text-lg mb-3">🩹 傷口照護與抗生素</h3>
+                    <ul class="text-sm text-slate-700 list-disc pl-5 space-y-2">
+                        <li><strong>患肢抬高：</strong>有助於減輕腫脹。</li>
+                        <li><strong>抗生素使用：</strong>
+                            <br>蛇口腔菌叢常見 <em>Morganella morganii</em>, <em>Aeromonas hydrophila</em>, <em>Enterococcus</em> 等。
+                            <br>經驗性抗生素建議：
+                            <br>- First line: <strong>Amoxicillin/Clavulanate</strong> or <strong>Ampicillin/Sulbactam</strong> (Unasyn)。
+                            <br>- Alternative: Ceftriaxone + Metronidazole (for anaerobes)。
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Tetanus -->
+                <div class="info-card info-card-acutus">
+                    <h3 class="font-bold text-slate-800 text-lg mb-3">💉 破傷風預防 (Tetanus)</h3>
+                    <p class="text-sm text-slate-700 mb-2">毒蛇咬傷視為受污染傷口 (Dirty Wound)。</p>
+                    <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                        <li><strong>曾完成接種且 < 5 年：</strong> 不需補打。</li>
+                        <li><strong>曾完成接種但 > 5 年：</strong> 補打一劑 Td 或 Tdap。</li>
+                        <li><strong>未完成接種或不明：</strong> 給予 TIG (破傷風免疫球蛋白) + Td/Tdap 疫苗。</li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- TAB 5: 特殊族群 (Special Pops) -->
+        <!-- ========================================== -->
+        <div id="content-special" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <!-- Pediatric -->
+                <div class="info-card info-card-warning">
+                    <h3 class="font-bold text-amber-800 text-xl mb-4 flex items-center gap-2">
+                        <span>👶</span> 兒童 (Pediatrics)
+                    </h3>
+                    <div class="space-y-4">
+                        <p class="text-lg font-bold text-amber-600 text-center bg-amber-50 p-4 rounded-lg border border-amber-200">
+                            劑量不需減半！
+                        </p>
+                        <div class="text-sm text-slate-700">
+                            <p class="mb-2"><strong>理由：</strong>蛇的注毒量對成人與兒童是固定的。兒童體積小，毒素在體內的相對濃度更高，因此需要相同（甚至更高）劑量的血清來中和毒素。</p>
+                            <ul class="list-disc pl-5 text-slate-600">
+                                <li>給予與成人<strong>相同瓶數</strong>。</li>
+                                <li>注意輸液總量 (Fluid overload)，可將血清溶於較少量的 N/S 中 (如 20-50mL)。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pregnancy -->
+                <div class="info-card" style="border-left-color: #be123c; background-color: #fff1f2;">
+                    <h3 class="font-bold text-rose-800 text-xl mb-4 flex items-center gap-2">
+                        <span>🤰</span> 孕婦 (Pregnancy)
+                    </h3>
+                    <div class="space-y-4">
+                        <p class="text-lg font-bold text-rose-600 text-center bg-rose-50 p-4 rounded-lg border border-rose-200">
+                            Benefit > Risk
+                        </p>
+                        <div class="text-sm text-slate-700">
+                            <p class="mb-2"><strong>建議：</strong>應給予血清治療。</p>
+                            <ul class="list-disc pl-5 text-slate-600">
+                                <li>毒蛇咬傷本身導致的缺氧、休克或凝血異常，對胎兒的危害遠大於血清過敏的風險。</li>
+                                <li>F(ab')2 片段較不易通過胎盤，相對安全。</li>
+                                <li>處置時應同時監測胎心音 (FHB)。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 pt-6 border-t border-slate-200 text-center">
+            <div class="max-w-4xl mx-auto px-4">
+                <p class="text-xs text-slate-400 leading-relaxed">
+                    <strong>免責聲明：</strong>本網站內容僅供醫療專業人員參考。緊急處置請諮詢毒物中心 (02-2871-7121) 或依循醫院 SOP。
+                </p>
+                <p class="serif text-slate-400 text-xs italic mt-4">
+                    Based on Taiwan CDC & PCC Clinical Guidelines
+                </p>
+            </div>
+        </footer>
+
+    </main>
+
+    <!-- Modal Structure -->
+    <div id="hospital-items-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl m-4 relative overflow-hidden transform transition-all scale-100">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50">
+                <h3 class="font-bold text-lg text-slate-700 flex items-center gap-2">
+                    <span>📦</span> 本院抗蛇毒血清庫存
+                </h3>
+                <button onclick="closeHospitalModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full p-1 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto max-h-[80vh]">
+                <div class="flex flex-col items-center justify-center text-slate-400 min-h-[200px] border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                    <p class="text-sm">請在此處插入醫院血清庫存照片</p>
+                    <p class="text-xs mt-1 text-slate-300">(可顯示存放位置、外盒顏色以利辨識)</p>
+                    
+                    <!-- !! 若您有實際醫院庫存照片，請將下方註解移除並填入網址，同時刪除上方的 SVG 區塊 !! -->
+                    <!-- <img src="您的圖片網址" alt="本院品項" class="w-full h-auto rounded-lg shadow-sm" /> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增：PCC Flowchart Modal -->
+    <div id="pcc-flowchart-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl m-4 relative overflow-hidden transform transition-all scale-100 flex flex-col max-h-[90vh]">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-slate-50 shrink-0">
+                <h3 class="font-bold text-lg text-slate-800">毒蛇咬傷處置流程圖</h3>
+                <button onclick="closePccModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full p-1 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Content -->
+            <div class="p-4 overflow-y-auto flex-grow flex flex-col items-center bg-slate-50">
+                 <!-- Image Container -->
+                 <div class="w-full bg-white p-2 rounded shadow-sm border border-slate-200">
+                    <!-- !! 請將下方的 src 替換為實際的流程圖圖片網址 !! -->
+                    <img src="https://wd.vghtpe.gov.tw/CT/images/%E6%AF%92%E8%9B%87%E5%92%AC%E5%82%B7%E8%99%95%E7%BD%AE%E6%B5%81%E7%A8%8B_version%202.jpg" alt="毒蛇咬傷處置流程" class="w-full h-auto object-contain mx-auto">
+                 </div>
+                 <div class="mt-4 text-sm text-slate-600 w-full text-center p-2">
+                    資料來源網址 : <a href="https://wd.vghtpe.gov.tw/CT/Fpage.action?muid=14452&fid=13253" target="_blank" class="text-blue-600 hover:underline break-all">https://wd.vghtpe.gov.tw/CT/Fpage.action?muid=14452&fid=13253</a>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            const content = document.getElementById('content-' + tabName);
+            const tab = document.getElementById('tab-' + tabName);
+            
+            if (content) content.classList.add('active');
+            if (tab) tab.classList.add('active');
+        }
+
+        // Modal Logic
+        function openHospitalModal() {
+            const modal = document.getElementById('hospital-items-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
+                modal.firstElementChild.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeHospitalModal() {
+            const modal = document.getElementById('hospital-items-modal');
+            modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
+            modal.firstElementChild.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // PCC Modal Logic (New)
+        function openPccModal() {
+            const modal = document.getElementById('pcc-flowchart-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
+                modal.firstElementChild.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closePccModal() {
+            const modal = document.getElementById('pcc-flowchart-modal');
+            modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
+            modal.firstElementChild.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        document.getElementById('hospital-items-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHospitalModal();
+            }
+        });
+
+        document.getElementById('pcc-flowchart-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePccModal();
+            }
+        });
+
+        // Diagnostic Map Logic
+        function showDetail(type) {
+            const defaultText = document.getElementById('diag-text-default');
+            const detailContent = document.getElementById('diag-detail-content');
+            const title = document.getElementById('diag-title');
+            const desc = document.getElementById('diag-desc');
+            const impact = document.getElementById('diag-impact');
+            
+            // Highlight
+            document.querySelectorAll('.diag-node').forEach(el => el.classList.remove('active-step'));
+            event.currentTarget.classList.add('active-step');
+
+            defaultText.classList.add('hidden');
+            detailContent.classList.remove('hidden');
+
+            const data = {
+                'Start': {
+                    title: "毒蛇咬傷初步評估",
+                    desc: "請檢視傷口外觀與病患全身症狀。台灣毒蛇主要分為「出血性」與「神經性」兩大類。若無法辨識蛇種，請依臨床症狀 (Syndromic Approach) 決定血清。",
+                    impact: "切勿切開傷口、吸吮毒液或冰敷。"
+                },
+                'Hemo': {
+                    title: "出血性毒性症狀",
+                    desc: "傷口明顯紅腫、疼痛、發熱、產生水泡或血泡。可能伴隨全身性出血傾向 (牙齦出血、血尿)。",
+                    impact: "高度懷疑：赤尾青竹絲、龜殼花 (用紅色血清)；百步蛇 (用綠色血清)。"
+                },
+                'Neuro': {
+                    title: "神經性毒性症狀",
+                    desc: "傷口通常不痛、不腫 (除了眼鏡蛇外)。主要症狀為視力模糊、眼皮下垂 (Ptosis)、吞嚥困難、發音困難、全身無力。",
+                    impact: "高度懷疑：雨傘節、眼鏡蛇。應準備 抗神經性血清 (黃色)，並密切監測呼吸狀況。"
+                },
+                'Cobra': {
+                    title: "懷疑：眼鏡蛇 (Cobra)",
+                    desc: "雖歸類於神經性血清 (黃色)，但台灣眼鏡蛇主要表現為「嚴重組織壞死」與潰爛，神經症狀較少見。",
+                    impact: "使用 抗神經性血清 (黃色)。劑量通常需較高 (6-10瓶以上)。需會診外科評估清創。"
+                },
+                'Russell': {
+                    title: "懷疑：鎖鏈蛇 (Russell's Viper)",
+                    desc: "分布於花東、屏東。兼具出血與溶血毒性，最危險的是引發「急性腎衰竭」。",
+                    impact: "使用 抗鎖鏈蛇毒血清 (紫色)。務必監測尿量 (I/O) 與腎功能 (Cr)。"
+                }
+            };
+
+            if(data[type]) {
+                title.innerText = data[type].title;
+                desc.innerText = data[type].desc;
+                impact.innerText = data[type].impact;
+            }
+        }
+    </script>
+</body>
+</html>
