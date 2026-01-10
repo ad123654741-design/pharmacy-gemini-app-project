@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>流感抗病毒藥物臨床指引</title>
+    <title>流感抗病毒藥物</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -343,12 +343,13 @@
         
         <!-- Action Buttons Row -->
         <div class="flex gap-3 mb-4 relative z-20">
-            <a href="#" target="_blank" class="action-btn btn-link" onclick="alert('請填入公費流感連結')">
+            <a href="https://www.cdc.gov.tw/Category/Page/fHHHNV-HWyYD00tnKeXsLA" target="_blank" class="action-btn btn-link" onclick="alert('請填入公費流感連結')">
                 <span>🔗</span> 公費流感抗病毒藥用藥條件
             </a>
-            <a href="#" target="_blank" class="action-btn btn-img" onclick="alert('請填入本院品項圖片連結')">
+            <!-- Modified Hospital Item Button to trigger Modal -->
+            <button onclick="openHospitalModal()" class="action-btn btn-img">
                 <span>💊</span> 本院品項
-            </a>
+            </button>
         </div>
 
         <!-- Header -->
@@ -357,7 +358,7 @@
                 <div>
                     <h2 class="text-xs font-bold tracking-widest text-sky-600 uppercase mb-2">Evidence-Based Medicine</h2>
                     <h1 class="serif text-3xl md:text-4xl text-slate-900 leading-tight font-bold">
-                        流感抗病毒藥物指引
+                        流感抗病毒藥物
                     </h1>
                 </div>
                 <div class="text-right hidden md:block">
@@ -388,7 +389,7 @@
                 <div class="p-4 rounded-xl bg-blue-50 border border-blue-100 text-center">
                     <h3 class="text-blue-800 font-bold mb-1 text-sm">口服首選 (Oral)</h3>
                     <p class="text-xl font-bold text-blue-600 my-1">
-                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Oseltamivir</a>
+                        <a href="https://www.knh.org.tw/subarchive/cms/item/17/T%E4%BB%BF%E5%96%AE/OTAM01.pdf" target="_blank" class="hover:underline cursor-pointer">Oseltamivir</a>
                     </p>
                     <p class="text-[10px] text-blue-700 opacity-80">Tamiflu 克流感</p>
                 </div>
@@ -396,7 +397,7 @@
                 <div class="p-4 rounded-xl bg-purple-50 border border-purple-100 text-center">
                     <h3 class="text-purple-800 font-bold mb-1 text-sm">單次口服 (One-dose)</h3>
                     <p class="text-xl font-bold text-purple-600 my-1">
-                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Baloxavir</a>
+                        <a href="https://www.cth.org.tw/public/medi_news/8cdf7d55601bb3d90e49535b7ab90961.pdf" target="_blank" class="hover:underline cursor-pointer">Baloxavir</a>
                     </p>
                     <p class="text-[10px] text-purple-700 opacity-80">Xofluza 紓伏效 (自費)</p>
                 </div>
@@ -404,7 +405,8 @@
                 <div class="p-4 rounded-xl bg-rose-50 border border-rose-100 text-center">
                     <h3 class="text-rose-800 font-bold mb-1 text-sm">針劑 (IV Injection)</h3>
                     <p class="text-xl font-bold text-rose-600 my-1">
-                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Peramivir</a>
+                        <!-- 請在此處更換 Rapiacta 仿單連結 -->
+                        <a href="https://www.shionogi.com/content/dam/shionogi/ts/products/pdf/RAC%20PI%20v4-1131119(%E6%96%B0%E5%9C%B0%E5%9D%80).pdf" target="_blank" class="hover:underline cursor-pointer">Peramivir</a>
                     </p>
                     <p class="text-[10px] text-rose-700 opacity-80">Rapiacta 瑞貝塔</p>
                 </div>
@@ -412,7 +414,7 @@
                 <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
                     <h3 class="text-emerald-800 font-bold mb-1 text-sm">吸入劑 (Inhalation)</h3>
                     <p class="text-xl font-bold text-emerald-600 my-1">
-                        <a href="#" target="_blank" class="hover:underline cursor-pointer">Zanamivir</a>
+                        <a href="https://www.arich.com.tw/education/xfl_label/%E8%97%A5%E5%93%81%E4%BB%BF%E5%96%AE-4.pdf" target="_blank" class="hover:underline cursor-pointer">Zanamivir</a>
                     </p>
                     <p class="text-[10px] text-emerald-700 opacity-80">Relenza 瑞樂沙</p>
                 </div>
@@ -476,7 +478,7 @@
                             <td><span class="badge badge-purple">單次口服</span></td>
                             <td class="text-xs">
                                 <span class="text-emerald-600">● 只需服藥一次、病毒降解快</span><br>
-                                <span class="text-rose-600">● 兒童易產生抗藥性</span>
+                                <span class="text-rose-600"></span>
                             </td>
                         </tr>
 
@@ -489,7 +491,7 @@
                             <td>NA Inhibitor</td>
                             <td>
                                 <span class="badge badge-rose">單次 IV</span><br>
-                                <span class="text-xs">亦可連續給藥(重症)</span>
+                                <span class="text-xs">300mg / 600mg</span>
                             </td>
                             <td>≥ 6 個月</td>
                             <td><span class="text-slate-400">-</span></td>
@@ -510,7 +512,7 @@
                                 <span class="badge badge-amber">BID x 5天</span><br>
                                 <span class="text-xs">吸入粉劑</span>
                             </td>
-                            <td>≥ 7 歲</td>
+                            <td>≥ 5 歲</td>
                             <td><span class="badge badge-amber">QD x 10天</span></td>
                             <td class="text-xs">
                                 <span class="text-emerald-600">● 全身副作用少</span><br>
@@ -521,7 +523,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="ref-section">註：Oseltamivir 預防療程依據最新建議已修正為 10 天。</div>
+            <div class="ref-section">台灣兒童感染症醫學會建議Tamiflu與Relenza之預防建議天數為7天。</div>
         </div>
 
         <!-- ========================================== -->
@@ -544,7 +546,7 @@
                             <strong class="block text-blue-700 mb-1">標準劑量 (腎功能正常)：</strong>
                             <ul class="list-disc pl-4 text-xs text-slate-600">
                                 <li><strong>成人治療：</strong>75 mg, BID × 5 天。</li>
-                                <li><strong>預防性投藥：</strong>75 mg, QD × <strong class="text-rose-600">10 天</strong>。</li>
+                                <li><strong>預防性投藥：</strong>75 mg, QD × <strong class="text-rose-600">10 天</strong> <span class="text-slate-500">(台灣兒童感染症醫學會建議為 7 天)</span>。</li>
                             </ul>
                         </div>
                     </div>
@@ -589,9 +591,17 @@
                     </div>
                     <div class="text-sm text-slate-700 space-y-2">
                         <p><strong>臨床定位：</strong>適用於<strong>無法口服</strong>、腸胃道吸收不良或意識不清的病患。</p>
-                        <div class="bg-rose-50 p-2 rounded border border-rose-200">
+                        <div class="bg-white p-2 rounded border border-rose-100 mb-2">
+                            <strong class="block text-rose-700 mb-1">建議劑量 (依仿單)：</strong>
+                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                                <li><strong>成人 (一般)：</strong>300 mg 單次靜脈注射 (15分鐘以上)。</li>
+                                <li><strong>成人 (高劑量)：</strong>600 mg 單次注射，適用於重症或有併發症風險者。</li>
+                                <li><strong>兒童 (6個月以上)：</strong>10 mg/kg (單次)，上限 600 mg。</li>
+                            </ul>
+                        </div>
+                        <div class="bg-rose-50 p-2 rounded border border-rose-200 mt-2">
                             <strong class="text-rose-800 block mb-1">💉 重症治療策略：</strong>
-                            <p class="text-xs text-slate-700">標準為單次注射 600mg。但針對<strong>重症患者</strong>，視臨床需求可<strong>連續給藥</strong> (如 600 mg QD，連續 5 天或以上)，以維持抗病毒效果。</p>
+                            <p class="text-xs text-slate-700">針對重症患者，視臨床需求可連續給藥 (如 600 mg QD，連續 5 天或以上)，以維持抗病毒效果。</p>
                         </div>
                         <p><strong>副作用：</strong>SJS、嚴重過敏反應較口服藥略高。</p>
                     </div>
@@ -607,13 +617,13 @@
                         <p><strong>臨床定位：</strong>當懷疑對 Oseltamivir 有抗藥性時的替代選擇。</p>
                          <div class="bg-white p-2 rounded border border-amber-100 mb-2">
                             <strong class="block text-amber-700 mb-1">成分與規格：</strong>
-                            <p class="text-xs text-slate-600">Zanamivir 5mg/blister (每片旋達碟含4個劑量泡，共20mg)。</p>
+                            <p class="text-xs text-slate-600">Zanamivir 5mg/blister (每片旋達碟含4個劑量泡囊，共20mg)。</p>
                         </div>
                         <div class="bg-white p-2 rounded border border-amber-100">
                             <strong class="block text-amber-700 mb-1">標準用法 (吸入)：</strong>
                             <ul class="list-disc pl-4 text-xs text-slate-600">
-                                <li><strong>成人與7歲以上兒童治療：</strong>每次吸入 2 泡 (10mg)，每日 2 次，共 5 天。</li>
-                                <li><strong>預防性投藥：</strong>每次吸入 2 泡 (10mg)，每日 1 次，共 10 天。</li>
+                                <li><strong>成人與7歲以上兒童治療：</strong>每次吸入 2 泡囊 (10mg)，每日 2 次，共 5 天。</li>
+                                <li><strong>預防性投藥：</strong>每次吸入 2 泡囊 (10mg)，每日 1 次，共 10 天 <span class="text-slate-500">(台灣兒童感染症醫學會建議為 7 天)</span>。</li>
                             </ul>
                         </div>
                         <div class="bg-amber-50 p-2 rounded border border-amber-200 mt-2">
@@ -679,34 +689,38 @@
 
                         <!-- Peramivir Renal -->
                         <div class="overflow-hidden rounded-lg border border-rose-200 shadow-sm">
-                            <div class="bg-rose-50 p-2 border-b border-rose-100 font-bold text-rose-800 text-center text-sm">Peramivir (針劑)</div>
+                            <div class="bg-rose-50 p-2 border-b border-rose-100 font-bold text-rose-800 text-center text-sm">Peramivir (Rapiacta 針劑)</div>
                             <table class="modern-table">
                                 <thead>
                                     <tr>
                                         <th>CrCl (mL/min)</th>
-                                        <th>建議劑量 (單次注射*)</th>
+                                        <th>一般劑量 (300mg)</th>
+                                        <th>高劑量 (600mg)</th>
                                     </tr>
                                 </thead>
                                 <tbody class="text-xs">
                                     <tr>
                                         <td class="font-bold">≥ 50</td>
-                                        <td>600 mg</td>
+                                        <td>300 mg</td>
+                                        <td class="text-rose-600 font-bold">600 mg</td>
                                     </tr>
                                     <tr>
                                         <td class="font-bold">30 - 49</td>
+                                        <td>100 mg</td>
                                         <td class="text-rose-600 font-bold">200 mg</td>
                                     </tr>
                                     <tr>
                                         <td class="font-bold">10 - 29</td>
+                                        <td>50 mg</td>
                                         <td class="text-rose-600 font-bold">100 mg</td>
                                     </tr>
                                     <tr class="bg-slate-50">
                                         <td class="font-bold">HD (洗腎)</td>
-                                        <td>透析後 100 mg</td>
+                                        <td colspan="2" class="text-center">透析後給予 (劑量依殘餘腎功能調整，通常為100mg)</td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <div class="p-2 bg-rose-50 text-[10px] text-rose-800 italic">* 若臨床需連續給藥，請依此劑量原則每日給予。</div>
+                            <div class="p-2 bg-rose-50 text-[10px] text-rose-800 italic">* 高劑量(600mg)適用於重症或有併發症風險患者。</div>
                         </div>
                     </div>
                 </section>
@@ -718,42 +732,57 @@
                     <div class="bg-white rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
                         <div class="bg-emerald-50 p-3 border-b border-emerald-100">
                             <h3 class="font-bold text-emerald-800 text-base flex items-center gap-2">
-                                👶 兒童體重劑量 (Oseltamivir)
+                                👶 兒童劑量建議 (Pediatric Dosing)
                             </h3>
                         </div>
-                        <table class="modern-table text-xs">
-                            <thead>
-                                <tr>
-                                    <th>體重 (Weight)</th>
-                                    <th>治療劑量 (BID)</th>
-                                    <th>預防劑量 (QD)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>≤ 15 kg</td>
-                                    <td>30 mg</td>
-                                    <td>30 mg</td>
-                                </tr>
-                                <tr>
-                                    <td>> 15 - 23 kg</td>
-                                    <td>45 mg</td>
-                                    <td>45 mg</td>
-                                </tr>
-                                <tr>
-                                    <td>> 23 - 40 kg</td>
-                                    <td>60 mg</td>
-                                    <td>60 mg</td>
-                                </tr>
-                                <tr>
-                                    <td>> 40 kg</td>
-                                    <td>75 mg</td>
-                                    <td>75 mg</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div class="p-3 bg-emerald-50/50 text-xs text-emerald-700">
-                            * < 1 歲嬰兒治療劑量為 3 mg/kg/dose BID。
+                        
+                        <!-- Oseltamivir Block -->
+                        <div class="p-2">
+                            <span class="badge badge-blue mb-1">Oseltamivir (Tamiflu)</span>
+                            <table class="modern-table text-xs">
+                                <thead>
+                                    <tr>
+                                        <th>體重 (Weight)</th>
+                                        <th>治療 (BID)</th>
+                                        <th>預防 (QD)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>≤ 15 kg</td>
+                                        <td>30 mg</td>
+                                        <td>30 mg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>> 15 - 23 kg</td>
+                                        <td>45 mg</td>
+                                        <td>45 mg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>> 23 - 40 kg</td>
+                                        <td>60 mg</td>
+                                        <td>60 mg</td>
+                                    </tr>
+                                    <tr>
+                                        <td>> 40 kg</td>
+                                        <td>75 mg</td>
+                                        <td>75 mg</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="p-1 text-[10px] text-emerald-700 italic">
+                                * < 1 歲嬰兒治療劑量：3 mg/kg/dose BID。
+                            </div>
+                        </div>
+                        
+                        <!-- Peramivir Block -->
+                        <div class="bg-rose-50 p-3 border-t border-rose-100 mt-2">
+                             <h4 class="font-bold text-rose-800 text-sm flex items-center gap-2 mb-1">
+                                💉 Peramivir (Rapiacta)
+                            </h4>
+                            <p class="text-xs text-rose-700">
+                                <strong>6個月以上兒童：</strong>10 mg/kg，單次靜脈注射 (最高劑量不超過 600 mg)。
+                            </p>
                         </div>
                     </div>
 
@@ -1152,6 +1181,36 @@
 
     </main>
 
+    <!-- Modal Structure -->
+    <div id="hospital-items-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl m-4 relative overflow-hidden transform transition-all scale-100">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-orange-50">
+                <h3 class="font-bold text-lg text-orange-800 flex items-center gap-2">
+                    <span>💊</span> 本院抗病毒藥物品項
+                </h3>
+                <button onclick="closeHospitalModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full p-1 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto max-h-[80vh]">
+                <!-- Placeholder for Image -->
+                <div class="flex flex-col items-center justify-center text-slate-400 min-h-[200px] border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p class="text-sm">請在此處插入本院品項圖片</p>
+                    <p class="text-xs mt-1 text-slate-300">(src="您的圖片連結")</p>
+                    <!-- 請解除下方註解並更換 src 為您的圖片網址 -->
+                    <!-- <img src="您的圖片網址" alt="本院品項" class="w-full h-auto rounded-lg shadow-sm" /> -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Tab Logic
         function switchTab(tabName) {
@@ -1160,6 +1219,33 @@
             document.getElementById('content-' + tabName).classList.add('active');
             document.getElementById('tab-' + tabName).classList.add('active');
         }
+
+        // Modal Logic
+        function openHospitalModal() {
+            const modal = document.getElementById('hospital-items-modal');
+            modal.classList.remove('hidden');
+            // Simple animation
+            setTimeout(() => {
+                modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
+                modal.firstElementChild.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function closeHospitalModal() {
+            const modal = document.getElementById('hospital-items-modal');
+            modal.firstElementChild.classList.remove('scale-100', 'opacity-100');
+            modal.firstElementChild.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Close on backdrop click
+        document.getElementById('hospital-items-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeHospitalModal();
+            }
+        });
 
         // MOA Logic
         function showMoaDetail(step) {
