@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tailwind CSS 顏色代碼生成器</title>
+    <!-- 引入 React 和 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- 引入 Babel 用於解析 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .color-swatch {
+            transition: all 0.2s;
+        }
+        .color-swatch:hover {
+            transform: scale(1.1);
+        }
+        /* 自定義捲軸 */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        /* Range Input Styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            margin-top: -6px; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // Tailwind 完整標準色系列表
+        const COLOR_NAMES = [
+            'white', 'black', 
+            'slate', 'gray', 'zinc', 'neutral', 'stone', 
+            'red', 'orange', 'amber', 'yellow', 'lime', 
+            'green', 'emerald', 'teal', 'cyan', 'sky', 
+            'blue', 'indigo', 'violet', 'purple', 'fuchsia', 
+            'pink', 'rose'
+        ];
+
+        const SHADES = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900', '950'];
+
+        // --- 共用 Modal 元件 ---
+        const Modal = ({ onClose, title, icon, children }) => (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+                <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-6 md:p-8 relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                    <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    
+                    <h2 className="text-2xl font-bold text-slate-800 mb-6 flex items-center gap-2 flex-shrink-0">
+                        {icon}
+                        {title}
+                    </h2>
+
+                    <div className="overflow-y-auto pr-4 custom-scrollbar flex-grow">
+                        {children}
+                    </div>
+                    
+                    <div className="mt-6 text-center flex-shrink-0 pt-4 border-t border-slate-100">
+                        <button onClick={onClose} className="px-6 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-700 transition-colors shadow-lg shadow-slate-200/50">
+                            我學會了，關閉視窗
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- 色彩建議內容 ---
+        const ColorGuideContent = () => (
+            <div className="space-y-6">
+                <div className="bg-blue-50 p-5 rounded-xl border border-blue-100">
+                    <h3 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
+                        <span className="text-xl">👑</span> 文字清晰度的黃金法則
+                    </h3>
+                    <p className="text-blue-900 text-sm leading-relaxed">
+                        設計最重要的一點是「讓使用者看得清楚」。背景與文字的對比度必須足夠：
+                        <br/><br/>
+                        ✅ <strong>最佳組合：</strong>
+                        <br/>• <strong>淺色背景 (White, 50-100)</strong> + <strong>深色文字 (Black, 700-900)</strong>
+                        <br/>• <strong>深色背景 (Black, 600-900)</strong> + <strong>白色文字</strong> 或極淺色 (50)
+                    </p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                        <h3 className="font-bold text-slate-700 mb-2">🎨 60-30-10 配色比例</h3>
+                        <p className="text-slate-600 text-sm leading-relaxed">
+                            這是一個經典的室內設計與網頁設計法則：
+                            <br/><br/>
+                            • <strong>60% 主色</strong>：大面積的背景色 (通常是 White, Neutral, Slate)。<br/>
+                            • <strong>30% 輔助色</strong>：品牌色或區塊底色 (Blue, Indigo)。<br/>
+                            • <strong>10% 強調色</strong>：按鈕、連結或重要提示 (Orange, Red)。
+                        </p>
+                    </div>
+                    <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
+                        <h3 className="font-bold text-slate-700 mb-2">🎭 情緒與顏色心理學</h3>
+                        <p className="text-slate-600 text-sm leading-relaxed">
+                            • <strong>信任/專業</strong>：藍色 (Blue) - 銀行、科技業最愛。<br/>
+                            • <strong>活力/急迫</strong>：紅色 (Red) - 適合促銷按鈕或錯誤訊息。<br/>
+                            • <strong>自然/健康</strong>：綠色 (Green) - 適合食品或理財成功。<br/>
+                            • <strong>高雅/神秘</strong>：紫色 (Purple) - 適合高級服務或創意產業。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // --- 程式碼教學內容 ---
+        const CodeTutorialContent = () => (
+            <div className="space-y-8">
+                
+                {/* 1. 顏色語法詳解 */}
+                <section>
+                    <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3 border-b pb-2">
+                        <span className="bg-slate-800 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">1</span>
+                        Tailwind 顏色語法解密
+                    </h3>
+                    <p className="text-slate-600 mb-4">
+                        Tailwind CSS 的寫法就像是在說英文句子，由三個單字組合而成，邏輯非常直觀：
+                    </p>
+                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-lg md:text-xl mb-6 bg-white p-4 rounded-lg shadow-inner">
+                            <span className="text-purple-600 font-bold bg-purple-50 px-2 py-1 rounded border border-purple-100" title="屬性">bg</span>
+                            <span className="text-slate-400 font-bold">-</span>
+                            <span className="text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded border border-blue-100" title="顏色">blue</span>
+                            <span className="text-slate-400 font-bold">-</span>
+                            <span className="text-green-600 font-bold bg-green-50 px-2 py-1 rounded border border-green-100" title="深淺">500</span>
+                        </div>
+                        
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <div>
+                                <h4 className="font-bold text-purple-700 mb-2 border-b border-purple-200 pb-1">1. 屬性 (要做什麼?)</h4>
+                                <ul className="text-sm text-slate-600 space-y-2">
+                                    <li><code>bg-</code> : 設定 <strong>背景</strong> (Background)</li>
+                                    <li><code>text-</code> : 設定 <strong>文字</strong> (Text)</li>
+                                    <li><code>border-</code> : 設定 <strong>邊框</strong> (Border)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-blue-700 mb-2 border-b border-blue-200 pb-1">2. 顏色 (什麼顏色?)</h4>
+                                <ul className="text-sm text-slate-600 space-y-2">
+                                    <li><code>slate/gray</code> : 灰色系</li>
+                                    <li><code>blue/sky</code> : 藍色系</li>
+                                    <li><code>red/rose</code> : 紅色系</li>
+                                    <li>(共有 22 種標準色可選)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-green-700 mb-2 border-b border-green-200 pb-1">3. 深淺 (多深?)</h4>
+                                <ul className="text-sm text-slate-600 space-y-2">
+                                    <li><code>50-100</code> : 極淺，適合做背景底色。</li>
+                                    <li><code>400-500</code> : 中等，適合按鈕或圖示。</li>
+                                    <li><code>700-900</code> : 深色，適合閱讀文字。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* 2. 盒子模型與空間 */}
+                <section>
+                    <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3 border-b pb-2">
+                        <span className="bg-slate-800 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">2</span>
+                        空間的魔法：內距 (Padding)
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-6 items-center">
+                        <div>
+                            <p className="text-slate-600 mb-4 text-sm leading-relaxed">
+                                很多初學者會忽略「留白」的重要性。<strong>Padding (內距)</strong> 指的是「內容」到「邊框」之間的距離。
+                                <br/><br/>
+                                想像你有一個精美的禮盒，如果你把禮物塞得滿滿的，貼著盒子邊緣，看起來就很廉價。如果你在禮物周圍塞滿了保護紙（留白），看起來就會很高級。
+                            </p>
+                            <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 text-sm">
+                                <h4 className="font-bold text-orange-800 mb-2">數字代表什麼？</h4>
+                                <p className="text-orange-900">
+                                    Tailwind 的數字通常乘以 4 等於像素 (px)。
+                                    <br/>• <code>p-4</code> = 16px (舒適)
+                                    <br/>• <code>p-6</code> = 24px (寬敞)
+                                    <br/>• <code>p-8</code> = 32px (大氣)
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {/* 視覺化盒子模型 - 修正版 */}
+                        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex justify-center">
+                            <div className="relative bg-blue-100 border-4 border-blue-300 border-dashed p-8 sm:p-10 rounded-lg text-center w-full max-w-[280px] mx-auto box-border">
+                                {/* Border Label */}
+                                <span className="absolute top-1 left-2 text-[10px] sm:text-xs text-blue-500 font-bold uppercase tracking-wider">Border</span>
+                                
+                                {/* Content Box */}
+                                <div className="bg-white/90 p-3 sm:p-4 rounded text-blue-900 font-bold shadow-sm relative z-10">
+                                    {/* Padding Label - positioned inside padding area visually */}
+                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] sm:text-xs text-blue-400 font-medium whitespace-nowrap">
+                                        Padding (內距)
+                                    </span>
+                                    我是內容
+                                    <div className="text-[10px] text-slate-400 font-normal">(Content)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* 3. 邊框樣式 */}
+                <section>
+                    <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3 border-b pb-2">
+                        <span className="bg-slate-800 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">3</span>
+                        邊框的細節 (Borders)
+                    </h3>
+                    <div className="space-y-4">
+                        <p className="text-slate-600 text-sm">要讓邊框出現，通常需要同時設定「粗細」、「顏色」和「樣式」。</p>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <h4 className="font-bold text-slate-700 mb-2">邊框粗細 (Width)</h4>
+                                <ul className="text-sm space-y-2">
+                                    <li className="flex items-center gap-2"><div className="w-8 h-8 bg-white border border-slate-400"></div> <code>border</code> (1px, 預設)</li>
+                                    <li className="flex items-center gap-2"><div className="w-8 h-8 bg-white border-2 border-slate-400"></div> <code>border-2</code> (2px)</li>
+                                    <li className="flex items-center gap-2"><div className="w-8 h-8 bg-white border-4 border-slate-400"></div> <code>border-4</code> (4px)</li>
+                                </ul>
+                            </div>
+                            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                                <h4 className="font-bold text-slate-700 mb-2">邊框樣式 (Style)</h4>
+                                <ul className="text-sm space-y-2">
+                                    <li className="flex items-center gap-2"><div className="w-8 h-0 border-t-2 border-slate-500 border-solid"></div> <code>border-solid</code> (實線)</li>
+                                    <li className="flex items-center gap-2"><div className="w-8 h-0 border-t-2 border-slate-500 border-dashed"></div> <code>border-dashed</code> (虛線)</li>
+                                    <li className="flex items-center gap-2"><div className="w-8 h-0 border-t-2 border-slate-500 border-dotted"></div> <code>border-dotted</code> (點線)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                
+                {/* 4. 圓角 */}
+                <section>
+                    <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-3 border-b pb-2">
+                        <span className="bg-slate-800 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">4</span>
+                        圓角 (Border Radius)
+                    </h3>
+                    <div className="flex flex-wrap gap-4 text-sm text-center">
+                        <div className="space-y-2">
+                            <div className="w-16 h-16 bg-indigo-500 rounded-none mx-auto"></div>
+                            <code>rounded-none</code>
+                            <br/><span className="text-xs text-slate-500">直角</span>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="w-16 h-16 bg-indigo-500 rounded mx-auto"></div>
+                            <code>rounded</code>
+                            <br/><span className="text-xs text-slate-500">微圓 (4px)</span>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="w-16 h-16 bg-indigo-500 rounded-lg mx-auto"></div>
+                            <code>rounded-lg</code>
+                            <br/><span className="text-xs text-slate-500">大圓 (8px)</span>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="w-16 h-16 bg-indigo-500 rounded-full mx-auto"></div>
+                            <code>rounded-full</code>
+                            <br/><span className="text-xs text-slate-500">全圓/膠囊</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        );
+
+        const App = () => {
+            // --- 狀態管理 ---
+            const [bgState, setBgState] = useState({ color: 'slate', shade: '50' });
+            const [textState, setTextState] = useState({ color: 'slate', shade: '600' });
+            const [borderState, setBorderState] = useState({ color: 'slate', shade: '200' });
+            const [activeTab, setActiveTab] = useState('bg');
+            const [copied, setCopied] = useState(false);
+            
+            // 外觀設定狀態
+            const [padding, setPadding] = useState('6'); // p-0 ~ p-12
+            const [borderWidth, setBorderWidth] = useState('1'); // 0, 1, 2, 4, 8
+            const [borderStyle, setBorderStyle] = useState('solid'); // solid, dashed, dotted, double
+            
+            // 元件與預覽環境
+            const [componentType, setComponentType] = useState('card'); 
+            const [previewBg, setPreviewBg] = useState('light');
+            
+            // Modal 狀態
+            const [showGuide, setShowGuide] = useState(false);
+            const [showTutorial, setShowTutorial] = useState(false);
+
+            // 輔助函式
+            const isSpecialColor = (color) => color === 'white' || color === 'black';
+            
+            const getColorClass = (type, state) => {
+                if (isSpecialColor(state.color)) return `${type}-${state.color}`;
+                return `${type}-${state.color}-${state.shade}`;
+            };
+
+            const getBorderWidthClass = (width) => {
+                if (width === '0') return 'border-0';
+                if (width === '1') return 'border';
+                return `border-${width}`;
+            }
+
+            // 計算易讀性警告
+            const hasWarning = useMemo(() => {
+                const bgS = parseInt(bgState.shade) || (bgState.color === 'white' ? 0 : 1000);
+                const textS = parseInt(textState.shade) || (textState.color === 'white' ? 0 : 1000);
+                if (Math.abs(bgS - textS) < 400 && bgState.color !== 'white' && bgState.color !== 'black') {
+                    return true;
+                }
+                return false;
+            }, [bgState, textState]);
+
+            // 生成 CSS 字串
+            const classString = useMemo(() => {
+                const colors = `${getColorClass('bg', bgState)} ${getColorClass('text', textState)} ${getColorClass('border', borderState)}`;
+                const borders = `${getBorderWidthClass(borderWidth)} border-${borderStyle}`;
+                const spacing = `p-${padding}`;
+                
+                // 基礎樣式
+                let base = `${colors} ${borders} ${spacing}`;
+
+                // 根據元件類型添加額外樣式 (例如 rounded, width)
+                switch(componentType) {
+                    case 'button':
+                        // 按鈕通常需要更精確的 px py，這裡為了演示 padding 效果，我們先用統一的 padding，或者加上 px/py 覆蓋
+                        // 為了讓工具單純一點，我們讓 Slider 控制的是通用 padding
+                        return `${base} rounded font-medium transition-transform active:scale-95 inline-block`;
+                    case 'badge':
+                        return `${base} rounded-full text-xs font-semibold inline-block`;
+                    case 'card':
+                    default:
+                        return `${base} rounded-lg max-w-sm w-full`;
+                }
+            }, [bgState, textState, borderState, borderWidth, borderStyle, padding, componentType]);
+
+            const handleCopy = () => {
+                const textArea = document.createElement("textarea");
+                textArea.value = classString;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    console.error('複製失敗', err);
+                }
+                document.body.removeChild(textArea);
+            };
+
+            const { state: currentConfig, setter: currentSetter } = (() => {
+                switch(activeTab) {
+                    case 'text': return { state: textState, setter: setTextState };
+                    case 'border': return { state: borderState, setter: setBorderState };
+                    default: return { state: bgState, setter: setBgState };
+                }
+            })();
+
+            const getSwatchClass = (colorName) => {
+                if (colorName === 'white') return 'bg-white border-slate-200';
+                if (colorName === 'black') return 'bg-black border-transparent';
+                return `bg-${colorName}-500 border-transparent`;
+            }
+
+            const getPreviewContainerStyle = () => {
+                switch(previewBg) {
+                    case 'dark': return 'bg-slate-900 border-slate-700';
+                    case 'gray': return 'bg-gray-200 border-gray-300';
+                    default: return 'bg-slate-50 border-slate-300'; 
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 relative">
+                    
+                    <div className="absolute top-4 right-4 text-right">
+                        <p className="text-sm font-bold text-slate-700">製作者 : 蝦仁藥師</p>
+                        <p className="text-xs text-slate-400">更新日期 : 2026/01/11</p>
+                    </div>
+
+                    {showGuide && (
+                        <Modal onClose={() => setShowGuide(false)} title="色彩搭配小教室" icon={<span className="text-2xl">🎨</span>}>
+                            <ColorGuideContent />
+                        </Modal>
+                    )}
+                    
+                    {showTutorial && (
+                        <Modal onClose={() => setShowTutorial(false)} title="程式碼教學" icon={<span className="text-2xl">🎓</span>}>
+                            <CodeTutorialContent />
+                        </Modal>
+                    )}
+
+                    <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                        
+                        {/* 左側控制面板 */}
+                        <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 flex flex-col gap-6">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.087 0-.875.75-1.5 1.5-1.5H17c2.75 0 5-2.25 5-5 0-3.875-3.375-7-10-7z"/></svg>
+                                    Tailwind CSS 顏色代碼生成器
+                                </h1>
+                                <div className="flex gap-2">
+                                    <button onClick={() => setShowTutorial(true)} className="flex items-center gap-1 text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full hover:bg-indigo-100 transition-colors border border-indigo-100 shadow-sm">
+                                        🎓 程式碼教學
+                                    </button>
+                                    <button onClick={() => setShowGuide(true)} className="flex items-center gap-1 text-sm bg-yellow-50 text-yellow-700 px-3 py-1.5 rounded-full hover:bg-yellow-100 transition-colors border border-yellow-100 shadow-sm">
+                                        🎨 配色建議
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* 標籤切換 */}
+                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                {['bg', 'text', 'border'].map((tab) => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
+                                            activeTab === tab 
+                                            ? 'bg-white text-blue-600 shadow-sm scale-100' 
+                                            : 'text-slate-500 hover:text-slate-700 scale-95'
+                                        }`}
+                                    >
+                                        {tab === 'bg' ? '背景顏色' : tab === 'text' ? '文字顏色' : '邊框顏色'}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* 顏色選擇區 */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-3 flex justify-between items-center">
+                                    <span>選擇色系 ({currentConfig.color})</span>
+                                    <span className={`w-4 h-4 rounded-full bg-${currentConfig.color}-500 border border-slate-200`}></span>
+                                </label>
+                                <div className="grid grid-cols-6 sm:grid-cols-11 gap-2">
+                                    {COLOR_NAMES.map((colorName) => (
+                                        <button
+                                            key={colorName}
+                                            onClick={() => currentSetter({ ...currentConfig, color: colorName })}
+                                            title={colorName}
+                                            className={`
+                                                w-8 h-8 rounded-full border-2 focus:outline-none color-swatch relative
+                                                ${getSwatchClass(colorName)}
+                                                ${currentConfig.color === colorName ? 'border-slate-800 scale-110 ring-2 ring-slate-300 z-10' : ''}
+                                            `}
+                                        ></button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* 深淺選擇區 */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 mb-3">
+                                    選擇深淺 {isSpecialColor(currentConfig.color) ? '(單一色)' : `(${currentConfig.shade})`}
+                                </label>
+                                {isSpecialColor(currentConfig.color) ? (
+                                    <div className="p-3 bg-slate-50 rounded-lg text-slate-500 text-sm text-center border border-slate-100">
+                                        無需選擇深淺
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-6 sm:grid-cols-11 gap-2">
+                                        {SHADES.map((shade) => (
+                                            <button
+                                                key={shade}
+                                                onClick={() => currentSetter({ ...currentConfig, shade: shade })}
+                                                className={`
+                                                    h-8 rounded text-xs font-bold transition-all
+                                                    bg-${currentConfig.color}-${shade}
+                                                    ${parseInt(shade) > 400 ? 'text-white' : 'text-slate-900'}
+                                                    ${currentConfig.shade === shade ? 'ring-2 ring-offset-2 ring-slate-400 scale-110' : ''}
+                                                `}
+                                            >
+                                                {shade}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <hr className="border-slate-100" />
+
+                            {/* 外觀細節設定區 (新增功能) */}
+                            <div>
+                                <h3 className="text-sm font-bold text-slate-800 mb-4 flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                    外觀細節設定
+                                </h3>
+                                <div className="space-y-4">
+                                    {/* 內距 (Padding) */}
+                                    <div>
+                                        <div className="flex justify-between text-xs text-slate-500 mb-1">
+                                            <span>內距 (Padding): p-{padding}</span>
+                                            <span>{parseInt(padding)*4}px</span>
+                                        </div>
+                                        <input 
+                                            type="range" min="0" max="12" step="1" 
+                                            value={padding} 
+                                            onChange={(e) => setPadding(e.target.value)}
+                                            className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                                        />
+                                        <div className="flex justify-between text-[10px] text-slate-400 mt-1 px-1">
+                                            <span>0</span><span>4</span><span>8</span><span>12</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {/* 邊框粗細 */}
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-500 mb-1">邊框粗細 (Width)</label>
+                                            <div className="flex bg-slate-100 rounded p-1 gap-1">
+                                                {['0', '1', '2', '4', '8'].map(w => (
+                                                    <button 
+                                                        key={w}
+                                                        onClick={() => setBorderWidth(w)}
+                                                        className={`flex-1 text-xs py-1 rounded ${borderWidth === w ? 'bg-white shadow text-blue-600 font-bold' : 'text-slate-500'}`}
+                                                    >
+                                                        {w}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        {/* 邊框樣式 */}
+                                        <div>
+                                            <label className="block text-xs font-medium text-slate-500 mb-1">邊框樣式 (Style)</label>
+                                            <div className="flex bg-slate-100 rounded p-1 gap-1">
+                                                {[
+                                                    {val: 'solid', icon: '一'}, 
+                                                    {val: 'dashed', icon: '---'}, 
+                                                    {val: 'dotted', icon: '...'}, 
+                                                    {val: 'double', icon: '='}
+                                                ].map(s => (
+                                                    <button 
+                                                        key={s.val}
+                                                        onClick={() => setBorderStyle(s.val)}
+                                                        className={`flex-1 text-xs py-1 rounded ${borderStyle === s.val ? 'bg-white shadow text-blue-600 font-bold' : 'text-slate-500'}`}
+                                                        title={s.val}
+                                                    >
+                                                        {s.icon}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 右側預覽區域 */}
+                        <div className="flex flex-col gap-6">
+                            
+                            {/* 控制列：元件類型 + 背景切換 */}
+                            <div className="flex flex-wrap gap-4 justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+                                <div className="flex gap-2">
+                                    {[
+                                        { id: 'card', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>, label: '卡片' },
+                                        { id: 'button', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"></rect></svg>, label: '按鈕' },
+                                        { id: 'badge', icon: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>, label: '標籤' },
+                                    ].map(type => (
+                                        <button 
+                                            key={type.id}
+                                            onClick={() => setComponentType(type.id)}
+                                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm transition-all ${componentType === type.id ? 'bg-slate-800 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                        >
+                                            {type.icon} {type.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    預覽背景:
+                                    <div className="flex bg-slate-100 rounded-lg p-1">
+                                        <button onClick={() => setPreviewBg('light')} className={`w-6 h-6 rounded flex items-center justify-center ${previewBg === 'light' ? 'bg-white shadow' : ''}`} title="亮色"><div className="w-3 h-3 bg-white border border-slate-300 rounded-full"></div></button>
+                                        <button onClick={() => setPreviewBg('gray')} className={`w-6 h-6 rounded flex items-center justify-center ${previewBg === 'gray' ? 'bg-white shadow' : ''}`} title="灰色"><div className="w-3 h-3 bg-gray-400 rounded-full"></div></button>
+                                        <button onClick={() => setPreviewBg('dark')} className={`w-6 h-6 rounded flex items-center justify-center ${previewBg === 'dark' ? 'bg-white shadow' : ''}`} title="深色"><div className="w-3 h-3 bg-slate-900 rounded-full"></div></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 預覽卡片 */}
+                            <div className="bg-white rounded-2xl shadow-xl p-6 border border-slate-100 flex-1 flex flex-col relative overflow-hidden">
+                                <h2 className="text-lg font-bold text-slate-700 mb-4 flex justify-between items-center">
+                                    即時預覽
+                                    {hasWarning && (
+                                        <div className="flex items-center gap-1 text-amber-600 text-xs font-bold bg-amber-50 px-2 py-1 rounded border border-amber-200 animate-pulse">
+                                            ⚠️ 注意對比度
+                                        </div>
+                                    )}
+                                </h2>
+                                
+                                <div className={`flex items-center justify-center p-8 rounded-xl border border-dashed h-64 transition-colors duration-300 overflow-auto ${getPreviewContainerStyle()}`}>
+                                    {/* 動態生成的元件 */}
+                                    <div className={classString}>
+                                        {componentType === 'card' && (
+                                            <>
+                                                <h3 className="text-xl font-bold mb-2">卡片標題</h3>
+                                                <p className="opacity-90">這是卡片內容範例。你可以試著調整下方的「外觀細節設定」來改變內距(Padding)和邊框(Border)。</p>
+                                            </>
+                                        )}
+                                        {componentType === 'button' && (
+                                            <span className="flex items-center gap-2 justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                                                確認送出
+                                            </span>
+                                        )}
+                                        {componentType === 'badge' && (
+                                            <span className="flex items-center gap-1">
+                                                <span className="w-2 h-2 rounded-full bg-current opacity-75"></span>
+                                                New Feature
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 程式碼輸出 */}
+                            <div className="bg-slate-900 rounded-xl p-6 shadow-lg text-white">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h3 className="text-sm font-medium text-slate-400">生成的程式碼</h3>
+                                    <button 
+                                        onClick={handleCopy}
+                                        className={`text-xs px-3 py-1 rounded transition-colors flex items-center gap-1 ${copied ? 'bg-green-500 text-white' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'}`}
+                                    >
+                                        {copied ? '已複製' : '複製代碼'}
+                                    </button>
+                                </div>
+                                <code className="block bg-black/30 p-3 rounded text-sm font-mono break-all text-green-400">
+                                    {classString}
+                                </code>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
