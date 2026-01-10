@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>慢箋領藥日期計算機 | 蝦仁藥師</title>
+    <meta name="description" content="慢性病連續處方箋領藥日期計算工具，支援假日提醒、行事曆下載與法規說明。">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        body {
+            background-color: #f8fafc;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 內嵌 SVG 圖示 ---
+        const IconBase = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const Calendar = (props) => <IconBase {...props}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>;
+        const Calculator = (props) => <IconBase {...props}><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></IconBase>;
+        const FileWarning = (props) => <IconBase {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 13v4"/><path d="M12 21h.01"/></IconBase>;
+        const Clock = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></IconBase>;
+        const Download = (props) => <IconBase {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></IconBase>;
+        const RotateCcw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></IconBase>;
+        const Edit3 = (props) => <IconBase {...props}><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></IconBase>;
+        const AlertCircle = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12" y1="16" y2="16.01"/></IconBase>;
+        const Pill = (props) => <IconBase {...props}><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></IconBase>;
+        const BookOpen = (props) => <IconBase {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></IconBase>;
+        const Copy = (props) => <IconBase {...props}><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></IconBase>;
+        const Check = (props) => <IconBase {...props}><polyline points="20 6 9 17 4 12"/></IconBase>;
+        const Ban = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></IconBase>;
+
+        function App() {
+            const getTaiwanToday = () => {
+                try {
+                    return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
+                } catch (e) {
+                    return new Date().toISOString().slice(0, 10);
+                }
+            };
+
+            const [startDate, setStartDate] = useState(getTaiwanToday());
+            const [daysPerPrescription, setDaysPerPrescription] = useState(28);
+            const [totalRefills, setTotalRefills] = useState(3);
+            const [results, setResults] = useState([]);
+            const [actualPickupDates, setActualPickupDates] = useState({});
+            const [expiryDate, setExpiryDate] = useState('');
+            const [copySuccess, setCopySuccess] = useState(false);
+
+            useEffect(() => {
+                setActualPickupDates({});
+            }, [startDate]);
+
+            const formatDate = (dateString) => {
+                if (!dateString) return '';
+                try {
+                    const d = new Date(dateString);
+                    if (isNaN(d.getTime())) return '';
+                    const year = d.getUTCFullYear();
+                    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+                    const day = String(d.getUTCDate()).padStart(2, '0');
+                    return `${year}/${month}/${day}`;
+                } catch (e) {
+                    return '';
+                }
+            };
+
+            const getExpiryWarning = (dateString) => {
+                if (!dateString) return null;
+                try {
+                    const d = new Date(dateString);
+                    if (isNaN(d.getTime())) return null;
+                    const prevDateTimestamp = d.getTime() - 24 * 60 * 60 * 1000;
+                    const prevDate = new Date(prevDateTimestamp);
+                    return formatDate(prevDate.toISOString().slice(0, 10));
+                } catch (e) {
+                    return null;
+                }
+            };
+
+            const isWeekend = (dateString) => {
+                if (!dateString) return false;
+                try {
+                    const day = new Date(dateString).getUTCDay();
+                    return day === 0 || day === 6;
+                } catch (e) {
+                    return false;
+                }
+            };
+
+            const handleActualDateChange = (refillId, newDate) => {
+                setActualPickupDates(prev => ({ ...prev, [refillId]: newDate }));
+            };
+
+            useEffect(() => {
+                if (!startDate) return;
+                try {
+                    const oneDayMs = 24 * 60 * 60 * 1000;
+                    const startTimestamp = new Date(startDate).getTime();
+                    if (isNaN(startTimestamp)) return;
+
+                    const totalDays = daysPerPrescription * totalRefills;
+                    const expiryTimestamp = startTimestamp + (totalDays * oneDayMs);
+                    setExpiryDate(new Date(expiryTimestamp).toISOString().slice(0, 10));
+                    
+                    // 根據需求：慢箋有效期限計算結果-1天為有效界線
+                    const validLimitTimestamp = expiryTimestamp - oneDayMs;
+
+                    const calcResults = [];
+                    let currentBaseTimestamp = startTimestamp;
+
+                    calcResults.push({
+                        id: 1,
+                        title: '第 1 次領藥 (就診日)',
+                        pickupStart: startDate,
+                        pickupEnd: startDate,
+                        medsEnd: new Date(currentBaseTimestamp + (daysPerPrescription * oneDayMs)).toISOString().slice(0, 10),
+                        canDownload: false,
+                        isEditable: false,
+                        isOverdue: false
+                    });
+
+                    for (let i = 1; i < totalRefills; i++) {
+                        const refillId = i + 1;
+                        const idealNextCycleStartTimestamp = currentBaseTimestamp + (daysPerPrescription * oneDayMs);
+                        const pickupStartTimestamp = idealNextCycleStartTimestamp - (10 * oneDayMs);
+                        const pickupEndTimestamp = idealNextCycleStartTimestamp;
+
+                        const pickupStartStr = new Date(pickupStartTimestamp).toISOString().slice(0, 10);
+                        const pickupEndStr = new Date(pickupEndTimestamp).toISOString().slice(0, 10);
+
+                        // 判斷是否超過效期 (建議領藥起始日 > 有效期限-1天)
+                        const isOverdue = pickupStartTimestamp > validLimitTimestamp;
+
+                        const actualDateInput = actualPickupDates[refillId];
+                        let effectiveStartTimestamp = idealNextCycleStartTimestamp;
+                        if (actualDateInput) {
+                            const actualTs = new Date(actualDateInput).getTime();
+                            if (!isNaN(actualTs)) {
+                                effectiveStartTimestamp = actualTs;
+                            }
+                        }
+
+                        const medsEndTimestamp = effectiveStartTimestamp + (daysPerPrescription * oneDayMs);
+                        const medsEndStr = new Date(medsEndTimestamp).toISOString().slice(0, 10);
+
+                        calcResults.push({
+                            id: refillId,
+                            title: `第 ${refillId} 次領藥`,
+                            pickupStart: pickupStartStr,
+                            pickupEnd: pickupEndStr,
+                            medsEnd: medsEndStr,
+                            canDownload: !isOverdue, // 若過期則不建議下載行事曆
+                            isEditable: true,
+                            actualDate: actualDateInput || '',
+                            isDelayed: !!actualDateInput,
+                            isOverdue: isOverdue
+                        });
+                        currentBaseTimestamp = effectiveStartTimestamp;
+                    }
+                    setResults(calcResults);
+                } catch (e) {
+                    console.error("Calc error", e);
+                }
+            }, [startDate, daysPerPrescription, totalRefills, actualPickupDates]);
+
+            const downloadICS = (item) => {
+                try {
+                    const targetDate = item.actualDate || item.pickupStart;
+                    if (!targetDate) return;
+                    const eventStart = targetDate.replace(/-/g, '');
+                    const icsContent = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MyChronicPrescriptionCalculator//TW\nBEGIN:VEVENT\nUID:${new Date().getTime()}-${item.id}@calculator\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').split('.')[0]}Z\nDTSTART;VALUE=DATE:${eventStart}\nDTEND;VALUE=DATE:${eventStart}\nSUMMARY:慢箋領藥 (${item.title})\nDESCRIPTION:領藥區間：${item.pickupStart} 至 ${item.pickupEnd}。\nBEGIN:VALARM\nTRIGGER:-PT15H\nDESCRIPTION:Reminder\nACTION:DISPLAY\nEND:VALARM\nEND:VEVENT\nEND:VCALENDAR`;
+                    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.setAttribute('download', `慢箋領藥_${targetDate}.ics`);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {}
+            };
+
+            const copyToClipboard = () => {
+                try {
+                    const lines = [`💊 慢箋領藥時程表`, `就診日: ${formatDate(startDate)}`, `------------------------`];
+                    results.forEach(r => {
+                        if (r.id === 1) {
+                            lines.push(`${r.title}: ${formatDate(r.pickupStart)} (已領)`);
+                        } else {
+                            if (r.isOverdue) {
+                                lines.push(`${r.title}: ⚠️ 建議領藥時間已超過處方箋效期，需重新看診。`);
+                            } else {
+                                lines.push(`${r.title}: ${formatDate(r.pickupStart)} ~ ${formatDate(r.pickupEnd)}`);
+                                if (r.isDelayed) lines.push(`(註: 因延後領藥已自動順延)`);
+                            }
+                        }
+                    });
+                    lines.push(`------------------------`);
+                    lines.push(`⚠️ 處方箋有效期限: ${formatDate(expiryDate)} 止`);
+                    const w = getExpiryWarning(expiryDate);
+                    if (w) lines.push(`(逾 ${w} 無效)`);
+                    lines.push(`由「慢箋領藥日期計算機」製作`);
+                    
+                    const text = lines.join('\n');
+                    
+                    // Fallback using textarea for iframes/webview
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; 
+                    textArea.style.left = "-9999px";
+                    textArea.style.top = "0";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    
+                    try {
+                        const successful = document.execCommand('copy');
+                        if(successful) {
+                             setCopySuccess(true);
+                             setTimeout(() => setCopySuccess(false), 2000);
+                        } else {
+                             console.error('Copy failed');
+                        }
+                    } catch (err) {
+                        console.error('Unable to copy', err);
+                    }
+                    
+                    document.body.removeChild(textArea);
+                } catch (e) {
+                    console.error("Copy logic error", e);
+                }
+            };
+
+            return (
+                <div className="min-h-screen text-slate-800 font-sans pb-10">
+                    <header className="bg-teal-600 text-white p-4 shadow-lg sticky top-0 z-10">
+                        <div className="max-w-3xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white/20 p-2 rounded-lg">
+                                    <Calculator size={28} />
+                                </div>
+                                <h1 className="text-2xl font-bold tracking-wide">慢箋領藥日期計算機</h1>
+                            </div>
+                            <div className="text-sm text-teal-50 flex flex-col md:items-end gap-1 font-mono opacity-90">
+                                <p>製作者 : 蝦仁藥師</p>
+                                <p>更新日期 : 2026/01/11</p>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="max-w-3xl mx-auto p-4 space-y-6">
+                        <section className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-2 text-teal-700 font-semibold border-b border-slate-100 pb-3 w-full">
+                                    <Calendar className="w-6 h-6" />
+                                    <h2 className="text-xl">設定處方箋資訊</h2>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-3">
+                                    <label className="block text-base font-medium text-slate-700">就診日期 (第 1 次領藥)</label>
+                                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none transition-all" />
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="block text-base font-medium text-slate-700">每次藥量天數</label>
+                                    <div className="flex gap-2">
+                                        {[28, 29, 30].map(days => (
+                                            <button key={days} onClick={() => setDaysPerPrescription(days)} className={`flex-1 py-3 px-2 rounded-xl text-base font-medium transition-colors ${daysPerPrescription === days ? 'bg-teal-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{days} 天</button>
+                                        ))}
+                                        <input type="number" value={daysPerPrescription} onChange={(e) => setDaysPerPrescription(Number(e.target.value))} className="w-24 p-2 text-center text-lg bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none" placeholder="自訂" />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <label className="block text-base font-medium text-slate-700">處方箋總領藥次數</label>
+                                    <div className="flex gap-2">
+                                        {[2, 3].map(count => (
+                                            <button key={count} onClick={() => setTotalRefills(count)} className={`flex-1 py-3 px-4 rounded-xl text-base font-medium transition-colors ${totalRefills === count ? 'bg-teal-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}>{count} 次</button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="md:col-span-2 bg-orange-50 border border-orange-100 rounded-xl p-5 flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="bg-orange-100 p-2.5 rounded-full text-orange-600"><FileWarning size={24} /></div>
+                                        <div>
+                                            <p className="text-sm font-bold text-orange-500 uppercase tracking-wide mb-1">處方箋有效期限</p>
+                                            <p className="text-xl font-bold text-orange-800 flex flex-wrap items-center gap-1">
+                                                <span>{formatDate(expiryDate)} 止</span>
+                                                {expiryDate && getExpiryWarning(expiryDate) && (<span className="text-base font-normal text-orange-700">(逾 {getExpiryWarning(expiryDate)} 無效)</span>)}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right hidden sm:block">
+                                        <span className="text-sm text-orange-600 bg-white px-3 py-1.5 rounded-lg border border-orange-200 font-medium">總計 {daysPerPrescription * totalRefills} 天</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="flex gap-3">
+                            <button onClick={copyToClipboard} className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold transition-all ${copySuccess ? 'bg-green-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:text-teal-700'}`}>
+                                {copySuccess ? <Check size={20} /> : <Copy size={20} />} {copySuccess ? '已複製文字' : '複製時程表'}
+                            </button>
+                        </section>
+
+                        <section className="space-y-5">
+                            <div className="flex items-center gap-2 text-slate-700 font-semibold px-2">
+                                <Clock className="w-6 h-6" />
+                                <h2 className="text-xl">建議領藥時程表</h2>
+                            </div>
+                            
+                            <div className="space-y-5">
+                                {results.map((item, index) => {
+                                    const startIsWeekend = isWeekend(item.pickupStart);
+                                    const isPast = item.pickupStart < getTaiwanToday();
+                                    const isToday = item.pickupStart === getTaiwanToday();
+                                    const showActualInput = item.isEditable && item.id < totalRefills;
+
+                                    return (
+                                        <div key={item.id} className={`relative overflow-hidden rounded-2xl border transition-all ${index === 0 ? 'bg-slate-50/80 border-slate-200' : item.isOverdue ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200 shadow-sm'}`}>
+                                            <div className={`absolute left-0 top-0 bottom-0 w-2 ${index === 0 ? 'bg-slate-400' : item.isOverdue ? 'bg-red-500' : 'bg-teal-500'}`}></div>
+                                            <div className="p-6 pl-8">
+                                                <div className="flex justify-between items-start mb-5">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className={`px-3 py-1.5 rounded-lg text-sm font-bold ${index === 0 ? 'bg-slate-200 text-slate-700' : item.isOverdue ? 'bg-red-100 text-red-700' : 'bg-teal-100 text-teal-900'}`}>{item.title}</span>
+                                                        {isToday && <span className="text-sm font-bold text-red-500 animate-pulse">今天！</span>}
+                                                        {item.isDelayed && !item.isOverdue && (<span className="text-sm font-medium text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-100 flex items-center gap-1"><RotateCcw size={14} /> 下次已順延</span>)}
+                                                    </div>
+                                                    {item.canDownload && (<button onClick={() => downloadICS(item)} className="text-slate-400 hover:text-teal-600 transition-colors p-1" title="加入行事曆"><Download size={24} /></button>)}
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-10">
+                                                    <div className="space-y-3">
+                                                        <div className="space-y-2">
+                                                            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">建議領藥期間</p>
+                                                            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-3">
+                                                                <span className={`text-3xl font-bold font-mono ${isPast ? 'text-slate-500' : item.isOverdue ? 'text-red-600 line-through' : 'text-teal-700'}`}>{formatDate(item.pickupStart)}</span>
+                                                                {index !== 0 && !item.isOverdue && (<span className="text-base text-slate-600 font-medium">至 {formatDate(item.pickupEnd)}</span>)}
+                                                            </div>
+                                                            {item.isOverdue ? (
+                                                                <p className="text-sm text-red-700 font-bold flex items-center gap-1.5 mt-2 bg-red-100 p-2 rounded">
+                                                                    <Ban size={16} /> 建議領藥區間已超過處方箋效期，需重新看診開立處方。
+                                                                </p>
+                                                            ) : (
+                                                                startIsWeekend && (<p className="text-sm text-red-600 font-medium flex items-center gap-1.5"><AlertCircle size={16} /> 週末或國定假日請確認藥局有營業</p>)
+                                                            )}
+                                                        </div>
+
+                                                        {showActualInput && !item.isOverdue && (
+                                                            <div className="mt-5 pt-4 border-t border-slate-100">
+                                                                <label className="flex items-center gap-2 text-sm font-bold text-indigo-700 mb-2 cursor-pointer group"><Edit3 size={16} /> 晚領了嗎？輸入實際領藥日：</label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <input type="date" value={item.actualDate} onChange={(e) => handleActualDateChange(item.id, e.target.value)} className="text-base p-2 bg-indigo-50 border border-indigo-200 rounded-lg text-indigo-900 focus:ring-2 focus:ring-indigo-300 outline-none" />
+                                                                    {item.actualDate && (<button onClick={() => handleActualDateChange(item.id, '')} className="text-sm text-slate-500 hover:text-red-600 underline">重置</button>)}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        {item.isDelayed && (<div className="hidden block text-sm text-slate-500 mt-1">實際領藥日：{formatDate(item.actualDate)}</div>)}
+                                                    </div>
+
+                                                    <div className="space-y-3 relative md:pl-8 md:border-l md:border-slate-100">
+                                                        <div>
+                                                            <p className="text-sm font-bold text-slate-500 uppercase tracking-wider">藥品預計用完日</p>
+                                                            <div className="flex items-center gap-2 mt-2">
+                                                                <Pill className={`w-5 h-5 ${item.isOverdue ? 'text-red-300' : 'text-slate-400'}`} />
+                                                                <span className={`text-xl font-bold font-mono ${item.isOverdue ? 'text-red-400' : 'text-slate-700'}`}>{formatDate(item.medsEnd)}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        <section className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-slate-700 space-y-5 text-base leading-relaxed border border-slate-200 shadow-sm">
+                            <div className="flex items-center gap-2 text-slate-800 font-bold border-b border-slate-300 pb-3 mb-2">
+                                <BookOpen size={20} />
+                                <h3 className="text-lg">慢性病連續處方箋相關法規與注意事項</h3>
+                            </div>
+                            <div className="space-y-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <h4 className="font-bold text-slate-800 mb-1 text-base">📅 處方箋有效期限 (醫療辦法第22條)</h4>
+                                    <p>慢箋效期以 <strong>3 個月</strong>為限。每次調劑用藥量以 <strong>28-30 天</strong>為原則。逾期即失效。</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800 mb-1 text-base">💊 提前領藥規定 (醫療辦法第24條)</h4>
+                                    <p>領藥時間為：前次給藥期間屆滿前 <strong>10 天內</strong>。</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800 mb-1 text-base">✈️ 出國預領藥品 (醫療辦法第24條)</h4>
+                                    <p>預定出國、返離島或遠洋漁船作業，得出具證明文件，<strong>一次領取全部用藥量</strong>。</p>
+                                </div>
+                                <div>
+                                    <h4 className="font-bold text-slate-800 mb-1 text-base">⚠️ 遺失補發規定 (醫療辦法第26條)</h4>
+                                    <p>慢箋遺失<strong>不得補發</strong>，需重新掛號就醫開立新處方。</p>
+                                </div>
+                            </div>
+                            <div className="bg-white p-4 rounded-lg border border-slate-200 text-sm">
+                                <p className="text-slate-500">※ 以上資訊整理自《全民健康保險醫療辦法》，若有修法或異動，請以衛生福利部中央健康保險署最新公告為準。</p>
+                            </div>
+                        </section>
+
+                        <footer className="text-center text-slate-500 text-sm py-6 leading-relaxed">
+                            <p>此計算結果僅供參考，實際領藥日期請以處方箋或藥師說明為準。</p>
+                        </footer>
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
