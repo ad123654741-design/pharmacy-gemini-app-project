@@ -5,132 +5,345 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>帕金森氏症藥物LED計算工具</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            color: #374151;
-            overflow-y: auto;
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            /* 背景樣式：純白背景 + 極淡灰色網格 */
+            background-color: #ffffff;
+            background-image: 
+                linear-gradient(#f1f5f9 1px, transparent 1px), 
+                linear-gradient(90deg, #f1f5f9 1px, transparent 1px);
+            background-size: 24px 24px;
+            color: #334155; /* Slate-700 */
+            overflow-y: scroll;
+            min-height: 100vh;
         }
         .container {
-            max-width: 960px;
+            max-width: 1024px;
             margin: 0 auto;
-            padding: 2rem;
+            padding: 3rem 2rem;
         }
+        
+        /* 響應式優化：針對小螢幕調整間距 */
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            .card {
+                padding: 1.5rem !important;
+            }
+            h1 {
+                font-size: 1.75rem !important;
+            }
+            /* 手機版按鈕堆疊時增加間距 */
+            .flex.gap-3 {
+                gap: 0.75rem;
+            }
+        }
+
+        /* 卡片風格優化 */
         .card {
             background-color: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 2rem;
-            margin-bottom: 1.5rem;
+            /* 輕微陰影讓卡片浮起 */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+            transition: box-shadow 0.2s ease;
         }
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+        /* 按鈕風格優化 - 專業藍灰色調 */
         .btn {
             padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
+            border-radius: 8px;
             font-weight: 600;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            letter-spacing: 0.025em;
+        }
+        .btn:active {
+            transform: translateY(1px);
         }
         .btn-primary {
-            background-color: #3b82f6;
+            background-color: #334155; /* Slate-700 */
             color: #ffffff;
+            border: 1px solid #1e293b;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .btn-primary:hover {
-            background-color: #2563eb;
+            background-color: #1e293b; /* Slate-800 */
         }
         .btn-secondary {
-            background-color: #e5e7eb;
-            color: #4b5563;
+            background-color: #ffffff;
+            color: #475569;
+            border: 1px solid #cbd5e1;
         }
         .btn-secondary:hover {
-            background-color: #d1d5db;
+            background-color: #f8fafc;
+            color: #0f172a;
+            border-color: #94a3b8;
         }
         .btn-danger {
-            background-color: #ef4444;
+            background-color: #ef4444; /* Red-500 */
             color: #ffffff;
+            border: 1px solid #dc2626;
         }
         .btn-danger:hover {
-            background-color: #dc2626;
+            background-color: #dc2626; /* Red-600 */
         }
+        /* 資訊卡按鈕 */
+        .btn-info-card {
+            background-color: #f8fafc; /* Slate-50 */
+            color: #475569; /* Slate-600 */
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem 1rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .btn-info-card:hover {
+            background-color: #ffffff;
+            border-color: #94a3b8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            color: #1e293b;
+        }
+        
+        /* 輸入框優化 - 高度增加且文字內縮 */
         input, select, textarea {
-            border: 1px solid #d1d5db;
+            border: 1px solid #cbd5e1;
             border-radius: 8px;
-            padding: 0.5rem;
             width: 100%;
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff;
+            font-size: 1rem; /* 文字大小不變 */
+            line-height: 1.5;
+            color: #334155;
+            
+            /* 強制設定高度為 4rem (64px) */
+            height: 4rem; 
+            /* 優化：大幅增加左側內距，讓文字明顯往後移動 */
+            padding-left: 2.5rem; 
+            padding-right: 1.5rem;
         }
+
+        /* 針對 textarea 覆寫高度設定，改用 padding */
+        textarea {
+            height: auto;
+            padding: 1.5rem;
+            padding-left: 2.5rem; /* textarea 也保持一致 */
+        }
+
+        /* 特別針對 select 調整，確保文字與箭頭位置正確 */
+        select {
+             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2364748b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+             background-position: right 1rem center;
+             background-repeat: no-repeat;
+             background-size: 1.5em 1.5em;
+             padding-right: 3rem; /* 右側留給箭頭 */
+             padding-left: 2.5rem; /* 左側大幅留白 */
+             -webkit-appearance: none;
+             -moz-appearance: none;
+             appearance: none;
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #475569; /* Slate-600 */
+            box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.15); /* 灰色光暈 */
+        }
+
+        /* 移除數字輸入框加減按鈕 */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Modal 優化 */
         .modal {
             display: none;
             position: fixed;
-            z-index: 10;
+            z-index: 50;
             left: 0;
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
+            background-color: rgba(15, 23, 42, 0.5); /* Slate-900 半透明 */
+            backdrop-filter: blur(2px);
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal.show {
+            display: flex;
+            opacity: 1;
         }
         .modal-content {
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 12px;
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 16px;
             width: 90%;
             max-width: 700px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             position: relative;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
+            transform: scale(0.98);
+            transition: transform 0.2s ease;
+            border: 1px solid #e2e8f0;
+        }
+        .modal.show .modal-content {
+            transform: scale(1);
         }
         .modal-lg {
             max-width: 900px;
+        }
+        /* 標題樣式 */
+        h1 {
+            color: #1e293b; /* Slate-800 */
+        }
+        h2 {
+            border-left: 5px solid #475569; /* Slate-600 */
+            padding-left: 1rem;
+            line-height: 1.3;
+            color: #1e293b;
+        }
+        /* 表格優化 */
+        table thead tr th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+        /* 捲軸美化 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-800 mb-2">帕金森氏症藥物LED計算工具</h1>
-            <p class="text-sm text-gray-500 mt-1">製作者 : 蝦仁藥師 2025年9月</p>
-            <p class="text-gray-500">此工具用於計算常用帕金森氏症藥物的 Levodopa Equivalent Dose (LED)。</p>
-            <div id="user-info" class="text-xs text-gray-400 mt-2 break-all">使用者 ID: 載入中...</div>
+    <div class="container fade-in">
+        <header class="text-center mb-10">
+            <div class="inline-flex items-center justify-center p-3 rounded-xl bg-white border border-slate-200 shadow-sm mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold mb-2 tracking-tight text-slate-800">帕金森氏症藥物 LED 計算工具</h1>
+            <p class="text-sm text-slate-500 font-medium tracking-wide uppercase mb-1">製作者 : 其仁藥師 2025年9月</p>
+            <p class="text-slate-600 text-lg max-w-2xl mx-auto">專業輔助工具：用於計算與評估 Levodopa Equivalent Dose (LED)</p>
+            <div id="user-info" class="text-xs font-mono text-slate-400 mt-4 px-3 py-1 bg-white border border-slate-200 rounded-md inline-block shadow-sm">使用者 ID: 載入中...</div>
         </header>
         
         <!-- 請先讀我區塊 -->
         <div class="card">
-            <h2 class="text-2xl font-bold text-gray-700 mb-4">請先讀我</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <button id="open-info-modal-btn-1" class="bg-blue-200 hover:bg-blue-300 text-blue-800 text-sm font-semibold py-2 px-4 rounded-full transition-colors duration-200 ease-in-out">
-                    使用說明
+            <h2 class="text-xl font-bold text-slate-700 mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                請先讀我
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <button id="open-info-modal-btn-1" class="btn-info-card group">
+                    <div class="text-slate-400 group-hover:text-slate-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                    </div>
+                    <span class="font-medium group-hover:text-slate-800">使用說明</span>
                 </button>
-                <button id="open-info-modal-btn-2" class="bg-blue-200 hover:bg-blue-300 text-blue-800 text-sm font-semibold py-2 px-4 rounded-full transition-colors duration-200 ease-in-out">
-                    藥物比較
+                <button id="open-info-modal-btn-2" class="btn-info-card group">
+                    <div class="text-slate-400 group-hover:text-slate-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                        </svg>
+                    </div>
+                    <span class="font-medium group-hover:text-slate-800">藥物比較</span>
                 </button>
-                <button id="open-info-modal-btn-3" class="bg-blue-200 hover:bg-blue-300 text-blue-800 text-sm font-semibold py-2 px-4 rounded-full transition-colors duration-200 ease-in-out">
-                    臨床建議
+                <button id="open-info-modal-btn-3" class="btn-info-card group">
+                    <div class="text-slate-400 group-hover:text-slate-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <span class="font-medium group-hover:text-slate-800">臨床建議</span>
                 </button>
-                <button id="open-info-modal-btn-4" class="bg-blue-200 hover:bg-blue-300 text-blue-800 text-sm font-semibold py-2 px-4 rounded-full transition-colors duration-200 ease-in-out">
-                    相關名詞
+                <button id="open-info-modal-btn-4" class="btn-info-card group">
+                    <div class="text-slate-400 group-hover:text-slate-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                        </svg>
+                    </div>
+                    <span class="font-medium group-hover:text-slate-800">相關名詞</span>
                 </button>
             </div>
         </div>
 
         <!-- 單一藥物LED等效轉換區塊 -->
         <div class="card">
-            <h2 class="text-2xl font-bold text-gray-700 mb-4">單一藥物LED等效轉換</h2>
-            <p class="text-gray-500 mb-4">選擇一個藥物並輸入其單次劑量，即可查看其等效於其他藥物的劑量。</p>
-            <div class="grid md:grid-cols-4 gap-4 items-end mb-4">
-                <div>
-                    <label for="single-drug-select" class="block text-sm font-medium text-gray-700 mb-1">選擇藥物</label>
-                    <select id="single-drug-select" class="mt-1 block w-full rounded-md shadow-sm"></select>
+            <h2 class="text-xl font-bold text-slate-700 mb-6 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                單一藥物 LED 等效轉換
+            </h2>
+            <div class="grid md:grid-cols-4 gap-6 items-end mb-6">
+                <div class="md:col-span-2">
+                    <label for="single-drug-select" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">選擇藥物</label>
+                    <select id="single-drug-select" class="block w-full rounded-lg shadow-sm cursor-pointer hover:border-slate-400"></select>
                 </div>
                 <div>
-                    <label for="single-dosage-input" class="block text-sm font-medium text-gray-700 mb-1">單次劑量 (mg)</label>
-                    <input type="number" id="single-dosage-input" class="mt-1 block w-full rounded-md shadow-sm" placeholder="例如: 100">
+                    <label for="single-dosage-input" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">單次劑量 (mg)</label>
+                    <input type="number" id="single-dosage-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 100">
                 </div>
-                <div class="flex justify-end md:justify-start">
-                    <button id="calculate-single-led-btn" class="btn btn-primary w-full md:w-auto">執行換算</button>
-                    <button id="clear-single-led-btn" class="btn btn-secondary w-full md:w-auto ml-2">清除</button>
+                <div class="flex gap-3">
+                    <button id="calculate-single-led-btn" class="btn btn-primary flex-1 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
+                        </svg>
+                        換算
+                    </button>
+                    <button id="clear-single-led-btn" class="btn btn-secondary" style="height: 4rem;">
+                        清除
+                    </button>
                 </div>
             </div>
             <div id="single-led-results" class="mt-8 space-y-4">
@@ -138,118 +351,171 @@
             </div>
         </div>
 
-        <!-- 藥物輸入與 LED 換算區塊 -->
+        <!-- 計算 LED 總劑量區塊 -->
         <div class="card">
-            <h2 class="text-2xl font-bold text-gray-700 mb-4">計算 LED 總劑量</h2>
-            <div class="grid md:grid-cols-4 gap-4 items-end mb-4">
+            <h2 class="text-xl font-bold text-slate-700 mb-8 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                計算 LED 總劑量
+            </h2>
+            <div class="grid md:grid-cols-4 gap-6 items-end mb-6">
                 <div>
-                    <label for="drug-select" class="block text-sm font-medium text-gray-700 mb-1">藥物名稱</label>
-                    <select id="drug-select" class="mt-1 block w-full rounded-md shadow-sm"></select>
+                    <label for="drug-select" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">藥物名稱</label>
+                    <select id="drug-select" class="block w-full rounded-lg shadow-sm cursor-pointer hover:border-slate-400"></select>
                 </div>
                 <div>
-                    <label for="dosage-input" class="block text-sm font-medium text-gray-700 mb-1">單次劑量 (mg)</label>
-                    <input type="number" id="dosage-input" class="mt-1 block w-full rounded-md shadow-sm" placeholder="例如: 100">
+                    <label for="dosage-input" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">單次劑量 (mg)</label>
+                    <input type="number" id="dosage-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 100">
                 </div>
                 <div>
-                    <label for="frequency-input" class="block text-sm font-medium text-gray-700 mb-1">給藥頻次 (次/天)</label>
-                    <input type="number" id="frequency-input" class="mt-1 block w-full rounded-md shadow-sm" placeholder="例如: 3">
+                    <label for="frequency-input" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">給藥頻次 (次/天)</label>
+                    <input type="number" id="frequency-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 3">
                 </div>
                 <div class="flex justify-end md:justify-start">
-                    <button id="add-drug-btn" class="btn btn-primary w-full">新增藥物</button>
+                    <button id="add-drug-btn" class="btn btn-primary w-full shadow-sm" style="height: 4rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        新增藥物
+                    </button>
                 </div>
             </div>
-            <div class="flex justify-end mt-4">
-                <button id="clear-input-btn" class="btn btn-secondary text-sm">清空欄位</button>
+            <div class="flex justify-between items-center mt-3 mb-6 px-1">
+                <div id="error-message" class="text-red-600 text-sm font-medium hidden flex items-center bg-red-50 px-3 py-1 rounded-md border border-red-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    請輸入有效的藥物名稱、劑量和頻次。
+                </div>
+                <button id="clear-input-btn" class="text-sm text-slate-500 hover:text-slate-800 font-medium underline decoration-slate-300 hover:decoration-slate-500 ml-auto transition-colors">清空輸入欄位</button>
             </div>
-            <div id="error-message" class="text-red-500 text-sm mt-2 hidden">請輸入有效的藥物名稱、劑量和頻次。</div>
 
             <div id="led-list" class="mt-8 space-y-4">
                 <!-- 換算後的藥物列表將在此顯示 -->
             </div>
 
-            <div id="total-led" class="mt-6 p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md">
-                <span class="font-bold">每日總 LED 劑量:</span> <span id="total-led-value" class="text-2xl font-extrabold ml-2">0</span> mg
+            <div id="total-led" class="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center">
+                <span class="font-bold text-slate-700 text-lg">每日總 LED 劑量</span> 
+                <span class="text-4xl font-extrabold text-slate-800 tracking-tight"><span id="total-led-value">0</span> <span class="text-xl font-semibold text-slate-500 ml-1">mg</span></span>
             </div>
 
-            <div class="mt-6 flex justify-end space-x-2">
-                <button id="copy-btn" class="btn btn-secondary">複製結果</button>
-                <button id="open-db-modal-btn" class="btn btn-secondary">管理藥物資料庫</button>
+            <div class="mt-10 flex justify-end space-x-3 border-t pt-8 border-slate-100">
+                <button id="copy-btn" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
+                        <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
+                    </svg>
+                    複製結果
+                </button>
+                <button id="open-db-modal-btn" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
+                    </svg>
+                    管理藥物資料庫
+                </button>
             </div>
         </div>
 
         <!-- 資料來源區塊 -->
-        <div class="card">
-            <h2 class="text-2xl font-bold text-gray-700 mb-4">資料來源</h2>
-            <div class="text-xs text-gray-600 space-y-2">
-                <p>1. Levodopa Equivalent Dose of Safinamide: A Multicenter, Longitudinal, Case–Control Study<br>Mancini F.;Braccia A.;Lazzeri G.;Pinto P.;Eleopra R. <br>2023.</p>
-                <p>2. Levodopa Dose Equivalency in Parkinson's Disease: Updated Systematic Review and Proposals.<br>Jost ST, Kaldenbach MA, Antonini A, et al.<br>Movement Disorders : Official Journal of the Movement Disorder Society. 2023;38(7):1236-1252. doi:10.1002/mds.29410.</p>
-                <p>3. Comparing the Efficacy and Safety of Safinamide With Rasagiline in China Parkinson's Disease Patients With a Matching Adjusted Indirect Comparison.<br>Tan Y, Wei Q, Xu P, et al.<br>Scientific Reports. 2025;15(1):10502. doi:10.1038/s41598-025-94960-9.</p>
-                <p>4. Novel Levodopa Formulations for Parkinson's Disease.<br>Freitas ME, Ruiz-Lopez M, Fox SH.<br>CNS Drugs. 2016;30(11):1079-1095. doi:10.1007/s40263-016-0386-8.</p>
+        <div class="card bg-white border border-slate-200 shadow-none opacity-80 hover:opacity-100 transition-opacity">
+            <h2 class="text-lg font-bold text-slate-600 mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+                參考文獻與資料來源
+            </h2>
+            <div class="text-xs text-slate-500 space-y-4 leading-relaxed">
+                <p>1. Levodopa Equivalent Dose of Safinamide: A Multicenter, Longitudinal, Case–Control Study<br><span class="italic text-slate-400">Mancini F.;Braccia A.;Lazzeri G.;Pinto P.;Eleopra R. (2023)</span></p>
+                <p>2. Levodopa Dose Equivalency in Parkinson's Disease: Updated Systematic Review and Proposals.<br><span class="italic text-slate-400">Jost ST, Kaldenbach MA, Antonini A, et al. Movement Disorders : Official Journal of the Movement Disorder Society. 2023;38(7):1236-1252. doi:10.1002/mds.29410.</span></p>
+                <p>3. Comparing the Efficacy and Safety of Safinamide With Rasagiline in China Parkinson's Disease Patients With a Matching Adjusted Indirect Comparison.<br><span class="italic text-slate-400">Tan Y, Wei Q, Xu P, et al. Scientific Reports. 2025;15(1):10502. doi:10.1038/s41598-025-94960-9.</span></p>
+                <p>4. Novel Levodopa Formulations for Parkinson's Disease.<br><span class="italic text-slate-400">Freitas ME, Ruiz-Lopez M, Fox SH. CNS Drugs. 2016;30(11):1079-1095. doi:10.1007/s40263-016-0386-8.</span></p>
             </div>
         </div>
 
     </div>
 
-    <!-- 藥物資料庫管理 Modal -->
+    <!-- 藥物資料庫管理 Modal (優化版) -->
     <div id="db-modal" class="modal">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-2xl font-bold text-gray-700">管理藥物資料庫</h3>
-                <button id="close-db-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+            <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
+                <h3 class="text-2xl font-bold text-slate-800">管理藥物資料庫</h3>
+                <button id="close-db-modal-btn" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
             
-            <div class="mb-6">
-                <h4 id="form-title" class="text-xl font-bold mb-2">新增藥物</h4>
-                <div class="grid sm:grid-cols-2 gap-4">
+            <div class="mb-10 p-8 bg-slate-50 rounded-lg border border-slate-200">
+                <h4 id="form-title-el" class="text-xl font-bold text-slate-700 mb-6 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                    </svg>
+                    新增/編輯藥物
+                </h4>
+                <div class="grid sm:grid-cols-2 gap-6">
                     <input type="hidden" id="edit-drug-id">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">藥品名稱</label>
-                        <input type="text" id="db-drug-name" placeholder="例如: Levodopa IR" class="rounded-md shadow-sm">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">藥品名稱</label>
+                        <input type="text" id="db-drug-name" placeholder="例如: Levodopa IR" class="focus:ring-2 focus:ring-slate-300">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">商品名</label>
-                        <input type="text" id="db-brand-name" placeholder="例如: Sinemet" class="rounded-md shadow-sm">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">商品名</label>
+                        <input type="text" id="db-brand-name" placeholder="例如: Sinemet">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">劑型</label>
-                        <input type="text" id="db-formulation" placeholder="例如: 錠劑" class="rounded-md shadow-sm">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">劑型</label>
+                        <input type="text" id="db-formulation" placeholder="例如: 錠劑">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">LED 換算因子</label>
-                        <input type="number" step="0.01" id="db-led-factor" placeholder="例如: 1" class="rounded-md shadow-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">建議劑量範例</label>
-                        <input type="text" id="db-dosage-example" placeholder="例如: 100mg TID" class="rounded-md shadow-sm">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">本院品項劑量 (mg, 以逗號分隔)</label>
-                        <input type="text" id="db-available-dosages" placeholder="例如: 50, 100, 250" class="rounded-md shadow-sm">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">LED 換算因子</label>
+                        <input type="number" step="0.01" id="db-led-factor" placeholder="例如: 1">
                     </div>
                     <div class="sm:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">臨床說明 (選填)</label>
-                        <textarea id="db-clinical-notes" rows="3" placeholder="例如: 適應症、UPDRS改善效果等" class="rounded-md shadow-sm"></textarea>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">建議劑量範例</label>
+                        <input type="text" id="db-dosage-example" placeholder="例如: 100mg TID">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">本院品項劑量 (mg, 以逗號分隔)</label>
+                        <input type="text" id="db-available-dosages" placeholder="例如: 50, 100, 250">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">臨床說明 (選填)</label>
+                        <textarea id="db-clinical-notes" rows="2" placeholder="例如: 適應症、UPDRS改善效果等"></textarea>
                     </div>
                 </div>
-                <div class="mt-4 flex justify-end space-x-2">
-                    <button id="save-drug-btn" class="btn btn-primary">儲存</button>
-                    <button id="cancel-edit-btn" class="btn btn-secondary" style="display:none;">取消</button>
+                <div class="mt-8 flex justify-end space-x-3">
+                    <button id="cancel-edit-btn" class="btn btn-secondary text-sm hidden">取消編輯</button>
+                    <button id="save-drug-btn" class="btn btn-primary text-sm px-8 py-3 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                        儲存資料
+                    </button>
                 </div>
             </div>
             
             <div>
-                <h4 class="text-xl font-bold mb-2">目前資料庫藥物</h4>
-                <div class="relative overflow-x-auto rounded-lg">
-                    <table class="w-full text-sm text-left text-gray-500 rounded-lg">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                <h4 class="text-xl font-bold text-slate-700 mb-6 flex items-center">
+                    <span class="bg-slate-100 p-1.5 rounded-lg mr-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    目前資料庫藥物
+                </h4>
+                <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                    <table class="w-full text-sm text-left text-slate-500">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-50 border-b">
                             <tr>
-                                <th scope="col" class="px-6 py-3">藥品名稱</th>
-                                <th scope="col" class="px-6 py-3">LED 因子</th>
-                                <th scope="col" class="px-6 py-3">可用劑量</th>
-                                <th scope="col" class="px-6 py-3">操作</th>
+                                <th scope="col" class="px-6 py-4 font-bold tracking-wider">藥品名稱</th>
+                                <th scope="col" class="px-6 py-4 font-bold tracking-wider">LED 因子</th>
+                                <th scope="col" class="px-6 py-4 font-bold tracking-wider">可用劑量</th>
+                                <th scope="col" class="px-6 py-4 font-bold text-right tracking-wider">操作</th>
                             </tr>
                         </thead>
-                        <tbody id="modal-db-table-body">
+                        <tbody id="modal-db-table-body" class="divide-y divide-slate-100 bg-white">
                             <!-- 藥物資料庫列表將在此顯示 -->
                         </tbody>
                     </table>
@@ -258,33 +524,51 @@
         </div>
     </div>
     
-    <!-- 訊息提示視窗 -->
+    <!-- 訊息提示視窗 (優化版) -->
     <div id="message-modal" class="modal">
-        <div class="modal-content text-center">
-            <p id="message-text" class="text-lg text-gray-700 mb-4"></p>
-            <button id="close-message-btn" class="btn btn-primary">確定</button>
+        <div class="bg-white rounded-lg p-8 max-w-sm w-full mx-4 shadow-xl text-center transform transition-all scale-100 border border-slate-200">
+            <div class="mb-5 text-slate-500 flex justify-center">
+                <div class="bg-slate-50 p-4 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+            <p id="message-text" class="text-lg font-bold text-slate-800 mb-8"></p>
+            <button id="close-message-btn" class="btn btn-primary w-full justify-center shadow-sm">確定</button>
         </div>
     </div>
     
-    <!-- 刪除確認視窗 -->
+    <!-- 刪除確認視窗 (優化版) -->
     <div id="confirmation-modal" class="modal">
-        <div class="modal-content text-center">
-            <p id="confirmation-text" class="text-lg text-gray-700 mb-4">確定要刪除此藥物嗎？</p>
+        <div class="bg-white rounded-lg p-8 max-w-sm w-full mx-4 shadow-xl text-center border border-slate-200">
+            <div class="mb-5 text-red-500 flex justify-center">
+                <div class="bg-red-50 p-4 rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+            </div>
+            <p id="confirmation-text" class="text-lg font-bold text-slate-800 mb-8">確定要刪除此藥物嗎？</p>
             <div class="flex justify-center space-x-4">
-                <button id="confirm-yes" class="btn btn-danger">確定</button>
-                <button id="confirm-no" class="btn btn-secondary">取消</button>
+                <button id="confirm-no" class="btn btn-secondary w-1/2 justify-center">取消</button>
+                <button id="confirm-yes" class="btn btn-danger w-1/2 justify-center shadow-sm">刪除</button>
             </div>
         </div>
     </div>
 
-    <!-- 臨床建議 Modal -->
+    <!-- 臨床建議 Modal (優化版) -->
     <div id="advice-modal" class="modal">
         <div class="modal-content modal-lg">
-            <div class="flex justify-between items-center mb-4">
-                <h3 id="advice-modal-title" class="text-2xl font-bold text-gray-700"></h3>
-                <button id="close-advice-modal-btn" class="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+            <div class="flex justify-between items-center mb-8 pb-4 border-b border-slate-100">
+                <h3 id="advice-modal-title" class="text-2xl font-bold text-slate-800 tracking-tight"></h3>
+                <button id="close-advice-modal-btn" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
             </div>
-            <div id="advice-modal-content" class="text-gray-600 space-y-4">
+            <div id="advice-modal-content" class="text-slate-600 space-y-6 leading-relaxed text-base">
                 <!-- 內容將由 JavaScript 動態生成 -->
             </div>
         </div>
@@ -346,7 +630,7 @@
         const dbClinicalNotesEl = document.getElementById('db-clinical-notes');
         const modalDbTableBodyEl = document.getElementById('modal-db-table-body');
         const editDrugIdEl = document.getElementById('edit-drug-id');
-        const formTitleEl = document.getElementById('form-title');
+        const formTitleEl = document.getElementById('form-title-el'); // Updated ID reference
         const messageModal = document.getElementById('message-modal');
         const messageTextEl = document.getElementById('message-text');
         const closeMessageBtn = document.getElementById('close-message-btn');
@@ -373,87 +657,118 @@
         const adviceModalTitleEl = document.getElementById('advice-modal-title');
         const adviceModalContentEl = document.getElementById('advice-modal-content');
 
-        // 彈出視窗內容
+        // 彈出視窗內容 (優化排版)
         const modalContents = {
-            '使用說明': `<h4 class="text-xl font-bold text-gray-700 mb-2">使用說明</h4>
-                <div class="text-gray-600 space-y-4">
-                    <p><strong>1. 單一藥物LED等效轉換：</strong><br>
-                    此功能用於查詢特定藥物的單次劑量相當於其他藥物的劑量。<br>
-                    - 選擇藥物並輸入單次劑量（mg）。<br>
-                    - 點擊「執行換算」即可查看等效結果。<br>
-                    <span class="text-sm text-red-500">* 注意：Entacapone 因需與 Levodopa 併用才具意義，故不在此清單中。Safinamide 呈現非線性動力學，結果以文字說明。</span></p>
-                    
-                    <p><strong>2. 計算 LED 總劑量：</strong><br>
-                    此功能用於計算病患每日所有帕金森氏症藥物的總 LED。<br>
-                    - 依序選擇藥物、輸入單次劑量及每日頻次，點擊「新增藥物」。<br>
-                    - 系統會自動加總並顯示於下方。<br>
-                    <span class="text-sm text-red-500">* 特殊規則：若清單中包含 Entacapone，系統會自動偵測併用的 Levodopa 總量進行計算 (0.33 x 併用 Levodopa LED)。若無併用 Levodopa，Entacapone 的 LED 為 0。</span></p>
-                    
-                    <p><strong>3. 管理藥物資料庫：</strong><br>
-                    - 您可以點擊「管理藥物資料庫」按鈕，新增、編輯或刪除藥物資料。<br>
-                    - 點擊「編輯」時，視窗會自動捲動至頂端，方便您修改資料。</p>
-                </div>`,
-            '藥物比較': `<h4 class="text-xl font-bold text-gray-700 mb-2">藥物比較</h4>
-                <div class="text-gray-600">
-                    <p class="mb-4">以下列出常見帕金森氏症藥物的 LED 換算因子（以 Levodopa IR 為基準 1）：</p>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-left text-gray-500 rounded-lg border border-gray-200">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-100">
-                                <tr>
-                                    <th class="px-4 py-2 border-b">藥物種類</th>
-                                    <th class="px-4 py-2 border-b">藥物名稱</th>
-                                    <th class="px-4 py-2 border-b">換算因子</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr><td class="px-4 py-2 font-medium">L-dopa</td><td>Levodopa IR</td><td class="px-4 py-2">1.0</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">L-dopa</td><td>Levodopa CR</td><td class="px-4 py-2">0.75</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">L-dopa</td><td>Levodopa ER (Rytary)</td><td class="px-4 py-2">0.75</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">DA Agonist</td><td>Pramipexole</td><td class="px-4 py-2">100</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">DA Agonist</td><td>Ropinirole</td><td class="px-4 py-2">20</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">DA Agonist</td><td>Rotigotine</td><td class="px-4 py-2">30</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">DA Agonist</td><td>Apomorphine</td><td class="px-4 py-2">10</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">DA Agonist</td><td>Bromocriptine</td><td class="px-4 py-2">10</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">MAO-B Inhibitor</td><td>Rasagiline</td><td class="px-4 py-2">100</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">MAO-B Inhibitor</td><td>Selegiline</td><td class="px-4 py-2">10</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">MAO-B Inhibitor</td><td>Safinamide</td><td class="px-4 py-2">非線性</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">COMT Inhibitor</td><td>Entacapone</td><td class="px-4 py-2">0.33 (需併用L-dopa)</td></tr>
-                                <tr><td class="px-4 py-2 font-medium">NMDA Antagonist</td><td>Amantadine</td><td class="px-4 py-2">1.0</td></tr>
-                            </tbody>
-                        </table>
+            '使用說明': `<div class="space-y-6">
+                <div class="bg-emerald-50 p-6 rounded-lg border-l-4 border-emerald-500">
+                    <h5 class="text-lg font-bold text-emerald-800 mb-3 flex items-center">
+                        <span class="bg-emerald-200 text-emerald-700 w-6 h-6 rounded-full flex items-center justify-center text-sm mr-2">1</span>
+                        單一藥物 LED 等效轉換
+                    </h5>
+                    <p class="text-sm">查詢特定藥物的單次劑量相當於其他藥物的劑量。</p>
+                    <ul class="list-disc list-inside mt-2 text-sm pl-2 space-y-1">
+                        <li>選擇藥物並輸入單次劑量 (mg)。</li>
+                        <li>點擊「執行換算」即可查看等效結果。</li>
+                        <li class="text-red-500 font-medium mt-1">注意：Entacapone 需與 Levodopa 併用才具意義，不在此清單。Safinamide 呈非線性動力學，結果以文字說明。</li>
+                    </ul>
+                </div>
+                <div class="bg-emerald-50 p-6 rounded-lg border-l-4 border-emerald-500">
+                    <h5 class="text-lg font-bold text-emerald-800 mb-3 flex items-center">
+                        <span class="bg-emerald-200 text-emerald-700 w-6 h-6 rounded-full flex items-center justify-center text-sm mr-2">2</span>
+                        計算 LED 總劑量
+                    </h5>
+                    <p class="text-sm">計算病患每日所有帕金森氏症藥物的總 LED。</p>
+                    <ul class="list-disc list-inside mt-2 text-sm pl-2 space-y-1">
+                        <li>依序選擇藥物、輸入單次劑量及每日頻次，點擊「新增藥物」。</li>
+                        <li>系統會自動加總並顯示於下方。</li>
+                        <li class="text-red-500 font-medium mt-1">特殊規則：Entacapone 的計算會自動偵測併用的 Levodopa 總量 (0.33 x Levodopa LED)。</li>
+                    </ul>
+                </div>
+                <div class="bg-slate-50 p-6 rounded-lg border-l-4 border-slate-500">
+                    <h5 class="text-lg font-bold text-slate-800 mb-3 flex items-center">
+                        <span class="bg-slate-200 text-slate-700 w-6 h-6 rounded-full flex items-center justify-center text-sm mr-2">3</span>
+                        管理藥物資料庫
+                    </h5>
+                    <p class="text-sm">點擊「管理藥物資料庫」按鈕，可新增、編輯或刪除藥物資料。編輯時視窗會自動捲動至頂端。</p>
+                </div>
+            </div>`,
+            '藥物比較': `<div class="overflow-hidden">
+                <p class="mb-4 text-sm text-slate-500 bg-slate-50 p-2 rounded-md inline-block font-medium border border-slate-200">基準：Levodopa IR = 1.0</p>
+                <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-700 uppercase bg-slate-100">
+                            <tr>
+                                <th class="px-4 py-3 border-b border-slate-200">藥物種類</th>
+                                <th class="px-4 py-3 border-b border-slate-200">藥物名稱</th>
+                                <th class="px-4 py-3 border-b border-slate-200">換算因子</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-slate-100">
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-emerald-600">L-dopa</td><td>Levodopa IR</td><td class="px-4 py-2 font-bold">1.0</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-emerald-600">L-dopa</td><td>Levodopa CR / ER</td><td class="px-4 py-2 font-bold">0.75</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-emerald-600">DA Agonist</td><td>Pramipexole</td><td class="px-4 py-2 font-bold">100</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-emerald-600">DA Agonist</td><td>Ropinirole</td><td class="px-4 py-2 font-bold">20</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-emerald-600">DA Agonist</td><td>Rotigotine</td><td class="px-4 py-2 font-bold">30</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">MAO-B I</td><td>Rasagiline</td><td class="px-4 py-2 font-bold">100</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">MAO-B I</td><td>Selegiline</td><td class="px-4 py-2 font-bold">10</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">COMT I</td><td>Entacapone</td><td class="px-4 py-2 text-xs text-slate-400">0.33 (需併用L-dopa)</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">NMDA Ant.</td><td>Amantadine</td><td class="px-4 py-2 font-bold">1.0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>`,
+            '臨床建議': `<div class="space-y-6">
+                <div class="flex gap-4 p-4 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-lg">1</div>
+                    <div>
+                        <h5 class="text-lg font-bold text-slate-800">LED 的臨床意義</h5>
+                        <p class="text-sm mt-1 text-slate-600">LED 總量反映治療強度。早期病患每日 LED 約 300-600 mg，晚期可能超過 1000 mg。</p>
                     </div>
-                </div>`,
-            '臨床建議': `<h4 class="text-xl font-bold text-gray-700 mb-2">臨床建議</h4>
-                <div class="text-gray-600 space-y-3">
-                    <p><strong>1. LED 的臨床意義：</strong><br>
-                    LED 總量可反映病患目前的藥物治療強度。一般而言，早期帕金森氏症病患的每日 LED 約在 300-600 mg，晚期則可能超過 1000 mg。</p>
-                    
-                    <p><strong>2. 異動症 (Dyskinesia) 風險：</strong><br>
-                    較高的 LED 總量通常與異動症風險增加有關。若病患出現異動症，可考慮減少 L-dopa 劑量或調整其他藥物（如 DA agonists 或 Amantadine）。</p>
-                    
-                    <p><strong>3. 藥效波動 (Wearing-off)：</strong><br>
-                    若病患出現藥效波動，可考慮增加給藥頻次、使用長效型藥物 (如 Levodopa ER, Rotigotine, DA agonists) 或加入 COMT/MAO-B 抑制劑。Safinamide 50mg/100mg 可作為輔助治療，但需注意其非線性 LED 換算特性。</p>
-                    
-                    <p><strong>4. 藥物轉換原則：</strong><br>
-                    當需要轉換藥物時（例如從 Ropinirole 換成 Pramipexole），可利用 LED 進行等效劑量估算，以減少因劑量落差導致的病情波動或副作用。</p>
-                </div>`,
-            '相關名詞': `<h4 class="text-xl font-bold text-gray-700 mb-2">相關名詞解釋</h4>
-                <div class="text-gray-600 space-y-3">
-                    <p><strong>LED (Levodopa Equivalent Dose)：</strong><br>
-                    左旋多巴等效劑量。將不同機轉、不同強度的帕金森氏症藥物，換算成標準化的左旋多巴劑量，以便於臨床比較與加總。</p>
-                    
-                    <p><strong>On-Off Phenomenon (開關現象)：</strong><br>
-                    病患在「開」(有藥效，活動自如) 與「關」(藥效消失，僵硬、顫抖) 狀態之間出現不可預測的波動。</p>
-                    
-                    <p><strong>Wearing-off (藥效減退)：</strong><br>
-                    藥效持續時間縮短，在下一劑藥物服用前，症狀即開始惡化。</p>
-                    
-                    <p><strong>Dyskinesia (異動症)：</strong><br>
-                    因長期服用左旋多巴或劑量過高引起的不自主運動（如舞蹈樣動作、扭動）。通常發生在藥物濃度高峰期 (Peak-dose dyskinesia)。</p>
-                    
-                    <p><strong>FOG (Freezing of Gait，步態凍結)：</strong><br>
-                    病患在起步或轉彎時，感覺雙腳像被黏在地板上無法移動的現象。</p>
-                </div>`
+                </div>
+                <div class="flex gap-4 p-4 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-lg">2</div>
+                    <div>
+                        <h5 class="text-lg font-bold text-slate-800">異動症 (Dyskinesia) 風險</h5>
+                        <p class="text-sm mt-1 text-slate-600">高 LED 總量易增加異動症風險。若出現症狀，考慮減少 L-dopa 或調整 DA agonists / Amantadine。</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 p-4 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-lg">3</div>
+                    <div>
+                        <h5 class="text-lg font-bold text-slate-800">藥效波動 (Wearing-off)</h5>
+                        <p class="text-sm mt-1 text-slate-600">出現藥效波動時，可增加頻次、使用長效型藥物 (ER, Patch) 或加入 COMT/MAO-B 抑制劑。</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 p-4 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-lg">4</div>
+                    <div>
+                        <h5 class="text-lg font-bold text-slate-800">藥物轉換原則</h5>
+                        <p class="text-sm mt-1 text-slate-600">轉換藥物時利用 LED 估算等效劑量，減少病情波動或副作用。</p>
+                    </div>
+                </div>
+            </div>`,
+            '相關名詞': `<div class="grid grid-cols-1 gap-4">
+                <div class="bg-white border border-slate-200 p-5 rounded-lg hover:shadow-md transition-shadow">
+                    <h5 class="font-bold text-emerald-700 text-base mb-1">LED (Levodopa Equivalent Dose)</h5>
+                    <p class="text-sm text-slate-600">左旋多巴等效劑量。將不同藥物換算成標準化的左旋多巴劑量，便於比較與加總。</p>
+                </div>
+                <div class="bg-white border border-slate-200 p-5 rounded-lg hover:shadow-md transition-shadow">
+                    <h5 class="font-bold text-emerald-700 text-base mb-1">On-Off Phenomenon (開關現象)</h5>
+                    <p class="text-sm text-slate-600">病患在「開」(有藥效) 與「關」(無藥效，僵硬) 狀態間不可預測的波動。</p>
+                </div>
+                <div class="bg-white border border-slate-200 p-5 rounded-lg hover:shadow-md transition-shadow">
+                    <h5 class="font-bold text-emerald-700 text-base mb-1">Wearing-off (藥效減退)</h5>
+                    <p class="text-sm text-slate-600">藥效持續時間縮短，下一劑前症狀即惡化。</p>
+                </div>
+                <div class="bg-white border border-slate-200 p-5 rounded-lg hover:shadow-md transition-shadow">
+                    <h5 class="font-bold text-emerald-700 text-base mb-1">Dyskinesia (異動症)</h5>
+                    <p class="text-sm text-slate-600">長期服藥或高劑量引起的不自主運動，常發生在藥物濃度高峰期。</p>
+                </div>
+                <div class="bg-white border border-slate-200 p-5 rounded-lg hover:shadow-md transition-shadow">
+                    <h5 class="font-bold text-emerald-700 text-base mb-1">FOG (Freezing of Gait)</h5>
+                    <p class="text-sm text-slate-600">步態凍結。起步或轉彎時，雙腳像被黏在地板上無法移動。</p>
+                </div>
+            </div>`
         };
 
         // Helper function to format numbers for display
@@ -462,34 +777,48 @@
             return parseFloat(num.toFixed(2));
         }
 
+        // --- UI Helper Functions ---
         function showMessage(message) {
-            messageTextEl.textContent = message;
-            messageModal.style.display = 'flex';
+            const modal = document.getElementById('message-modal');
+            const text = document.getElementById('message-text');
+            text.textContent = message;
+            modal.classList.add('show');
         }
 
-        closeMessageBtn.addEventListener('click', () => {
-            messageModal.style.display = 'none';
-        });
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+        }
 
         function showConfirmation(message, onConfirm) {
-            document.getElementById('confirmation-text').textContent = message;
-            confirmationModal.style.display = 'flex';
+            const modal = document.getElementById('confirmation-modal');
+            const text = document.getElementById('confirmation-text');
+            text.textContent = message;
+            modal.classList.add('show');
             
+            const yesBtn = document.getElementById('confirm-yes');
+            const noBtn = document.getElementById('confirm-no');
+
             const handleYes = () => {
                 onConfirm();
-                confirmationModal.style.display = 'none';
-                confirmYesBtn.removeEventListener('click', handleYes);
-                confirmNoBtn.removeEventListener('click', handleNo);
+                modal.classList.remove('show');
+                cleanup();
             };
             const handleNo = () => {
-                confirmationModal.style.display = 'none';
-                confirmYesBtn.removeEventListener('click', handleYes);
-                confirmNoBtn.removeEventListener('click', handleNo);
+                modal.classList.remove('show');
+                cleanup();
             };
+            
+            function cleanup() {
+                yesBtn.removeEventListener('click', handleYes);
+                noBtn.removeEventListener('click', handleNo);
+            }
 
-            confirmYesBtn.addEventListener('click', handleYes);
-            confirmNoBtn.addEventListener('click', handleNo);
+            yesBtn.addEventListener('click', handleYes);
+            noBtn.addEventListener('click', handleNo);
         }
+
+        // --- Application Logic ---
 
         function setupFirebase() {
             try {
@@ -582,15 +911,15 @@
             for (const id in drugDatabase) {
                 const drug = drugDatabase[id];
                 const tr = document.createElement('tr');
-                tr.className = 'bg-white border-b hover:bg-gray-50';
+                tr.className = 'bg-white border-b hover:bg-emerald-50';
                 const availableDosagesText = drug.availableDosages ? drug.availableDosages.join(', ') : '無';
                 tr.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">${drug.name}</td>
-                    <td class="px-6 py-4">${drug.factor}</td>
-                    <td class="px-6 py-4">${availableDosagesText}</td>
-                    <td class="px-6 py-4">
-                        <button onclick="editDrug('${id}')" class="font-medium text-blue-600 hover:underline mr-2">編輯</button>
-                        <button onclick="deleteDrug('${id}')" class="font-medium text-red-600 hover:underline">刪除</button>
+                    <td class="px-6 py-4 font-medium text-slate-700">${drug.name}</td>
+                    <td class="px-6 py-4 text-emerald-600 font-bold">${drug.factor}</td>
+                    <td class="px-6 py-4 text-slate-500">${availableDosagesText}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="editDrug('${id}')" class="text-emerald-600 hover:text-emerald-800 font-semibold mr-3 transition-colors">編輯</button>
+                        <button onclick="deleteDrug('${id}')" class="text-red-500 hover:text-red-700 font-semibold transition-colors">刪除</button>
                     </td>
                 `;
                 modalDbTableBodyEl.appendChild(tr);
@@ -661,7 +990,9 @@
             const drug = drugDatabase[id];
             if (!drug) return;
             
-            formTitleEl.textContent = '編輯藥物';
+            formTitleEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                    </svg> 編輯藥物`;
             editDrugIdEl.value = id;
             dbDrugNameEl.value = drug.name;
             dbBrandNameEl.value = drug.brand || '';
@@ -670,14 +1001,20 @@
             dbDosageExampleEl.value = drug.example || '';
             dbAvailableDosagesEl.value = (drug.availableDosages || []).join(', ');
             dbClinicalNotesEl.value = drug.notes || '';
-            cancelEditBtn.style.display = 'inline-block';
-            dbModal.style.display = 'flex';
             
+            cancelEditBtn.classList.remove('hidden');
+            cancelEditBtn.style.display = 'inline-flex';
+            
+            dbModal.classList.add('show');
+            
+            // 新增功能: 自動捲動到 modal 頂端
             dbModal.querySelector('.modal-content').scrollTop = 0;
         };
         
         function clearDrugForm() {
-            formTitleEl.textContent = '新增藥物';
+            formTitleEl.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
+                    </svg> 新增藥物`;
             editDrugIdEl.value = '';
             dbDrugNameEl.value = '';
             dbBrandNameEl.value = '';
@@ -686,6 +1023,7 @@
             dbDosageExampleEl.value = '';
             dbAvailableDosagesEl.value = '';
             dbClinicalNotesEl.value = '';
+            cancelEditBtn.classList.add('hidden');
             cancelEditBtn.style.display = 'none';
         }
 
@@ -757,7 +1095,6 @@
             });
             
             recalculateAllLed();
-            
             clearInputFields();
         }
         
@@ -798,15 +1135,24 @@
                 const dailyDosageFormatted = formatNumber(entry.dailyDosage);
                 const ledFormatted = formatNumber(entry.led);
                 const formula = (entry.id === 'entacapone') ? `併用 Levodopa 成分藥物之總LED × ${entry.factor} = ${ledFormatted} mg LED` : `(${dailyDosageFormatted} mg/天) × ${entry.factor} = ${ledFormatted} mg LED`;
+                
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-4 bg-gray-100 rounded-md shadow-sm';
+                div.className = 'flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-slate-200 hover:shadow-md transition-shadow';
                 div.innerHTML = `
                     <div>
-                        <p class="font-bold">${entry.name} ${entry.formulation}</p>
-                        <p class="text-sm text-gray-600">${entry.dosage} mg × ${entry.frequency} 次/天</p>
-                        <p class="text-xs text-gray-500 mt-1">LED 換算：${formula}</p>
+                        <p class="font-bold text-slate-700">${entry.name} <span class="text-sm font-normal text-slate-500">(${entry.formulation})</span></p>
+                        <p class="text-sm text-slate-600 mt-1">
+                            <span class="font-medium text-slate-800">${entry.dosage}</span> mg × 
+                            <span class="font-medium text-slate-800">${entry.frequency}</span> 次/天
+                        </p>
+                        <p class="text-xs text-slate-400 mt-1 bg-slate-50 inline-block px-2 py-1 rounded">LED 換算：${formula}</p>
                     </div>
-                    <button onclick="removeDrugEntry(${index})" class="btn btn-danger text-xs">移除</button>
+                    <button onclick="removeDrugEntry(${index})" class="btn btn-danger p-2 rounded-lg text-xs flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        移除
+                    </button>
                 `;
                 ledListEl.appendChild(div);
             });
@@ -860,33 +1206,45 @@
             const baseLedFormatted = formatNumber(baseLed);
 
             const header = document.createElement('div');
-            header.className = 'p-4 bg-blue-50 border-l-4 border-blue-400 text-blue-800 rounded-md mb-4';
-            header.innerHTML = `<span class="font-bold">換算基礎：</span>服用 ${singleDosage} mg 的 ${selectedDrug.name}，其 LED 為 ${baseLedFormatted} mg。`;
+            header.className = 'p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-lg mb-6 shadow-sm';
+            header.innerHTML = `
+                <div class="text-sm text-emerald-600 font-bold uppercase tracking-wider mb-1">換算基礎</div>
+                <div class="text-lg text-slate-800">
+                    服用 <span class="font-bold text-slate-700 text-xl">${singleDosage}</span> mg 的 <span class="font-bold">${selectedDrug.name}</span>
+                </div>
+                <div class="mt-2 pt-2 border-t border-emerald-200 text-emerald-700 font-bold">
+                    LED = ${baseLedFormatted} mg
+                </div>
+            `;
             singleLedResultsEl.appendChild(header);
 
             const gridContainer = document.createElement('div');
-            gridContainer.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4';
+            gridContainer.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4';
 
             for (const id in drugDatabase) {
                 const drug = drugDatabase[id];
                 if (id !== selectedDrugId && id !== 'entacapone') { 
                     let equivalentText;
                     if (id === 'safinamide_100') {
-                        equivalentText = `<div class="p-4 bg-gray-100 rounded-md shadow-sm">
-                            <p class="font-bold text-sm mb-1">${drug.name} (${drug.formulation})</p>
-                            <p class="text-sm text-red-500">非線性，請人工換算。100mg = LED 125mg。</p>
+                        equivalentText = `<div class="bg-white p-4 rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-shadow">
+                            <p class="font-bold text-sm text-slate-800 mb-2">${drug.name} <span class="text-slate-400 font-normal">(${drug.formulation})</span></p>
+                            <p class="text-sm text-red-500 font-medium bg-red-50 px-2 py-1 rounded inline-block">非線性，請人工換算。100mg = LED 125mg。</p>
                         </div>`;
                     } else if (id === 'safinamide_50') {
-                        equivalentText = `<div class="p-4 bg-gray-100 rounded-md shadow-sm">
-                            <p class="font-bold text-sm mb-1">${drug.name} (${drug.formulation})</p>
-                            <p class="text-sm text-red-500">非線性，請人工換算。50mg = LED 100mg。</p>
+                        equivalentText = `<div class="bg-white p-4 rounded-lg border border-red-100 shadow-sm hover:shadow-md transition-shadow">
+                            <p class="font-bold text-sm text-slate-800 mb-2">${drug.name} <span class="text-slate-400 font-normal">(${drug.formulation})</span></p>
+                            <p class="text-sm text-red-500 font-medium bg-red-50 px-2 py-1 rounded inline-block">非線性，請人工換算。50mg = LED 100mg。</p>
                         </div>`;
                     } else {
                         const equivalentDosage = baseLed / drug.factor;
                         const equivalentDosageFormatted = formatNumber(equivalentDosage);
-                        equivalentText = `<div class="p-4 bg-gray-100 rounded-md shadow-sm">
-                            <p class="font-bold text-sm mb-1">${drug.name} (${drug.formulation})</p>
-                            <p class="text-sm text-gray-600">等效劑量: ${equivalentDosageFormatted} mg</p>
+                        equivalentText = `<div class="bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+                            <p class="font-bold text-sm text-slate-800 mb-2">${drug.name} <span class="text-slate-400 font-normal">(${drug.formulation})</span></p>
+                            <div class="flex items-baseline">
+                                <span class="text-xs text-slate-500 mr-2">等效劑量</span>
+                                <span class="text-lg font-bold text-slate-700">${equivalentDosageFormatted}</span>
+                                <span class="text-xs text-slate-500 ml-1">mg</span>
+                            </div>
                         </div>`;
                     }
                     gridContainer.innerHTML += equivalentText;
@@ -900,37 +1258,44 @@
             singleLedResultsEl.innerHTML = '';
         }
         
+        // Event Listeners
         addDrugBtn.addEventListener('click', addDrugEntry);
         clearInputBtn.addEventListener('click', clearInputFields);
         copyBtn.addEventListener('click', copyResultsToClipboard);
+        
         openDbModalBtn.addEventListener('click', () => {
-            dbModal.style.display = 'flex';
+            dbModal.classList.add('show');
         });
         closeDbModalBtn.addEventListener('click', () => {
-            dbModal.style.display = 'none';
+            dbModal.classList.remove('show');
             clearDrugForm();
         });
+        
         saveDrugBtn.addEventListener('click', addOrUpdateDrug);
-        cancelEditBtn.addEventListener('click', () => {
-            clearDrugForm();
-        });
+        cancelEditBtn.addEventListener('click', clearDrugForm);
+        
         calculateSingleLedBtn.addEventListener('click', calculateSingleLedEquivalent);
         clearSingleLedBtn.addEventListener('click', clearSingleLedFields);
         
         drugSelectEl.addEventListener('change', updateDosageFields);
 
-        // 更新此處的事件監聽器，根據點擊的按鈕顯示對應的內容
+        // Modal triggers
         [openInfoModalBtn1, openInfoModalBtn2, openInfoModalBtn3, openInfoModalBtn4].forEach(btn => {
             btn.addEventListener('click', () => {
                 const modalTitle = btn.textContent.trim();
                 adviceModalTitleEl.textContent = modalTitle;
                 adviceModalContentEl.innerHTML = modalContents[modalTitle];
-                adviceModal.style.display = 'flex';
+                adviceModal.classList.add('show');
             });
         });
 
         closeAdviceModalBtn.addEventListener('click', () => {
-            adviceModal.style.display = 'none';
+            adviceModal.classList.remove('show');
+        });
+
+        // Close message modal
+        closeMessageBtn.addEventListener('click', () => {
+            document.getElementById('message-modal').classList.remove('show');
         });
 
         window.removeDrugEntry = removeDrugEntry;
