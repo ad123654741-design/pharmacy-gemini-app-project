@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statin藥物總覽</title>
+    <title>Statin 降血脂藥：2025 實證指引</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +24,7 @@
             color: #334155;
             background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
             background-size: 24px 24px;
+            font-size: 16px;
         }
 
         .serif { font-family: 'Noto Serif TC', serif; }
@@ -34,14 +35,14 @@
             border-top: 6px solid var(--accent-color);
         }
 
-        /* 標籤 Badge 樣式 */
+        /* 標籤 Badge */
         .badge {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.25rem 0.5rem;
+            padding: 0.35rem 0.6rem;
             border-radius: 6px;
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-weight: 500;
             line-height: 1.2;
             white-space: nowrap;
@@ -55,17 +56,25 @@
         .badge-safe   { background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 
         /* PK Tags */
-        .pk-tag { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-right: 4px; display: inline-block; margin-bottom: 2px; border: 1px solid transparent;}
+        .pk-tag { 
+            font-size: 0.85rem; 
+            padding: 3px 8px; 
+            border-radius: 4px; 
+            margin-right: 4px; 
+            display: inline-block; 
+            margin-bottom: 2px; 
+            border: 1px solid transparent;
+        }
         .pk-lipophilic { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
         .pk-hydrophilic { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
         .pk-prodrug { background: #fef2f2; color: #be123c; border-color: #fecdd3; }
 
-        /* Tab 樣式 (Block Style) */
+        /* Tab Navigation */
         .nav-container {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
             overflow-x: auto;
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.75rem;
             scrollbar-width: none;
         }
         .nav-container::-webkit-scrollbar { display: none; }
@@ -75,7 +84,8 @@
             font-weight: 500;
             color: #64748b;
             background-color: #f1f5f9;
-            padding: 0.6rem 1.2rem;
+            padding: 0.75rem 1.25rem;
+            font-size: 1rem;
             border-radius: 8px;
             transition: all 0.2s ease;
             white-space: nowrap;
@@ -96,10 +106,10 @@
             font-weight: 700;
         }
 
-        /* 統一風格的資訊卡 */
+        /* Info Cards */
         .info-card {
             border-left-width: 4px;
-            padding: 1.5rem;
+            padding: 1.75rem;
             border-radius: 0.5rem;
             background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -113,12 +123,14 @@
         .info-card-indigo { border-left-color: #6366f1; background-color: #eef2ff; }
         .info-card-orange { border-left-color: #f97316; background-color: #fff7ed; }
         .info-card-pink { border-left-color: #ec4899; background-color: #fdf2f8; }
+        .info-card-purple { border-left-color: #8b5cf6; background-color: #f5f3ff; }
         
-        /* 表格優化 */
+        /* Tables */
         .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .modern-table th {
             font-family: 'Noto Serif TC', serif;
             color: #475569;
+            font-size: 1rem;
             border-bottom: 2px solid #cbd5e1;
             padding: 1rem 0.75rem;
             text-align: left;
@@ -127,16 +139,17 @@
             top: 0;
         }
         .modern-table td {
-            padding: 1rem 0.75rem;
+            padding: 1.2rem 0.75rem;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: top;
             background-color: white;
             transition: background-color 0.2s;
+            font-size: 1rem;
         }
         .modern-table tr:hover td { background-color: #f8fafc; }
         .modern-table tr:last-child td { border-bottom: none; }
 
-        /* MOA 樣式優化 */
+        /* MOA Diagram */
         .cell-container {
             background-color: #f8fafc;
             border: 2px solid #e2e8f0;
@@ -155,9 +168,9 @@
         .cell-membrane {
             border-bottom: 4px solid #94a3b8;
             background: #e2e8f0;
-            padding: 0.5rem;
+            padding: 0.6rem;
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             color: #64748b;
             font-weight: bold;
             letter-spacing: 0.1em;
@@ -178,7 +191,7 @@
             left: 20px;
             background: #f8fafc;
             padding: 0 8px;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             color: #94a3b8;
             font-weight: bold;
         }
@@ -186,7 +199,7 @@
             background: white;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
-            padding: 0.75rem;
+            padding: 0.85rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s;
@@ -216,59 +229,74 @@
             border-top: 4px solid #cbd5e1;
         }
 
-        /* SAMS 樣式優化 */
-        .algorithm-card {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
-            transition: all 0.3s;
+        /* SAMS Section Styles */
+        .score-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
         }
-        .algorithm-card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        .algo-header {
-            background: #f1f5f9;
-            padding: 1rem;
+        .score-table th {
+            background-color: #f1f5f9;
+            text-align: left;
+            padding: 0.75rem;
+            color: #475569;
             font-weight: 700;
-            color: #334155;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 2px solid #e2e8f0;
         }
-        .algo-body { padding: 1.5rem; }
-        .algo-number {
-            background: var(--accent-color);
-            color: white;
-            width: 24px;
-            height: 24px;
+        .score-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: top;
+        }
+        .score-badge {
+            display: inline-block;
+            width: 1.5rem;
+            height: 1.5rem;
+            line-height: 1.5rem;
+            text-align: center;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: #dbeafe; 
+            color: #1e40af; 
             font-size: 0.8rem;
             font-weight: bold;
+            border: 1px solid #bfdbfe;
+        }
+        .flow-step {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1.5rem;
+            border-left: 2px solid #e2e8f0;
+        }
+        .flow-step:last-child { border-left: none; }
+        .flow-dot {
+            position: absolute;
+            left: -0.6rem;
+            top: 0;
+            width: 1.2rem;
+            height: 1.2rem;
+            border-radius: 50%;
+            background: white;
+            border: 4px solid var(--accent-color);
         }
 
-        /* 預防路徑專用樣式 */
+        /* Pathway & Misc */
         .pathway-box {
             border: 2px solid #e2e8f0;
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 1.75rem;
             background: #fff;
             position: relative;
         }
         .pathway-target-card {
             text-align: center;
-            padding: 1rem;
+            padding: 1.2rem;
             border-radius: 8px;
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
         }
         .pathway-target-card strong {
             display: block;
-            font-size: 1.5rem;
+            font-size: 1.75rem;
             font-weight: 800;
             line-height: 1.2;
         }
@@ -278,19 +306,20 @@
             align-items: center;
             padding: 0.5rem;
             color: #94a3b8;
+            font-size: 1.5rem;
         }
         
         .risk-level-tag {
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 2px 6px;
+            padding: 4px 10px;
             border-radius: 4px;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
             display: inline-block;
+            font-weight: bold;
         }
 
-        /* Tab Content Animation */
         .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in; }
         .tab-content.active { display: block; opacity: 1; }
         
@@ -298,10 +327,45 @@
             margin-top: 3rem;
             padding-top: 1.5rem;
             border-top: 1px solid #e2e8f0;
-            font-size: 0.75rem;
-            color: #94a3b8;
+            font-size: 0.9rem;
+            color: #64748b;
             font-style: italic;
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            position: relative;
+            padding: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2rem;
+            color: #64748b;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .close-btn:hover { color: #0f172a; }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
@@ -311,15 +375,24 @@
         <!-- Header -->
         <header class="mb-8 relative z-10">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-slate-100">
-                <div>
-                    <h2 class="text-xs font-bold tracking-widest text-teal-600 uppercase mb-2">Evidence-Based Medicine</h2>
-                    <h1 class="serif text-3xl md:text-4xl text-slate-900 leading-tight font-bold">
-                        Statin 降血脂藥
-                    </h1>
+                <div class="flex flex-col gap-2">
+                    <div>
+                        <h2 class="text-sm font-bold tracking-widest text-teal-600 uppercase mb-2">Evidence-Based Medicine</h2>
+                        <h1 class="serif text-3xl md:text-4xl text-slate-900 leading-tight font-bold">
+                            Statin 降血脂藥
+                        </h1>
+                    </div>
+                    <!-- 新增按鈕 -->
+                    <button onclick="openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition duration-200 flex items-center gap-2 w-fit mt-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        Statin 重點表格
+                    </button>
                 </div>
                 <div class="text-right hidden md:block">
-                    <p class="text-slate-400 text-sm font-light">Updated 2024 • Clinical Reference</p>
-                    <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師 • 更新日期 : 2026/01/03</p>
+                    <p class="text-slate-500 text-base font-light">Updated 2024 • Clinical Reference</p>
+                    <p class="text-slate-600 text-base font-medium mt-1">製作者 : 蝦仁藥師 • 更新日期 : 2026/01/03</p>
                 </div>
             </div>
             
@@ -327,38 +400,36 @@
             <nav class="nav-container mt-6">
                 <button onclick="switchTab('intensity')" id="tab-intensity" class="tab-btn active">藥物強度</button>
                 <button onclick="switchTab('metabolism')" id="tab-metabolism" class="tab-btn">代謝與交互作用</button>
+                <button onclick="switchTab('renal')" id="tab-renal" class="tab-btn">腎功能調整</button>
                 <button onclick="switchTab('pkpd')" id="tab-pkpd" class="tab-btn">藥物動力學</button>
-                <button onclick="switchTab('moa')" id="tab-moa" class="tab-btn">藥理機轉 (MOA)</button>
+                <button onclick="switchTab('moa')" id="tab-moa" class="tab-btn">藥理機轉</button>
                 <button onclick="switchTab('safety')" id="tab-safety" class="tab-btn">副作用處置</button>
-                <button onclick="switchTab('prevention')" id="tab-prevention" class="tab-btn">預防醫學路徑 (2025)</button>
-                <button onclick="switchTab('nodm')" id="tab-nodm" class="tab-btn">新生糖尿病 (NODM)</button>
+                <button onclick="switchTab('prevention')" id="tab-prevention" class="tab-btn">預防醫學</button>
+                <button onclick="switchTab('nodm')" id="tab-nodm" class="tab-btn">新生糖尿病</button>
                 <button onclick="switchTab('pregnancy')" id="tab-pregnancy" class="tab-btn">懷孕與哺乳</button>
             </nav>
         </header>
 
-        <!-- ========================================== -->
+        <!-- (Tabs 1-6 省略，保持原樣) -->
         <!-- TAB 1: 藥物強度 -->
-        <!-- ========================================== -->
         <div id="content-intensity" class="tab-content active">
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <div class="p-5 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-                    <h3 class="text-emerald-800 font-bold mb-1">低強度 (Low)</h3>
+                    <h3 class="text-emerald-800 font-bold mb-1 text-lg">低強度 (Low)</h3>
                     <p class="text-3xl font-bold text-emerald-600 my-2">&lt; 30%</p>
-                    <p class="text-xs text-emerald-700 opacity-80">LDL-C Reduction</p>
+                    <p class="text-sm text-emerald-700 opacity-80">LDL-C Reduction</p>
                 </div>
                 <div class="p-5 rounded-xl bg-amber-50 border border-amber-100 text-center">
-                    <h3 class="text-amber-800 font-bold mb-1">中強度 (Moderate)</h3>
+                    <h3 class="text-amber-800 font-bold mb-1 text-lg">中強度 (Moderate)</h3>
                     <p class="text-3xl font-bold text-amber-600 my-2">30 - 49%</p>
-                    <p class="text-xs text-amber-700 opacity-80">LDL-C Reduction</p>
+                    <p class="text-sm text-amber-700 opacity-80">LDL-C Reduction</p>
                 </div>
                 <div class="p-5 rounded-xl bg-rose-50 border border-rose-100 text-center">
-                    <h3 class="text-rose-800 font-bold mb-1">高強度 (High)</h3>
+                    <h3 class="text-rose-800 font-bold mb-1 text-lg">高強度 (High)</h3>
                     <p class="text-3xl font-bold text-rose-600 my-2">≥ 50%</p>
-                    <p class="text-xs text-rose-700 opacity-80">LDL-C Reduction</p>
+                    <p class="text-sm text-rose-700 opacity-80">LDL-C Reduction</p>
                 </div>
             </div>
-
             <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
                 <table class="modern-table min-w-[800px]">
                     <thead>
@@ -370,298 +441,152 @@
                             <th class="w-1/5 text-rose-700">高強度</th>
                         </tr>
                     </thead>
-                    <tbody class="text-slate-700 text-sm">
-                        <tr>
-                            <td class="font-bold">Atorvastatin</td>
-                            <td class="text-slate-500">Lipitor</td>
-                            <td class="text-slate-300">—</td>
-                            <td><span class="badge badge-mid">10、20 mg</span></td>
-                            <td><span class="badge badge-high">40、80 mg</span></td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Rosuvastatin</td>
-                            <td class="text-slate-500">Crestor</td>
-                            <td class="text-slate-300">—</td>
-                            <td><span class="badge badge-mid">5、10 mg</span></td>
-                            <td><span class="badge badge-high">20、40 mg</span></td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Simvastatin</td>
-                            <td class="text-slate-500">Zocor</td>
-                            <td><span class="badge badge-low">10 mg</span></td>
-                            <td><span class="badge badge-mid">20、40 mg</span></td>
-                            <td class="text-slate-300">—</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Pitavastatin</td>
-                            <td class="text-slate-500">Livalo</td>
-                            <td class="text-slate-300">—</td>
-                            <td><span class="badge badge-mid">1、2、4 mg</span></td>
-                            <td class="text-slate-300">—</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Pravastatin</td>
-                            <td class="text-slate-500">Mevalotin</td>
-                            <td><span class="badge badge-low">10、20 mg</span></td>
-                            <td><span class="badge badge-mid">40、80 mg</span></td>
-                            <td class="text-slate-300">—</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Lovastatin</td>
-                            <td class="text-slate-500">Mevacor</td>
-                            <td><span class="badge badge-low">20 mg</span></td>
-                            <td><span class="badge badge-mid">40 mg</span></td>
-                            <td class="text-slate-300">—</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Fluvastatin</td>
-                            <td class="text-slate-500">Lescol</td>
-                            <td><span class="badge badge-low">20、40 mg</span></td>
-                            <td><div class="flex flex-col gap-1"><span class="badge badge-mid w-fit">40 mg (BID)</span><span class="badge badge-mid w-fit">80 mg (XL)</span></div></td>
-                            <td class="text-slate-300">—</td>
-                        </tr>
+                    <tbody class="text-slate-700 text-base">
+                        <tr><td class="font-bold">Atorvastatin</td><td class="text-slate-500">Lipitor</td><td class="text-slate-300">—</td><td><span class="badge badge-mid">10、20 mg</span></td><td><span class="badge badge-high">40、80 mg</span></td></tr>
+                        <tr><td class="font-bold">Rosuvastatin</td><td class="text-slate-500">Crestor</td><td class="text-slate-300">—</td><td><span class="badge badge-mid">5、10 mg</span></td><td><span class="badge badge-high">20、40 mg</span></td></tr>
+                        <tr><td class="font-bold">Simvastatin</td><td class="text-slate-500">Zocor</td><td><span class="badge badge-low">10 mg</span></td><td><span class="badge badge-mid">20、40 mg</span></td><td class="text-slate-300">—</td></tr>
+                        <tr><td class="font-bold">Pitavastatin</td><td class="text-slate-500">Livalo</td><td class="text-slate-300">—</td><td><span class="badge badge-mid">1、2、4 mg</span></td><td class="text-slate-300">—</td></tr>
+                        <tr><td class="font-bold">Pravastatin</td><td class="text-slate-500">Mevalotin</td><td><span class="badge badge-low">10、20 mg</span></td><td><span class="badge badge-mid">40、80 mg</span></td><td class="text-slate-300">—</td></tr>
+                        <tr><td class="font-bold">Lovastatin</td><td class="text-slate-500">Mevacor</td><td><span class="badge badge-low">20 mg</span></td><td><span class="badge badge-mid">40 mg</span></td><td class="text-slate-300">—</td></tr>
+                        <tr><td class="font-bold">Fluvastatin</td><td class="text-slate-500">Lescol</td><td><span class="badge badge-low">20、40 mg</span></td><td><div class="flex flex-col gap-1"><span class="badge badge-mid w-fit">40 mg (BID)</span><span class="badge badge-mid w-fit">80 mg (XL)</span></div></td><td class="text-slate-300">—</td></tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="info-card info-card-note">
-                    <h4 class="font-bold text-blue-700 mb-2">Clinical Notes</h4>
-                    <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                    <h4 class="font-bold text-blue-700 mb-2 text-lg">Clinical Notes</h4>
+                    <ul class="text-base text-slate-600 list-disc pl-4 space-y-1">
                         <li><strong>亞洲人種差異</strong>：對 Rosuvastatin 敏感度較高，中劑量常可達理想療效。</li>
                         <li><strong>Pitavastatin</strong>：2018 指引將 1-4 mg 全數歸類為中強度。</li>
                     </ul>
                 </div>
                 <div class="info-card info-card-danger">
-                    <h4 class="font-bold text-rose-700 mb-2">Safety Warning</h4>
-                    <p class="text-sm text-slate-600"><strong>Simvastatin 80 mg</strong>：因橫紋肌溶解症風險顯著較高，指引<strong>強烈不建議</strong>新處方此劑量。</p>
+                    <h4 class="font-bold text-rose-700 mb-2 text-lg">Safety Warning</h4>
+                    <p class="text-base text-slate-600"><strong>Simvastatin 80 mg</strong>：因橫紋肌溶解症風險顯著較高，指引<strong>強烈不建議</strong>新處方此劑量。</p>
                 </div>
             </div>
              <div class="ref-section">Ref: 2018 AHA/ACC Guideline on the Management of Blood Cholesterol (Table 3).</div>
         </div>
 
-        <!-- ========================================== -->
         <!-- TAB 2: 代謝與交互作用 -->
-        <!-- ========================================== -->
         <div id="content-metabolism" class="tab-content">
-            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
+             <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
                 <table class="modern-table min-w-[800px]">
                     <thead>
-                        <tr>
-                            <th class="w-1/4">藥物成分</th>
-                            <th class="w-1/4">主要代謝途徑</th>
-                            <th class="w-1/4">關鍵酵素</th>
-                            <th class="w-1/4">DDI 風險</th>
-                        </tr>
+                        <tr><th class="w-1/4">藥物成分</th><th class="w-1/4">主要代謝途徑</th><th class="w-1/4">關鍵酵素</th><th class="w-1/4">DDI 風險</th></tr>
                     </thead>
-                    <tbody class="text-slate-700 text-sm">
-                        <!-- Group: Major CYP3A4 -->
-                        <tr class="bg-rose-50/60">
-                            <td class="font-bold text-slate-800">Simvastatin</td>
-                            <td>CYP450 氧化代謝</td>
-                            <td><span class="badge badge-cyp3a4">CYP3A4</span></td>
-                            <td class="text-rose-700 font-bold">高 (Major)</td>
-                        </tr>
-                        <tr class="bg-rose-50/60">
-                            <td class="font-bold text-slate-800">Lovastatin</td>
-                            <td>CYP450 氧化代謝</td>
-                            <td><span class="badge badge-cyp3a4">CYP3A4</span></td>
-                            <td class="text-rose-700 font-bold">高 (Major)</td>
-                        </tr>
-                        <tr class="bg-rose-50/30">
-                            <td class="font-bold text-slate-800">Atorvastatin</td>
-                            <td>CYP450 氧化代謝</td>
-                            <td><span class="badge badge-cyp3a4">CYP3A4</span></td>
-                            <td class="text-amber-700 font-bold">中~高</td>
-                        </tr>
-                        
-                        <!-- Group: CYP2C9 -->
-                        <tr class="bg-blue-50/30">
-                            <td class="font-bold text-slate-800">Fluvastatin</td>
-                            <td>CYP450 氧化代謝</td>
-                            <td><span class="badge badge-cyp2c9">CYP2C9</span></td>
-                            <td class="text-slate-600 font-bold">中等</td>
-                        </tr>
-
-                        <!-- Group: Low/Non CYP -->
-                        <tr>
-                            <td class="font-bold text-slate-800">Pitavastatin</td>
-                            <td>葡萄糖醛酸結合 (Glucuronidation)</td>
-                            <td>
-                                <span class="badge badge-safe">UGT</span>
-                                <div class="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Minor: CYP2C9, 2C8</div>
-                            </td>
-                            <td class="text-emerald-700 font-bold">低</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold text-slate-800">Rosuvastatin</td>
-                            <td>原型排出 (90%)</td>
-                            <td>
-                                <span class="badge badge-safe">Minimal CYP</span>
-                                <div class="text-[10px] text-slate-400 mt-1 font-medium leading-tight">Minor: CYP2C9</div>
-                            </td>
-                            <td class="text-emerald-700 font-bold">低</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold text-slate-800">Pravastatin</td>
-                            <td>硫酸化 (Sulfation) / 腎臟</td>
-                            <td><span class="badge badge-safe">Non-CYP</span></td>
-                            <td class="text-emerald-700 font-bold">極低</td>
-                        </tr>
+                    <tbody class="text-slate-700 text-base">
+                        <tr class="bg-rose-50/60"><td class="font-bold text-slate-800">Simvastatin</td><td>CYP450 氧化代謝</td><td><span class="badge badge-cyp3a4">CYP3A4</span></td><td class="text-rose-700 font-bold">高 (Major)</td></tr>
+                        <tr class="bg-rose-50/60"><td class="font-bold text-slate-800">Lovastatin</td><td>CYP450 氧化代謝</td><td><span class="badge badge-cyp3a4">CYP3A4</span></td><td class="text-rose-700 font-bold">高 (Major)</td></tr>
+                        <tr class="bg-rose-50/30"><td class="font-bold text-slate-800">Atorvastatin</td><td>CYP450 氧化代謝</td><td><span class="badge badge-cyp3a4">CYP3A4</span></td><td class="text-amber-700 font-bold">中~高</td></tr>
+                        <tr class="bg-blue-50/30"><td class="font-bold text-slate-800">Fluvastatin</td><td>CYP450 氧化代謝</td><td><span class="badge badge-cyp2c9">CYP2C9</span></td><td class="text-slate-600 font-bold">中等</td></tr>
+                        <tr><td class="font-bold text-slate-800">Pitavastatin</td><td>葡萄糖醛酸結合</td><td><span class="badge badge-safe">UGT</span><div class="text-sm text-slate-400 mt-1 font-medium leading-tight">Minor: CYP2C9, 2C8</div></td><td class="text-emerald-700 font-bold">低</td></tr>
+                        <tr><td class="font-bold text-slate-800">Rosuvastatin</td><td>原型排出 (90%)</td><td><span class="badge badge-safe">Minimal CYP</span><div class="text-sm text-slate-400 mt-1 font-medium leading-tight">Minor: CYP2C9</div></td><td class="text-emerald-700 font-bold">低</td></tr>
+                        <tr><td class="font-bold text-slate-800">Pravastatin</td><td>硫酸化 / 腎臟</td><td><span class="badge badge-safe">Non-CYP</span></td><td class="text-emerald-700 font-bold">極低</td></tr>
                     </tbody>
                 </table>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="info-card info-card-danger">
-                    <h4 class="font-bold text-rose-700 mb-2">⛔ CYP3A4 抑制劑 (慎用)</h4>
-                    <p class="text-sm text-slate-600 mb-2 font-medium">服用 Simvastatin, Lovastatin, Atorvastatin 需特別避開：</p>
-                    <ul class="list-disc pl-4 text-sm text-slate-600 space-y-1">
-                        <li><strong>抗黴菌藥</strong> (Azoles: Itraconazole, Ketoconazole)</li>
-                        <li><strong>大環內酯類抗生素</strong> (Erythromycin, Clarithromycin)</li>
-                        <li><strong>抗病毒藥</strong> (HIV Protease Inhibitors)</li>
-                        <li><strong>飲食</strong>：大量葡萄柚汁 (Grapefruit Juice)</li>
+                    <h4 class="font-bold text-rose-700 mb-2 text-lg">⛔ CYP3A4 抑制劑 (慎用)</h4>
+                    <p class="text-base text-slate-600 mb-2 font-medium">服用 Simvastatin, Lovastatin, Atorvastatin 需特別避開：</p>
+                    <ul class="list-disc pl-4 text-base text-slate-600 space-y-1">
+                        <li><strong>抗黴菌藥</strong> (Azoles)</li>
+                        <li><strong>大環內酯類抗生素</strong> (Erythromycin)</li>
+                        <li><strong>抗病毒藥</strong> (Protease Inhibitors)</li>
+                        <li><strong>飲食</strong>：大量葡萄柚汁</li>
                     </ul>
                 </div>
                 <div class="info-card info-card-strategy">
-                    <h4 class="font-bold text-teal-700 mb-2">💡 臨床策略 (Clinical Strategy)</h4>
-                    <p class="text-sm text-slate-600 mb-3">若病患有多重用藥需求 (如 HIV、移植抗排斥藥、複雜感染)，建議優先選用不經 CYP 系統代謝的藥物，以降低交互作用風險：</p>
+                    <h4 class="font-bold text-teal-700 mb-2 text-lg">💡 臨床策略</h4>
+                    <p class="text-base text-slate-600 mb-3">多重用藥建議優先選用不經 CYP 系統代謝的藥物：</p>
                     <div class="flex gap-2 flex-wrap">
-                        <span class="badge badge-safe">Pravastatin</span>
-                        <span class="badge badge-safe">Rosuvastatin</span>
-                        <span class="badge badge-safe">Pitavastatin</span>
+                        <span class="badge badge-safe">Pravastatin</span><span class="badge badge-safe">Rosuvastatin</span><span class="badge badge-safe">Pitavastatin</span>
                     </div>
                 </div>
             </div>
-            <div class="ref-section">Ref: FDA Prescribing Information; 2013 ACC/AHA Guideline (Drug Interactions).</div>
+            <div class="ref-section">Ref: FDA Prescribing Information; 2013 ACC/AHA Guideline.</div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- TAB 3: 藥物動力學 -->
-        <!-- ========================================== -->
-        <div id="content-pkpd" class="tab-content">
+        <!-- TAB 3: 腎功能調整 -->
+        <div id="content-renal" class="tab-content">
+             <div class="bg-purple-50 border-l-4 border-purple-600 p-6 rounded-r-lg mb-8 shadow-sm">
+                <h3 class="serif text-purple-900 font-bold text-xl mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+                    腎功能調整原則 (CKD Dosing)
+                </h3>
+                <p class="text-slate-700 leading-relaxed text-base">
+                    大部分 Statin 主要經由肝臟代謝與排除，對腎功能不全患者相對安全。<span class="font-bold text-purple-700">Atorvastatin</span> 與 <span class="font-bold text-purple-700">Fluvastatin</span> 幾乎不需依腎功能調整，是 CKD 首選。
+                </p>
+            </div>
             <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
-                <table class="modern-table min-w-[900px]">
+                <table class="modern-table min-w-[800px]">
                     <thead>
-                        <tr>
-                            <th class="w-[12%]">藥物</th>
-                            <th class="w-[12%]">親水/親脂性</th>
-                            <th class="w-[10%]">半衰期 (T1/2)</th>
-                            <th class="w-[12%]">蛋白結合率</th>
-                            <th class="w-[12%]">生體可用率</th>
-                            <th class="w-[10%]">前驅藥</th>
-                            <th class="w-[15%]">排除途徑</th>
-                        </tr>
+                        <tr><th class="w-1/5">藥物成分</th><th class="w-1/5">輕度腎功能不全<br><span class="text-sm font-normal opacity-75">(CrCl 60-89)</span></th><th class="w-1/5">中度腎功能不全<br><span class="text-sm font-normal opacity-75">(CrCl 30-59)</span></th><th class="w-1/5">重度腎功能不全<br><span class="text-sm font-normal opacity-75">(CrCl < 30)</span></th><th class="w-1/5">備註</th></tr>
                     </thead>
-                    <tbody class="text-slate-700 text-sm">
-                        <tr>
-                            <td class="font-bold">Atorvastatin</td>
-                            <td><span class="pk-tag pk-lipophilic">親脂性</span></td>
-                            <td>~14h</td>
-                            <td>≥ 98%</td>
-                            <td>~ 14%</td>
-                            <td>否</td>
-                            <td>膽汁</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Rosuvastatin</td>
-                            <td><span class="pk-tag pk-hydrophilic">親水性</span></td>
-                            <td>~19h</td>
-                            <td>88%</td>
-                            <td>~ 20%</td>
-                            <td>否</td>
-                            <td>糞便(90%)</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Simvastatin</td>
-                            <td><span class="pk-tag pk-lipophilic">親脂性</span></td>
-                            <td>2-3h</td>
-                            <td>95%</td>
-                            <td>< 5%</td>
-                            <td><span class="pk-tag pk-prodrug">是</span></td>
-                            <td>糞便/尿液</td>
-                        </tr>
-                         <tr>
-                            <td class="font-bold">Lovastatin</td>
-                            <td><span class="pk-tag pk-lipophilic">親脂性</span></td>
-                            <td>~3h</td>
-                            <td>> 95%</td>
-                            <td>< 5%</td>
-                            <td><span class="pk-tag pk-prodrug">是</span></td>
-                            <td>糞便/尿液</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Pravastatin</td>
-                            <td><span class="pk-tag pk-hydrophilic">親水性</span></td>
-                            <td>1.3-2.8h</td>
-                            <td>~ 50%</td>
-                            <td>~ 17%</td>
-                            <td>否</td>
-                            <td>腎/糞便</td>
-                        </tr>
-                         <tr>
-                            <td class="font-bold">Fluvastatin</td>
-                            <td><span class="pk-tag pk-lipophilic">親脂性</span></td>
-                            <td>~3h (XL~9h)</td>
-                            <td>> 98%</td>
-                            <td>~ 24%</td>
-                            <td>否</td>
-                            <td>糞便/尿液</td>
-                        </tr>
-                         <tr>
-                            <td class="font-bold">Pitavastatin</td>
-                            <td><span class="pk-tag pk-lipophilic">親脂性</span></td>
-                            <td>~12h</td>
-                            <td>> 99%</td>
-                            <td>> 50%</td>
-                            <td>否</td>
-                            <td>腸肝循環</td>
-                        </tr>
+                    <tbody class="text-slate-700 text-base">
+                        <tr class="bg-purple-50/40"><td class="font-bold text-slate-800">Atorvastatin</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-sm text-slate-500">CKD 首選</td></tr>
+                        <tr class="bg-purple-50/40"><td class="font-bold text-slate-800">Fluvastatin</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-emerald-700 font-bold">無需調整</td><td><div class="text-amber-600 font-bold">謹慎使用</div><div class="text-sm text-slate-500 mt-1">CrCl < 30 資料較少</div></td><td class="text-sm text-slate-500">主要經肝臟代謝</td></tr>
+                        <tr><td class="font-bold text-slate-800">Rosuvastatin</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-emerald-700 font-bold">無需調整</td><td><div class="text-rose-600 font-bold">起始 5 mg</div><div class="text-sm text-slate-500 mt-1">Max 10 mg</div></td><td class="text-sm text-slate-500">親水性，腎排除10%</td></tr>
+                        <tr><td class="font-bold text-slate-800">Pravastatin</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-emerald-700 font-bold">無需調整</td><td><div class="text-amber-600 font-bold">起始 10 mg</div></td><td class="text-sm text-slate-500">腎排除約 20%</td></tr>
+                        <tr><td class="font-bold text-slate-800">Simvastatin</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-emerald-700 font-bold">無需調整</td><td><div class="text-amber-600 font-bold">起始 5 mg</div><div class="text-sm text-slate-500 mt-1">需密切監測</div></td><td class="text-sm text-slate-500">高劑量風險較高</td></tr>
+                        <tr><td class="font-bold text-slate-800">Lovastatin</td><td class="text-emerald-700 font-bold">無需調整</td><td class="text-emerald-700 font-bold">無需調整</td><td><div class="text-amber-600 font-bold">謹慎使用</div><div class="text-sm text-slate-500 mt-1">若需 >20mg 審慎評估</div></td><td class="text-sm text-slate-500">-</td></tr>
+                        <tr><td class="font-bold text-slate-800">Pitavastatin</td><td class="text-emerald-700 font-bold">無需調整</td><td><div class="text-amber-600 font-bold">起始 1 mg</div><div class="text-sm text-slate-500 mt-1">Max 2 mg</div></td><td><div class="text-amber-600 font-bold">起始 1 mg</div><div class="text-sm text-slate-500 mt-1">Max 2 mg</div></td><td class="text-sm text-slate-500">中度 (GFR 30-59) 即需調整</td></tr>
                     </tbody>
                 </table>
             </div>
-
-             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="info-card info-card-indigo">
-                    <h4 class="font-bold text-indigo-700 mb-2">親脂 vs 親水 (Lipophilic vs Hydrophilic)</h4>
-                    <p class="text-sm text-slate-600 mb-2"><strong>親水性藥物 (Rosuva, Prava)</strong>：</p>
-                    <ul class="list-disc pl-4 text-sm text-slate-600">
-                        <li>較具肝臟選擇性 (Hepato-selectivity)。</li>
-                        <li>理論上較少穿透細胞膜進入骨骼肌或神經系統。</li>
-                        <li>SAMS 風險可能相對較低（證據尚不一致，但在換藥策略中常被採用）。</li>
-                    </ul>
-                </div>
-                 <div class="info-card info-card-orange">
-                    <h4 class="font-bold text-orange-700 mb-2">給藥時間 (Dosing Time)</h4>
-                    <ul class="list-disc pl-4 text-sm text-slate-600 space-y-2">
-                        <li><strong>短效型 (Simva, Lova, Fluva)</strong>：半衰期短，需於<strong>晚餐後或睡前</strong>服用，以配合夜間膽固醇合成高峰。</li>
-                        <li><strong>長效型 (Atorva, Rosuva, Pita)</strong>：半衰期長，全天任何時間皆可服用，順從性較佳。</li>
-                    </ul>
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="info-card info-card-purple"><h4 class="font-bold text-purple-700 mb-2 text-lg">洗腎病患 (Hemodialysis)</h4><ul class="text-base text-slate-700 list-disc pl-4 space-y-2"><li><strong>起始治療</strong>：不建議洗腎後才開始常規使用。</li><li><strong>維持治療</strong>：洗腎前已服用且耐受良好建議繼續。</li></ul></div>
+                <div class="info-card info-card-note"><h4 class="font-bold text-blue-700 mb-2 text-lg">安全監測</h4><p class="text-base text-slate-600 mb-2">CKD 病患肌肉病變風險較高，尤其是使用親水性藥物未調整劑量或合併 Fibrates 時。</p></div>
             </div>
-            <div class="ref-section">Ref: UpToDate: Statins: Actions, side effects, and administration; Williams Textbook of Endocrinology.</div>
+            <div class="ref-section">Ref: FDA Prescribing Information; KDIGO 2013 Clinical Practice Guideline.</div>
+        </div>
+
+        <!-- TAB 4: 藥物動力學 -->
+        <div id="content-pkpd" class="tab-content">
+             <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
+                <table class="modern-table min-w-[900px]">
+                    <thead>
+                        <tr><th class="w-[12%]">藥物</th><th class="w-[12%]">親水/親脂性</th><th class="w-[10%]">半衰期 (T1/2)</th><th class="w-[12%]">蛋白結合率</th><th class="w-[12%]">生體可用率</th><th class="w-[10%]">前驅藥</th><th class="w-[15%]">排除途徑</th></tr>
+                    </thead>
+                    <tbody class="text-slate-700 text-base">
+                        <tr><td class="font-bold">Atorvastatin</td><td><span class="pk-tag pk-lipophilic">親脂性</span></td><td>~14h</td><td>≥ 98%</td><td>~ 14%</td><td>否</td><td>膽汁</td></tr>
+                        <tr><td class="font-bold">Rosuvastatin</td><td><span class="pk-tag pk-hydrophilic">親水性</span></td><td>~19h</td><td>88%</td><td>~ 20%</td><td>否</td><td>糞便(90%)</td></tr>
+                        <tr><td class="font-bold">Simvastatin</td><td><span class="pk-tag pk-lipophilic">親脂性</span></td><td>2-3h</td><td>95%</td><td>< 5%</td><td><span class="pk-tag pk-prodrug">是</span></td><td>糞便/尿液</td></tr>
+                        <tr><td class="font-bold">Lovastatin</td><td><span class="pk-tag pk-lipophilic">親脂性</span></td><td>~3h</td><td>> 95%</td><td>< 5%</td><td><span class="pk-tag pk-prodrug">是</span></td><td>糞便/尿液</td></tr>
+                        <tr><td class="font-bold">Pravastatin</td><td><span class="pk-tag pk-hydrophilic">親水性</span></td><td>1.3-2.8h</td><td>~ 50%</td><td>~ 17%</td><td>否</td><td>腎/糞便</td></tr>
+                        <tr><td class="font-bold">Fluvastatin</td><td><span class="pk-tag pk-lipophilic">親脂性</span></td><td>~3h (XL~9h)</td><td>> 98%</td><td>~ 24%</td><td>否</td><td>糞便/尿液</td></tr>
+                        <tr><td class="font-bold">Pitavastatin</td><td><span class="pk-tag pk-lipophilic">親脂性</span></td><td>~12h</td><td>> 99%</td><td>> 50%</td><td>否</td><td>腸肝循環</td></tr>
+                    </tbody>
+                </table>
+            </div>
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="info-card info-card-indigo"><h4 class="font-bold text-indigo-700 mb-2 text-lg">親脂 vs 親水</h4><p class="text-base text-slate-600 mb-2"><strong>親水性藥物 (Rosuva, Prava)</strong>：</p><ul class="list-disc pl-4 text-base text-slate-600"><li>具肝臟選擇性，理論上較少穿透細胞膜進入骨骼肌。</li><li>SAMS 風險可能相對較低。</li></ul></div>
+                 <div class="info-card info-card-orange"><h4 class="font-bold text-orange-700 mb-2 text-lg">給藥時間</h4><ul class="list-disc pl-4 text-base text-slate-600 space-y-2"><li><strong>短效型</strong>：需於晚餐後或睡前服用。</li><li><strong>長效型</strong>：半衰期長，全天任何時間皆可。</li></ul></div>
+            </div>
+            <div class="ref-section">Ref: UpToDate: Statins: Actions, side effects, and administration.</div>
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 4: 藥理機轉 (MOA) - UPDATED VISUALS -->
+        <!-- TAB 5: 藥理機轉 (MOA) - UPDATED VISUALS -->
         <!-- ========================================== -->
         <div id="content-moa" class="tab-content">
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
                 <!-- Diagram Container -->
-                <div class="lg:col-span-2 cell-container h-[550px] flex flex-col shadow-lg">
+                <div class="lg:col-span-2 cell-container min-h-[600px] flex flex-col shadow-lg pb-8">
                     
                     <!-- Extracellular Space (Vessel) -->
                     <div class="bg-rose-50 border-b-4 border-rose-200 p-3 flex justify-between items-center relative z-20 h-16 shrink-0">
-                        <div class="text-xs font-bold text-rose-800 tracking-wider uppercase ml-2 flex items-center gap-2">
+                        <div class="text-sm font-bold text-rose-800 tracking-wider uppercase ml-2 flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
                             Systemic Circulation (Blood)
                         </div>
                         <div class="flex gap-4 mr-8">
                              <!-- LDL Particles -->
                              <div class="flex flex-col items-center">
-                                <div class="w-6 h-6 rounded-full bg-yellow-400 border-2 border-yellow-500 shadow-sm flex items-center justify-center text-[8px] font-bold text-yellow-800">LDL</div>
+                                <div class="w-6 h-6 rounded-full bg-yellow-400 border-2 border-yellow-500 shadow-sm flex items-center justify-center text-[10px] font-bold text-yellow-800">LDL</div>
                              </div>
                              <div class="flex flex-col items-center opacity-60">
                                 <div class="w-6 h-6 rounded-full bg-yellow-400 border-2 border-yellow-500 shadow-sm"></div>
@@ -676,33 +601,33 @@
                         
                         <!-- Left Column: Synthesis Pathway -->
                         <div class="flex flex-col items-center gap-4 relative">
-                            <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-slate-200 -z-10"></div>
+                            <!-- Removed the vertical line for cleaner look -->
                             
-                            <div class="moa-node w-40" onclick="showMoaDetail(1)">
-                                <div class="text-[10px] text-slate-400 font-bold uppercase">Precursor</div>
+                            <div class="moa-node w-56" onclick="showMoaDetail(1)">
+                                <div class="text-xs text-slate-400 font-bold uppercase">Precursor</div>
                                 <div class="text-sm font-bold text-slate-700">Acetyl-CoA</div>
                             </div>
                             
                             <div class="arrow-down"></div>
 
-                            <div class="moa-node w-56 border-l-4 border-l-rose-500 shadow-md" onclick="showMoaDetail(2)">
-                                <div class="text-[10px] text-rose-500 font-bold uppercase mb-1">Target Enzyme ⛔</div>
+                            <div class="moa-node w-64 border-l-4 border-l-rose-500 shadow-md" onclick="showMoaDetail(2)">
+                                <div class="text-xs text-rose-500 font-bold uppercase mb-1">Target Enzyme ⛔</div>
                                 <div class="text-base font-bold text-slate-800">HMG-CoA Reductase</div>
-                                <div class="absolute -right-2 -top-2 bg-rose-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm">Statin</div>
+                                <div class="absolute -right-2 -top-2 bg-rose-500 text-white text-xs px-2 py-0.5 rounded-full shadow-sm">Statin</div>
                             </div>
 
                             <div class="arrow-down"></div>
 
-                            <div class="moa-node w-40 opacity-70 bg-slate-50" onclick="showMoaDetail(3)">
+                            <div class="moa-node w-56 opacity-70 bg-slate-50" onclick="showMoaDetail(3)">
                                 <div class="text-sm font-bold text-slate-600">Mevalonate</div>
-                                <div class="text-[10px] text-slate-400">...Isoprenoids...</div>
+                                <div class="text-xs text-slate-400">...Isoprenoids...</div>
                             </div>
 
                             <div class="arrow-down"></div>
 
-                            <div class="moa-node w-48 bg-amber-50 border-amber-200" onclick="showMoaDetail(4)">
+                            <div class="moa-node w-64 bg-amber-50 border-amber-200" onclick="showMoaDetail(4)">
                                 <div class="text-sm font-bold text-amber-700">↓ Cholesterol Level</div>
-                                <div class="text-[10px] text-amber-600">Intracellular Drop</div>
+                                <div class="text-xs text-amber-600">Intracellular Drop</div>
                             </div>
                         </div>
 
@@ -710,9 +635,9 @@
                         <div class="flex flex-col items-center gap-6 justify-center h-full">
                             
                             <!-- Nuclear Event -->
-                            <div class="cell-nucleus w-48 flex flex-col items-center gap-2">
-                                <div class="moa-node w-40 bg-emerald-50 border-emerald-200" onclick="showMoaDetail(5)">
-                                    <div class="text-[10px] text-emerald-600 font-bold uppercase">Transcription Factor</div>
+                            <div class="cell-nucleus w-72 flex flex-col items-center gap-2">
+                                <div class="moa-node w-60 bg-emerald-50 border-emerald-200" onclick="showMoaDetail(5)">
+                                    <div class="text-xs text-emerald-600 font-bold uppercase">Transcription Factor</div>
                                     <div class="text-sm font-bold text-emerald-800">SREBP Activation</div>
                                 </div>
                                 <div class="text-xs text-slate-400">↓ Gene Expression</div>
@@ -721,14 +646,13 @@
                             <div class="arrow-down h-8"></div>
 
                             <!-- Final Effect -->
-                            <div class="moa-node w-48 bg-blue-50 border-blue-300 shadow-md" onclick="showMoaDetail(6)">
-                                <div class="text-[10px] text-blue-500 font-bold uppercase">Upregulation</div>
+                            <div class="moa-node w-72 bg-blue-50 border-blue-300 shadow-md" onclick="showMoaDetail(6)">
+                                <div class="text-xs text-blue-500 font-bold uppercase">Upregulation</div>
                                 <div class="text-base font-bold text-blue-800">↑ LDL Receptor</div>
-                                <div class="text-[10px] text-blue-600 mt-1">Clears Blood LDL</div>
+                                <div class="text-xs text-blue-600 mt-1">Clears Blood LDL</div>
                             </div>
                             
-                            <!-- Connecting Line back to blood -->
-                             <div class="absolute top-6 right-16 w-0.5 h-16 bg-blue-200 -z-10" style="transform: rotate(180deg)"></div>
+                            <!-- Removed connecting line back to blood -->
 
                         </div>
                     </div>
@@ -739,10 +663,10 @@
                     <div class="bg-white border border-slate-200 rounded-xl p-6 h-full shadow-sm flex flex-col">
                         <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
                             <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">ℹ️</span>
-                            <h4 class="serif text-slate-800 font-bold text-lg">Mechanism Detail</h4>
+                            <h4 class="serif text-slate-800 font-bold text-xl">Mechanism Detail</h4>
                         </div>
                         
-                        <div id="moa-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                        <div id="moa-text-default" class="text-slate-500 text-base leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
                             <div>
                                 <p class="mb-2 font-bold text-slate-400">Interactive Diagram</p>
                                 <p>請點擊左側圖表中的方塊<br>以查看詳細藥理機轉說明</p>
@@ -750,13 +674,13 @@
                         </div>
 
                         <div id="moa-detail-content" class="hidden animate-fade-in">
-                            <h5 id="moa-title" class="text-teal-700 font-bold text-lg mb-3"></h5>
+                            <h5 id="moa-title" class="text-teal-700 font-bold text-xl mb-3"></h5>
                             <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 mb-4">
-                                <p id="moa-desc" class="text-slate-700 text-sm leading-relaxed"></p>
+                                <p id="moa-desc" class="text-slate-700 text-base leading-relaxed"></p>
                             </div>
                             <div class="border-l-4 border-teal-500 pl-3">
-                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">Clinical Relevance</p>
-                                <p id="moa-impact" class="text-sm text-slate-600 font-medium"></p>
+                                <p class="text-sm text-slate-400 uppercase font-bold mb-1">Clinical Relevance</p>
+                                <p id="moa-impact" class="text-base text-slate-600 font-medium"></p>
                             </div>
                         </div>
                     </div>
@@ -766,414 +690,276 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 5: 副作用處置流程 (SAMS) - UPDATED LAYOUT -->
+        <!-- TAB 6: 副作用處置 (SAMS) - REVISED -->
         <!-- ========================================== -->
         <div id="content-safety" class="tab-content">
             
             <div class="mb-8 p-4 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4">
-                <div class="text-3xl">🩺</div>
+                <div class="text-4xl">🩺</div>
                 <div>
-                    <h3 class="font-bold text-slate-800 text-lg">Statin 相關肌肉症狀 (SAMS) 臨床處置指引</h3>
-                    <p class="text-sm text-slate-600 mt-1">SAMS 是臨床最常見的停藥原因。正確的評估流程可避免病患過早放棄降脂治療。</p>
+                    <h3 class="font-bold text-slate-800 text-xl">Statin 相關肌肉不良反應 (SAMS) 評估與處置</h3>
+                    <p class="text-base text-slate-600 mt-2 leading-relaxed">
+                        臨床上多數為肌疼痛 (Myalgia)，嚴重橫紋肌溶解症極為罕見。準確的分類與評估可避免不必要的停藥。
+                    </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                
-                <!-- Step 1 -->
-                <div class="algorithm-card">
-                    <div class="algo-header">
-                        <div class="algo-number">1</div>
-                        <span>評估 (Assess)</span>
-                    </div>
-                    <div class="algo-body">
-                        <p class="text-sm text-slate-700 font-medium mb-2">確認症狀性質：</p>
-                        <ul class="list-disc pl-4 text-xs text-slate-600 space-y-1 mb-3">
-                            <li>是否為雙側對稱的大肌肉群？(大腿/上臂)</li>
-                            <li>是否伴隨無力或抽筋？</li>
-                            <li>用藥後 4-6 週內發生？</li>
-                        </ul>
-                        <div class="bg-slate-50 p-2 rounded text-xs text-slate-500 border border-slate-100">
-                             排除運動傷害或甲狀腺低下。
+            <!-- 1. SAMS 類型定義 -->
+            <div class="mb-10">
+                <h4 class="serif text-slate-800 font-bold text-lg mb-4 border-l-4 border-teal-500 pl-3">1. 不良反應類型 (Classification)</h4>
+                <div class="overflow-x-auto rounded-lg border border-slate-200">
+                    <table class="score-table">
+                        <thead>
+                            <tr><th class="w-1/4">類型 (Type)</th><th class="w-3/4">定義 (Definition)</th></tr>
+                        </thead>
+                        <tbody class="bg-white text-slate-700">
+                            <tr>
+                                <td class="font-bold text-slate-800">肌疼痛 (Myalgia)</td>
+                                <td>僅有肌肉不適（疼痛、痠痛、僵硬、痙攣），<strong>CK 值正常</strong>。最常見。</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-slate-800">肌病變 (Myopathy)</td>
+                                <td>肌肉無力 (Weakness)，不一定伴隨疼痛，CK 可能正常或上升。</td>
+                            </tr>
+                            <tr>
+                                <td class="font-bold text-slate-800">肌炎 (Myositis)</td>
+                                <td>肌肉發炎，症狀伴隨 CK 上升 (通常 < 10倍正常值上限 ULN)。</td>
+                            </tr>
+                            <tr class="bg-rose-50">
+                                <td class="font-bold text-rose-700">橫紋肌溶解症<br>(Rhabdomyolysis)</td>
+                                <td class="text-rose-700 font-medium">嚴重肌肉損傷。CK 大幅上升 (>10倍 ~ 50倍 ULN) + 腎功能損傷 (Cr 上升) 或尿液肌球蛋白陽性 (茶色尿)。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <!-- 2. 臨床指標計分 -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm h-full">
+                    <h4 class="serif text-slate-800 font-bold text-lg mb-4 border-l-4 border-indigo-500 pl-3">2. 肌疼痛臨床指標計分 (Clinical Index Score)</h4>
+                    <p class="text-sm text-slate-500 mb-4">評估肌肉症狀與 Statin 的相關性 (Total Score)</p>
+                    
+                    <div class="space-y-4 text-sm text-slate-700">
+                        <div class="border-b border-slate-100 pb-2">
+                            <strong class="block mb-1">部位 (Regional Distribution/Pattern)</strong>
+                            <div class="flex justify-between items-center pl-2"><span>對稱髖部收縮肌/大腿背部疼痛</span><span class="score-badge bg-blue-100 text-blue-800">3</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>對稱性小腿肌疼痛</span><span class="score-badge bg-blue-100 text-blue-800">2</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>對稱性上肢近端肌疼痛</span><span class="score-badge bg-blue-100 text-blue-800">2</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>非對稱性、非特異性、間歇性</span><span class="score-badge bg-blue-100 text-blue-800">1</span></div>
+                        </div>
+                        <div class="border-b border-slate-100 pb-2">
+                            <strong class="block mb-1">時序 (Temporal Pattern)</strong>
+                            <div class="flex justify-between items-center pl-2"><span>用藥後 < 4 週</span><span class="score-badge bg-blue-100 text-blue-800">3</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>用藥後 4-12 週</span><span class="score-badge bg-blue-100 text-blue-800">2</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>用藥後 > 12 週</span><span class="score-badge bg-blue-100 text-blue-800">1</span></div>
+                        </div>
+                        <div class="border-b border-slate-100 pb-2">
+                            <strong class="block mb-1">停藥反應 (De-challenge)</strong>
+                            <div class="flex justify-between items-center pl-2"><span>停藥 < 2 週內改善</span><span class="score-badge bg-blue-100 text-blue-800">2</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>停藥 2-4 週內改善</span><span class="score-badge bg-blue-100 text-blue-800">1</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>停藥 > 4 週未改善</span><span class="score-badge bg-blue-100 text-blue-800">0</span></div>
+                        </div>
+                        <div class="border-b border-slate-100 pb-2">
+                            <strong class="block mb-1">重新用藥 (Re-challenge)</strong>
+                            <div class="flex justify-between items-center pl-2"><span>再用藥 < 4 週內復發</span><span class="score-badge bg-blue-100 text-blue-800">3</span></div>
+                            <div class="flex justify-between items-center pl-2 mt-1"><span>再用藥 4-12 週內復發</span><span class="score-badge bg-blue-100 text-blue-800">1</span></div>
                         </div>
                     </div>
+
+                    <div class="mt-6 bg-slate-50 p-4 rounded-lg">
+                        <div class="flex justify-between items-center mb-1"><span class="font-bold text-slate-700">總分 9-11</span><span class="text-rose-600 font-bold">很可能 (Probable)</span></div>
+                        <div class="flex justify-between items-center mb-1"><span class="font-bold text-slate-700">總分 7-8</span><span class="text-amber-600 font-bold">有可能 (Possible)</span></div>
+                        <div class="flex justify-between items-center"><span class="font-bold text-slate-700">總分 &lt; 7</span><span class="text-emerald-600 font-bold">不大可能 (Unlikely)</span></div>
+                    </div>
                 </div>
 
-                <!-- Step 2 -->
-                <div class="algorithm-card">
-                    <div class="algo-header">
-                        <div class="algo-number">2</div>
-                        <span>停藥 (Washout)</span>
-                    </div>
-                    <div class="algo-body">
-                        <p class="text-sm text-slate-700 font-medium mb-2">若症狀明顯：</p>
-                        <p class="text-sm text-rose-600 font-bold mb-3">暫停 Statin 2-4 週</p>
-                        <div class="space-y-2">
-                            <div class="flex items-center gap-2 text-xs text-slate-600">
-                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                症狀消失 → SAMS 可能性高
-                            </div>
-                            <div class="flex items-center gap-2 text-xs text-slate-600">
-                                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
-                                症狀持續 → 尋找其他病因
-                            </div>
+                <!-- 3. 處置流程 -->
+                <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm h-full">
+                    <h4 class="serif text-slate-800 font-bold text-lg mb-4 border-l-4 border-amber-500 pl-3">3. 評估與處置流程 (Management)</h4>
+                    
+                    <div class="pl-2">
+                        <div class="flow-step">
+                            <div class="flow-dot"></div>
+                            <h5 class="font-bold text-slate-800 mb-1">初始評估</h5>
+                            <p class="text-sm text-slate-600">病史(藥物交互作用)、理學檢查。檢驗 CK、甲狀腺(TSH)、維生素D。</p>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="algorithm-card">
-                    <div class="algo-header">
-                        <div class="algo-number">3</div>
-                        <span>挑戰 (Re-challenge)</span>
-                    </div>
-                    <div class="algo-body">
-                        <p class="text-sm text-slate-700 font-medium mb-2">症狀緩解後：</p>
-                        <ul class="list-decimal pl-4 text-xs text-slate-600 space-y-2">
-                            <li>嘗試<strong>相同藥物但較低劑量</strong>。</li>
-                            <li>或換<strong>親水性藥物</strong> (Rosuvastatin, Pravastatin)。</li>
-                            <li>或長效藥物<strong>隔日給藥</strong> (Every other day)。</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <!-- Step 4 -->
-                <div class="algorithm-card border-rose-200">
-                    <div class="algo-header bg-rose-50 text-rose-800">
-                        <div class="algo-number bg-rose-600">!</div>
-                        <span>危險徵兆 (Red Flags)</span>
-                    </div>
-                    <div class="algo-body bg-rose-50/30 h-full">
-                        <p class="text-sm text-slate-700 font-medium mb-2">若出現：</p>
-                        <ul class="list-disc pl-4 text-xs text-rose-700 space-y-1 mb-3 font-bold">
-                            <li>CK > 10倍 ULN</li>
-                            <li>茶色尿 (Myoglobinuria)</li>
-                            <li>無法忍受的劇烈疼痛</li>
-                        </ul>
-                        <div class="bg-white p-2 rounded text-xs text-rose-600 border border-rose-200 font-bold text-center shadow-sm">
-                            立即永久停藥，治療橫紋肌溶解症。
+                        <div class="flow-step">
+                            <div class="flow-dot"></div>
+                            <h5 class="font-bold text-slate-800 mb-1">依嚴重度處置</h5>
+                            <ul class="text-sm text-slate-600 list-disc pl-4 space-y-2">
+                                <li>
+                                    <span class="text-emerald-600 font-bold">可耐受 / CK 正常或微升：</span><br>
+                                    考慮繼續用藥，密切觀察。
+                                </li>
+                                <li>
+                                    <span class="text-amber-600 font-bold">症狀難耐 / CK > 3倍：</span><br>
+                                    <strong>暫停 Statin 2-4 週</strong> (Washout)。
+                                </li>
+                                <li>
+                                    <span class="text-rose-600 font-bold">橫紋肌溶解 (CK > 10倍 + 腎傷)：</span><br>
+                                    <strong>立即停藥</strong>，轉介腎臟科。
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="flow-step">
+                            <div class="flow-dot"></div>
+                            <h5 class="font-bold text-slate-800 mb-1">後續追蹤</h5>
+                            <p class="text-sm text-slate-600">
+                                若症狀改善：嘗試換藥 (親水性/長效) 或降低劑量 (間隔給藥)。<br>
+                                若症狀持續：尋找非 Statin 原因。
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <div class="info-card info-card-note">
-                    <h4 class="font-bold text-blue-700 mb-2">CK 監測建議</h4>
-                    <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
-                        <li><strong>無症狀者</strong>：不需常規監測 CK。</li>
-                        <li><strong>有症狀者</strong>：檢測 CK、肝功能、TSH。</li>
-                        <li><strong>CK < 4x ULN</strong>：若症狀輕微可繼續觀察；若難受則停藥。</li>
-                    </ul>
-                </div>
-                <div class="info-card info-card-orange">
-                    <h4 class="font-bold text-orange-700 mb-2">易感族群 (Risk Factors)</h4>
-                    <div class="flex flex-wrap gap-2 mt-2">
-                         <span class="badge bg-orange-50 text-orange-700 border border-orange-200">高齡 >80</span>
-                         <span class="badge bg-orange-50 text-orange-700 border border-orange-200">女性</span>
-                         <span class="badge bg-orange-50 text-orange-700 border border-orange-200">體型瘦小</span>
-                         <span class="badge bg-orange-50 text-orange-700 border border-orange-200">腎功能不全</span>
-                         <span class="badge bg-orange-50 text-orange-700 border border-orange-200">未控制的甲狀腺低下</span>
-                    </div>
-                </div>
+             <div class="ref-section">
+                資料來源：家庭醫學與基層醫療 第三十二卷 第五期 - statins相關肌肉不良反應的診治和預防 (李燕鳴); NLA Statin Muscle Safety Task Force 2014 Update.
             </div>
-             <div class="ref-section">Ref: 2018 AHA/ACC Guideline; EAS Consensus Panel Statement on SAMS.</div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- TAB 6: 預防醫學路徑 (2025 Consensus) -->
-        <!-- ========================================== -->
+        <!-- (Tabs 7-9 省略，保持原樣) -->
+        <!-- TAB 7: 預防醫學路徑 -->
         <div id="content-prevention" class="tab-content">
-            
             <div class="mb-6 p-4 bg-teal-50 rounded-xl border border-teal-200">
-                <h3 class="font-bold text-teal-800 text-lg flex items-center gap-2">
-                    <span class="text-2xl">🛤️</span>
-                    2025 台灣血脂管理臨床路徑 (Taiwan Clinical Pathway)
-                </h3>
-                <p class="text-sm text-teal-700 mt-1 pl-9">依據 2025 台灣血脂管理共識及 2022 聚焦更新指引，區分「初級預防」與「次級預防」兩大路徑。</p>
+                <h3 class="font-bold text-teal-800 text-lg flex items-center gap-2"><span class="text-2xl">🛤️</span> 2025 台灣血脂管理臨床路徑 (LDL控制目標)</h3>
             </div>
-
             <div class="space-y-12">
-                <!-- 初級預防 (Primary Prevention) -->
                 <section>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-md text-sm">初級預防</div>
-                        <h4 class="text-slate-700 font-bold text-lg">無 ASCVD 病史者 (No Prior ASCVD)</h4>
-                    </div>
-
+                    <div class="flex items-center gap-2 mb-4"><div class="bg-emerald-600 text-white font-bold px-3 py-1 rounded-md text-sm">初級預防</div><h4 class="text-slate-700 font-bold text-xl">無 ASCVD 病史者</h4></div>
                     <div class="pathway-box shadow-sm">
-                        <!-- Step 1: 篩檢 -->
-                        <div class="mb-6 border-b border-slate-100 pb-4">
-                            <h5 class="text-sm font-bold text-slate-500 uppercase tracking-wide mb-2">Step 1: 篩檢與風險分級</h5>
-                            <p class="text-sm text-slate-600 mb-2">檢查血脂 (LDL-C)、血壓、血糖 (HbA1c)、吸菸史等危險因子。</p>
-                        </div>
-
-                        <!-- Step 2: 風險分流 -->
+                        <div class="mb-6 border-b border-slate-100 pb-4"><h5 class="text-sm font-bold text-slate-500 uppercase">Step 1: 篩檢</h5><p class="text-base text-slate-600">檢查血脂 (LDL-C)、血壓、血糖 (HbA1c)、吸菸史等危險因子。</p></div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            
-                            <!-- Low/Mid Risk -->
-                            <div class="flex flex-col h-full">
-                                <div class="bg-slate-100 p-3 rounded-t-lg text-center border border-slate-200 border-b-0">
-                                    <span class="risk-level-tag bg-slate-200 text-slate-600">低 / 中風險</span>
-                                    <div class="text-xs text-slate-500 mt-1">未符合高風險條件者</div>
-                                </div>
-                                <div class="p-4 border border-slate-200 rounded-b-lg flex-grow flex flex-col items-center bg-white">
-                                    <div class="text-xs text-slate-500 mb-2 text-center">依危險因子數量判斷：</div>
-                                    <ul class="text-xs text-slate-600 list-disc pl-4 mb-4">
-                                        <li><strong>低風險</strong> (0-1 項因子)</li>
-                                        <li><strong>中風險</strong> (≥2 項因子)</li>
-                                    </ul>
-                                    <div class="mt-auto w-full space-y-2">
-                                        <div class="pathway-target-card">
-                                            <span class="text-xs text-slate-500">中風險目標</span>
-                                            <strong class="text-amber-600">&lt; 115</strong>
-                                        </div>
-                                        <div class="pathway-target-card">
-                                            <span class="text-xs text-slate-500">低風險目標</span>
-                                            <strong class="text-emerald-600">&lt; 130</strong>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- High Risk -->
-                            <div class="flex flex-col h-full md:col-span-2">
-                                <div class="bg-rose-50 p-3 rounded-t-lg text-center border border-rose-100 border-b-0">
-                                    <span class="risk-level-tag bg-rose-100 text-rose-700">高風險 (High Risk)</span>
-                                </div>
-                                <div class="p-4 border border-rose-100 rounded-b-lg flex-grow flex flex-col md:flex-row gap-4 bg-white items-center">
-                                    <div class="flex-1">
-                                        <div class="text-xs font-bold text-rose-700 mb-2">符合任一條件：</div>
-                                        <ul class="text-sm text-slate-700 list-disc pl-4 space-y-1">
-                                            <li><strong>糖尿病 (DM)</strong></li>
-                                            <li><strong>慢性腎臟病 (CKD)</strong> <span class="text-xs text-slate-400">(eGFR < 60 或 UACR ≥ 30)</span></li>
-                                            <li><strong>嚴重高膽固醇</strong> <span class="text-xs text-slate-400">(LDL-C ≥ 190)</span></li>
-                                            <li><span class="text-xs text-slate-400">冠狀動脈鈣化指數 (CAC) ≥ 400</span></li>
-                                        </ul>
-                                    </div>
-                                    <div class="pathway-arrow md:rotate-0 rotate-90">➔</div>
-                                    <div class="w-full md:w-48">
-                                        <div class="pathway-target-card border-rose-200 bg-rose-50">
-                                            <span class="text-xs text-rose-600 font-bold">治療目標 (mg/dL)</span>
-                                            <strong class="text-rose-700">&lt; 100</strong>
-                                        </div>
-                                        <div class="text-center mt-2">
-                                            <span class="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">起始藥物治療</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="flex flex-col h-full"><div class="bg-slate-100 p-3 rounded-t-lg text-center"><span class="risk-level-tag bg-slate-200 text-slate-600">低 / 中風險</span></div><div class="p-4 border border-slate-200 rounded-b-lg flex-grow bg-white text-center"><div class="pathway-target-card mb-2"><span class="text-sm mb-1 block">治療目標 (mg/dL)</span><span class="text-sm">中風險</span><strong class="text-amber-600">&lt; 115</strong></div><div class="pathway-target-card"><span class="text-sm mb-1 block">治療目標 (mg/dL)</span><span class="text-sm">低風險</span><strong class="text-emerald-600">&lt; 130</strong></div></div></div>
+                            <div class="flex flex-col h-full md:col-span-2"><div class="bg-rose-50 p-3 rounded-t-lg text-center"><span class="risk-level-tag bg-rose-100 text-rose-700">高風險</span></div><div class="p-4 border border-rose-100 rounded-b-lg flex-grow flex items-center bg-white gap-4"><div class="flex-1"><ul class="text-base list-disc pl-4"><li>糖尿病</li><li>CKD (eGFR<60 或 UACR ≥ 30)</li><li>嚴重高膽固醇 (LDL-C ≥ 190)</li><li>冠狀動脈鈣化指數 (CAC) ≥ 400</li></ul></div><div class="w-48 text-center"><div class="pathway-target-card border-rose-200 bg-rose-50"><span class="text-sm mb-1 block">治療目標 (mg/dL)</span><span class="text-sm text-rose-600 font-bold">高風險</span><strong class="text-rose-700">&lt; 100</strong></div></div></div></div>
                         </div>
                     </div>
                 </section>
-
-                <!-- 次級預防 (Secondary Prevention) -->
                 <section>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="bg-indigo-600 text-white font-bold px-3 py-1 rounded-md text-sm">次級預防</div>
-                        <h4 class="text-slate-700 font-bold text-lg">確診 ASCVD 患者 (Established ASCVD)</h4>
-                    </div>
-
+                    <div class="flex items-center gap-2 mb-4"><div class="bg-indigo-600 text-white font-bold px-3 py-1 rounded-md text-sm">次級預防</div><h4 class="text-slate-700 font-bold text-xl">確診 ASCVD 患者</h4></div>
                     <div class="pathway-box border-indigo-100 shadow-md">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            
-                            <!-- Very High Risk -->
-                            <div class="flex flex-col">
-                                <div class="mb-3">
-                                    <span class="risk-level-tag bg-indigo-100 text-indigo-700 font-bold">非常高風險 (Very High Risk)</span>
-                                    <p class="text-sm text-slate-600 mt-2 h-10">臨床確診為 ASCVD，或影像證實有顯著斑塊 (>50% 狹窄)。</p>
-                                    <ul class="text-xs text-slate-500 list-disc pl-4 mt-2 space-y-1">
-                                        <li>急性冠心症 (ACS) 病史</li>
-                                        <li>穩定冠心症 / 血管再通術</li>
-                                        <li>缺血性中風 / TIA</li>
-                                        <li>周邊動脈疾病 (PAD)</li>
-                                    </ul>
-                                </div>
-                                <div class="mt-auto pt-4 border-t border-dashed border-indigo-100">
-                                    <div class="pathway-target-card border-indigo-200 bg-indigo-50">
-                                        <span class="text-xs text-indigo-600 font-bold">治療目標</span>
-                                        <strong class="text-indigo-800">&lt; 70</strong>
-                                    </div>
-                                </div>
+                            <div>
+                                <span class="risk-level-tag bg-indigo-100 text-indigo-700 font-bold">非常高風險</span>
+                                <ul class="list-disc pl-5 mt-2 space-y-2 text-base text-slate-700">
+                                    <li>急性冠心症 (ACS) 病史</li>
+                                    <li>穩定冠心症 / 血管再通術</li>
+                                    <li>缺血性中風 / TIA</li>
+                                    <li>周邊動脈疾病 (PAD)</li>
+                                </ul>
+                                <div class="h-6"></div>
+                                <div class="mt-6 pathway-target-card border-indigo-200 bg-indigo-50"><span class="text-sm mb-1 block">治療目標 (mg/dL)</span><strong class="text-indigo-800">&lt; 70</strong></div>
                             </div>
-
-                            <!-- Extremely High Risk -->
-                            <div class="flex flex-col relative">
-                                <div class="absolute -left-4 top-1/2 -translate-y-1/2 hidden md:block text-slate-300 text-xl">➜</div>
-                                <div class="mb-3">
-                                    <span class="risk-level-tag bg-purple-100 text-purple-700 font-bold border border-purple-200">極高風險 (Extremely High Risk)</span>
-                                    <p class="text-sm text-slate-600 mt-2 h-10">ASCVD 合併多重高風險特徵：</p>
-                                    <ul class="text-xs text-slate-700 list-disc pl-4 mt-2 space-y-1 font-medium">
-                                        <li><strong>多次/近期心肌梗塞</strong> (< 1年)</li>
-                                        <li><strong>多支血管病變</strong> 或 <strong>ACS + 糖尿病</strong></li>
-                                        <li><strong>多血管疾病 (Polyvascular)</strong>: CAD + PAD 或 PAD + 頸動脈狹窄</li>
-                                    </ul>
-                                </div>
-                                <div class="mt-auto pt-4 border-t border-dashed border-purple-100">
-                                    <div class="pathway-target-card border-purple-200 bg-purple-50 ring-2 ring-purple-100 ring-offset-2">
-                                        <span class="text-xs text-purple-600 font-bold">強化治療目標</span>
-                                        <strong class="text-purple-800">&lt; 55</strong>
-                                    </div>
-                                </div>
+                            <div>
+                                <span class="risk-level-tag bg-purple-100 text-purple-700 font-bold">極高風險</span>
+                                <ul class="list-disc pl-5 mt-2 space-y-2 text-base text-slate-700">
+                                    <li>多重重大 ASCVD 事件 (如近期 MI、多次 MI)</li>
+                                    <li>多血管病變 (CAD + PAD)</li>
+                                    <li>ACS 合併 糖尿病</li>
+                                    <div class="h-6"></div> 
+                                </ul>
+                                <div class="h-6"></div>
+                                <div class="mt-6 pathway-target-card border-purple-200 bg-purple-50"><span class="text-sm mb-1 block">治療目標 (mg/dL)</span><strong class="text-purple-800">&lt; 55</strong></div>
                             </div>
-
                         </div>
-
-                        <!-- 處置策略 -->
-                        <div class="mt-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
-                            <h5 class="text-xs font-bold text-slate-500 uppercase mb-2">次級預防處置流程</h5>
-                            <div class="flex flex-col md:flex-row items-center gap-2 text-sm text-slate-700">
-                                <div class="bg-white px-3 py-2 rounded border border-slate-200 shadow-sm">起始高強度 Statin</div>
-                                <span class="text-slate-400">➔</span>
-                                <div class="bg-white px-3 py-2 rounded border border-slate-200 shadow-sm text-center">
-                                    <div>6-8 週後追蹤</div>
-                                    <div class="text-xs text-slate-400">未達標?</div>
+                        <div class="mt-8 border-t border-slate-100 pt-6">
+                            <h5 class="text-base font-bold text-slate-700 mb-3 bg-slate-50 p-2 rounded w-fit border border-slate-200">名詞定義與說明</h5>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-slate-600">
+                                <div>
+                                    <strong class="text-indigo-700 block mb-1">初級預防 (Primary Prevention)</strong>
+                                    <p class="mb-2">指針對<strong>尚未發生</strong>動脈粥狀硬化心血管疾病 (ASCVD) 的人群進行介入，目的是預防首次心血管事件（如心肌梗塞、中風）的發生。</p>
+                                    <ul class="list-disc pl-4 text-xs text-slate-500 space-y-1">
+                                        <li>對象：無 ASCVD 病史，但可能有高血壓、高血脂、糖尿病等危險因子者。</li>
+                                        <li>策略：生活型態調整、控制危險因子、依風險等級給予藥物治療。</li>
+                                    </ul>
                                 </div>
-                                <span class="text-slate-400">➔</span>
-                                <div class="bg-white px-3 py-2 rounded border border-slate-200 shadow-sm">
-                                    <span class="font-bold text-indigo-600">+ Ezetimibe</span>
-                                </div>
-                                <span class="text-slate-400">➔</span>
-                                <div class="bg-white px-3 py-2 rounded border border-slate-200 shadow-sm">
-                                    <div class="text-xs text-slate-400">仍未達標?</div>
-                                    <span class="font-bold text-purple-600">+ PCSK9i</span>
+                                <div>
+                                    <strong class="text-purple-700 block mb-1">次級預防 (Secondary Prevention)</strong>
+                                    <p class="mb-2">指針對<strong>已經確診</strong>患有 ASCVD 的病患進行介入，目的是預防疾病復發、惡化或發生死亡。</p>
+                                    <ul class="list-disc pl-4 text-xs text-slate-500 space-y-1">
+                                        <li>對象：曾發生心肌梗塞、中風、或經血管攝影證實有顯著動脈硬化者。</li>
+                                        <li>策略：積極藥物治療（如高強度 Statin）、嚴格控制 LDL-C 目標。</li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
-            <div class="ref-section">Ref: 2025 Consensus on Clinical Pathway of Blood Cholesterol Management in Taiwan; 2022 Focused Update Guidelines.</div>
+            <div class="ref-section">Ref: 2025 Consensus on Clinical Pathway; 2022 Focused Update.</div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- TAB 7: 新生糖尿病 (New-Onset Diabetes, NODM) -->
-        <!-- ========================================== -->
+        <!-- TAB 8: 新生糖尿病 -->
         <div id="content-nodm" class="tab-content">
-            
-            <!-- Hero Card: 核心訊息 -->
-            <div class="bg-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg mb-8 shadow-sm">
-                <h3 class="serif text-indigo-900 font-bold text-xl mb-2 flex items-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                    核心觀念：心血管獲益 >> 糖尿病風險
-                </h3>
-                <p class="text-slate-700 leading-relaxed">
-                    雖然 Statins 可能輕微增加新生糖尿病 (NODM) 的風險，但其預防心血管事件（中風、心肌梗塞、死亡）的獲益<strong>遠大於</strong>此風險。
-                    權威指引（FDA, AHA/ACC, ESC）皆建議：<span class="font-bold text-indigo-700">不應因擔心血糖問題而停止 Statin 治療</span>，尤其是高風險心血管病患。多項針對亞洲人的研究（如 J-PREDICT, REAL-CAD）顯示，Pitavastatin對血糖代謝的影響趨近於「中性」，較不易引起血糖波動。
-                </p>
+             <div class="bg-indigo-50 border-l-4 border-indigo-600 p-6 rounded-r-lg mb-8 shadow-sm">
+                <h3 class="serif text-indigo-900 font-bold text-xl mb-2 flex items-center gap-2">核心觀念：心血管獲益 >> 糖尿病風險</h3>
+                <p class="text-slate-700 leading-relaxed text-base">權威指引皆建議：不應因擔心血糖問題而停止 Statin 治療。</p>
             </div>
-
-            <!-- 風險與機轉分析 -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                
-                <!-- Risk Factors -->
-                <div class="info-card info-card-danger h-full">
-                    <h4 class="font-bold text-rose-700 mb-4 text-lg">誰是高風險群？ (Risk Factors)</h4>
-                    <p class="text-sm text-slate-600 mb-3">NODM 通常發生在原本就有代謝異常傾向的病患身上：</p>
-                    <ul class="list-disc pl-5 space-y-2 text-sm text-slate-700">
-                        <li><strong>糖尿病前期 (Prediabetes)</strong>：空腹血糖 100-125 mg/dL 或 HbA1c 5.7-6.4%。</li>
-                        <li><strong>代謝症候群</strong>：腹部肥胖、高三酸甘油脂、高血壓。</li>
-                        <li><strong>高強度 Statin</strong>：劑量越高，風險略高 (Dose-dependent)。</li>
-                        <li><strong>其他</strong>：高齡、BMI > 30 kg/m²。</li>
-                    </ul>
-                    <div class="mt-4 bg-white p-3 rounded border border-rose-100 text-xs text-rose-600 font-medium">
-                        統計顯示：大約每治療 255 位病患 4 年，才會多出現 1 例 NODM；但同期間可預防 5.4 例嚴重血管事件。(Lancet 2010)
-                    </div>
-                </div>
-
-                <!-- Mechanism -->
-                <div class="info-card info-card-note h-full">
-                    <h4 class="font-bold text-blue-700 mb-4 text-lg">可能機轉 (Proposed Mechanisms)</h4>
-                    <p class="text-sm text-slate-600 mb-3">目前學界提出的主要假說包括：</p>
-                    <div class="space-y-3">
-                        <div class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">1</div>
-                            <div class="text-sm text-slate-700"><strong>胰島素分泌減少</strong>：Statin 可能影響胰臟 β 細胞的鈣離子通道，減少胰島素釋放。</div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">2</div>
-                            <div class="text-sm text-slate-700"><strong>胰島素阻抗增加</strong>：可能減少周邊組織（肌肉、脂肪） GLUT4 葡萄糖轉運蛋白的表現，使細胞較難攝取血糖。</div>
-                        </div>
-                        <div class="flex items-start gap-3">
-                            <div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold shrink-0">3</div>
-                            <div class="text-sm text-slate-700"><strong>表觀遺傳學</strong>：影響與代謝相關的 microRNA 表現。</div>
-                        </div>
-                    </div>
-                </div>
+                <div class="info-card info-card-danger h-full"><h4 class="font-bold text-rose-700 mb-4 text-lg">高風險群</h4><ul class="list-disc pl-5 space-y-2 text-base text-slate-700"><li>糖尿病前期 (空腹血糖 100-125 mg/dL 或 HbA1c 5.7-6.4%)</li><li>代謝症候群 (腹部肥胖、高三酸甘油脂、高血壓)</li><li>高強度 Statin (劑量越高，風險略高)</li><li>其他 (高齡、BMI > 30 kg/m²)</li></ul><div class="mt-4 bg-white p-3 rounded border border-rose-100 text-sm text-rose-600 font-medium">統計顯示：大約每治療 255 位病患 4 年，才會多出現 1 例 NODM；但同期間可預防 5.4 例嚴重血管事件。(Lancet 2010)</div></div>
+                <div class="info-card info-card-note h-full"><h4 class="font-bold text-blue-700 mb-4 text-lg">可能機轉</h4><div class="space-y-3"><div class="flex items-start gap-3"><div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">1</div><div class="text-base text-slate-700"><strong>胰島素分泌減少</strong>：Statin 可能影響胰臟 β 細胞的鈣離子通道，減少胰島素釋放。</div></div><div class="flex items-start gap-3"><div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">2</div><div class="text-base text-slate-700"><strong>胰島素阻抗增加</strong>：可能減少周邊組織（肌肉、脂肪） GLUT4 葡萄糖轉運蛋白的表現，使細胞較難攝取血糖。</div></div><div class="flex items-start gap-3"><div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold shrink-0">3</div><div class="text-base text-slate-700"><strong>表觀遺傳學</strong>：影響與代謝相關的 microRNA 表現。</div></div></div></div>
             </div>
-
             <!-- 臨床處置建議 -->
             <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                 <div class="bg-slate-50 p-4 border-b border-slate-200">
-                    <h4 class="font-bold text-slate-800">臨床處置建議 (Clinical Management)</h4>
+                    <h4 class="font-bold text-slate-800 text-lg">臨床處置建議 (Clinical Management)</h4>
                 </div>
                 <div class="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="text-center p-4">
                         <div class="text-3xl mb-2">💊</div>
-                        <h5 class="font-bold text-slate-700 mb-2">繼續用藥</h5>
-                        <p class="text-xs text-slate-500">除非有嚴重不良反應，否則不應停藥。心血管保護是首要目標。</p>
+                        <h5 class="font-bold text-slate-700 mb-2 text-lg">繼續用藥</h5>
+                        <p class="text-sm text-slate-500">除非有嚴重不良反應，否則不應停藥。心血管保護是首要目標。</p>
                     </div>
                     <div class="text-center p-4 border-l border-r border-slate-100">
                         <div class="text-3xl mb-2">🏃</div>
-                        <h5 class="font-bold text-slate-700 mb-2">生活型態介入</h5>
-                        <p class="text-xs text-slate-500">飲食控制與規律運動可有效抵銷 Statin 帶來的血糖風險，甚至預防糖尿病發生。</p>
+                        <h5 class="font-bold text-slate-700 mb-2 text-lg">生活型態介入</h5>
+                        <p class="text-sm text-slate-500">飲食控制與規律運動可有效抵銷 Statin 帶來的血糖風險，甚至預防糖尿病發生。</p>
                     </div>
                     <div class="text-center p-4">
                         <div class="text-3xl mb-2">🩸</div>
-                        <h5 class="font-bold text-slate-700 mb-2">定期監測</h5>
-                        <p class="text-xs text-slate-500">針對高風險群（如糖尿病前期），建議定期檢測空腹血糖或 HbA1c。</p>
+                        <h5 class="font-bold text-slate-700 mb-2 text-lg">定期監測</h5>
+                        <p class="text-sm text-slate-500">針對高風險群（如糖尿病前期），建議定期檢測空腹血糖或 HbA1c。</p>
                     </div>
                 </div>
             </div>
-
-            <div class="ref-section">
-                Reference: Sattar N et al. Lancet 2010; Preiss D et al. JAMA 2011; FDA Drug Safety Communication (2012); JUPITER Trial Analysis.
-            </div>
+            <div class="ref-section">Ref: Lancet 2010; FDA Drug Safety Communication (2012).</div>
         </div>
 
-        <!-- ========================================== -->
-        <!-- TAB 8: 懷孕與哺乳 (Pregnancy & Lactation) -->
-        <!-- ========================================== -->
+        <!-- TAB 9: 懷孕與哺乳 -->
         <div id="content-pregnancy" class="tab-content">
-            
             <div class="mb-6 bg-pink-50 border-l-4 border-pink-500 p-4 rounded-r-lg">
-                <h3 class="font-bold text-pink-800 text-lg mb-1">重大指引更新 (FDA 2021 Update)</h3>
-                <p class="text-sm text-pink-700">美國 FDA 已撤銷 Statin 的「絕對禁忌 (Category X)」標示，允許醫師在極高風險孕婦（如純合子家族性高膽固醇血症 HoFH）身上權衡利弊後處方。但對大多數一般孕婦，仍建議停藥。</p>
+                <h3 class="font-bold text-pink-800 text-lg mb-1">重大指引更新 (FDA 2021)</h3>
+                <p class="text-base text-pink-700">撤銷「絕對禁忌 (Category X)」。</p>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                
-                <!-- 孕期處置卡片 -->
                 <div class="info-card info-card-pink">
-                    <h4 class="serif text-pink-700 font-bold mb-4 text-lg">🤰 懷孕期建議 (Pregnancy)</h4>
+                    <h4 class="serif text-pink-700 font-bold mb-4 text-lg">🤰 懷孕期建議</h4>
                     <div class="space-y-4">
                         <div class="bg-white p-3 rounded border border-pink-100">
-                            <strong class="block text-slate-800 text-sm mb-1">一般原則：</strong>
-                            <p class="text-xs text-slate-600">大多數患者應在確認懷孕時停止 Statin。膽固醇是胎兒神經發育的關鍵原料，理論上藥物可能干擾發育（雖然近期證據顯示致畸胎風險極低）。</p>
+                            <strong class="block text-slate-800 text-base mb-1">一般原則：</strong>
+                            <p class="text-sm text-slate-600">大多數患者應在確認懷孕時停止 Statin。膽固醇是胎兒神經發育的關鍵原料，理論上藥物可能干擾發育（雖然近期證據顯示致畸胎風險極低）。</p>
                         </div>
                         <div class="bg-white p-3 rounded border border-pink-100">
-                            <strong class="block text-slate-800 text-sm mb-1">備孕計畫 (Pre-conception)：</strong>
-                            <p class="text-xs text-slate-600">建議在計畫懷孕前 <strong>1-3 個月</strong> 停藥，直到懷孕結束。</p>
+                            <strong class="block text-slate-800 text-base mb-1">備孕計畫 (Pre-conception)：</strong>
+                            <p class="text-sm text-slate-600">建議在計畫懷孕前 <strong>1-3 個月</strong> 停藥，直到懷孕結束。</p>
                         </div>
                         <div class="bg-white p-3 rounded border border-pink-100">
-                            <strong class="block text-slate-800 text-sm mb-1">意外懷孕：</strong>
-                            <p class="text-xs text-slate-600">若服藥期間發現懷孕，應盡快停藥並諮詢醫師。目前的數據顯示，早期意外暴露造成胎兒異常的風險並不比背景值高出許多，不一定需要中止妊娠。</p>
+                            <strong class="block text-slate-800 text-base mb-1">意外懷孕：</strong>
+                            <p class="text-sm text-slate-600">若服藥期間發現懷孕，應盡快停藥並諮詢醫師。目前的數據顯示，早期意外暴露造成胎兒異常的風險並不比背景值高出許多，不一定需要中止妊娠。</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- 哺乳期卡片 -->
                 <div class="info-card h-full" style="border-left-color: #a855f7; background-color: #faf5ff;">
-                    <h4 class="serif font-bold mb-4 text-lg" style="color: #9333ea;">🤱 哺乳期建議 (Lactation)</h4>
-                    <p class="text-sm text-slate-600 mb-4 font-bold">目前建議：哺乳期間應暫停使用 Statins。</p>
-                    <ul class="list-disc pl-5 space-y-3 text-sm text-slate-600">
+                    <h4 class="serif font-bold mb-4 text-lg" style="color: #9333ea;">🤱 哺乳期建議</h4>
+                    <p class="text-base text-slate-600 mb-4 font-bold">目前建議：哺乳期間應暫停使用 Statins。</p>
+                    <ul class="list-disc pl-5 space-y-3 text-base text-slate-600">
                         <li><strong>分泌入乳汁</strong>：研究顯示 Statins 會分泌至母乳中。</li>
                         <li><strong>潛在風險</strong>：雖然母乳中的藥物濃度可能不高，但由於嬰兒血脂代謝能力尚未成熟，且膽固醇對嬰兒腦部發育至關重要，因此潛在風險仍然存在。</li>
                         <li><strong>替代方案</strong>：對於心血管風險極高的哺乳婦女，可考慮使用膽酸結合樹脂 (Bile Acid Sequestrants)，因為這類藥物不被腸道吸收，不會進入乳汁。</li>
                     </ul>
                 </div>
             </div>
-
             <!-- Evidence Table -->
             <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
                 <table class="modern-table min-w-[600px]">
@@ -1183,7 +969,7 @@
                             <th class="w-2/3">關鍵建議內容</th>
                         </tr>
                     </thead>
-                    <tbody class="text-slate-700 text-sm">
+                    <tbody class="text-slate-700 text-base">
                         <tr>
                             <td class="font-bold">US FDA (2021)</td>
                             <td>要求藥廠移除仿單中「孕婦禁忌 (Contraindication)」的強烈警語。目的是讓醫師能更有彈性地治療極高風險孕婦 (如 HoFH)。但同時強調，對大多數患者而言，懷孕期間停藥仍是標準做法。</td>
@@ -1199,24 +985,31 @@
                     </tbody>
                 </table>
             </div>
+            <div class="ref-section">Ref: FDA Drug Safety Communication (July 2021).</div>
+        </div>
 
-            <div class="ref-section">
-                Reference: FDA Drug Safety Communication (July 2021): FDA requests removal of strongest warning against using cholesterol-lowering statins in pregnant patients; 2019 ESC/EAS Guidelines for the management of dyslipidaemias.
+        <!-- Modal -->
+        <div id="modal-overlay" class="modal-overlay" onclick="closeModal(event)">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+                <h3 class="text-xl font-bold mb-4 text-slate-800">Statin 重點表格整理</h3>
+                <!-- [維護說明] 請在此處更換您的重點表格圖片網址 -->
+                <!-- 預設使用一個 placeholder 圖片，請將 src 替換為您的圖片連結 -->
+                <img src="https://via.placeholder.com/800x600?text=Statin+Clinical+Table+(Update+Here)" alt="Statin 重點表格" class="w-full h-auto rounded-lg border border-slate-200">
+                <p class="text-sm text-slate-500 mt-4 italic text-center">資料來源：[請在此處填寫您的資料來源書名或出處]</p>
             </div>
         </div>
 
-        <!-- 免責聲明 -->
+        <!-- Footer -->
         <footer class="mt-12 pt-6 border-t border-slate-200 text-center">
             <div class="max-w-4xl mx-auto px-4">
-                <p class="text-xs text-slate-400 leading-relaxed">
+                <div class="text-xs text-slate-400 leading-relaxed text-left">
                     <strong>免責聲明 (Disclaimer)：</strong><br>
                     本網站內容僅供醫療專業人員臨床參考與學術交流使用，旨在提供最新的實證醫學資訊整理。<br>
                     所有內容不能取代醫師的專業臨床判斷。對於個別病患的診斷與治療，請務必諮詢合格醫師並依據實際臨床狀況進行評估。<br>
                     製作者已盡力確保內容的準確性，但醫學知識更新迅速，恕不對資料的即時性與完整性負法律責任。
-                </p>
-                <p class="serif text-slate-400 text-xs italic mt-4">
-                    Designed for Medical Professionals • Use as Clinical Aid Only
-                </p>
+                </div>
+                <p class="serif text-slate-400 text-xs italic mt-4">Designed for Medical Professionals • Use as Clinical Aid Only</p>
             </div>
         </footer>
 
@@ -1229,6 +1022,17 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById('content-' + tabName).classList.add('active');
             document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // Modal Logic
+        function openModal() {
+            document.getElementById('modal-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+        }
+
+        function closeModal(event) {
+            document.getElementById('modal-overlay').classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
         }
 
         // MOA Logic
@@ -1286,7 +1090,4 @@
         }
     </script>
 </body>
-
 </html>
-
-
