@@ -51,6 +51,11 @@
             z-index: -1;
             pointer-events: none;
         }
+        /* 登入頁面專用背景 */
+        .login-bg {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #ccfbf1 100%);
+        }
+
         /* 自定義滾動條 */
         ::-webkit-scrollbar {
             width: 8px;
@@ -83,7 +88,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         // ==========================================
         // 內建圖示元件庫
@@ -182,19 +187,26 @@
             ChevronRight: (props) => (
                 <IconBase {...props}><polyline points="9 18 15 12 9 6" /></IconBase>
             ),
-            // 新增 Flame (熱門) 圖示 - 更新為更明顯的火焰造型
+            // 新增 Flame (熱門) 圖示
             Flame: (props) => (
                 <IconBase {...props}>
                     <path d="M12 2c0 4 3 6 3 9a3 3 0 0 1-6 0c0-3 3-5 3-9z" />
                     <path d="M12 14a2 2 0 1 0 0 4 2 2 0 0 0 0-4" fill="currentColor"/>
                     <path d="M8.5 8.5C7.5 10 7 12 7 14a5 5 0 0 0 10 0c0-2.5-1.5-4.5-3-6" />
                 </IconBase>
+            ),
+            // 新增 ArrowUp (回到頂部) 圖示
+            ArrowUp: (props) => (
+                <IconBase {...props}>
+                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                    <polyline points="5 12 12 5 19 12"></polyline>
+                </IconBase>
             )
         };
 
         const { 
             Search, Stethoscope, Pill, BookOpen, Calculator, Activity, ExternalLink, Github, Menu, X, 
-            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, Flame
+            FlaskConical, HeartPulse, User, Info, Book, Instagram, Globe, Link, Lock, ChevronLeft, ChevronRight, Flame, ArrowUp
         } = Icons;
 
         // ==========================================
@@ -436,18 +448,24 @@
             };
 
             return (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-                    <div className={`bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full border border-white/50 relative overflow-hidden ${shake ? 'shake-animation' : ''}`}>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 login-bg backdrop-blur-sm">
+                    {/* 添加背景裝飾 */}
+                    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                         <div className="blob-bg opacity-50"></div>
+                         <div style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px', position: 'absolute', inset: 0, opacity: 0.5 }}></div>
+                    </div>
+
+                    <div className={`bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-sm w-full border border-white relative overflow-hidden ${shake ? 'shake-animation' : ''}`}>
                         
                         {/* 頂部裝飾 */}
                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-teal-400 to-blue-500"></div>
 
                         <div className="flex flex-col items-center mb-8">
-                            <div className="bg-teal-100 p-4 rounded-full text-teal-600 mb-4 shadow-inner">
+                            <div className="bg-gradient-to-br from-teal-50 to-blue-50 p-4 rounded-full text-teal-600 mb-4 shadow-sm border border-teal-100">
                                 <Lock size={32} />
                             </div>
                             <h2 className="text-2xl font-bold text-slate-800">請輸入6位數密碼</h2>
-                            <p className="text-sm text-slate-500 mt-2 text-center">
+                            <p className="text-sm text-slate-500 mt-2 text-center leading-relaxed">
                                 本網站僅供醫事人員內部使用<br/>請輸入授權碼以繼續
                             </p>
                         </div>
@@ -456,7 +474,7 @@
                             <div>
                                 <input
                                     type="password"
-                                    className="block w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-center text-lg tracking-widest focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400 placeholder:tracking-normal placeholder:text-base"
+                                    className="block w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white text-center text-lg tracking-widest focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition-all placeholder:text-slate-400 placeholder:tracking-normal placeholder:text-base shadow-inner"
                                     placeholder="輸入密碼"
                                     value={password}
                                     onChange={(e) => {
@@ -473,7 +491,7 @@
                             </div>
                             <button 
                                 type="submit"
-                                className="w-full bg-slate-800 hover:bg-teal-600 text-white py-3 rounded-xl font-medium transition-colors shadow-lg shadow-slate-200 hover:shadow-teal-100 flex items-center justify-center gap-2"
+                                className="w-full bg-slate-800 hover:bg-teal-600 text-white py-3 rounded-xl font-medium transition-all shadow-lg shadow-slate-200 hover:shadow-teal-200 flex items-center justify-center gap-2 transform hover:-translate-y-0.5"
                             >
                                 進入網站 <ExternalLink size={16} />
                             </button>
@@ -563,6 +581,12 @@
             const [showGuide, setShowGuide] = useState(false);
             const [showLinks, setShowLinks] = useState(false);
             const [currentPage, setCurrentPage] = useState(1);
+            
+            // 建立一個 ref 來定位要捲動到的位置
+            const listTopRef = useRef(null);
+            
+            // 用於追蹤是否為首次渲染的 Ref
+            const isFirstMount = useRef(true);
 
             // Reset to page 1 when filter changes
             // Moved UP before the conditional return
@@ -570,13 +594,29 @@
                 setCurrentPage(1);
             }, [searchTerm, activeCategory]);
 
+            // 當頁碼改變時，捲動到列表頂部 (修正：確保所有換頁動作都能觸發捲動)
+            useEffect(() => {
+                // 如果是第一次載入，不進行捲動，僅更新標記
+                if (isFirstMount.current) {
+                    isFirstMount.current = false;
+                    return;
+                }
+                
+                // 只要頁碼有變動 (包含 2->1)，就執行捲動
+                if (listTopRef.current) {
+                    listTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, [currentPage]);
+
+            // 處理回到頂部
+            const scrollToTop = () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
             // 如果未通過驗證，顯示登入畫面
             if (!isAuthenticated) {
                 return (
                     <div className="min-h-screen flex flex-col relative overflow-hidden bg-[#f8fafc]">
-                        <div className="blob-bg"></div>
-                        {/* 讓背景稍微顯現但被蓋住 */}
-                        <div style={{ backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px', position: 'absolute', inset: 0, zIndex: -1 }}></div>
                         <LoginScreen onLogin={() => setIsAuthenticated(true)} />
                     </div>
                 );
@@ -786,6 +826,9 @@
                     {/* Main Content */}
                     <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 flex-grow w-full z-10">
                         
+                        {/* 設定 scroll-mt-24 讓捲動時不被 Header 擋住 */}
+                        <div ref={listTopRef} className="scroll-mt-28"></div>
+
                         {/* Category Filter */}
                         <div className="flex flex-wrap justify-center gap-3 mb-12">
                             {categories.map(cat => (
@@ -815,27 +858,38 @@
                                 </div>
                                 
                                 {/* Pagination Controls */}
-                                {totalPages > 1 && (
-                                    <div className="flex justify-center items-center gap-4 mt-12">
-                                        <button 
-                                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                                            disabled={currentPage === 1}
-                                            className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronLeft size={20} />
-                                        </button>
-                                        <span className="text-slate-600 font-medium">
-                                            第 {currentPage} 頁，共 {totalPages} 頁
-                                        </span>
-                                        <button 
-                                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                                            disabled={currentPage === totalPages}
-                                            className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            <ChevronRight size={20} />
-                                        </button>
-                                    </div>
-                                )}
+                                <div className="mt-12 flex flex-col items-center gap-6">
+                                    {totalPages > 1 && (
+                                        <div className="flex justify-center items-center gap-4">
+                                            <button 
+                                                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                                                disabled={currentPage === 1}
+                                                className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                <ChevronLeft size={20} />
+                                            </button>
+                                            <span className="text-slate-600 font-medium">
+                                                第 {currentPage} 頁，共 {totalPages} 頁
+                                            </span>
+                                            <button 
+                                                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                                                disabled={currentPage === totalPages}
+                                                className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            >
+                                                <ChevronRight size={20} />
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {/* Back to Top Button */}
+                                    <button 
+                                        onClick={scrollToTop}
+                                        className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-500 rounded-full hover:bg-slate-50 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all group"
+                                    >
+                                        <ArrowUp size={18} className="group-hover:-translate-y-1 transition-transform" />
+                                        <span className="font-medium text-sm">回到頂部</span>
+                                    </button>
+                                </div>
                             </>
                         ) : (
                             <div className="text-center py-20 bg-white/50 backdrop-blur rounded-3xl border border-dashed border-slate-300">
@@ -884,14 +938,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
