@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智慧藥局 | 自動包藥機教育訓練手冊</title>
+    <title>智慧藥局 | 藥包機教育訓練手冊</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -158,7 +158,8 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg text-slate-800 leading-tight">藥局訓練手冊</h1>
+                    <!-- 修改標題 -->
+                    <h1 class="font-bold text-lg text-slate-800 leading-tight">藥包機教育訓練手冊</h1>
                     <p class="text-[11px] text-slate-500 font-medium tracking-wide">PHARMACY TRAINING</p>
                 </div>
             </div>
@@ -207,10 +208,27 @@
             </button>
         </nav>
         
+        <!-- Sidebar Footer -->
         <div class="p-4 border-t border-slate-100 flex-shrink-0">
+            <!-- TOSHO 操作手冊按鈕 -->
+            <a href="#" class="block w-full bg-slate-800 hover:bg-slate-700 text-white text-center py-2.5 rounded-lg text-sm font-bold transition shadow-lg mb-4 flex items-center justify-center gap-2 group">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-y-0.5 transition-transform"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+                TOSHO 操作手冊
+            </a>
+
             <div class="bg-gradient-to-r from-slate-50 to-white rounded-lg p-3 border border-slate-200 shadow-sm text-center">
                 <p class="text-xs text-slate-500">技術支援專線</p>
                 <p class="text-sm font-bold text-slate-700 font-mono">0800-888-XXX</p>
+            </div>
+            <!-- 製作者資訊與警語 -->
+            <div class="mt-4 text-center space-y-2">
+                <p class="text-[10px] text-slate-400">
+                    製作者 : 蝦仁藥師<br>
+                    更新日期 : 2026/01/16
+                </p>
+                <p class="text-[10px] text-red-500 font-bold border border-red-100 bg-red-50 p-2 rounded">
+                    ⚠️ 此網站僅供內部人員教育訓練使用，請勿外流
+                </p>
             </div>
         </div>
     </aside>
@@ -224,7 +242,8 @@
                 <div class="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center text-white">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </div>
-                <span class="font-bold text-slate-800">藥局訓練手冊</span>
+                <!-- 修改標題 -->
+                <span class="font-bold text-slate-800">藥包機教育訓練手冊</span>
             </div>
             <select onchange="switchTab(this.value)" class="bg-slate-50 text-sm py-2 pl-2 pr-8 rounded-lg border border-slate-200 outline-none w-40">
                 <optgroup label="基礎操作">
@@ -248,7 +267,7 @@
         <div class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 pb-32 custom-scroll scroll-smooth" id="main-scroll-area">
             <div class="max-w-6xl mx-auto w-full">
                 
-                <!-- 1. 耗材更換 (保留) -->
+                <!-- 1. 耗材更換 -->
                 <div id="tab-consumables" class="tab-content animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Basic</span>
@@ -269,7 +288,24 @@
                                 <h4 class="font-bold text-slate-700">安裝新紙捲</h4>
                                 <p class="text-sm text-slate-500">確認「內捲/外捲」方向。沿紅色路徑穿過滾輪，確保無皺褶。</p>
                             </div>
+                            
+                            <!-- 圖片預留區與影片連結 -->
+                            <div class="mt-4 mb-4 bg-slate-50 rounded-lg border-2 border-dashed border-slate-300 h-48 flex items-center justify-center relative overflow-hidden group hover:border-sky-400 transition cursor-pointer">
+                                <div class="text-slate-400 flex flex-col items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span class="text-xs font-bold text-slate-500">此處可放置「分包紙安裝路徑圖」</span>
+                                    <span class="text-[10px] text-slate-400 mt-1">建議尺寸: 600x400</span>
+                                </div>
+                            </div>
+                            
+                            <div class="text-right">
+                                <button onclick="switchTab('videos')" class="inline-flex items-center gap-1 text-sm font-bold text-sky-600 hover:text-sky-700 hover:underline transition">
+                                    📺 點此觀看：更換藥包紙影音教學
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                                </button>
+                            </div>
                         </div>
+
                         <div class="content-card p-6">
                             <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span>碳帶更換</h3>
                             <ul class="list-disc list-inside space-y-2 text-sm text-slate-600">
@@ -282,7 +318,7 @@
                     </div>
                 </div>
 
-                <!-- 2. 出藥口回堵排除 (更新：CSS 預覽卡片) -->
+                <!-- 2. 出藥口回堵排除 -->
                 <div id="tab-blockage" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Critical Fix</span>
@@ -351,7 +387,7 @@
                     </div>
                 </div>
 
-                <!-- 3. 安裝皮帶 (更新：CSS 預覽卡片) -->
+                <!-- 3. 安裝皮帶 -->
                 <div id="tab-belt" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Maintenance</span>
@@ -400,7 +436,7 @@
                                     </ul>
                                 </div>
 
-                                <!-- 影片嵌入 (使用 CSS 預覽底圖) -->
+                                <!-- 影片嵌入 -->
                                 <div class="space-y-2">
                                     <div class="flex justify-between items-end">
                                         <h4 class="font-bold text-slate-800 text-sm">📺 操作示範影片</h4>
@@ -430,7 +466,7 @@
                     </div>
                 </div>
 
-                <!-- 4. 藥盒系統設定 (保留) -->
+                <!-- 4. 藥盒系統設定 -->
                 <div id="tab-cassette-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase">System Setup</span>
@@ -462,7 +498,7 @@
                     </div>
                 </div>
 
-                <!-- 5. 預包系統設定 (保留) -->
+                <!-- 5. 預包系統設定 -->
                 <div id="tab-prepack-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Efficiency</span>
@@ -507,7 +543,7 @@
                     </div>
                 </div>
 
-                <!-- 6. 藥盒防呆機制設定 (保留) -->
+                <!-- 6. 藥盒防呆機制設定 -->
                 <div id="tab-safety-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Safety First</span>
@@ -550,7 +586,7 @@
                     </div>
                 </div>
 
-                <!-- 7. 故障排除 - 資料無法接收 (保留) -->
+                <!-- 7. 故障排除 - 資料無法接收 -->
                 <div id="tab-troubleshoot" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Connectivity</span>
@@ -605,7 +641,7 @@
                     </div>
                 </div>
 
-                <!-- 8. 系統參數設定 (保留) -->
+                <!-- 8. 系統參數設定 -->
                 <div id="tab-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Advanced</span>
@@ -657,7 +693,7 @@
                     </div>
                 </div>
 
-                <!-- 9. 清潔保養 (保留) -->
+                <!-- 9. 清潔保養 -->
                 <div id="tab-cleaning" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                          <span class="bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Routine</span>
@@ -694,24 +730,32 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         
-                        <!-- Video Card 0 (Placeholder) -->
+                        <!-- Video Card 0 (分包紙更換 - 已更新連結) -->
                         <div class="space-y-3 group">
-                            <div class="video-placeholder-bg flex items-center justify-center">
-                                <div class="text-center absolute inset-0 flex flex-col items-center justify-center">
-                                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <!-- Video Container with CSS Fallback -->
+                            <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                 onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/VPZx_nT8y54?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
+                                    <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                     </div>
-                                    <span class="text-xs text-slate-400 font-bold">等待上傳影片</span>
+                                    <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
                                 </div>
+                                
+                                <img src="https://img.youtube.com/vi/VPZx_nT8y54/hqdefault.jpg" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300 z-10"
+                                     onerror="this.style.display='none'">
                             </div>
                             <div>
                                 <div class="flex items-center gap-2 mt-3">
-                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition">機台分包紙更換標準流程</h3>
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition">分包紙更換標準流程</h3>
                                     <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">03:45</span>
                                 </div>
                                 <p class="text-sm text-slate-500 mt-2 leading-relaxed">
                                     包含舊紙捲移除、新紙捲方向確認及正確的穿線路徑。請特別注意經過熱封模組時需確保紙張平整。
                                 </p>
+                                <a href="https://www.youtube.com/watch?v=VPZx_nT8y54" target="_blank" class="text-xs text-slate-400 hover:text-sky-600 underline mt-1 block">無法播放? 點擊前往 YouTube</a>
                             </div>
                         </div>
                         
@@ -721,7 +765,6 @@
                             <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
                                  onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
                                 
-                                <!-- Background Design (Always Visible as Base) -->
                                 <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
                                     <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -729,13 +772,11 @@
                                     <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
                                 </div>
                                 
-                                <!-- Thumbnail Image (Hides on Error) -->
                                 <img src="https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg" 
                                      class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300 z-10"
                                      onerror="this.style.display='none'">
                             </div>
                             
-                            <!-- Info Area -->
                             <div>
                                 <div class="flex items-center gap-2 mt-3">
                                     <h3 class="font-bold text-slate-800 text-lg group-hover:text-amber-600 transition">出藥口回堵緊急排除</h3>
@@ -776,26 +817,107 @@
                             </div>
                         </div>
                         
-                        <!-- Video Card 3 (Placeholder) -->
+                        <!-- Video Card 3 (藥盒防呆設定 - 更新為 Shorts) -->
+                        <div class="space-y-3 group">
+                            <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                 onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/KfWuQ_fObHU?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
+                                    <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                    <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
+                                </div>
+                                
+                                <img src="https://img.youtube.com/vi/KfWuQ_fObHU/hqdefault.jpg" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300 z-10"
+                                     onerror="this.style.display='none'">
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mt-3">
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-rose-600 transition">藥盒防呆設定</h3>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">Shorts</span>
+                                </div>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    快速示範 RFID 藥盒綁定與防呆設定的操作細節 (直式短影音)。
+                                </p>
+                                <a href="https://youtube.com/shorts/KfWuQ_fObHU?feature=share" target="_blank" class="text-xs text-slate-400 hover:text-rose-600 underline mt-1 block">無法播放? 點擊前往 YouTube</a>
+                            </div>
+                        </div>
+
+                        <!-- Video Card 4 (病房借藥天數設定) -->
+                        <div class="space-y-3 group">
+                            <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                 onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/LggRYSxvlx4?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
+                                    <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                    <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
+                                </div>
+                                <img src="https://img.youtube.com/vi/LggRYSxvlx4/hqdefault.jpg" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300 z-10"
+                                     onerror="this.style.display='none'">
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mt-3">
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition">病房借藥天數設定</h3>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">03:00</span>
+                                </div>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    教學如何設定病房借藥的預設天數，以符合醫院管理政策。
+                                </p>
+                                <a href="https://youtu.be/LggRYSxvlx4" target="_blank" class="text-xs text-slate-400 hover:text-sky-600 underline mt-1 block">無法播放? 點擊前往 YouTube</a>
+                            </div>
+                        </div>
+
+                        <!-- Video Card 5 (包藥資料簡介) -->
+                        <div class="space-y-3 group">
+                            <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                 onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/lzfVnVVH1Cw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
+                                    <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                    <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
+                                </div>
+                                <img src="https://img.youtube.com/vi/lzfVnVVH1Cw/hqdefault.jpg" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300 z-10"
+                                     onerror="this.style.display='none'">
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2 mt-3">
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition">包藥資料簡介</h3>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">04:15</span>
+                                </div>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    詳細介紹包藥機系統中的各項資料欄位意義與使用方式。
+                                </p>
+                                <a href="https://youtu.be/lzfVnVVH1Cw" target="_blank" class="text-xs text-slate-400 hover:text-sky-600 underline mt-1 block">無法播放? 點擊前往 YouTube</a>
+                            </div>
+                        </div>
+
+                        <!-- Video Card 6 (品項/預包設定 - Placeholder) -->
                         <div class="space-y-3 group">
                             <div class="video-placeholder-bg flex items-center justify-center">
                                 <div class="text-center absolute inset-0 flex flex-col items-center justify-center">
                                     <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                                     </div>
-                                    <span class="text-xs text-slate-400 font-bold">未來擴充區塊</span>
+                                    <span class="text-xs text-slate-400 font-bold">待上傳</span>
                                 </div>
                             </div>
                             <div>
                                 <div class="flex items-center gap-2 mt-3">
-                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-rose-600 transition">防呆設定與藥盒綁定</h3>
-                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">04:10</span>
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition">品項/預包設定</h3>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">--:--</span>
                                 </div>
                                 <p class="text-sm text-slate-500 mt-2 leading-relaxed">
-                                    介紹如何進行 RFID 藥盒配對，以及如何設定補藥條碼驗證功能，確保調劑過程的病人安全。
+                                    影片製作中，敬請期待。
                                 </p>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
