@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧藥局 | 自動包藥機教育訓練手冊</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+
+        /* === 全域樣式 === */
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+            background-color: #f0fdfa;
+            color: #334155;
+            overflow: hidden;
+        }
+
+        /* 背景網格 */
+        .bg-notebook-grid {
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(#e2e8f0 1px, transparent 1px),
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        /* 側邊欄玻璃質感 */
+        .glass-sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            border-right: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* 導航按鈕 */
+        .nav-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem;
+            margin-bottom: 0.25rem;
+            color: #64748b;
+            font-size: 0.875rem; /* text-sm */
+        }
+        .nav-item:hover {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            transform: translateX(2px);
+        }
+        .nav-item.active {
+            background-color: #e0f2fe;
+            color: #0284c7;
+            font-weight: 600;
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: #0284c7;
+        }
+
+        /* 內容卡片 */
+        .content-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-radius: 0.75rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            border-color: #bae6fd;
+        }
+
+        /* 步驟流程 (SOP) */
+        .step-container {
+            position: relative;
+            padding-left: 2.5rem;
+            border-left: 2px solid #e2e8f0;
+            margin-left: 0.75rem;
+            padding-bottom: 2rem;
+        }
+        .step-container:last-child {
+            border-left-color: transparent;
+        }
+        .step-number {
+            position: absolute;
+            left: -1rem;
+            top: 0;
+            width: 2rem;
+            height: 2rem;
+            background-color: #fff;
+            border: 2px solid #0ea5e9;
+            color: #0ea5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.875rem;
+            z-index: 10;
+        }
+
+        /* 影片容器 16:9 */
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 0.75rem;
+            background-color: #0f172a;
+        }
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 捲軸美化 */
+        .custom-scroll::-webkit-scrollbar { width: 5px; }
+        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+
+        /* 動畫 */
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+
+<body class="h-[100dvh] flex text-slate-700 antialiased">
+
+    <!-- 背景 -->
+    <div class="bg-notebook-grid"></div>
+
+    <!-- 左側導航 (Sidebar) -->
+    <aside class="w-72 glass-sidebar hidden md:flex flex-col h-full shadow-xl z-20">
+        <div class="p-6 border-b border-slate-100 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-sky-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-800 leading-tight">藥局訓練手冊</h1>
+                    <p class="text-[11px] text-slate-500 font-medium tracking-wide">PHARMACY TRAINING</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 px-4 custom-scroll space-y-1">
+            <!-- 基礎操作 Basic -->
+            <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-2">基礎操作 (Basic)</p>
+            
+            <button onclick="switchTab('consumables')" id="nav-consumables" class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>📄</span> 耗材更換 (紙/碳帶)
+            </button>
+            <button onclick="switchTab('blockage')" id="nav-blockage" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>🚧</span> 出藥口回堵排除
+            </button>
+            <button onclick="switchTab('belt')" id="nav-belt" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>🔧</span> 安裝皮帶
+            </button>
+            <button onclick="switchTab('cassette-settings')" id="nav-cassette-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>⚙️</span> 藥盒系統設定
+            </button>
+            <button onclick="switchTab('prepack-settings')" id="nav-prepack-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>📦</span> 預包系統設定
+            </button>
+            <button onclick="switchTab('safety-settings')" id="nav-safety-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>🛡️</span> 藥盒防呆機制設定
+            </button>
+
+            <!-- 進階維護 Advanced -->
+            <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-6">進階維護 (Advanced)</p>
+            
+            <button onclick="switchTab('troubleshoot')" id="nav-troubleshoot" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>📡</span> 故障排除 - 資料接收
+            </button>
+            <button onclick="switchTab('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>🎛️</span> 系統參數設置
+            </button>
+            <button onclick="switchTab('cleaning')" id="nav-cleaning" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>🧹</span> 例行性清潔保養
+            </button>
+
+            <!-- 影音區 -->
+            <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-6">學習中心 (Learning)</p>
+            <button onclick="switchTab('videos')" id="nav-videos" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 text-left">
+                <span>📺</span> 完整操作教學影片
+            </button>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-100 flex-shrink-0">
+            <div class="bg-gradient-to-r from-slate-50 to-white rounded-lg p-3 border border-slate-200 shadow-sm text-center">
+                <p class="text-xs text-slate-500">技術支援專線</p>
+                <p class="text-sm font-bold text-slate-700 font-mono">0800-888-XXX</p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- 主內容區 -->
+    <main class="flex-1 h-full overflow-hidden flex flex-col relative">
+        
+        <!-- 手機版 Header -->
+        <div class="md:hidden bg-white/95 backdrop-blur-md p-4 border-b border-slate-200 flex justify-between items-center z-30 sticky top-0">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-sky-600 rounded-lg flex items-center justify-center text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <span class="font-bold text-slate-800">藥局訓練手冊</span>
+            </div>
+            <select onchange="switchTab(this.value)" class="bg-slate-50 text-sm py-2 pl-2 pr-8 rounded-lg border border-slate-200 outline-none w-40">
+                <optgroup label="基礎操作">
+                    <option value="consumables">耗材更換</option>
+                    <option value="blockage">出藥口回堵</option>
+                    <option value="belt">安裝皮帶</option>
+                    <option value="cassette-settings">藥盒設定</option>
+                    <option value="prepack-settings">預包設定</option>
+                    <option value="safety-settings">防呆設定</option>
+                </optgroup>
+                <optgroup label="進階維護">
+                    <option value="troubleshoot">故障排除-資料</option>
+                    <option value="settings">參數設定</option>
+                    <option value="cleaning">清潔保養</option>
+                </optgroup>
+                <option value="videos">教學影片</option>
+            </select>
+        </div>
+
+        <!-- 內容捲動區 -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10 pb-32 custom-scroll scroll-smooth" id="main-scroll-area">
+            <div class="max-w-6xl mx-auto w-full">
+                
+                <!-- 1. 耗材更換 (保留) -->
+                <div id="tab-consumables" class="tab-content animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Basic</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">耗材更換流程 SOP</h2>
+                        <p class="text-slate-500 mt-1">分包紙 (Paper) 與 印字碳帶 (Ribbon) 更換。</p>
+                    </header>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="content-card p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><span class="w-1.5 h-6 bg-sky-500 rounded-full"></span>分包紙更換</h3>
+                            <div class="step-container">
+                                <div class="step-number">1</div>
+                                <h4 class="font-bold text-slate-700">停機與移除</h4>
+                                <p class="text-sm text-slate-500">按 STOP 鍵。旋開固定閥，取下舊紙捲。</p>
+                            </div>
+                            <div class="step-container">
+                                <div class="step-number">2</div>
+                                <h4 class="font-bold text-slate-700">安裝新紙捲</h4>
+                                <p class="text-sm text-slate-500">確認「內捲/外捲」方向。沿紅色路徑穿過滾輪，確保無皺褶。</p>
+                            </div>
+                        </div>
+                        <div class="content-card p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2"><span class="w-1.5 h-6 bg-indigo-500 rounded-full"></span>碳帶更換</h3>
+                            <ul class="list-disc list-inside space-y-2 text-sm text-slate-600">
+                                <li><strong>更換時機：</strong>每 3-4 捲分包紙更換一次。</li>
+                                <li><strong>注意：</strong>打印頭高溫，請小心燙手。</li>
+                                <li>掀開 Printer 上蓋，取出舊卷。</li>
+                                <li>依箭頭裝入新碳帶，<strong>順時針</strong>旋轉收緊。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 出藥口回堵排除 (新增) -->
+                <div id="tab-blockage" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Critical Fix</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">出藥口回堵排除</h2>
+                        <p class="text-slate-500 mt-1">當落藥漏斗 (Hopper) 阻塞時的標準處理流程。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="content-card p-8 border-l-4 border-amber-400">
+                            <h3 class="text-xl font-bold text-slate-800 mb-4">緊急處理步驟</h3>
+                            <div class="step-container">
+                                <div class="step-number">1</div>
+                                <h4 class="font-bold text-slate-800">暫停運作</h4>
+                                <p class="text-sm text-slate-500">立即按下機台 <span class="bg-red-100 text-red-700 px-1 rounded text-xs font-mono">EMERGENCY STOP</span> 或觸控螢幕的暫停鍵。</p>
+                            </div>
+                            <div class="step-container">
+                                <div class="step-number">2</div>
+                                <h4 class="font-bold text-slate-800">拆卸漏斗 (Hopper)</h4>
+                                <p class="text-sm text-slate-500">鬆開漏斗兩側卡榫，輕輕向外拉出。注意可能有大量藥錠掉落，請準備接藥盤。</p>
+                            </div>
+                            <div class="step-container">
+                                <div class="step-number">3</div>
+                                <h4 class="font-bold text-slate-800">清除阻塞物</h4>
+                                <p class="text-sm text-slate-500">檢查漏斗頸部與震盪器交接處。常見原因為體積過大的藥錠或受潮藥粉結塊。</p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="content-card p-6 bg-slate-50">
+                                <h4 class="font-bold text-slate-700 mb-2">⚠️ 常見回堵原因</h4>
+                                <ul class="list-disc list-inside text-sm text-slate-600 space-y-2">
+                                    <li>藥錠受潮黏著 (如: MgO, Valproate)。</li>
+                                    <li>單包藥量過大 (超過 8 顆大型錠劑)。</li>
+                                    <li>包裝紙未正確封口，導致藥錠卡在封口處。</li>
+                                </ul>
+                            </div>
+                            
+                            <!-- 影片嵌入 (封面圖偽裝技術) -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-end">
+                                    <h4 class="font-bold text-slate-800 text-sm">📺 清潔示範影片</h4>
+                                    <!-- Fallback -->
+                                    <a href="https://www.youtube.com/watch?v=NyOpBge2tXc" target="_blank" class="text-[10px] text-slate-400 hover:text-sky-600 flex items-center gap-1 transition underline">
+                                        直接前往 YouTube 觀看
+                                    </a>
+                                </div>
+                                
+                                <div class="video-wrapper shadow-md cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900" 
+                                     onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                    
+                                    <!-- 使用高畫質預覽圖 maxresdefault -->
+                                    <img src="https://img.youtube.com/vi/NyOpBge2tXc/maxresdefault.jpg" 
+                                         onerror="this.src='https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg'" 
+                                         alt="Video Thumbnail" class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
+                                    
+                                    <!-- 播放按鈕 -->
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="absolute bottom-2 right-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white font-bold">點擊播放 (預設靜音)</div>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-1">
+                                    *若點擊後無法播放，是因為您使用本機檔案 (Local File) 開啟，YouTube 限制了嵌入。請點擊右上角連結觀看。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 安裝皮帶 (新增) -->
+                <div id="tab-belt" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Maintenance</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">輸送皮帶 (Conveyor Belt) 安裝</h2>
+                        <p class="text-slate-500 mt-1">更換斷裂或老化的輸送帶。</p>
+                    </header>
+                    
+                    <div class="content-card p-8">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <div class="lg:col-span-2 space-y-6">
+                                <h3 class="font-bold text-lg text-slate-800">詳細更換步驟</h3>
+                                <div class="space-y-4">
+                                    <div class="flex gap-4">
+                                        <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600">1</span>
+                                        <div>
+                                            <h4 class="font-bold text-slate-700">放鬆張力輪</h4>
+                                            <p class="text-sm text-slate-500">使用內六角板手 (Allen Key) 鬆開位於輸送帶末端的張力調節螺絲，直到皮帶完全鬆弛。</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-4">
+                                        <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600">2</span>
+                                        <div>
+                                            <h4 class="font-bold text-slate-700">移除舊皮帶</h4>
+                                            <p class="text-sm text-slate-500">將舊皮帶從主動輪與從動輪上取下。順便使用酒精清潔輪軸上的粉塵。</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-4">
+                                        <span class="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600">3</span>
+                                        <div>
+                                            <h4 class="font-bold text-slate-700">安裝與張力測試</h4>
+                                            <p class="text-sm text-slate-500">裝上新皮帶，旋緊調節螺絲。<strong>測試標準：</strong>用手指輕壓皮帶中央，下沉量應約為 5-8mm。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 右側欄位：工具與影片 -->
+                            <div class="space-y-6">
+                                <!-- 工具清單 -->
+                                <div class="bg-blue-50 p-6 rounded-xl border border-blue-100 h-fit">
+                                    <h4 class="font-bold text-blue-800 mb-3">🔧 準備工具</h4>
+                                    <ul class="list-none space-y-2 text-sm text-blue-700">
+                                        <li class="flex items-center gap-2">🔹 內六角板手組 (Hex Key Set)</li>
+                                        <li class="flex items-center gap-2">🔹 十字起子</li>
+                                        <li class="flex items-center gap-2">🔹 工業酒精 (清潔用)</li>
+                                    </ul>
+                                </div>
+
+                                <!-- 影片嵌入 (封面圖偽裝技術) -->
+                                <div class="space-y-2">
+                                    <div class="flex justify-between items-end">
+                                        <h4 class="font-bold text-slate-800 text-sm">📺 操作示範影片</h4>
+                                        <a href="https://www.youtube.com/watch?v=xDmVNm4BPOw" target="_blank" class="text-[10px] text-slate-400 hover:text-sky-600 flex items-center gap-1 transition underline">
+                                            直接前往 YouTube 觀看
+                                        </a>
+                                    </div>
+                                    <div class="video-wrapper shadow-md cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900" 
+                                         onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                        
+                                        <!-- YouTube 縮圖 -->
+                                        <img src="https://img.youtube.com/vi/xDmVNm4BPOw/maxresdefault.jpg" 
+                                             onerror="this.src='https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg'" 
+                                             alt="Video Thumbnail" class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
+                                        
+                                        <!-- 播放按鈕圖示 -->
+                                        <div class="absolute inset-0 flex items-center justify-center">
+                                            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- 提示文字 -->
+                                        <div class="absolute bottom-2 right-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white font-bold">點擊播放 (預設靜音)</div>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 mt-1">
+                                        *若無法播放，請確認您的網路設定，或直接點選上方連結。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 藥盒系統設定 (新增) -->
+                <div id="tab-cassette-settings" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase">System Setup</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">藥盒系統設定 (Cassette Config)</h2>
+                        <p class="text-slate-500 mt-1">設定藥盒 (Cassette) 的對應藥品、校正值與馬達頻率。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="content-card p-6 hover-card">
+                            <h3 class="font-bold text-lg text-slate-800 mb-2">💊 藥品代碼綁定 (Mapping)</h3>
+                            <p class="text-sm text-slate-500 mb-4">將特定藥盒 ID 綁定至院內藥品代碼。</p>
+                            <div class="bg-slate-50 p-4 rounded-lg font-mono text-xs text-slate-600 border border-slate-200">
+                                Path: Menu > Database > Cassette List<br><br>
+                                1. 輸入藥盒底部的 RFID 或編號。<br>
+                                2. 掃描藥品條碼或輸入藥碼。<br>
+                                3. 按下 <span class="bg-blue-100 text-blue-700 px-1 rounded">SAVE</span>。
+                            </div>
+                        </div>
+
+                        <div class="content-card p-6 hover-card">
+                            <h3 class="font-bold text-lg text-slate-800 mb-2">⚡ 馬達頻率校正 (Calibration)</h3>
+                            <p class="text-sm text-slate-500 mb-4">針對不同大小、形狀的藥錠調整掉落速度。</p>
+                            <ul class="text-sm text-slate-600 space-y-2">
+                                <li><strong>半顆/小顆藥：</strong> 降低頻率 (避免多掉)。</li>
+                                <li><strong>大顆膠囊：</strong> 增加頻率 (避免卡住)。</li>
+                                <li>操作：進入 Cassette Adjust 模式，放入 10 顆藥進行 Test Count。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 預包系統設定 (新增) -->
+                <div id="tab-prepack-settings" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Efficiency</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">預包系統設定 (Pre-pack)</h2>
+                        <p class="text-slate-500 mt-1">設定大量預先包裝模式，適用於常備藥或單一品項。</p>
+                    </header>
+
+                    <div class="content-card p-8">
+                        <div class="flex flex-col md:flex-row gap-8 items-start">
+                            <div class="flex-1">
+                                <h3 class="font-bold text-xl text-slate-800 mb-4">操作流程</h3>
+                                <ol class="list-decimal list-inside space-y-4 text-slate-600">
+                                    <li class="pl-2">
+                                        <span class="font-bold text-slate-700">選擇模式：</span>
+                                        在主畫面選擇 <span class="bg-green-100 text-green-800 px-2 py-0.5 rounded text-sm">PRE-PACK MODE</span>。
+                                    </li>
+                                    <li class="pl-2">
+                                        <span class="font-bold text-slate-700">設定參數：</span>
+                                        輸入總包數 (Total Packets) 與每包顆數 (Qty per pack)。
+                                        <div class="mt-2 ml-4 p-3 bg-slate-50 rounded text-sm border border-slate-200">
+                                            例：製作 100 包 Amoxicillin，每包 1 顆。<br>
+                                            Total: 100 | Qty: 1
+                                        </div>
+                                    </li>
+                                    <li class="pl-2">
+                                        <span class="font-bold text-slate-700">列印資訊：</span>
+                                        設定包裝袋上的文字 (藥名/學名/效期)。
+                                    </li>
+                                    <li class="pl-2">
+                                        <span class="font-bold text-slate-700">開始執行：</span>
+                                        按下 Start，機器將自動連續包裝。
+                                    </li>
+                                </ol>
+                            </div>
+                            <div class="w-full md:w-1/3 bg-green-50 p-5 rounded-xl border border-green-100">
+                                <h4 class="font-bold text-green-800 mb-2">💡 實用技巧</h4>
+                                <p class="text-sm text-green-700 leading-relaxed">
+                                    建議開啟「自動切斷 (Auto-Cut)」功能，設定每 10 包切斷一次，方便藥師後續核對與管理，避免產生過長的藥帶。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. 藥盒防呆機制設定 (新增) -->
+                <div id="tab-safety-settings" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Safety First</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">藥盒防呆機制設定</h2>
+                        <p class="text-slate-500 mt-1">RFID 配對與條碼驗證設定，杜絕給藥錯誤。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="lg:col-span-2 content-card p-6">
+                            <h3 class="font-bold text-lg text-slate-800 mb-4">三層防護設定</h3>
+                            <div class="space-y-6">
+                                <div class="flex gap-4 items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-xl">🆔</div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-700">RFID 晶片配對</h4>
+                                        <p class="text-sm text-slate-500 mt-1">每個藥盒底座皆有唯一 RFID。若藥盒插入錯誤的底座 (Base)，機器將亮紅燈並拒絕運作。</p>
+                                        <p class="text-xs text-sky-600 mt-1 font-mono">Menu > Security > RFID Check: ON</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-4 items-start">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-xl">🔫</div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-700">補藥條碼驗證 (Refill Verification)</h4>
+                                        <p class="text-sm text-slate-500 mt-1">強制要求補藥時必須掃描藥罐條碼 (Barcode)。若條碼不符，藥盒鎖無法開啟。</p>
+                                        <p class="text-xs text-sky-600 mt-1 font-mono">Menu > Security > Refill Scan: MANDATORY</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="content-card p-6 bg-rose-50 border-rose-100">
+                            <h3 class="font-bold text-rose-800 mb-3">⚠️ 管理者權限</h3>
+                            <p class="text-sm text-rose-700 mb-4">
+                                更改防呆設定需要 Master Password。嚴禁隨意關閉防呆機制，以免發生調劑疏失 (Medication Error)。
+                            </p>
+                            <div class="border-t border-rose-200 pt-3">
+                                <p class="text-xs text-rose-600 font-bold">預設狀態：全開啟 (All ON)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. 故障排除 - 資料無法接收 -->
+                <div id="tab-troubleshoot" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Connectivity</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">故障排除 - 資料無法接收</h2>
+                        <p class="text-slate-500 mt-1">機台無法接收處方資料或連線異常排除。</p>
+                    </header>
+
+                    <div class="content-card p-8">
+                        <div class="mb-8">
+                            <h3 class="font-bold text-xl text-slate-800 mb-4">常見症狀與排除流程</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span class="text-red-500 font-bold text-lg mb-2 block">Case 1</span>
+                                    <h4 class="font-bold text-slate-700 mb-2">完全無資料</h4>
+                                    <p class="text-xs text-slate-500">PC 端已傳送，但機台清單全空。</p>
+                                    <div class="mt-3 pt-3 border-t border-slate-200">
+                                        <p class="text-xs font-bold text-slate-600">對策：</p>
+                                        <p class="text-xs text-slate-500">檢查網路線是否脫落、重啟中控電腦軟體 (Interface)。</p>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span class="text-red-500 font-bold text-lg mb-2 block">Case 2</span>
+                                    <h4 class="font-bold text-slate-700 mb-2">部分資料遺失</h4>
+                                    <p class="text-xs text-slate-500">缺漏特定藥品或病人。</p>
+                                    <div class="mt-3 pt-3 border-t border-slate-200">
+                                        <p class="text-xs font-bold text-slate-600">對策：</p>
+                                        <p class="text-xs text-slate-500">檢查藥品代碼 (Drug Code) 是否包含特殊字元，或藥盒設定未綁定。</p>
+                                    </div>
+                                </div>
+                                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                    <span class="text-red-500 font-bold text-lg mb-2 block">Case 3</span>
+                                    <h4 class="font-bold text-slate-700 mb-2">資料格式亂碼</h4>
+                                    <p class="text-xs text-slate-500">列印出的文字為亂碼。</p>
+                                    <div class="mt-3 pt-3 border-t border-slate-200">
+                                        <p class="text-xs font-bold text-slate-600">對策：</p>
+                                        <p class="text-xs text-slate-500">重新安裝字型檔，或檢查印表機驅動程式設定 (Encoding)。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800 text-white p-6 rounded-xl">
+                            <h3 class="font-bold text-lg mb-2">📡 網路連線自我檢測 (Ping Test)</h3>
+                            <p class="text-sm text-slate-400 mb-4">若懷疑硬體連線故障，請依序執行：</p>
+                            <ol class="list-decimal list-inside text-sm space-y-2 font-mono text-slate-300">
+                                <li>Windows key + R，輸入 "cmd"。</li>
+                                <li>輸入 "ping 192.168.1.100" (機台預設 IP)。</li>
+                                <li>若顯示 "Request timed out"，代表網路線中斷或 Switch 故障。</li>
+                                <li>若顯示 "Reply from..."，代表連線正常，問題出在軟體設定。</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. 系統參數設定 -->
+                <div id="tab-settings" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Advanced</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">系統參數設定</h2>
+                        <p class="text-slate-500 mt-1">熱封溫度、包藥長度與打印濃度調整。</p>
+                    </header>
+                     <div class="content-card overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200">
+                                    <th class="p-4 font-bold text-slate-700 text-sm uppercase tracking-wider">設定項目</th>
+                                    <th class="p-4 font-bold text-slate-700 text-sm uppercase tracking-wider">建議數值 / 範圍</th>
+                                    <th class="p-4 font-bold text-slate-700 text-sm uppercase tracking-wider hidden md:table-cell">操作路徑</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm text-slate-600">
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="p-4">
+                                        <p class="font-bold text-slate-800">熱封溫度 (Heater)</p>
+                                        <p class="text-xs text-slate-400 mt-1">控制封口密合度</p>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded font-mono font-bold">130°C - 150°C</span>
+                                    </td>
+                                    <td class="p-4 hidden md:table-cell font-mono text-xs">Menu > Settings > Machine > Heater</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="p-4">
+                                        <p class="font-bold text-slate-800">包藥長度 (Length)</p>
+                                        <p class="text-xs text-slate-400 mt-1">決定每包藥的大小</p>
+                                    </td>
+                                    <td class="p-4">
+                                        <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded font-mono">70mm / 80mm / 90mm</span>
+                                    </td>
+                                    <td class="p-4 hidden md:table-cell font-mono text-xs">Menu > Settings > Length</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="p-4">
+                                        <p class="font-bold text-slate-800">打印濃度 (Density)</p>
+                                        <p class="text-xs text-slate-400 mt-1">字體深淺</p>
+                                    </td>
+                                    <td class="p-4">
+                                        Level 1 ~ 5 (建議 3)
+                                    </td>
+                                    <td class="p-4 hidden md:table-cell font-mono text-xs">Menu > Printer > Density</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 9. 清潔保養 -->
+                <div id="tab-cleaning" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                         <span class="bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Routine</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">例行性清潔保養</h2>
+                        <p class="text-slate-500 mt-1">每日與每週的清潔重點。</p>
+                    </header>
+                    <div class="content-card p-8">
+                        <div class="space-y-6">
+                            <div>
+                                <h3 class="font-bold text-lg text-sky-600 mb-3">每日清潔 (Daily)</h3>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2">
+                                    <li>使用吸塵器清除掉落於下方的藥粉與藥錠碎片。</li>
+                                    <li>使用酒精棉片擦拭藥槽 (Hopper) 內部。</li>
+                                </ul>
+                            </div>
+                            <div class="border-t border-slate-100 pt-6">
+                                <h3 class="font-bold text-lg text-indigo-600 mb-3">每週保養 (Weekly)</h3>
+                                <ul class="list-disc list-inside text-slate-600 space-y-2">
+                                    <li>檢查熱封滾輪是否有殘膠，請在<strong>停機冷卻後</strong>擦拭。</li>
+                                    <li>清潔打印頭 (Print Head)。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 10. 影音教學 (更新) -->
+                <div id="tab-videos" class="tab-content hidden animate-fade-in">
+                    <header class="mb-6 border-b border-slate-200 pb-4">
+                        <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Video Library</span>
+                        <h2 class="text-3xl font-bold text-slate-800 mt-2">影音操作教學</h2>
+                        <p class="text-slate-500 mt-1">高畫質操作演示。</p>
+                    </header>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-3 group">
+                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition relative bg-slate-100 flex items-center justify-center">
+                                <!-- 假影片佔位符，保持美觀 -->
+                                <div class="text-center">
+                                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </div>
+                                    <span class="text-xs text-slate-400 font-bold">等待上傳影片</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 group-hover:text-sky-600 transition">機台分包紙更換標準流程</h3>
+                                <p class="text-sm text-slate-500 mt-1">Basic Operation - 03:45</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 更新影音專區的影片 1 (Blockage) -->
+                        <div class="space-y-3 group">
+                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900"
+                                 onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                <img src="https://img.youtube.com/vi/NyOpBge2tXc/maxresdefault.jpg" 
+                                     onerror="this.src='https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg'" 
+                                     class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 group-hover:text-amber-600 transition">出藥口回堵緊急排除</h3>
+                                    <p class="text-sm text-slate-500 mt-1">Critical Fix - 02:15</p>
+                                </div>
+                                <a href="https://www.youtube.com/watch?v=NyOpBge2tXc" target="_blank" class="text-xs text-slate-400 hover:text-amber-600 underline mt-1">無法播放?</a>
+                            </div>
+                        </div>
+                        
+                        <!-- 更新影音專區的影片 2 (Belt) -->
+                        <div class="space-y-3 group">
+                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900"
+                                 onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                <img src="https://img.youtube.com/vi/xDmVNm4BPOw/maxresdefault.jpg" 
+                                     onerror="this.src='https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg'" 
+                                     class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition">輸送皮帶更換教學</h3>
+                                    <p class="text-sm text-slate-500 mt-1">Maintenance - 05:20</p>
+                                </div>
+                                <a href="https://www.youtube.com/watch?v=xDmVNm4BPOw" target="_blank" class="text-xs text-slate-400 hover:text-blue-600 underline mt-1">無法播放?</a>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-3 group">
+                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition">
+                                <iframe src="https://www.youtube.com/embed/placeholder" title="防呆設定與藥盒綁定" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800 group-hover:text-rose-600 transition">防呆設定與藥盒綁定</h3>
+                                <p class="text-sm text-slate-500 mt-1">System Setup - 04:10</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('animate-fade-in');
+            });
+            const targetContent = document.getElementById('tab-' + tabId);
+            if (targetContent) {
+                targetContent.classList.remove('hidden');
+                void targetContent.offsetWidth; 
+                targetContent.classList.add('animate-fade-in');
+            }
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('active');
+            });
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.classList.add('active');
+            }
+            
+            const scrollArea = document.getElementById('main-scroll-area');
+            if (scrollArea) {
+                scrollArea.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        window.onload = () => {
+            switchTab('consumables');
+        }
+    </script>
+</body>
+</html>
