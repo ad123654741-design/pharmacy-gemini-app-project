@@ -75,18 +75,25 @@
         const Trash2 = (props) => <IconBase {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconBase>;
 
         // --- 設定春節彈窗組件 ---
-        const SpringSettingsModal = ({ isOpen, onClose, springStart, setSpringStart, springEnd, setSpringEnd }) => {
+        const SpringSettingsModal = ({ 
+            isOpen, onClose, 
+            springStart, setSpringStart, 
+            springEnd, setSpringEnd,
+            springAdvanceDays, setSpringAdvanceDays 
+        }) => {
             const [localStart, setLocalStart] = useState(springStart);
             const [localEnd, setLocalEnd] = useState(springEnd);
+            const [localAdvanceDays, setLocalAdvanceDays] = useState(springAdvanceDays);
             const [errorMsg, setErrorMsg] = useState(""); 
 
             useEffect(() => {
                 if(isOpen) {
                     setLocalStart(springStart);
                     setLocalEnd(springEnd);
+                    setLocalAdvanceDays(springAdvanceDays);
                     setErrorMsg(""); 
                 }
-            }, [isOpen, springStart, springEnd]);
+            }, [isOpen, springStart, springEnd, springAdvanceDays]);
 
             if (!isOpen) return null;
 
@@ -97,12 +104,14 @@
                 }
                 setSpringStart(localStart);
                 setSpringEnd(localEnd);
+                setSpringAdvanceDays(Number(localAdvanceDays));
                 onClose();
             };
 
             const handleClear = () => {
                 setLocalStart("");
                 setLocalEnd("");
+                setLocalAdvanceDays(10); // 重置為預設10天(如果需要完全清空可視需求調整，但10天是健保常態)
                 setErrorMsg("");
             };
 
@@ -117,8 +126,20 @@
                         </div>
                         <div className="space-y-4">
                             <p className="text-sm text-slate-600 leading-relaxed bg-blue-50 p-3 rounded-lg border border-blue-100">
-                                根據健保署規定，若慢箋用藥屆滿日（吃完日期）落在春節期間，可提前於<strong>春節前 10 天(含)</strong>起回診或領藥。
+                                根據健保署規定，若慢箋用藥屆滿日（吃完日期）落在春節期間，可提前領藥。今年度放寬為 <strong>{localAdvanceDays} 天</strong>。
                             </p>
+                            <div className="space-y-2">
+                                <label className="block text-sm font-medium text-slate-700">提前領藥天數 (預設14天)</label>
+                                <div className="flex items-center gap-2">
+                                    <input 
+                                        type="number" 
+                                        value={localAdvanceDays} 
+                                        onChange={(e) => setLocalAdvanceDays(e.target.value)} 
+                                        className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
+                                    />
+                                    <span className="text-slate-500 text-sm whitespace-nowrap">天</span>
+                                </div>
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="block text-sm font-medium text-slate-700">春節開始日期</label>
@@ -215,9 +236,11 @@
             
             const [inputErrors, setInputErrors] = useState({});
 
+            // 春節設定狀態 (預設今年度日期與 14 天)
             const [showSpringModal, setShowSpringModal] = useState(false);
-            const [springStart, setSpringStart] = useState('');
-            const [springEnd, setSpringEnd] = useState('');
+            const [springStart, setSpringStart] = useState('2026-02-14');
+            const [springEnd, setSpringEnd] = useState('2026-02-22');
+            const [springAdvanceDays, setSpringAdvanceDays] = useState(14);
 
             useEffect(() => {
                 setActualPickupDates({});
@@ -335,17 +358,20 @@
                         
                         const idealNextCycleStartTimestamp = currentBaseTimestamp + (daysPerPrescription * oneDayMs);
                         
+                        // 預設邏輯：藥吃完前10天
                         let pickupStartTimestamp = idealNextCycleStartTimestamp - (10 * oneDayMs);
                         const pickupEndTimestamp = idealNextCycleStartTimestamp;
                         
                         const idealMedsEndStr = new Date(idealNextCycleStartTimestamp).toISOString().slice(0, 10);
                         let isSpringEarly = false;
 
+                        // 春節判斷：若藥品用完日落在春節期間，改用 springAdvanceDays (例如14天)
                         if (springStart && springEnd) {
                             if (idealMedsEndStr >= springStart && idealMedsEndStr <= springEnd) {
                                 const springStartTs = new Date(springStart).getTime();
                                 if (!isNaN(springStartTs)) {
-                                    pickupStartTimestamp = springStartTs - (10 * oneDayMs);
+                                    // 使用自訂的提前天數
+                                    pickupStartTimestamp = springStartTs - (springAdvanceDays * oneDayMs);
                                     isSpringEarly = true;
                                 }
                             }
@@ -396,7 +422,7 @@
                 } catch (e) {
                     console.error("Calc error", e);
                 }
-            }, [startDate, daysPerPrescription, totalRefills, actualPickupDates, springStart, springEnd]);
+            }, [startDate, daysPerPrescription, totalRefills, actualPickupDates, springStart, springEnd, springAdvanceDays]);
 
             const downloadICS = (item) => {
                 try {
@@ -483,6 +509,8 @@
                         setSpringStart={setSpringStart}
                         springEnd={springEnd}
                         setSpringEnd={setSpringEnd}
+                        springAdvanceDays={springAdvanceDays}
+                        setSpringAdvanceDays={setSpringAdvanceDays}
                     />
 
                     <header className="bg-teal-600 text-white p-4 shadow-lg sticky top-0 z-20">
@@ -495,7 +523,7 @@
                             </div>
                             <div className="text-sm text-teal-50 flex flex-col md:items-end gap-1 font-mono opacity-90">
                                 <p>製作者 : 蝦仁藥師</p>
-                                <p>更新日期 : 2026/01/15</p>
+                                <p>更新日期 : 2026/01/16</p>
                             </div>
                         </div>
                     </header>
@@ -523,7 +551,7 @@
                                     {springStart && springEnd && (
                                         <div className="bg-red-50 text-red-700 text-sm px-3 py-2 rounded-lg flex items-center gap-2 border border-red-100">
                                             <PartyPopper size={16} />
-                                            <span>春節假期：{formatDate(springStart)} ~ {formatDate(springEnd)}</span>
+                                            <span>春節假期：{formatDate(springStart)} ~ {formatDate(springEnd)} (提前{springAdvanceDays}天)</span>
                                         </div>
                                     )}
 
@@ -629,7 +657,7 @@
                                                             
                                                             {item.isSpringEarly && (
                                                                 <span className="text-sm font-medium text-red-700 bg-red-100 px-2 py-1 rounded border border-red-200 flex items-center gap-1">
-                                                                    <PartyPopper size={14} /> 春節提前
+                                                                    <PartyPopper size={14} /> 春節提前 ({springAdvanceDays}天)
                                                                 </span>
                                                             )}
 
@@ -668,7 +696,7 @@
                                                                     </p>
                                                                 ) : item.isSpringEarly ? (
                                                                     <p className="text-sm text-red-700 font-medium flex items-center gap-1.5 bg-red-50 p-2 rounded border border-red-100">
-                                                                        <PartyPopper size={16} /> 因應春節假期 ({formatDate(springStart)}~{formatDate(springEnd)})，可提前領藥。
+                                                                        <PartyPopper size={16} /> 因應春節假期 ({formatDate(springStart)}~{formatDate(springEnd)})，可提前 {springAdvanceDays} 天領藥。
                                                                     </p>
                                                                 ) : (
                                                                     startIsWeekend && (<p className="text-sm text-red-600 font-medium flex items-center gap-1.5"><AlertCircle size={16} /> 週末或國定假日請確認藥局有營業</p>)
