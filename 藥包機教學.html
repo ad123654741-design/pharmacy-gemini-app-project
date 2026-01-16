@@ -110,21 +110,23 @@
             z-index: 10;
         }
 
-        /* 影片容器 16:9 */
-        .video-wrapper {
+        /* 影片容器 - 強制背景色 (解決破圖問題) */
+        .video-placeholder-bg {
+            background-color: #1e293b; /* slate-800 */
+            background-image: radial-gradient(circle at center, #334155 0%, #1e293b 100%);
             position: relative;
-            padding-bottom: 56.25%;
+            padding-bottom: 56.25%; /* 16:9 ratio */
             height: 0;
             overflow: hidden;
             border-radius: 0.75rem;
-            background-color: #0f172a;
         }
-        .video-wrapper iframe {
+        .video-placeholder-bg iframe {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 20;
         }
 
         /* 捲軸美化 */
@@ -280,7 +282,7 @@
                     </div>
                 </div>
 
-                <!-- 2. 出藥口回堵排除 (更新縮圖) -->
+                <!-- 2. 出藥口回堵排除 (更新：CSS 預覽卡片) -->
                 <div id="tab-blockage" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Critical Fix</span>
@@ -318,7 +320,7 @@
                                 </ul>
                             </div>
                             
-                            <!-- 影片嵌入 (改為 hqdefault.jpg 以確保有圖) -->
+                            <!-- 影片嵌入 (使用 CSS 預覽底圖) -->
                             <div class="space-y-2">
                                 <div class="flex justify-between items-end">
                                     <h4 class="font-bold text-slate-800 text-sm">📺 清潔示範影片</h4>
@@ -328,28 +330,28 @@
                                     </a>
                                 </div>
                                 
-                                <div class="video-wrapper shadow-md cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900" 
-                                     onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                     onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
                                     
-                                    <!-- 修正：使用 hqdefault.jpg 確保預覽圖一定存在 -->
-                                    <img src="https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg" 
-                                         alt="Video Thumbnail" class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
-                                    
-                                    <!-- 播放按鈕 -->
-                                    <div class="absolute inset-0 flex items-center justify-center">
-                                        <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    <!-- 純 CSS 播放按鈕與背景 -->
+                                    <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
+                                        <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                         </div>
+                                        <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
                                     </div>
                                     
-                                    <div class="absolute bottom-2 right-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white font-bold">點擊播放 (預設靜音)</div>
+                                    <!-- 嘗試載入圖片 (onError 時自動隱藏) -->
+                                    <img src="https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg" 
+                                         class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300"
+                                         onerror="this.style.display='none'">
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. 安裝皮帶 (更新縮圖) -->
+                <!-- 3. 安裝皮帶 (更新：CSS 預覽卡片) -->
                 <div id="tab-belt" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Maintenance</span>
@@ -398,7 +400,7 @@
                                     </ul>
                                 </div>
 
-                                <!-- 影片嵌入 -->
+                                <!-- 影片嵌入 (使用 CSS 預覽底圖) -->
                                 <div class="space-y-2">
                                     <div class="flex justify-between items-end">
                                         <h4 class="font-bold text-slate-800 text-sm">📺 操作示範影片</h4>
@@ -406,21 +408,21 @@
                                             直接前往 YouTube 觀看
                                         </a>
                                     </div>
-                                    <div class="video-wrapper shadow-md cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900" 
-                                         onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                    <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                         onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
                                         
-                                        <!-- 修正：使用 hqdefault.jpg -->
-                                        <img src="https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg" 
-                                             alt="Video Thumbnail" class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
-                                        
-                                        <!-- 播放按鈕圖示 -->
-                                        <div class="absolute inset-0 flex items-center justify-center">
-                                            <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        <!-- 純 CSS 播放按鈕 -->
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-10">
+                                            <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                             </div>
+                                            <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
                                         </div>
                                         
-                                        <div class="absolute bottom-2 right-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white font-bold">點擊播放 (預設靜音)</div>
+                                        <!-- 嘗試載入圖片 -->
+                                        <img src="https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg" 
+                                             class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300"
+                                             onerror="this.style.display='none'">
                                     </div>
                                 </div>
                             </div>
@@ -682,7 +684,7 @@
                     </div>
                 </div>
 
-                <!-- 10. 影音教學 (更新佈局與縮圖) -->
+                <!-- 10. 影音教學 (更新佈局與縮圖處理) -->
                 <div id="tab-videos" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Video Library</span>
@@ -691,19 +693,21 @@
                     </header>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        
+                        <!-- Video Card 0 (Placeholder) -->
                         <div class="space-y-3 group">
-                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition relative bg-slate-100 flex items-center justify-center">
-                                <div class="text-center">
-                                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                            <div class="video-placeholder-bg flex items-center justify-center">
+                                <div class="text-center absolute inset-0 flex flex-col items-center justify-center">
+                                    <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                     </div>
                                     <span class="text-xs text-slate-400 font-bold">等待上傳影片</span>
                                 </div>
                             </div>
                             <div>
-                                <div class="flex items-baseline gap-2 mt-3">
+                                <div class="flex items-center gap-2 mt-3">
                                     <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition">機台分包紙更換標準流程</h3>
-                                    <span class="text-xs text-slate-400 font-mono">(03:45)</span>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">03:45</span>
                                 </div>
                                 <p class="text-sm text-slate-500 mt-2 leading-relaxed">
                                     包含舊紙捲移除、新紙捲方向確認及正確的穿線路徑。請特別注意經過熱封模組時需確保紙張平整。
@@ -711,22 +715,31 @@
                             </div>
                         </div>
                         
-                        <!-- 更新影音專區的影片 1 (Blockage) - 更新版面 -->
+                        <!-- Video Card 1 (Blockage) -->
                         <div class="space-y-3 group">
-                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900"
-                                 onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
-                                <img src="https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg" 
-                                     class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <!-- Video Container with CSS Fallback -->
+                            <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                 onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                
+                                <!-- Background Design (Always Visible as Base) -->
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
+                                    <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                     </div>
+                                    <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
                                 </div>
+                                
+                                <!-- Thumbnail Image (Hides on Error) -->
+                                <img src="https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300 z-10"
+                                     onerror="this.style.display='none'">
                             </div>
+                            
+                            <!-- Info Area -->
                             <div>
-                                <div class="flex items-baseline gap-2 mt-3">
+                                <div class="flex items-center gap-2 mt-3">
                                     <h3 class="font-bold text-slate-800 text-lg group-hover:text-amber-600 transition">出藥口回堵緊急排除</h3>
-                                    <span class="text-xs text-slate-400 font-mono">(02:15)</span>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">02:15</span>
                                 </div>
                                 <p class="text-sm text-slate-500 mt-2 leading-relaxed">
                                     當螢幕顯示 E-04 或發現漏斗阻塞時的緊急處理。包含拆卸漏斗、清潔震盪器周邊及重新安裝的步驟。
@@ -735,22 +748,26 @@
                             </div>
                         </div>
                         
-                        <!-- 更新影音專區的影片 2 (Belt) - 更新版面 -->
+                        <!-- Video Card 2 (Belt) -->
                         <div class="space-y-3 group">
-                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900"
-                                 onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
-                                <img src="https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg" 
-                                     class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
-                                <div class="absolute inset-0 flex items-center justify-center">
-                                    <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <div class="video-placeholder-bg cursor-pointer group shadow-lg" 
+                                 onclick="this.innerHTML='<iframe src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
+                                
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-white z-0">
+                                    <div class="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 transition duration-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                     </div>
+                                    <p class="mt-3 text-xs font-bold tracking-wider text-slate-300 uppercase">Click to Play</p>
                                 </div>
+                                
+                                <img src="https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg" 
+                                     class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition duration-300 z-10"
+                                     onerror="this.style.display='none'">
                             </div>
                             <div>
-                                <div class="flex items-baseline gap-2 mt-3">
+                                <div class="flex items-center gap-2 mt-3">
                                     <h3 class="font-bold text-slate-800 text-lg group-hover:text-blue-600 transition">輸送皮帶更換教學</h3>
-                                    <span class="text-xs text-slate-400 font-mono">(05:20)</span>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">05:20</span>
                                 </div>
                                 <p class="text-sm text-slate-500 mt-2 leading-relaxed">
                                     皮帶斷裂或老化的更換教學。重點解說如何正確放鬆張力輪、清潔輪軸以及新皮帶的張力測試標準。
@@ -759,14 +776,20 @@
                             </div>
                         </div>
                         
+                        <!-- Video Card 3 (Placeholder) -->
                         <div class="space-y-3 group">
-                            <div class="video-wrapper shadow-lg group-hover:shadow-xl transition">
-                                <iframe src="https://www.youtube.com/embed/placeholder" title="防呆設定與藥盒綁定" frameborder="0" allowfullscreen></iframe>
+                            <div class="video-placeholder-bg flex items-center justify-center">
+                                <div class="text-center absolute inset-0 flex flex-col items-center justify-center">
+                                    <div class="w-12 h-12 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                    </div>
+                                    <span class="text-xs text-slate-400 font-bold">未來擴充區塊</span>
+                                </div>
                             </div>
                             <div>
-                                <div class="flex items-baseline gap-2 mt-3">
+                                <div class="flex items-center gap-2 mt-3">
                                     <h3 class="font-bold text-slate-800 text-lg group-hover:text-rose-600 transition">防呆設定與藥盒綁定</h3>
-                                    <span class="text-xs text-slate-400 font-mono">(04:10)</span>
+                                    <span class="text-xs text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">04:10</span>
                                 </div>
                                 <p class="text-sm text-slate-500 mt-2 leading-relaxed">
                                     介紹如何進行 RFID 藥盒配對，以及如何設定補藥條碼驗證功能，確保調劑過程的病人安全。
