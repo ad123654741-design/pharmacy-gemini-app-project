@@ -280,7 +280,7 @@
                     </div>
                 </div>
 
-                <!-- 2. 出藥口回堵排除 (新增) -->
+                <!-- 2. 出藥口回堵排除 (更新縮圖) -->
                 <div id="tab-blockage" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Critical Fix</span>
@@ -318,7 +318,7 @@
                                 </ul>
                             </div>
                             
-                            <!-- 影片嵌入 (封面圖偽裝技術) -->
+                            <!-- 影片嵌入 (改為 hqdefault.jpg 以確保有圖) -->
                             <div class="space-y-2">
                                 <div class="flex justify-between items-end">
                                     <h4 class="font-bold text-slate-800 text-sm">📺 清潔示範影片</h4>
@@ -331,9 +331,8 @@
                                 <div class="video-wrapper shadow-md cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900" 
                                      onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
                                     
-                                    <!-- 使用高畫質預覽圖 maxresdefault -->
-                                    <img src="https://img.youtube.com/vi/NyOpBge2tXc/maxresdefault.jpg" 
-                                         onerror="this.src='https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg'" 
+                                    <!-- 修正：使用 hqdefault.jpg 確保預覽圖一定存在 -->
+                                    <img src="https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg" 
                                          alt="Video Thumbnail" class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
                                     
                                     <!-- 播放按鈕 -->
@@ -345,15 +344,12 @@
                                     
                                     <div class="absolute bottom-2 right-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white font-bold">點擊播放 (預設靜音)</div>
                                 </div>
-                                <p class="text-[10px] text-slate-400 mt-1">
-                                    *若點擊後無法播放，是因為您使用本機檔案 (Local File) 開啟，YouTube 限制了嵌入。請點擊右上角連結觀看。
-                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 3. 安裝皮帶 (新增) -->
+                <!-- 3. 安裝皮帶 (更新縮圖) -->
                 <div id="tab-belt" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-sky-100 text-sky-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Maintenance</span>
@@ -402,7 +398,7 @@
                                     </ul>
                                 </div>
 
-                                <!-- 影片嵌入 (封面圖偽裝技術) -->
+                                <!-- 影片嵌入 -->
                                 <div class="space-y-2">
                                     <div class="flex justify-between items-end">
                                         <h4 class="font-bold text-slate-800 text-sm">📺 操作示範影片</h4>
@@ -413,9 +409,8 @@
                                     <div class="video-wrapper shadow-md cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900" 
                                          onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
                                         
-                                        <!-- YouTube 縮圖 -->
-                                        <img src="https://img.youtube.com/vi/xDmVNm4BPOw/maxresdefault.jpg" 
-                                             onerror="this.src='https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg'" 
+                                        <!-- 修正：使用 hqdefault.jpg -->
+                                        <img src="https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg" 
                                              alt="Video Thumbnail" class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
                                         
                                         <!-- 播放按鈕圖示 -->
@@ -425,19 +420,15 @@
                                             </div>
                                         </div>
                                         
-                                        <!-- 提示文字 -->
                                         <div class="absolute bottom-2 right-2 bg-black/60 px-2 py-0.5 rounded text-[10px] text-white font-bold">點擊播放 (預設靜音)</div>
                                     </div>
-                                    <p class="text-[10px] text-slate-400 mt-1">
-                                        *若無法播放，請確認您的網路設定，或直接點選上方連結。
-                                    </p>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 4. 藥盒系統設定 (新增) -->
+                <!-- 4. 藥盒系統設定 (保留) -->
                 <div id="tab-cassette-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase">System Setup</span>
@@ -469,7 +460,7 @@
                     </div>
                 </div>
 
-                <!-- 5. 預包系統設定 (新增) -->
+                <!-- 5. 預包系統設定 (保留) -->
                 <div id="tab-prepack-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Efficiency</span>
@@ -514,7 +505,7 @@
                     </div>
                 </div>
 
-                <!-- 6. 藥盒防呆機制設定 (新增) -->
+                <!-- 6. 藥盒防呆機制設定 (保留) -->
                 <div id="tab-safety-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Safety First</span>
@@ -557,7 +548,7 @@
                     </div>
                 </div>
 
-                <!-- 7. 故障排除 - 資料無法接收 -->
+                <!-- 7. 故障排除 - 資料無法接收 (保留) -->
                 <div id="tab-troubleshoot" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Connectivity</span>
@@ -612,7 +603,7 @@
                     </div>
                 </div>
 
-                <!-- 8. 系統參數設定 -->
+                <!-- 8. 系統參數設定 (保留) -->
                 <div id="tab-settings" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-slate-100 text-slate-600 px-3 py-1 rounded-full text-xs font-bold uppercase">Advanced</span>
@@ -664,7 +655,7 @@
                     </div>
                 </div>
 
-                <!-- 9. 清潔保養 -->
+                <!-- 9. 清潔保養 (保留) -->
                 <div id="tab-cleaning" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                          <span class="bg-teal-100 text-teal-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Routine</span>
@@ -691,18 +682,17 @@
                     </div>
                 </div>
 
-                <!-- 10. 影音教學 (更新) -->
+                <!-- 10. 影音教學 (更新佈局與縮圖) -->
                 <div id="tab-videos" class="tab-content hidden animate-fade-in">
                     <header class="mb-6 border-b border-slate-200 pb-4">
                         <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold uppercase">Video Library</span>
                         <h2 class="text-3xl font-bold text-slate-800 mt-2">影音操作教學</h2>
-                        <p class="text-slate-500 mt-1">高畫質操作演示。</p>
+                        <p class="text-slate-500 mt-1">高畫質操作演示與重點解說。</p>
                     </header>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-3 group">
                             <div class="video-wrapper shadow-lg group-hover:shadow-xl transition relative bg-slate-100 flex items-center justify-center">
-                                <!-- 假影片佔位符，保持美觀 -->
                                 <div class="text-center">
                                     <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-2">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -711,17 +701,21 @@
                                 </div>
                             </div>
                             <div>
-                                <h3 class="font-bold text-slate-800 group-hover:text-sky-600 transition">機台分包紙更換標準流程</h3>
-                                <p class="text-sm text-slate-500 mt-1">Basic Operation - 03:45</p>
+                                <div class="flex items-baseline gap-2 mt-3">
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-sky-600 transition">機台分包紙更換標準流程</h3>
+                                    <span class="text-xs text-slate-400 font-mono">(03:45)</span>
+                                </div>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    包含舊紙捲移除、新紙捲方向確認及正確的穿線路徑。請特別注意經過熱封模組時需確保紙張平整。
+                                </p>
                             </div>
                         </div>
                         
-                        <!-- 更新影音專區的影片 1 (Blockage) -->
+                        <!-- 更新影音專區的影片 1 (Blockage) - 更新版面 -->
                         <div class="space-y-3 group">
                             <div class="video-wrapper shadow-lg group-hover:shadow-xl transition cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900"
                                  onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/NyOpBge2tXc?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
-                                <img src="https://img.youtube.com/vi/NyOpBge2tXc/maxresdefault.jpg" 
-                                     onerror="this.src='https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg'" 
+                                <img src="https://img.youtube.com/vi/NyOpBge2tXc/hqdefault.jpg" 
                                      class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
                                 <div class="absolute inset-0 flex items-center justify-center">
                                     <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
@@ -729,21 +723,23 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="font-bold text-slate-800 group-hover:text-amber-600 transition">出藥口回堵緊急排除</h3>
-                                    <p class="text-sm text-slate-500 mt-1">Critical Fix - 02:15</p>
+                            <div>
+                                <div class="flex items-baseline gap-2 mt-3">
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-amber-600 transition">出藥口回堵緊急排除</h3>
+                                    <span class="text-xs text-slate-400 font-mono">(02:15)</span>
                                 </div>
-                                <a href="https://www.youtube.com/watch?v=NyOpBge2tXc" target="_blank" class="text-xs text-slate-400 hover:text-amber-600 underline mt-1">無法播放?</a>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    當螢幕顯示 E-04 或發現漏斗阻塞時的緊急處理。包含拆卸漏斗、清潔震盪器周邊及重新安裝的步驟。
+                                </p>
+                                <a href="https://www.youtube.com/watch?v=NyOpBge2tXc" target="_blank" class="text-xs text-slate-400 hover:text-amber-600 underline mt-1 block">無法播放? 點擊前往 YouTube</a>
                             </div>
                         </div>
                         
-                        <!-- 更新影音專區的影片 2 (Belt) -->
+                        <!-- 更新影音專區的影片 2 (Belt) - 更新版面 -->
                         <div class="space-y-3 group">
                             <div class="video-wrapper shadow-lg group-hover:shadow-xl transition cursor-pointer group relative overflow-hidden rounded-xl bg-slate-900"
                                  onclick="this.innerHTML='<iframe class=\'absolute inset-0 w-full h-full\' src=\'https://www.youtube.com/embed/xDmVNm4BPOw?autoplay=1&mute=1\' frameborder=\'0\' allow=\'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture\' allowfullscreen></iframe>'">
-                                <img src="https://img.youtube.com/vi/xDmVNm4BPOw/maxresdefault.jpg" 
-                                     onerror="this.src='https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg'" 
+                                <img src="https://img.youtube.com/vi/xDmVNm4BPOw/hqdefault.jpg" 
                                      class="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition duration-300">
                                 <div class="absolute inset-0 flex items-center justify-center">
                                     <div class="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition duration-300 border border-white/40 shadow-xl">
@@ -751,12 +747,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition">輸送皮帶更換教學</h3>
-                                    <p class="text-sm text-slate-500 mt-1">Maintenance - 05:20</p>
+                            <div>
+                                <div class="flex items-baseline gap-2 mt-3">
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-blue-600 transition">輸送皮帶更換教學</h3>
+                                    <span class="text-xs text-slate-400 font-mono">(05:20)</span>
                                 </div>
-                                <a href="https://www.youtube.com/watch?v=xDmVNm4BPOw" target="_blank" class="text-xs text-slate-400 hover:text-blue-600 underline mt-1">無法播放?</a>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    皮帶斷裂或老化的更換教學。重點解說如何正確放鬆張力輪、清潔輪軸以及新皮帶的張力測試標準。
+                                </p>
+                                <a href="https://www.youtube.com/watch?v=xDmVNm4BPOw" target="_blank" class="text-xs text-slate-400 hover:text-blue-600 underline mt-1 block">無法播放? 點擊前往 YouTube</a>
                             </div>
                         </div>
                         
@@ -765,8 +764,13 @@
                                 <iframe src="https://www.youtube.com/embed/placeholder" title="防呆設定與藥盒綁定" frameborder="0" allowfullscreen></iframe>
                             </div>
                             <div>
-                                <h3 class="font-bold text-slate-800 group-hover:text-rose-600 transition">防呆設定與藥盒綁定</h3>
-                                <p class="text-sm text-slate-500 mt-1">System Setup - 04:10</p>
+                                <div class="flex items-baseline gap-2 mt-3">
+                                    <h3 class="font-bold text-slate-800 text-lg group-hover:text-rose-600 transition">防呆設定與藥盒綁定</h3>
+                                    <span class="text-xs text-slate-400 font-mono">(04:10)</span>
+                                </div>
+                                <p class="text-sm text-slate-500 mt-2 leading-relaxed">
+                                    介紹如何進行 RFID 藥盒配對，以及如何設定補藥條碼驗證功能，確保調劑過程的病人安全。
+                                </p>
                             </div>
                         </div>
                     </div>
