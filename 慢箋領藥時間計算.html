@@ -30,7 +30,7 @@
         .animate-fadeIn {
             animation: fadeIn 0.2s ease-out forwards;
         }
-        /* Custom Scrollbar */
+        /* Custom Scrollbar for Sidebar */
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
@@ -269,6 +269,31 @@
                                     </li>
                                 </ul>
                             </div>
+
+                            {/* Section 4: Export & Calendar */}
+                            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                                <h4 className="font-bold text-lg text-teal-800 mb-4 flex items-center gap-2 border-b border-slate-100 pb-2">
+                                    <span className="text-2xl">📅</span> 日期匯出與行事曆提醒
+                                </h4>
+                                <ul className="space-y-4">
+                                    <li className="flex items-start gap-3">
+                                        <div className="bg-teal-50 text-teal-700 font-bold text-sm px-2.5 py-1 rounded-md shrink-0 mt-0.5 border border-teal-100">
+                                            一鍵複製文字
+                                        </div>
+                                        <span className="text-slate-600 text-sm md:text-base leading-relaxed">
+                                            點擊「複製時程表」按鈕，即可將完整的領藥日期資訊複製到剪貼簿，方便直接貼上 Line 或其他通訊軟體分享給家人。
+                                        </span>
+                                    </li>
+                                    <li className="flex items-start gap-3">
+                                        <div className="bg-teal-50 text-teal-700 font-bold text-sm px-2.5 py-1 rounded-md shrink-0 mt-0.5 border border-teal-100">
+                                            加入行事曆
+                                        </div>
+                                        <span className="text-slate-600 text-sm md:text-base leading-relaxed">
+                                            在建議領藥時程表的每一張卡片右上角，點擊 <Download className="inline w-4 h-4 mx-1 text-slate-500" /> 圖示，即可下載 .ics 檔案。開啟檔案後可直接將領藥提醒加入 Google 日曆或 Apple 行事曆中，避免忘記領藥。
+                                        </span>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
 
                         {/* Footer */}
@@ -285,7 +310,7 @@
             );
         };
 
-        // --- 法規與注意事項組件 ---
+        // --- 法規與注意事項組件 (修正後) ---
         const RegulationsSection = ({ className }) => (
             <section className={`bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-slate-700 space-y-5 text-base leading-relaxed border border-slate-200 shadow-sm ${className}`}>
                 <div className="flex items-center gap-2 text-slate-800 font-bold border-b border-slate-300 pb-3 mb-2">
@@ -828,6 +853,7 @@
                                         const startIsWeekend = isWeekend(item.pickupStart);
                                         const isPast = item.pickupStart < getTaiwanToday();
                                         const isToday = item.pickupStart === getTaiwanToday();
+                                        // 修改判定邏輯：只有當次數小於總次數時，才顯示輸入框 (最後一次不顯示)
                                         const showActualInput = item.isEditable && item.id < totalRefills;
 
                                         return (
