@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PediCalc Pro | 專業兒科藥物計算機 (雲端版)</title>
+    
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 PapaParse -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- 引入 FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0ea5e9', // 醫療藍
+                        secondary: '#10b981', // 安全綠
+                        accent: '#8b5cf6', // 塞劑紫
+                        surface: '#f8fafc',
+                        warning: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    backgroundImage: {
+                        'graph-paper': "linear-gradient(#cbd5e1 1px, transparent 1px), linear-gradient(90deg, #cbd5e1 1px, transparent 1px)",
+                    },
+                    backgroundSize: {
+                        'graph': '24px 24px',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc;
+            background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 24px 24px;
+            background-position: center top;
+            -webkit-tap-highlight-color: transparent;
+        }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .card-transition { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        .card-idle {
+            background-color: rgba(255, 255, 255, 0.6);
+            border: 2px dashed #cbd5e1;
+            color: #94a3b8;
+            box-shadow: none;
+        }
+        .card-active-primary {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid transparent;
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        .card-active-light {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+        @keyframes pop {
+            0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); }
+        }
+        .animate-pop { animation: pop 0.2s ease-in-out; }
+        .age-ref-table tr.active-range { background-color: #eff6ff; font-weight: bold; color: #0369a1; }
+        .age-ref-table td { padding: 6px 12px; font-size: 0.85rem; border-bottom: 1px dashed #e2e8f0; }
+        
+        /* 下拉選單樣式修正 */
+        select:required:invalid { color: #94a3b8; }
+        option[value=""][disabled] { display: none; }
+    </style>
+</head>
+<body class="text-slate-700 min-h-screen flex flex-col">
+
+    <!-- 頂部導航 -->
+    <header class="bg-white/90 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-slate-200">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-br from-primary to-blue-600 p-2.5 rounded-xl text-white shadow-lg shadow-blue-500/20">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800 leading-tight tracking-tight">兒科藥物計算機</h1>
+                    <div class="flex items-center gap-2">
+                        <p class="text-[10px] text-slate-500 font-medium tracking-wider uppercase">PediCalc Pro</p>
+                        <span id="db-status" class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200">離線</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="app.refreshData()" class="text-xs font-medium text-slate-600 hover:text-primary transition-colors flex items-center gap-1.5 bg-white px-3 py-2 rounded-lg border border-slate-200 hover:border-primary/50 shadow-sm">
+                <i class="fa-solid fa-sync"></i> <span class="hidden sm:inline">更新資料</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要內容 -->
+    <main class="flex-grow p-4 md:p-6 pb-24">
+        <div class="max-w-3xl mx-auto space-y-6">
+
+            <!-- 1. 患者資料 -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 relative overflow-hidden">
+                <div class="absolute -right-4 -top-4 text-slate-50 opacity-10 text-9xl pointer-events-none">
+                    <i class="fa-solid fa-user-doctor"></i>
+                </div>
+                <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-primary mr-2"></span>
+                    患者資料 (Patient)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">體重 (Weight)</label>
+                        <div class="relative group">
+                            <input type="number" id="weight" step="0.1" placeholder="輸入數值" 
+                                class="w-full pl-4 pr-12 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-xl font-bold text-slate-800 placeholder-slate-300 shadow-inner"
+                                oninput="app.calculate()">
+                            <span class="absolute right-4 top-4 text-slate-400 font-medium text-sm">kg</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">年齡 (Age) <span class="text-[10px] text-slate-400 font-normal ml-1 bg-slate-100 px-1.5 py-0.5 rounded">建議輸入</span></label>
+                        <div class="relative">
+                            <input type="text" id="age" placeholder="例如: 2y, 1y6m, 3" 
+                                class="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all text-base text-slate-800 placeholder-slate-300 shadow-inner"
+                                oninput="app.calculate()">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. 藥物選擇與輸入 -->
+            <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="flex overflow-x-auto p-1.5 gap-1.5 bg-slate-100/80 border-b border-slate-200">
+                    <button onclick="app.setForm('liquid')" id="tab-liquid" class="flex-1 py-2.5 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-300 bg-white text-primary shadow-sm ring-1 ring-black/5">
+                        <i class="fa-solid fa-bottle-droplet"></i> 水劑
+                    </button>
+                    <button onclick="app.setForm('solid')" id="tab-solid" class="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm text-slate-500 hover:bg-white/60 hover:text-slate-700 flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-300">
+                        <i class="fa-solid fa-capsules"></i> 錠/粉劑
+                    </button>
+                    <button onclick="app.setForm('suppository')" id="tab-suppository" class="flex-1 py-2.5 px-4 rounded-lg font-medium text-sm text-slate-500 hover:bg-white/60 hover:text-slate-700 flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-300">
+                        <i class="fa-solid fa-pills"></i> 塞劑
+                    </button>
+                </div>
+
+                <div class="p-5 md:p-6 space-y-6">
+                    
+                    <!-- 藥物選擇區 -->
+                    <div class="relative z-20">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5 flex justify-between items-center">
+                            <span>選擇藥物 (Drug Selection)</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full cursor-pointer hover:bg-primary hover:text-white transition-colors" onclick="app.refreshData()"><i class="fa-solid fa-sync mr-1"></i>檢查更新</span>
+                        </label>
+                        
+                        <!-- 搜尋輸入框 -->
+                        <div class="mb-2 relative">
+                            <input type="text" id="drug-search" placeholder="🔍 搜尋藥品 (如: Acetaminophen, 安佳熱)" autocomplete="off"
+                                class="w-full pl-4 pr-10 py-2.5 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none text-sm transition-all placeholder-slate-400"
+                                oninput="app.filterDrugs()">
+                            
+                            <div class="absolute right-2 top-2.5 flex items-center gap-2">
+                                <span id="search-count" class="text-[10px] text-primary font-bold hidden bg-blue-50 px-1.5 rounded">0</span>
+                                <button class="text-slate-400 hover:text-slate-600 w-5 h-5 flex items-center justify-center" onclick="app.clearSearch()">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 下拉選單 -->
+                        <div class="relative">
+                            <select id="drug-selector" onchange="app.onDrugSelect()" required class="w-full pl-4 pr-10 py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none appearance-none bg-white font-medium text-slate-700 shadow-sm cursor-pointer transition-all">
+                                <option value="" disabled selected class="text-slate-400">請選擇藥物...</option>
+                                <option value="custom">手動輸入 (Manual Input)</option>
+                            </select>
+                            <div class="absolute right-4 top-4 pointer-events-none text-slate-400">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                        </div>
+                        <p id="drug-desc" class="text-xs text-slate-500 mt-2 ml-1 h-4 truncate font-medium"></p>
+                    </div>
+
+                    <!-- 數值輸入與頻次 -->
+                    <div id="input-area" class="animate-slide-up">
+                        <div id="standard-inputs" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1.5">目標劑量 (Dose)</label>
+                                <div class="relative">
+                                    <input type="number" id="dose-input" step="0.1" placeholder="0" 
+                                        class="w-full pl-4 pr-16 py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-lg font-bold text-slate-700 transition-all placeholder-slate-300"
+                                        oninput="app.calculate()">
+                                    <span class="absolute right-4 top-4 text-xs text-slate-400 font-medium bg-white pl-1">mg/kg</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label id="conc-label" class="block text-sm font-semibold text-slate-700 mb-1.5">濃度 (Conc.)</label>
+                                <div class="relative">
+                                    <input type="number" id="strength-input" step="0.1" placeholder="0" 
+                                        class="w-full pl-4 pr-16 py-3.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none text-lg font-bold text-slate-700 transition-all placeholder-slate-300"
+                                        oninput="app.calculate()">
+                                    <span id="strength-unit" class="absolute right-4 top-4 text-xs text-slate-400 font-medium bg-white pl-1">mg/mL</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 pt-5 border-t border-slate-100/80">
+                             <label class="block text-sm font-semibold text-slate-700 mb-2">頻次 (Frequency)</label>
+                             <div class="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                                <button type="button" onclick="app.setFrequency(1, 'QD')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="1" data-code="QD">QD</button>
+                                <button type="button" onclick="app.setFrequency(2, 'BID')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="2" data-code="BID">BID</button>
+                                <button type="button" onclick="app.setFrequency(3, 'TID')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="3" data-code="TID">TID</button>
+                                <button type="button" onclick="app.setFrequency(4, 'QID')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="4" data-code="QID">QID</button>
+                                <button type="button" onclick="app.setFrequency(6, 'Q4H')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="6" data-code="Q4H">Q4H</button>
+                                <button type="button" onclick="app.setFrequency(4, 'Q6H')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="4" data-code="Q6H">Q6H</button>
+                                <button type="button" onclick="app.setFrequency(3, 'Q8H')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="3" data-code="Q8H">Q8H</button>
+                                <button type="button" onclick="app.setFrequency(2, 'Q12H')" class="freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all" data-val="2" data-code="Q12H">Q12H</button>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. 結果區 -->
+            <div id="results-wrapper" class="flex flex-col gap-5">
+                <!-- Weight Card -->
+                <section id="weight-result-card" class="card-transition card-idle rounded-2xl p-6 relative overflow-hidden group order-1">
+                    <div id="weight-empty-state" class="flex flex-col items-center justify-center py-4 text-center">
+                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-3 text-slate-300">
+                            <i class="fa-solid fa-scale-balanced text-xl"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-400">請輸入體重以開始計算</p>
+                    </div>
+                    <div id="weight-card-content" class="hidden relative z-10">
+                        <div class="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
+                        <div class="flex justify-between items-start mb-2">
+                             <h3 class="text-xs font-bold opacity-70 uppercase tracking-widest flex items-center gap-2">
+                                <i class="fa-solid fa-scale-balanced"></i> 體重計算結果
+                            </h3>
+                            <button onclick="app.copyResult('weight')" class="text-xs bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-md text-white transition-colors flex items-center gap-1.5 border border-white/10">
+                                <i class="fa-regular fa-copy"></i> 複製
+                            </button>
+                        </div>
+                        
+                        <div class="flex items-baseline gap-2 mt-3">
+                            <span id="result-value" class="text-5xl font-bold tracking-tight tabular-nums">0</span>
+                            <span id="result-unit" class="text-xl font-medium opacity-90">mL</span>
+                            <span class="text-sm opacity-60 ml-1 font-medium">/ 次</span>
+                        </div>
+                        
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <!-- 詳細計算公式 -->
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="text-xs opacity-60 font-mono tracking-wide" id="calc-formula"></div>
+                                <div class="text-right">
+                                    <span class="text-xs opacity-60 block mb-0.5">目前每日劑量(Daily Load)</span>
+                                    <span id="daily-total-load" class="text-sm font-bold tracking-wide text-yellow-300">0 mg/kg/day</span>
+                                </div>
+                            </div>
+                            
+                            <!-- 新增：重要提示區塊 -->
+                            <div id="drug-note" class="hidden text-[11px] leading-relaxed text-slate-300 bg-white/5 rounded p-2 border border-white/5 font-mono">
+                                <i class="fa-solid fa-circle-info mr-1 text-primary"></i> 
+                                <span id="drug-note-content"></span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Age Card -->
+                <section id="age-result-card" class="card-transition card-idle rounded-2xl p-6 relative overflow-hidden order-2">
+                    <div class="flex justify-between items-start mb-4">
+                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                            <i class="fa-regular fa-calendar-check"></i> 仿單/年齡建議
+                        </h3>
+                        <button id="age-copy-btn" onclick="app.copyResult('age')" class="hidden text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2.5 py-1.5 rounded-md transition-colors items-center gap-1.5 border border-slate-200">
+                            <i class="fa-regular fa-copy"></i> 複製
+                        </button>
+                    </div>
+                    <div id="age-ref-mode-list" class="hidden">
+                        <div id="age-match-display" class="mb-4 hidden bg-green-50/50 p-3 rounded-xl border border-green-100">
+                            <div class="flex items-baseline gap-2">
+                                <span id="age-match-value" class="text-3xl font-bold text-green-700 tabular-nums">0</span>
+                                <span id="age-match-unit" class="text-lg font-medium text-green-600">mL</span>
+                                <div class="flex flex-col ml-3">
+                                    <span class="text-[10px] uppercase font-bold text-green-400 tracking-wider">Matched</span>
+                                    <span class="text-xs text-green-600 font-medium">符合仿單年齡區間</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overflow-hidden rounded-lg border border-slate-100">
+                            <table class="w-full text-left border-collapse age-ref-table">
+                                <thead class="bg-slate-50">
+                                    <tr class="text-xs text-slate-400">
+                                        <th class="py-2 px-3 font-medium">年齡區間</th>
+                                        <th class="py-2 px-3 font-medium">建議劑量</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="age-ref-tbody" class="text-slate-600 bg-white"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="age-est-mode" class="hidden">
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <span id="age-est-value" class="text-4xl font-bold tracking-tight text-slate-700 tabular-nums">0</span>
+                            <span id="age-est-unit" class="text-xl font-medium text-slate-500">mL</span>
+                            <span class="text-sm text-slate-400 ml-1">/ 次</span>
+                        </div>
+                        <div class="mt-3 text-xs text-slate-400 bg-slate-50 inline-block px-2 py-1 rounded border border-slate-100">
+                            <i class="fa-solid fa-calculator mr-1.5"></i> 
+                            依年齡估算體重: <span id="est-weight-val" class="font-bold text-slate-600">--</span> kg
+                        </div>
+                    </div>
+                    <div id="age-result-empty" class="flex flex-col items-center justify-center py-2 text-center">
+                        <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center mb-2 text-slate-200 border border-slate-100">
+                            <i class="fa-regular fa-calendar text-lg"></i>
+                        </div>
+                        <span class="text-xs text-slate-400">輸入年齡查看參考建議</span>
+                    </div>
+                </section>
+            </div>
+
+            <footer class="text-center pt-8 opacity-40 hover:opacity-100 transition-opacity duration-500">
+                <p class="text-[10px] text-slate-500"><i class="fa-solid fa-code-branch mr-1"></i> Designed for Clinical Accuracy</p>
+            </footer>
+        </div>
+    </main>
+
+    <script>
+        const GOOGLE_SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSNIusbJJ_hiSqwtPDKSUyCFlTuG7p0ajsYQxXEHYTmu-_8KZdTkLhcPpFttq0VGj1Yhp_4U5OLQQeU/pub?output=csv'; 
+        const FREQ_MAP = { 'QD': 1, 'BID': 2, 'TID': 3, 'QID': 4, 'Q4H': 6, 'Q6H': 4, 'Q8H': 3, 'Q12H': 2 };
+        const DEFAULT_DB = [
+            { category: 'liquid', name: 'Peace (Noscapine)', strength: 2, dose: 0.5, unit: 'mg/mL', desc: '停咳糖漿', default_freq: 'TID', age_ref: '1-3:3-5; 4-6:5-8; 7-9:8-10; 10-12:10-15', note: '注意: 禁用於氣喘患者' },
+            { category: 'liquid', name: 'Swellin (Procaterol)', strength: 0.005, dose: 0.00125, unit: 'mg/mL', desc: '滅喘淨 (小兒)', default_freq: 'BID', age_ref: '1-6:1.25-2.5; 6-12:5' },
+            { category: 'liquid', name: 'Cyprohptadine', strength: 0.4, dose: 0.25, unit: 'mg/mL', desc: '希普利敏', default_freq: 'TID', age_ref: '2-6:2.5; 7-14:5' },
+            { category: 'liquid', name: 'Acetaminophen (Antiphen)', strength: 24, dose: 10, unit: 'mg/mL', desc: '安佳熱 (紅/紫)', default_freq: 'Q4H', note: '最大日劑量: 75mg/kg' },
+            { category: 'liquid', name: 'Ibuprofen (Brufen)', strength: 20, dose: 5, unit: 'mg/mL', desc: '依普芬/炎熱消', default_freq: 'Q6H', note: '最大日劑量: 40mg/kg' },
+            { category: 'liquid', name: 'Amoxicillin', strength: 50, dose: 40, unit: 'mg/mL', desc: '萬博黴素', default_freq: 'TID', note: '中耳炎劑量: 80mg/kg/day' },
+            { category: 'suppository', name: 'Voren (Diclofenac) 12.5mg', strength: 12.5, dose: 1, unit: 'mg', desc: '非炎塞劑 (小兒)', default_freq: 'PRN', age_ref: '1-2:0.5; 3-5:1; 6-12:1-2' },
+            { category: 'suppository', name: 'Voren (Diclofenac) 25mg', strength: 25, dose: 1, unit: 'mg', desc: '非炎塞劑 (大)', default_freq: 'PRN' }
+        ];
+
+        const app = {
+            data: [],
+            state: { currentForm: 'liquid', frequencyVal: 3, frequencyCode: 'TID', currentDrug: null },
+
+            init: async function() {
+                this.cacheDOM();
+                await this.loadData();
+                this.setForm('liquid'); 
+            },
+
+            cacheDOM: function() {
+                this.dom = {
+                    weight: document.getElementById('weight'),
+                    age: document.getElementById('age'),
+                    drugSelector: document.getElementById('drug-selector'),
+                    drugDesc: document.getElementById('drug-desc'),
+                    drugSearch: document.getElementById('drug-search'),
+                    searchCount: document.getElementById('search-count'),
+                    doseInput: document.getElementById('dose-input'),
+                    strengthInput: document.getElementById('strength-input'),
+                    strengthUnit: document.getElementById('strength-unit'),
+                    concLabel: document.getElementById('conc-label'),
+                    weightCard: document.getElementById('weight-result-card'),
+                    weightEmptyState: document.getElementById('weight-empty-state'),
+                    weightCardContent: document.getElementById('weight-card-content'),
+                    resultValue: document.getElementById('result-value'),
+                    resultUnit: document.getElementById('result-unit'),
+                    dailyTotalLoad: document.getElementById('daily-total-load'), // New
+                    calcFormula: document.getElementById('calc-formula'),
+                    drugNote: document.getElementById('drug-note'), // New Note Container
+                    drugNoteContent: document.getElementById('drug-note-content'),
+                    ageCard: document.getElementById('age-result-card'),
+                    ageCopyBtn: document.getElementById('age-copy-btn'),
+                    ageRefModeList: document.getElementById('age-ref-mode-list'),
+                    ageMatchDisplay: document.getElementById('age-match-display'),
+                    ageMatchValue: document.getElementById('age-match-value'),
+                    ageMatchUnit: document.getElementById('age-match-unit'),
+                    ageRefTbody: document.getElementById('age-ref-tbody'),
+                    ageEstMode: document.getElementById('age-est-mode'),
+                    ageEstValue: document.getElementById('age-est-value'),
+                    ageEstUnit: document.getElementById('age-est-unit'),
+                    estWeightVal: document.getElementById('est-weight-val'),
+                    ageResultEmpty: document.getElementById('age-result-empty'),
+                    tabs: { liquid: document.getElementById('tab-liquid'), solid: document.getElementById('tab-solid'), suppository: document.getElementById('tab-suppository') },
+                    freqBtns: document.querySelectorAll('.freq-btn'),
+                    dbStatus: document.getElementById('db-status')
+                };
+            },
+            
+            loadData: async function() {
+                if (GOOGLE_SHEET_CSV_URL) {
+                    this.dom.dbStatus.innerText = "連線中...";
+                    this.dom.dbStatus.className = "text-[10px] px-1.5 py-0.5 rounded bg-yellow-50 text-yellow-600 border border-yellow-200";
+                    const url = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+                    try {
+                        Papa.parse(url, {
+                            download: true, header: true,
+                            complete: (results) => {
+                                this.data = results.data.filter(row => row.name && row.category).map(row => ({
+                                    category: row.category.toLowerCase().trim(),
+                                    name: row.name,
+                                    strength: parseFloat(row.strength),
+                                    dose: parseFloat(row.dose_per_kg),
+                                    unit: row.unit || (row.category.includes('liquid') ? 'mg/mL' : 'mg'),
+                                    desc: row.description || '',
+                                    age_ref: row.age_ref || row.age_reference || '',
+                                    default_freq: row.default_freq || row.freq || 'TID',
+                                    note: row.note || '' // Capture note field
+                                }));
+                                this.dom.dbStatus.innerText = "雲端";
+                                this.dom.dbStatus.className = "text-[10px] px-1.5 py-0.5 rounded bg-green-50 text-green-600 border border-green-200";
+                                this.updateDrugDropdown();
+                            },
+                            error: (err) => { console.error("CSV error", err); this.useFallbackData(); }
+                        });
+                    } catch (e) { this.useFallbackData(); }
+                } else { this.useFallbackData(); }
+            },
+
+            useFallbackData: function() {
+                this.data = DEFAULT_DB;
+                this.updateDrugDropdown();
+                if (!GOOGLE_SHEET_CSV_URL) {
+                     this.dom.dbStatus.innerText = "離線";
+                     this.dom.dbStatus.className = "text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200";
+                } else {
+                     this.dom.dbStatus.innerText = "離線 (Error)";
+                     this.dom.dbStatus.className = "text-[10px] px-1.5 py-0.5 rounded bg-red-50 text-red-600 border border-red-200";
+                }
+            },
+            
+            filterDrugs: function() { this.updateDrugDropdown(); },
+            clearSearch: function() { if(this.dom.drugSearch) { this.dom.drugSearch.value = ''; this.updateDrugDropdown(); } },
+            
+            updateDrugDropdown: function() {
+                const currentType = this.state.currentForm;
+                const selector = this.dom.drugSelector;
+                const searchInput = this.dom.drugSearch;
+                const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                
+                selector.innerHTML = '';
+                
+                // 1. Placeholder
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = "";
+                defaultOpt.text = "請選擇藥物...";
+                defaultOpt.disabled = true;
+                defaultOpt.selected = true; 
+                defaultOpt.className = "text-slate-400";
+                selector.appendChild(defaultOpt);
+
+                // 2. Custom Option
+                const customOpt = document.createElement('option');
+                customOpt.value = "custom";
+                customOpt.text = "手動輸入 (Manual Input)";
+                selector.appendChild(customOpt);
+
+                // 3. Filtered List
+                const filtered = this.data.filter(d => {
+                    if (d.category !== currentType) return false;
+                    if (!searchTerm) return true;
+                    return d.name.toLowerCase().includes(searchTerm) || d.desc.toLowerCase().includes(searchTerm);
+                });
+
+                if(this.dom.searchCount) {
+                    if(searchTerm) {
+                        this.dom.searchCount.innerText = `${filtered.length}`;
+                        this.dom.searchCount.classList.remove('hidden');
+                    } else {
+                        this.dom.searchCount.classList.add('hidden');
+                    }
+                }
+
+                if (filtered.length === 0 && searchTerm) {
+                    const noResult = document.createElement('option');
+                    noResult.disabled = true;
+                    noResult.text = "❌ 無符合搜尋結果";
+                    selector.appendChild(noResult);
+                } else {
+                    filtered.forEach((drug) => {
+                        const opt = document.createElement('option');
+                        opt.value = drug.name;
+                        opt.dataset.drug = JSON.stringify(drug);
+                        opt.innerText = drug.name;
+                        selector.appendChild(opt);
+                    });
+                }
+            },
+
+            setForm: function(type) {
+                this.state.currentForm = type;
+                this.state.currentDrug = null; 
+                if(this.dom.drugSearch) this.dom.drugSearch.value = '';
+                
+                const activeClass = "bg-white text-primary shadow-sm ring-1 ring-black/5 font-bold";
+                const inactiveClass = "text-slate-500 hover:bg-white/60 hover:text-slate-700 font-medium";
+                const suppositoryClass = "bg-white text-purple-600 shadow-sm ring-1 ring-black/5 font-bold";
+
+                Object.values(this.dom.tabs).forEach(el => {
+                    el.className = `flex-1 py-2.5 px-4 rounded-lg text-sm flex items-center justify-center gap-2 whitespace-nowrap transition-all duration-300 ${inactiveClass}`;
+                });
+
+                if (type === 'suppository') {
+                    this.dom.tabs[type].className = this.dom.tabs[type].className.replace(inactiveClass, suppositoryClass);
+                    this.dom.resultUnit.className = "text-xl font-medium text-purple-200";
+                    this.dom.concLabel.innerText = "單顆含量 (Strength)";
+                    this.dom.strengthUnit.innerText = "mg";
+                    this.dom.weightCard.style.order = "2"; this.dom.ageCard.style.order = "1";
+                } else {
+                    this.dom.tabs[type].className = this.dom.tabs[type].className.replace(inactiveClass, activeClass);
+                    this.dom.concLabel.innerText = type === 'liquid' ? "濃度 (Conc.)" : "單顆含量";
+                    this.dom.strengthUnit.innerText = type === 'liquid' ? "mg/mL" : "mg";
+                    this.dom.resultUnit.className = "text-xl font-medium opacity-90";
+                    this.dom.weightCard.style.order = "1"; this.dom.ageCard.style.order = "2";
+                }
+
+                this.updateDrugDropdown();
+                this.dom.drugDesc.innerText = "";
+                this.dom.doseInput.value = '';
+                this.dom.strengthInput.value = '';
+                this.setFrequency(3, 'TID');
+                this.resetResult();
+            },
+
+            setFrequency: function(val, code) {
+                this.state.frequencyVal = val;
+                this.state.frequencyCode = code;
+                this.dom.freqBtns.forEach(btn => {
+                    if (btn.dataset.code === code) {
+                        btn.className = "freq-btn py-2.5 rounded-lg text-xs md:text-sm font-bold bg-slate-800 text-white border-slate-800 shadow-md transform scale-105 transition-all";
+                    } else {
+                        btn.className = "freq-btn py-2.5 rounded-lg text-xs md:text-sm font-medium border border-slate-200 text-slate-500 hover:bg-slate-50 hover:border-slate-300 transition-all";
+                    }
+                });
+                this.calculate();
+            },
+
+            onDrugSelect: function() {
+                const selector = this.dom.drugSelector;
+                const value = selector.value;
+                if (value === "") return;
+
+                if (value === 'custom') {
+                    this.state.currentDrug = null;
+                    this.dom.doseInput.value = '';
+                    this.dom.strengthInput.value = '';
+                    this.dom.drugDesc.innerText = "";
+                    this.dom.drugNote.classList.add('hidden'); // Hide note on custom
+                } else {
+                    const option = selector.options[selector.selectedIndex];
+                    if (option.dataset.drug) {
+                        const drug = JSON.parse(option.dataset.drug);
+                        this.state.currentDrug = drug;
+                        this.dom.doseInput.value = drug.dose;
+                        this.dom.strengthInput.value = drug.strength;
+                        this.dom.drugDesc.innerText = drug.desc || "";
+                        if (drug.default_freq) {
+                            const freqCode = drug.default_freq.toUpperCase();
+                            const freqVal = FREQ_MAP[freqCode] || 3;
+                            this.setFrequency(freqVal, freqCode);
+                        }
+                    }
+                }
+                this.calculate();
+            },
+
+            parseAge: function(str) {
+                if (!str) return null;
+                str = str.toLowerCase().trim();
+                let year = 0;
+                if (str.includes('y') || str.includes('m')) {
+                    const yMatch = str.match(/(\d+(\.\d+)?)y/);
+                    const mMatch = str.match(/(\d+(\.\d+)?)m/);
+                    if (yMatch) year += parseFloat(yMatch[1]);
+                    if (mMatch) year += parseFloat(mMatch[1]) / 12;
+                } else {
+                    const val = parseFloat(str);
+                    if (!isNaN(val)) year = val;
+                }
+                return year > 0 ? year : null;
+            },
+            
+            parseAgeRules: function(ruleStr) {
+                if (!ruleStr) return [];
+                const rules = [];
+                const parts = ruleStr.split(';');
+                parts.forEach(part => {
+                    const [range, dose] = part.split(':');
+                    if (range && dose) {
+                        const [min, max] = range.split('-').map(Number);
+                        rules.push({ min: min || 0, max: max || 99, dose: dose.trim(), label: range.trim() + '歲' });
+                    }
+                });
+                return rules;
+            },
+
+            estimateWeightFromAge: function(age) {
+                if (age < 1) return (age * 12 + 9) / 2;
+                if (age <= 6) return age * 2 + 8;
+                return (age * 7 - 5) / 2;
+            },
+
+            updateResultCardState: function(cardId, isActive, type = 'primary') {
+                const card = document.getElementById(cardId);
+                const idleClass = "card-idle";
+                const activeClass = type === 'primary' ? "card-active-primary" : "card-active-light";
+                if (isActive) {
+                    card.classList.remove(idleClass);
+                    card.classList.add(activeClass);
+                } else {
+                    card.classList.add(idleClass);
+                    card.classList.remove("card-active-primary", "card-active-light");
+                }
+            },
+
+            calculate: function() {
+                const weight = parseFloat(this.dom.weight.value);
+                const ageInput = this.dom.age.value;
+                const age = this.parseAge(ageInput);
+                const dose = parseFloat(this.dom.doseInput.value);
+                const strength = parseFloat(this.dom.strengthInput.value);
+                const type = this.state.currentForm;
+                
+                if (!dose || !strength) { this.resetResult(); return; }
+
+                // --- Weight Card Logic ---
+                if (weight > 0) {
+                    const res = this.calcDose(weight, dose, strength, type);
+                    this.dom.resultValue.innerText = res.displayVal;
+                    this.dom.resultUnit.innerText = res.unit;
+                    this.dom.calcFormula.innerText = res.formula;
+                    
+                    // Daily Load Calculation (mg/kg/day)
+                    const freqVal = (this.state.frequencyVal === 'PRN') ? 0 : this.state.frequencyVal;
+                    const dailyLoad = dose * freqVal;
+                    
+                    if (this.state.frequencyVal === 'PRN') {
+                        this.dom.dailyTotalLoad.innerText = "依需求使用";
+                    } else {
+                        // 顯示格式： 每日 45 mg/kg (單劑 15 x 3)
+                        this.dom.dailyTotalLoad.innerText = `${parseFloat(dailyLoad.toFixed(2))} mg/kg/day`;
+                    }
+
+                    // Display Note if available
+                    if (this.state.currentDrug && this.state.currentDrug.note) {
+                        this.dom.drugNoteContent.innerText = this.state.currentDrug.note;
+                        this.dom.drugNote.classList.remove('hidden');
+                    } else {
+                        this.dom.drugNote.classList.add('hidden');
+                    }
+                    
+                    this.dom.weightEmptyState.classList.add('hidden');
+                    this.dom.weightCardContent.classList.remove('hidden');
+                    this.updateResultCardState('weight-result-card', true, 'primary');
+                    this.dom.weightCard.dataset.copyText = this.genCopyText(ageInput || "??", weight, res.displayVal, res.unit, false, true);
+                } else {
+                    this.dom.weightCardContent.classList.add('hidden');
+                    this.dom.weightEmptyState.classList.remove('hidden');
+                    this.updateResultCardState('weight-result-card', false);
+                }
+
+                // --- Age Card Logic ---
+                const drug = this.state.currentDrug;
+                const hasAgeRules = drug && drug.age_ref && drug.age_ref.length > 0;
+                
+                this.dom.ageRefModeList.classList.add('hidden');
+                this.dom.ageEstMode.classList.add('hidden');
+                this.dom.ageResultEmpty.classList.add('hidden');
+                this.dom.ageMatchDisplay.classList.add('hidden');
+                this.dom.ageCopyBtn.classList.add('hidden'); 
+
+                if (hasAgeRules) {
+                    this.dom.ageRefModeList.classList.remove('hidden');
+                    const rules = this.parseAgeRules(drug.age_ref);
+                    let matchedRule = null;
+                    let html = '';
+                    rules.forEach(rule => {
+                        const isMatch = age && age >= rule.min && age <= rule.max;
+                        if (isMatch) matchedRule = rule;
+                        html += `<tr class="${isMatch ? 'active-range' : ''}"><td>${rule.label}</td><td>${rule.dose} ${type === 'liquid' ? 'mL' : (type === 'solid' ? '顆/包' : '顆')}</td></tr>`;
+                    });
+                    this.dom.ageRefTbody.innerHTML = html;
+
+                    if (matchedRule) {
+                        this.dom.ageMatchDisplay.classList.remove('hidden');
+                        this.dom.ageMatchValue.innerText = matchedRule.dose;
+                        this.dom.ageMatchUnit.innerText = type === 'liquid' ? 'mL' : (type === 'solid' ? '顆/包' : '顆');
+                        this.dom.ageCard.dataset.copyText = this.genCopyText(ageInput, null, matchedRule.dose, this.dom.ageMatchUnit.innerText, true);
+                        this.dom.ageCopyBtn.classList.remove('hidden');
+                    } else if (ageInput) { this.dom.ageCard.dataset.copyText = ""; }
+                    this.updateResultCardState('age-result-card', true, 'light');
+                } else if (age) {
+                    this.dom.ageEstMode.classList.remove('hidden');
+                    const estW = this.estimateWeightFromAge(age);
+                    const resAge = this.calcDose(estW, dose, strength, type);
+                    this.dom.ageEstValue.innerText = resAge.displayVal;
+                    this.dom.ageEstUnit.innerText = resAge.unit;
+                    this.dom.estWeightVal.innerText = estW.toFixed(1);
+                    this.dom.ageCard.dataset.copyText = this.genCopyText(ageInput, estW.toFixed(1), resAge.displayVal, resAge.unit, false);
+                    this.dom.ageCopyBtn.classList.remove('hidden');
+                    this.updateResultCardState('age-result-card', true, 'light');
+                } else {
+                    this.dom.ageResultEmpty.classList.remove('hidden');
+                    this.updateResultCardState('age-result-card', false);
+                }
+            },
+
+            calcDose: function(w, d, s, type) {
+                let val = (w * d) / s;
+                let unit = type === 'liquid' ? 'mL' : (type === 'solid' ? '顆/包' : '顆');
+                let formula = `(${parseFloat(w.toFixed(1))}kg × ${d}) ÷ ${s}`;
+                if (type === 'suppository') {
+                    if (val > 0.85 && val < 1.15) val = 1;
+                    else if (val > 0.4 && val < 0.6) val = 0.5;
+                }
+                let displayVal = parseFloat(val.toFixed(2));
+                return { val: val, displayVal: displayVal, unit: unit, formula: formula };
+            },
+            
+            genCopyText: function(age, weight, amount, unit, isRefRule, isWeightBased = false) {
+                let drugName = "藥物";
+                if (this.state.currentDrug) drugName = this.state.currentDrug.name;
+                const freq = this.state.frequencyCode;
+                const times = (freq === 'PRN') ? '依需求使用' : this.state.frequencyVal;
+                let base = `個案 ${age || '??'}歲`;
+                if (weight) base += `, ${weight}kg`;
+                base += `。`;
+                let method = "";
+                if (isWeightBased) method = "依照體重估算";
+                else if (isRefRule) method = `依據仿單建議(${age}歲)`;
+                else method = "依據年齡推估體重";
+                return `${base}${method}，建議給予 ${drugName} ${amount}${unit} 一天${times}次(${freq})。`;
+            },
+
+            copyResult: function(source) {
+                const text = source === 'weight' ? this.dom.weightCard.dataset.copyText : this.dom.ageCard.dataset.copyText;
+                if (!text) return;
+                const showFeedback = () => {
+                    const btn = source === 'weight' ? document.querySelector('#weight-card-content button') : document.getElementById('age-copy-btn');
+                    if (!btn) return; 
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa-solid fa-check"></i> 已複製';
+                    btn.classList.add('animate-pop', 'bg-green-600', 'text-white', 'border-transparent');
+                    if(source === 'age') btn.classList.remove('bg-slate-100', 'text-slate-600');
+                    setTimeout(() => { 
+                        btn.innerHTML = originalHTML; 
+                        btn.classList.remove('animate-pop', 'bg-green-600', 'text-white', 'border-transparent');
+                        if(source === 'age') btn.classList.add('bg-slate-100', 'text-slate-600');
+                    }, 1500);
+                };
+                try {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-9999px";
+                    textArea.style.top = "0";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    if (successful) { showFeedback(); } else { if (navigator.clipboard) { navigator.clipboard.writeText(text).then(showFeedback).catch(err => console.error(err)); } }
+                } catch (err) { console.error('Fallback copy failed', err); }
+            },
+
+            resetResult: function() {
+                this.dom.weightCardContent.classList.add('hidden');
+                this.dom.weightEmptyState.classList.remove('hidden');
+                this.updateResultCardState('weight-result-card', false);
+                this.dom.ageRefModeList.classList.add('hidden');
+                this.dom.ageEstMode.classList.add('hidden');
+                this.dom.ageMatchDisplay.classList.add('hidden');
+                this.dom.ageResultEmpty.classList.remove('hidden');
+                this.dom.ageCopyBtn.classList.add('hidden');
+                this.updateResultCardState('age-result-card', false);
+                this.dom.resultValue.innerText = "0";
+                this.dom.drugNote.classList.add('hidden');
+            },
+
+            refreshData: function() { this.loadData(); }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => { app.init(); });
+    </script>
+</body>
+</html>
