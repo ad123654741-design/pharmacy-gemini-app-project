@@ -3,354 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    
-    <!-- 社群分享優化 -->
-    <meta property="og:title" content="Neuro-X Pro Ultra | 專業認知訓練系統">
-    <meta property="og:description" content="由蝦仁藥師開發的醫療級大腦訓練工具。挑戰順序記憶、圖形廣度與神經反射速度。">
-    <meta property="og:type" content="game">
+    <meta property="og:title" content="Neuro-X Pro Ultra">
+    <meta property="og:description" content="挑戰全球排名的醫療級大腦訓練工具。">
     <meta name="theme-color" content="#0f172a">
-    
-    <!-- 網頁圖示 -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
-
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏆</text></svg>">
     <title>Neuro-X Pro Ultra</title>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
-
-        :root {
-            --bg-dark: #0f172a;
-            --panel-bg: #1e293b;
-            --primary: #3b82f6;
-            --accent: #06b6d4;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --purple: #8b5cf6;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --card-bg: #020617;
-        }
-
+        :root { --bg-dark: #0f172a; --panel-bg: #1e293b; --primary: #3b82f6; --accent: #06b6d4; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --purple: #8b5cf6; --text-main: #f1f5f9; --text-muted: #94a3b8; --card-bg: #020617; --gold: #fbbf24; --silver: #94a3b8; --bronze: #78350f; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            background-color: var(--bg-dark);
-            color: var(--text-main);
-            font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            min-height: 100dvh; 
-            margin: 0;
-            padding: 10px;
-            overflow-x: hidden;
-            touch-action: manipulation; 
-        }
-
-        /* --- 主面板 --- */
-        .device-panel {
-            background: linear-gradient(165deg, #1e293b 0%, #020617 100%);
-            padding: 1.25rem;
-            border-radius: 24px;
-            box-shadow: 
-                0 0 0 1px rgba(255,255,255,0.05),
-                0 30px 60px -12px rgba(0,0,0,0.7),
-                inset 0 1px 0 rgba(255,255,255,0.1);
-            width: 100%;
-            max-width: 460px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            z-index: 10;
-        }
-
-        /* --- 標題列 --- */
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-            padding-bottom: 0.75rem;
-        }
-
-        .brand {
-            font-family: 'Orbitron', sans-serif;
-            font-weight: 700;
-            color: var(--accent);
-            font-size: 0.95rem;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-shadow: 0 0 10px rgba(6, 182, 212, 0.3);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--success);
-            border-radius: 50%;
-            box-shadow: 0 0 8px var(--success);
-            animation: pulse-dot 2s infinite;
-        }
-
-        @keyframes pulse-dot { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
-        
+        body { background-color: var(--bg-dark); color: var(--text-main); font-family: 'Noto Sans TC', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100dvh; margin: 0; padding: 10px; overflow-x: hidden; touch-action: none; /* 禁止預設觸控 */ }
+        .device-panel { background: linear-gradient(165deg, #1e293b 0%, #020617 100%); padding: 1.25rem; border-radius: 24px; box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 30px 60px -12px rgba(0,0,0,0.7); width: 100%; max-width: 460px; position: relative; display: flex; flex-direction: column; gap: 0.8rem; z-index: 10; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem; }
+        .brand { font-family: 'Orbitron', sans-serif; font-weight: 700; color: var(--accent); font-size: 0.95rem; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+        .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); animation: pulse-dot 2s infinite; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
         .header-actions { display: flex; gap: 8px; }
-
-        .icon-btn {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-muted);
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-            -webkit-user-select: none;
-            user-select: none;
-        }
+        .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
         .icon-btn:hover { background: var(--primary); color: white; border-color: var(--primary); }
         .icon-btn.muted { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
-
-        /* --- 記分板 --- */
-        .score-board {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            background: var(--card-bg);
-            padding: 12px;
-            border-radius: 12px;
-            border: 1px solid #334155;
-            position: relative;
-        }
-        
-        .score-board::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent); opacity: 0.5;
-        }
-
+        .score-board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; background: var(--card-bg); padding: 12px; border-radius: 12px; border: 1px solid #334155; }
         .score-item { display: flex; flex-direction: column; align-items: center; }
-        .score-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; margin-bottom: 4px; }
+        .score-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-family: 'Orbitron', sans-serif; letter-spacing: 1px; }
         .score-value { font-size: 1.75rem; font-family: 'Orbitron', sans-serif; color: var(--text-main); font-weight: 700; line-height: 1; }
         .score-value.highlight { color: var(--success); text-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
-
-        /* --- 模式按鈕 --- */
-        .mode-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            background: rgba(0,0,0,0.2);
-            padding: 8px;
-            border-radius: 12px;
-        }
-
-        .mode-btn {
-            background: transparent;
-            border: 1px solid transparent;
-            color: #64748b;
-            padding: 10px 4px;
-            font-size: 0.85rem;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            line-height: 1.3;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-        
-        .mode-btn:hover { background: rgba(255,255,255,0.03); }
-        .mode-btn.active {
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--primary);
-            border-color: rgba(59, 130, 246, 0.3);
-            font-weight: 700;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
-        }
+        .mode-container { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: rgba(0,0,0,0.2); padding: 8px; border-radius: 12px; }
+        .mode-btn { background: transparent; border: 1px solid transparent; color: #64748b; padding: 10px 4px; font-size: 0.85rem; border-radius: 8px; cursor: pointer; transition: all 0.2s; font-weight: 500; display: flex; flex-direction: column; align-items: center; line-height: 1.3; -webkit-user-select: none; user-select: none; }
+        .mode-btn.active { background: rgba(59, 130, 246, 0.1); color: var(--primary); border-color: rgba(59, 130, 246, 0.3); font-weight: 700; box-shadow: 0 0 10px rgba(59, 130, 246, 0.1); }
         .mode-btn span { font-size: 0.65em; opacity: 0.7; }
-
-        /* --- 設定區域 --- */
         .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .control-group { display: flex; flex-direction: column; gap: 6px; }
         .group-label { font-size: 0.75rem; color: var(--text-muted); margin-left: 4px; }
-
-        .select-input {
-            background: #334155;
-            color: white;
-            border: 1px solid #475569;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            outline: none;
-            text-align: center;
-            cursor: pointer;
-            width: 100%;
-            font-family: 'Noto Sans TC', sans-serif;
-            appearance: none;
-        }
-
-        /* --- 遊戲網格 --- */
-        .grid-wrapper {
-            position: relative;
-            background: #020617;
-            padding: 12px;
-            border-radius: 16px;
-            border: 1px solid #334155;
-            align-self: center;
-            box-shadow: inset 0 0 40px rgba(0,0,0,0.9);
-            margin: 5px 0;
-            touch-action: none; 
-        }
-
+        .select-input { background: #334155; color: white; border: 1px solid #475569; padding: 10px; border-radius: 8px; font-size: 0.9rem; outline: none; text-align: center; width: 100%; font-family: 'Noto Sans TC', sans-serif; appearance: none; }
+        .grid-wrapper { position: relative; background: #020617; padding: 12px; border-radius: 16px; border: 1px solid #334155; align-self: center; box-shadow: inset 0 0 40px rgba(0,0,0,0.9); margin: 5px 0; touch-action: none; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-
-        .cell {
-            width: 48px; height: 48px;
-            background: #1e293b;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 1px solid #334155;
-            transition: transform 0.05s, background-color 0.1s;
-            position: relative;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        @media (max-width: 380px) { 
-            .cell { width: 40px; height: 40px; } 
-            .device-panel { padding: 1rem; }
-        }
-
-        .cell.booting { background: #3b82f6; box-shadow: 0 0 10px #3b82f6; border-color: #60a5fa; }
+        .cell { width: 48px; height: 48px; background: #1e293b; border-radius: 8px; cursor: pointer; border: 1px solid #334155; transition: transform 0.05s, background-color 0.1s; position: relative; -webkit-tap-highlight-color: transparent; }
+        @media (max-width: 380px) { .cell { width: 40px; height: 40px; } .device-panel { padding: 1rem; } }
         .cell.active { background: #fbbf24; box-shadow: 0 0 25px #fbbf24, inset 0 0 10px white; border-color: #fef08a; z-index: 2; }
         .cell.active-pattern { background: #8b5cf6; box-shadow: 0 0 25px #8b5cf6, inset 0 0 10px white; border-color: #a78bfa; z-index: 2; }
         .cell.correct { background: #22c55e; box-shadow: 0 0 20px #22c55e; }
         .cell.wrong { background: #ef4444; box-shadow: 0 0 20px #ef4444; animation: shake 0.4s; }
-
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-
-        /* --- 底部控制 --- */
         .status-bar { text-align: center; color: var(--text-muted); font-size: 0.95rem; min-height: 1.5em; font-weight: 500; }
         .footer-controls { display: flex; gap: 10px; }
-
-        .btn {
-            border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer;
-            transition: all 0.2s; font-size: 1rem; font-family: 'Noto Sans TC', sans-serif;
-            position: relative; overflow: hidden;
-            -webkit-user-select: none; user-select: none;
-        }
-
+        .btn { border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-size: 1rem; font-family: 'Noto Sans TC', sans-serif; position: relative; overflow: hidden; flex: 1; -webkit-user-select: none; user-select: none; }
         .btn-stop { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); flex: 1; }
         .btn-start { background: var(--primary); color: white; flex: 2; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4); border: 1px solid rgba(255,255,255,0.1); }
         .btn-share { background: var(--warning); color: #000; flex: 2; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); display: none; }
-        .btn:active { transform: scale(0.98); }
         .btn:disabled { background: #475569; cursor: not-allowed; box-shadow: none; color: #94a3b8; }
-
         .credits-footer { margin-top: 1rem; text-align: center; font-size: 0.75rem; color: #475569; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; width: 100%; }
-
-        /* --- 彈窗系統 --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(8px);
-            z-index: 100; display: none; align-items: center; justify-content: center;
-            padding: 20px;
-        }
-
-        .modal-content {
-            background: #1e293b; border: 1px solid #475569; border-radius: 16px;
-            width: 100%; max-width: 360px; overflow: hidden;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-            animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            display: flex; flex-direction: column; max-height: 85vh;
-        }
-        @keyframes modalIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 16px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;
-        }
+        .blocker { position: absolute; inset: 0; z-index: 50; display: none; }
+        #confettiCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2, 6, 23, 0.9); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .modal-content { background: #1e293b; border: 1px solid #475569; border-radius: 16px; width: 100%; max-width: 400px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(255,255,255,0.05); flex-shrink: 0; }
         .modal-title { color: var(--primary); font-weight: 700; font-family: 'Orbitron', sans-serif; }
         .modal-close-icon { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; padding: 0; line-height: 1; }
         .modal-body { padding: 20px; overflow-y: auto; flex-grow: 1; }
-
-        /* 說明內容 */
-        .feature-item { margin-bottom: 1.25rem; }
-        .feature-head { color: var(--accent); font-weight: bold; font-size: 0.95rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-        .feature-desc { color: #cbd5e1; font-size: 0.85rem; line-height: 1.6; text-align: justify; }
-        .tag-new { background: var(--purple); color: white; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
-
-        /* 成績卡 */
-        .share-card {
-            background: #0f172a; border-radius: 12px; padding: 24px 20px; text-align: center;
-            border: 2px solid #334155; position: relative; overflow: hidden;
-        }
-        .share-card::before {
-            content: 'NEURO DIAGNOSTIC REPORT'; position: absolute; top: 10px; left: 0; width: 100%;
-            font-size: 0.6rem; color: #334155; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;
-        }
-        .share-grade { font-size: 3.5rem; color: var(--primary); font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 15px 0 5px 0; text-shadow: 0 0 40px rgba(59, 130, 246, 0.3); }
-        .share-label { color: #64748b; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
-        .share-details { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .share-detail-item { background: #1e293b; padding: 10px; border-radius: 8px; }
-        .share-detail-val { color: white; font-weight: bold; font-size: 0.9rem; }
-        .share-detail-key { color: #64748b; font-size: 0.7rem; margin-top: 2px; }
-        
-        .modal-btn-row { padding: 15px 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.1); flex-shrink: 0; }
+        .lb-controls { display: flex; gap: 8px; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .lb-filter-btn { background: #334155; color: #94a3b8; border: none; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; flex: 1; font-weight: bold; transition: all 0.2s; }
+        .lb-filter-btn.active { background: var(--primary); color: white; }
+        .lb-list { display: flex; flex-direction: column; gap: 8px; }
+        .lb-item { display: flex; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid transparent; }
+        .lb-item.top-1 { border-color: var(--gold); background: linear-gradient(90deg, rgba(251, 191, 36, 0.1), transparent); }
+        .lb-item.top-2 { border-color: var(--silver); }
+        .lb-item.top-3 { border-color: var(--bronze); }
+        .lb-rank { font-family: 'Orbitron', sans-serif; font-weight: bold; width: 30px; font-size: 1.1rem; color: #64748b; }
+        .lb-item.top-1 .lb-rank { color: var(--gold); } .lb-item.top-2 .lb-rank { color: var(--silver); } .lb-item.top-3 .lb-rank { color: var(--bronze); }
+        .lb-info { flex: 1; display: flex; flex-direction: column; }
+        .lb-name { font-weight: bold; color: var(--text-main); font-size: 0.95rem; }
+        .lb-date { font-size: 0.7rem; color: #64748b; }
+        .lb-score { font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--success); font-size: 1.1rem; }
+        .name-input-group { display: flex; gap: 10px; margin-top: 15px; }
+        .name-input { flex: 1; background: #0f172a; border: 1px solid #475569; color: white; padding: 10px; border-radius: 8px; font-size: 1rem; text-align: center; }
+        .submit-btn { background: var(--success); color: black; border: none; padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .feature-item { margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 1rem; }
+        .feature-head { color: var(--accent); font-weight: bold; font-size: 0.95rem; margin-bottom: 4px; }
+        .feature-desc { color: #cbd5e1; font-size: 0.85rem; line-height: 1.6; }
+        .share-card { background: #0f172a; border-radius: 12px; padding: 20px; text-align: center; border: 2px solid #334155; position: relative; }
+        .share-grade { font-size: 3rem; color: var(--primary); font-family: 'Orbitron', sans-serif; font-weight: bold; margin: 10px 0; text-shadow: 0 0 30px rgba(59, 130, 246, 0.4); }
+        .share-footer { margin-top: 15px; font-size: 0.7rem; color: #475569; }
+        .modal-btn-row { padding: 15px 20px; display: flex; gap: 10px; background: rgba(0,0,0,0.1); }
         .modal-action-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
-        .btn-copy { background: #334155; color: white; transition: background 0.2s; }
-        .btn-copy:hover { background: #475569; }
+        .btn-copy { background: #334155; color: white; }
         .btn-close { background: transparent; border: 1px solid #475569; color: #94a3b8; }
-
-        .blocker { position: absolute; inset: 0; z-index: 50; display: none; }
-        #confettiCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 90; }
-
     </style>
 </head>
 <body>
 
     <div class="device-panel">
         <canvas id="confettiCanvas"></canvas>
-
         <div class="header-row">
-            <div class="brand">
-                <div class="status-dot"></div>
-                NEURO-X ULTRA
-            </div>
+            <div class="brand"><div class="status-dot"></div>NEURO-X ULTRA</div>
             <div class="header-actions">
-                <button class="icon-btn" id="muteBtn" onclick="toggleMute()" aria-label="靜音"><span id="muteIcon">🔊</span></button>
-                <button class="icon-btn" onclick="openModal('info')" aria-label="說明">?</button>
+                <button class="icon-btn" id="muteBtn" onclick="toggleMute()"><span id="muteIcon">🔊</span></button>
+                <button class="icon-btn" onclick="openLeaderboard()">🏆</button>
+                <button class="icon-btn" onclick="openModal('info')">?</button>
             </div>
         </div>
-
         <div class="score-board">
-            <div class="score-item">
-                <span class="score-label" id="scoreLabel">Level</span>
-                <span class="score-value highlight" id="currentScoreDisplay">1</span>
-            </div>
-            <div class="score-item">
-                <span class="score-label">Record</span>
-                <span class="score-value" id="bestScoreDisplay">0</span>
-            </div>
+            <div class="score-item"><span class="score-label" id="scoreLabel">Level</span><span class="score-value highlight" id="currentScoreDisplay">1</span></div>
+            <div class="score-item"><span class="score-label">Record</span><span class="score-value" id="bestScoreDisplay">0</span></div>
         </div>
-
         <div class="mode-container">
             <button class="mode-btn active" onclick="setMode('forward', this)">順序記憶<span>Forward</span></button>
             <button class="mode-btn" onclick="setMode('reverse', this)">逆向記憶<span>Reverse</span></button>
             <button class="mode-btn" onclick="setMode('pattern', this)">圖形記憶<span>Pattern</span></button>
             <button class="mode-btn" onclick="setMode('reaction', this)">反應訓練<span>Speed</span></button>
         </div>
-
         <div class="settings-grid">
             <div class="control-group">
                 <label class="group-label">速度難度</label>
@@ -370,75 +131,74 @@
                 </select>
             </div>
         </div>
-
         <div class="status-bar" id="statusText">系統已就緒</div>
-
         <div class="grid-wrapper">
             <div class="grid" id="grid"></div>
             <div class="blocker" id="inputBlocker"></div>
         </div>
-
         <div class="footer-controls">
             <button class="btn btn-stop" onclick="stopGame()">停止</button>
             <button class="btn btn-start" id="startBtn" onclick="bootSequence()">開始訓練</button>
             <button class="btn btn-share" id="shareBtn" onclick="openShareModal()">分享成績</button>
         </div>
+        <div class="credits-footer"><span>製作者：蝦仁藥師</span> | <span>更新日期：2026/01/24</span></div>
+    </div>
 
-        <div class="credits-footer">
-            <span>製作者：蝦仁藥師</span> | <span>更新日期：2026/01/23</span>
+    <!-- Modals -->
+    <div class="modal-overlay" id="modal-leaderboard">
+        <div class="modal-content">
+            <div class="modal-header"><div class="modal-title">🏆 世界排行榜</div><button class="modal-close-icon" onclick="closeModal('leaderboard')">&times;</button></div>
+            <div class="modal-body">
+                <div style="margin-bottom: 10px; font-size: 0.8rem; color: #64748b;">當前檢視：<span id="lb-current-view" style="color: var(--accent);"></span></div>
+                <div class="lb-controls" id="lb-diff-tabs">
+                    <button class="lb-filter-btn" onclick="switchLbTab('normal')">普通</button>
+                    <button class="lb-filter-btn" onclick="switchLbTab('fast')">快速</button>
+                    <button class="lb-filter-btn" onclick="switchLbTab('pro')">極限</button>
+                </div>
+                <div id="lb-loading" style="text-align: center; color: #64748b; padding: 20px;">載入中...</div>
+                <div class="lb-list" id="lb-list-container"></div>
+            </div>
         </div>
     </div>
 
-    <!-- 說明彈窗 -->
+    <div class="modal-overlay" id="modal-submit">
+        <div class="modal-content">
+            <div class="modal-header"><div class="modal-title" style="color: var(--gold);">✨ 新紀錄！上榜啦</div></div>
+            <div class="modal-body" style="text-align: center;">
+                <p style="color: #cbd5e1;">恭喜！成績進入 Top 10</p>
+                <div class="share-grade" id="submit-score-display">Lv.15</div>
+                <p style="font-size: 0.8rem; color: #64748b;">請輸入暱稱留下傳說</p>
+                <div class="name-input-group">
+                    <input type="text" class="name-input" id="player-name-input" placeholder="你的名字" maxlength="8">
+                    <button class="submit-btn" onclick="submitToLeaderboard()">登錄</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modal-info">
         <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">訓練模式說明</div>
-                <button class="modal-close-icon" onclick="closeModal('info')">&times;</button>
-            </div>
+            <div class="modal-header"><div class="modal-title">訓練模式說明</div><button class="modal-close-icon" onclick="closeModal('info')">&times;</button></div>
             <div class="modal-body">
-                <div class="feature-item">
-                    <div class="feature-head">🎯 順序記憶 (Forward)</div>
-                    <div class="feature-desc">基礎視覺專注力訓練。模擬日常生活路徑記憶，增強大腦對順序性資訊的接收廣度。</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-head">🧠 逆向記憶 (Reverse)</div>
-                    <div class="feature-desc">高階工作記憶訓練。需將視覺資訊在大腦中暫存並「反轉」輸出，有效活化前額葉執行功能。</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-head">💠 圖形記憶 (Pattern) <span class="tag-new">NEW</span></div>
-                    <div class="feature-desc">視覺空間廣度訓練。多個燈號「同時」亮起瞬間消失，訓練大腦的瞬間攝取與空間定位能力。</div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-head">⚡ 反應訓練 (Speed) <span class="tag-new">HARD</span></div>
-                    <div class="feature-desc">極速生存模式！燈號亮起後必須在極短時間內按下，超時即失敗。訓練神經反射速度。</div>
-                </div>
+                <div class="feature-item"><div class="feature-head">🎯 順序記憶 (Forward)</div><div class="feature-desc">基礎視覺專注力訓練。</div></div>
+                <div class="feature-item"><div class="feature-head">🧠 逆向記憶 (Reverse)</div><div class="feature-desc">高階工作記憶訓練，需反轉輸出。</div></div>
+                <div class="feature-item"><div class="feature-head">💠 圖形記憶 (Pattern)</div><div class="feature-desc">訓練瞬間視覺廣度。</div></div>
+                <div class="feature-item"><div class="feature-head">⚡ 反應訓練 (Speed)</div><div class="feature-desc">極速限時反應訓練。</div></div>
             </div>
         </div>
     </div>
 
-    <!-- 分享成績彈窗 -->
     <div class="modal-overlay" id="modal-share">
         <div class="modal-content">
-            <div class="modal-header">
-                <div class="modal-title">成績診斷卡</div>
-                <button class="modal-close-icon" onclick="closeModal('share')">&times;</button>
-            </div>
+            <div class="modal-header"><div class="modal-title">成績診斷卡</div><button class="modal-close-icon" onclick="closeModal('share')">&times;</button></div>
             <div class="modal-body">
                 <div class="share-card" id="shareCardContent">
-                    <div class="share-label" id="shareModeLabel">FORWARD SPAN</div>
-                    <div class="share-grade" id="shareScoreVal">LV.10</div>
+                    <div class="share-label" id="shareModeLabel">MODE</div>
+                    <div class="share-grade" id="shareScoreVal">0</div>
                     <div class="share-label" id="shareResultLabel">COMPLETED</div>
-                    
                     <div class="share-details">
-                        <div class="share-detail-item">
-                            <div class="share-detail-key">DIFFICULTY</div>
-                            <div class="share-detail-val" id="shareDiffVal">PRO</div>
-                        </div>
-                        <div class="share-detail-item">
-                            <div class="share-detail-key">RATING</div>
-                            <div class="share-detail-val" id="shareRatingVal">EXCELLENT</div>
-                        </div>
+                        <div class="share-detail-item"><div class="share-detail-key">DIFFICULTY</div><div class="share-detail-val" id="shareDiffVal">PRO</div></div>
+                        <div class="share-detail-item"><div class="share-detail-key">RATING</div><div class="share-detail-val" id="shareRatingVal">GOOD</div></div>
                     </div>
                     <div class="share-footer">Neuro-X Ultra Trainer by 蝦仁藥師</div>
                 </div>
@@ -451,526 +211,255 @@
     </div>
 
     <script>
+        // ----------------------------------------------------
+        // 🔴 配置區：請將下方的 URL 替換為您的 Apps Script 部署網址
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyfgvBSEc9pOPRTpUYTnOSeAokLhn1bI3DkO9P3_bALuwo09opVvmj5z6_lDjiwNcUh/exec"; 
+        // ----------------------------------------------------
+
         const GRID_SIZE = 25;
         const SPEEDS = {
             normal: { flash: 500, gap: 200, patternTime: 1200, reactionMax: 1200, reactionMin: 500, name: "普通" },
             fast: { flash: 300, gap: 100, patternTime: 800, reactionMax: 900, reactionMin: 400, name: "快速" },
             pro: { flash: 150, gap: 50, patternTime: 500, reactionMax: 700, reactionMin: 300, name: "極限" }
         };
-        const MODE_NAMES = {
-            forward: "順序記憶",
-            reverse: "逆向記憶",
-            pattern: "圖形記憶",
-            reaction: "反應訓練"
-        };
-        
-        // 預設難度配置
-        const DEFAULT_DIFFICULTIES = {
-            forward: 'fast',
-            reverse: 'fast',
-            pattern: 'pro',
-            reaction: 'fast'
-        };
+        const MODE_NAMES = { forward: "順序記憶", reverse: "逆向記憶", pattern: "圖形記憶", reaction: "反應訓練" };
+        const DEFAULT_DIFFICULTIES = { forward: 'fast', reverse: 'fast', pattern: 'pro', reaction: 'fast' };
 
-        let state = {
-            mode: 'forward', 
-            level: 1,
-            startLevel: 1, 
-            score: 0,
-            active: false,
-            gameWon: false, // 是否完美通關
-            sequence: [],
-            userSequence: [], 
-            patternTarget: new Set(),
-            highScores: { forward: 0, reverse: 0, pattern: 0, reaction: 0 },
-            muted: false
-        };
-
-        let currentReactionTarget = -1;
-        let timers = { reaction: null, flash: null, reactionTimeout: null };
-        let lastInputTime = 0; 
+        let state = { mode: 'forward', level: 1, startLevel: 1, score: 0, active: false, gameWon: false, sequence: [], userSequence: [], patternTarget: new Set(), highScores: { forward: 0, reverse: 0, pattern: 0, reaction: 0 }, muted: false };
+        let currentReactionTarget = -1, timers = { reaction: null, flash: null, reactionTimeout: null }, lastInputTime = 0, pendingSubmit = null;
+        let isTouchDevice = false; // Flag for touch lock
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        const els = {
-            grid: document.getElementById('grid'),
-            status: document.getElementById('statusText'),
-            score: document.getElementById('currentScoreDisplay'),
-            best: document.getElementById('bestScoreDisplay'),
-            label: document.getElementById('scoreLabel'),
-            startBtn: document.getElementById('startBtn'),
-            shareBtn: document.getElementById('shareBtn'),
-            blocker: document.getElementById('inputBlocker'),
-            diff: document.getElementById('difficultySelect'),
-            startLvl: document.getElementById('startLevelSelect'),
-            muteIcon: document.getElementById('muteIcon')
+        const els = { grid: document.getElementById('grid'), status: document.getElementById('statusText'), score: document.getElementById('currentScoreDisplay'), best: document.getElementById('bestScoreDisplay'), label: document.getElementById('scoreLabel'), startBtn: document.getElementById('startBtn'), shareBtn: document.getElementById('shareBtn'), blocker: document.getElementById('inputBlocker'), diff: document.getElementById('difficultySelect'), startLvl: document.getElementById('startLevelSelect'), muteIcon: document.getElementById('muteIcon') };
+
+        // --- Leaderboard Service ---
+        const LB_STORAGE_KEY = 'neuro_x_local_lb_v1';
+        const LB = {
+            getLocal: () => { const d = localStorage.getItem(LB_STORAGE_KEY); return d ? JSON.parse(d) : []; },
+            saveLocal: (e) => { const d = LB.getLocal(); d.push(e); localStorage.setItem(LB_STORAGE_KEY, JSON.stringify(d)); return true; },
+            fetch: async () => {
+                if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_SCRIPT_URL")) return LB.getLocal();
+                try {
+                    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=read`);
+                    if (!res.ok) throw new Error("Network response was not ok");
+                    // Check if response is valid JSON (avoid HTML error pages)
+                    const contentType = res.headers.get("content-type");
+                    if (contentType && contentType.indexOf("application/json") === -1) throw new Error("Not JSON");
+                    return await res.json();
+                } catch (e) {
+                    console.warn("LB: Cloud fetch failed/blocked, showing local.", e);
+                    return LB.getLocal();
+                }
+            },
+            save: async (name, mode, diff, score) => {
+                const entry = { name, mode, difficulty: diff, score, timestamp: Date.now() };
+                if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_SCRIPT_URL")) return LB.saveLocal(entry);
+                try {
+                    // Use no-cors for write to avoid preflight issues, assumes success if no net error
+                    await fetch(GOOGLE_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'write', ...entry })
+                    });
+                    return true; 
+                } catch (e) {
+                    console.warn("LB: Cloud save failed, saving locally.", e);
+                    return LB.saveLocal(entry);
+                }
+            }
         };
 
-        // --- Audio ---
+        // --- Audio & Visuals ---
         function playTone(type) {
-            if (state.muted) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            const now = audioCtx.currentTime;
-            
-            if (type === 'flash') {
-                osc.frequency.setValueAtTime(440, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'pattern') {
-                osc.frequency.setValueAtTime(330, now);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            } else if (type === 'good') {
-                osc.frequency.setValueAtTime(660, now);
-                osc.type = 'triangle';
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'win') {
-                osc.frequency.setValueAtTime(523.25, now);
-                osc.frequency.setValueAtTime(659.25, now + 0.1);
-                osc.frequency.setValueAtTime(783.99, now + 0.2);
-                gain.gain.setValueAtTime(0.05, now);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
-            } else if (type === 'bad') {
-                osc.frequency.setValueAtTime(120, now);
-                osc.type = 'sawtooth';
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0.001, now + 0.3);
-                osc.start(now); osc.stop(now + 0.3);
-            }
+            if (state.muted) return; if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
+            if (type === 'flash') { osc.frequency.setValueAtTime(440, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
+            else if (type === 'pattern') { osc.frequency.setValueAtTime(330, now); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
+            else if (type === 'good') { osc.frequency.setValueAtTime(660, now); gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0.001, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
+            else if (type === 'win') { osc.frequency.setValueAtTime(523.25, now); gain.gain.setValueAtTime(0.05, now); gain.gain.linearRampToValueAtTime(0.001, now + 0.4); osc.start(now); osc.stop(now + 0.4); }
+            else if (type === 'bad') { osc.frequency.setValueAtTime(120, now); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.001, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
         }
-
-        function toggleMute() {
-            state.muted = !state.muted;
-            els.muteIcon.textContent = state.muted ? "🔇" : "🔊";
-            document.getElementById('muteBtn').classList.toggle('muted');
-        }
-
-        function fireConfetti() {
-            const canvas = document.getElementById('confettiCanvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-            let particles = [];
-            const colors = ['#3b82f6', '#06b6d4', '#10b981', '#fbbf24', '#f472b6'];
-            for(let i=0; i<100; i++) {
-                particles.push({
-                    x: canvas.width / 2, y: canvas.height / 2,
-                    vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
-                    size: Math.random() * 5 + 2, color: colors[Math.floor(Math.random() * colors.length)], life: 1
-                });
-            }
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                let active = false;
-                particles.forEach(p => {
-                    if(p.life > 0) {
-                        p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.life -= 0.02;
-                        ctx.fillStyle = p.color; ctx.globalAlpha = p.life;
-                        ctx.fillRect(p.x, p.y, p.size, p.size); active = true;
-                    }
-                });
-                if(active) requestAnimationFrame(animate); else ctx.clearRect(0,0, canvas.width, canvas.height);
-            }
-            animate();
-            if(!state.muted) playTone('win');
-        }
+        function toggleMute() { state.muted = !state.muted; els.muteIcon.textContent = state.muted ? "🔇" : "🔊"; document.getElementById('muteBtn').classList.toggle('muted'); }
+        function fireConfetti() { const c = document.getElementById('confettiCanvas'), ctx = c.getContext('2d'); c.width = c.offsetWidth; c.height = c.offsetHeight; let p = Array(100).fill().map(() => ({x: c.width/2, y: c.height/2, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, s: Math.random()*5+2, c: ['#3b82f6','#06b6d4','#10b981','#fbbf24'][Math.floor(Math.random()*4)], l: 1})); function a() { ctx.clearRect(0,0,c.width,c.height); let act=false; p.forEach(k=>{ if(k.l>0){ k.x+=k.vx; k.y+=k.vy; k.vy+=0.1; k.l-=0.02; ctx.fillStyle=k.c; ctx.globalAlpha=k.l; ctx.fillRect(k.x,k.y,k.s,k.s); act=true; }}); if(act)requestAnimationFrame(a); else ctx.clearRect(0,0,c.width,c.height); } a(); if(!state.muted) playTone('win'); }
 
         // --- Core ---
         function initGrid() {
             els.grid.innerHTML = '';
             for (let i = 0; i < GRID_SIZE; i++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.dataset.id = i;
+                const cell = document.createElement('div'); cell.className = 'cell'; cell.dataset.id = i;
+                
+                // Fixed Input Handler for Ghost Clicks
                 const handleInteraction = (e) => {
-                    if (e.cancelable && e.type === 'touchstart') e.preventDefault();
+                    // 1. Touch Lock Strategy
+                    if (e.type === 'touchstart') {
+                        isTouchDevice = true; // Flag this device/session as touch
+                        // We do NOT preventDefault here to allow scrolling if needed,
+                        // BUT we used touch-action: none in CSS for grid wrapper.
+                    }
+                    if (e.type === 'mousedown' && isTouchDevice) return; // Ignore emulated mouse events
+
                     if (!state.active) return;
+                    
+                    // 2. Time-based Debounce (Backup)
                     const now = Date.now();
-                    if (now - lastInputTime < 350) return; 
+                    if (now - lastInputTime < 100) return; // 100ms lock is enough with touch flag
                     lastInputTime = now;
+
                     handleInput(i, cell);
                 };
-                cell.addEventListener('touchstart', handleInteraction, {passive: false});
+                
+                cell.addEventListener('touchstart', handleInteraction, {passive: false}); // passive false for safety
                 cell.addEventListener('mousedown', handleInteraction);
                 els.grid.appendChild(cell);
             }
-            loadHighScores();
-            els.diff.value = DEFAULT_DIFFICULTIES[state.mode];
+            const s = localStorage.getItem('neuro_trainer_scores_ultra_v2'); if(s) state.highScores = JSON.parse(s);
+            els.diff.value = DEFAULT_DIFFICULTIES[state.mode]; updateScoreUI();
         }
 
-        function loadHighScores() {
-            const saved = localStorage.getItem('neuro_trainer_scores_ultra_v2');
-            if (saved) state.highScores = JSON.parse(saved);
-            updateScoreUI();
-        }
+        // --- Game Flow ---
+        window.setMode = (mode, btn) => { if (state.active) stopGame(); state.mode = mode; els.diff.value = DEFAULT_DIFFICULTIES[mode]; document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); els.label.textContent = mode === 'reaction' ? "Score" : "Level"; els.startLvl.disabled = mode === 'reaction'; els.startLvl.style.opacity = mode === 'reaction' ? '0.3' : '1'; updateScoreUI(true); };
+        window.stopGame = () => { state.active = false; currentReactionTarget = -1; els.startBtn.disabled = false; els.startBtn.textContent = "開始訓練"; els.startBtn.style.display = 'inline-block'; els.shareBtn.style.display = 'none'; els.status.textContent = "系統待機中"; els.status.style.color = 'var(--text-muted)'; clearTimeout(timers.reaction); clearTimeout(timers.reactionTimeout); clearTimeout(timers.flash); els.blocker.style.display = 'none'; Array.from(els.grid.children).forEach(c => c.className = 'cell'); };
+        async function bootSequence() { if (audioCtx.state === 'suspended') await audioCtx.resume(); stopGame(); els.startBtn.disabled = true; els.status.textContent = "SYSTEM DIAGNOSTIC..."; els.status.style.color = 'var(--accent)'; const cells = Array.from(els.grid.children); const shuf = [...cells].sort(() => 0.5 - Math.random()).slice(0, 8); for(const c of shuf) { c.classList.add('booting'); await new Promise(r=>setTimeout(r,50)); c.classList.remove('booting'); } await new Promise(r=>setTimeout(r,200)); window.initGame(); }
+        window.initGame = () => { state.active = true; state.gameWon = false; els.startBtn.disabled = true; els.startBtn.textContent = "訓練中..."; els.shareBtn.style.display = 'none'; const diff = els.diff.value, startLvl = parseInt(els.startLvl.value); state.startLevel = startLvl; if (state.mode === 'reaction') { state.score = 0; startReactionRound(diff); } else { state.level = startLvl; state.score = state.level; if(state.mode === 'pattern') startPatternRound(diff); else startMemoryRound(diff); } updateScoreUI(); };
 
-        function saveHighScores() {
-            localStorage.setItem('neuro_trainer_scores_ultra_v2', JSON.stringify(state.highScores));
-            updateScoreUI();
-        }
+        // --- Logic ---
+        async function startMemoryRound(d) { updateScoreUI(); state.userSequence = []; state.sequence = []; for (let i = 0; i < state.level; i++) state.sequence.push(Math.floor(Math.random() * GRID_SIZE)); els.blocker.style.display = 'block'; els.status.textContent = `Level ${state.level}`; els.status.style.color = '#38bdf8'; const s = SPEEDS[d]; await new Promise(r=>timers.flash=setTimeout(r,500)); for (let i = 0; i < state.sequence.length; i++) { if(!state.active)return; const c = els.grid.children[state.sequence[i]]; c.classList.add('active'); playTone('flash'); await new Promise(r=>timers.flash=setTimeout(r,s.flash)); c.classList.remove('active'); await new Promise(r=>timers.flash=setTimeout(r,s.gap)); } if(!state.active)return; els.blocker.style.display = 'none'; els.status.textContent = state.mode === 'reverse' ? "倒序輸入" : "依序輸入"; els.status.style.color = 'white'; }
+        async function startPatternRound(d) { updateScoreUI(); state.patternTarget.clear(); const c = state.level + 2, pool = Array.from({length: GRID_SIZE}, (_, i) => i); for(let i=0; i<c; i++) { const idx = Math.floor(Math.random() * pool.length); state.patternTarget.add(pool[idx]); pool.splice(idx, 1); } els.blocker.style.display = 'block'; els.status.textContent = `Level ${state.level}`; els.status.style.color = 'var(--purple)'; const s = SPEEDS[d]; await new Promise(r=>timers.flash=setTimeout(r,500)); state.patternTarget.forEach(i => els.grid.children[i].classList.add('active-pattern')); playTone('pattern'); await new Promise(r=>timers.flash=setTimeout(r,s.patternTime)); Array.from(els.grid.children).forEach(c => c.classList.remove('active-pattern')); if(!state.active)return; els.blocker.style.display = 'none'; els.status.textContent = "指出位置"; els.status.style.color = 'white'; }
+        function startReactionRound(d) { if(!state.active)return; els.status.textContent = "燈亮即按!"; els.status.style.color = '#facc15'; const s = SPEEDS[d], delay = Math.random() * 1000 + 500; timers.reaction = setTimeout(() => { if(!state.active)return; if (currentReactionTarget !== -1) els.grid.children[currentReactionTarget].classList.remove('active'); currentReactionTarget = Math.floor(Math.random() * GRID_SIZE); els.grid.children[currentReactionTarget].classList.add('active'); playTone('flash'); const red = state.score * 20, time = Math.max(s.reactionMin, s.reactionMax - red); timers.reactionTimeout = setTimeout(() => { if(state.active && currentReactionTarget !== -1) handleFail(els.grid.children[currentReactionTarget]); }, time); }, delay); }
 
-        async function bootSequence() {
-            if (audioCtx.state === 'suspended') await audioCtx.resume();
-            stopGame();
-            els.startBtn.disabled = true;
-            els.status.textContent = "SYSTEM DIAGNOSTIC...";
-            els.status.style.color = 'var(--accent)';
-            const cells = Array.from(els.grid.children);
-            const shuffle = [...cells].sort(() => 0.5 - Math.random()).slice(0, 8);
-            for(const cell of shuffle) {
-                cell.classList.add('booting'); await sleep(50); cell.classList.remove('booting');
-            }
-            await sleep(200);
-            initGame();
-        }
-
-        // --- Game Control ---
-        window.setMode = function(mode, btn) {
-            if (state.active) stopGame();
-            state.mode = mode;
-            els.diff.value = DEFAULT_DIFFICULTIES[mode];
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            if (mode === 'reaction') {
-                els.label.textContent = "Score";
-                els.startLvl.disabled = true; els.startLvl.style.opacity = '0.3';
-            } else {
-                els.label.textContent = "Level";
-                els.startLvl.disabled = false; els.startLvl.style.opacity = '1';
-            }
-            updateScoreUI(true);
-        };
-
-        window.stopGame = function() {
-            state.active = false;
-            currentReactionTarget = -1;
-            els.startBtn.disabled = false;
-            els.startBtn.textContent = "開始訓練";
-            els.startBtn.style.display = 'inline-block';
-            els.shareBtn.style.display = 'none';
-            els.status.textContent = "系統待機中";
-            els.status.style.color = 'var(--text-muted)';
-            clearTimeout(timers.reaction); clearTimeout(timers.reactionTimeout); clearTimeout(timers.flash);
-            els.blocker.style.display = 'none';
-            Array.from(els.grid.children).forEach(c => c.className = 'cell');
-        };
-
-        window.initGame = function() {
-            state.active = true;
-            state.gameWon = false; // Reset game won state
-            els.startBtn.disabled = true;
-            els.startBtn.textContent = "訓練中...";
-            els.shareBtn.style.display = 'none';
-            
-            const diff = els.diff.value;
-            const startLvl = parseInt(els.startLvl.value);
-            state.startLevel = startLvl; // 記錄起始等級
-
-            if (state.mode === 'reaction') {
-                state.score = 0;
-                startReactionRound(diff);
-            } else {
-                state.level = startLvl;
-                state.score = state.level;
-                if(state.mode === 'pattern') startPatternRound(diff);
-                else startMemoryRound(diff);
-            }
-            updateScoreUI();
-        };
-
-        async function startMemoryRound(difficulty) {
-            updateScoreUI();
-            state.userSequence = [];
-            state.sequence = [];
-            for (let i = 0; i < state.level; i++) state.sequence.push(Math.floor(Math.random() * GRID_SIZE));
-            els.blocker.style.display = 'block';
-            els.status.textContent = `Level ${state.level} - 觀察燈號`;
-            els.status.style.color = '#38bdf8';
-            const speed = SPEEDS[difficulty];
-            await sleep(500);
-            for (let i = 0; i < state.sequence.length; i++) {
-                if (!state.active) return;
-                const cell = els.grid.children[state.sequence[i]];
-                cell.classList.add('active'); playTone('flash');
-                await sleep(speed.flash);
-                cell.classList.remove('active'); await sleep(speed.gap);
-            }
-            if (!state.active) return;
-            els.blocker.style.display = 'none';
-            els.status.textContent = state.mode === 'reverse' ? "請倒序輸入" : "請依序輸入";
-            els.status.style.color = 'white';
-        }
-
-        async function startPatternRound(difficulty) {
-            updateScoreUI();
-            state.patternTarget.clear();
-            const count = state.level + 2; 
-            const pool = Array.from({length: GRID_SIZE}, (_, i) => i);
-            for(let i=0; i<count; i++) {
-                const idx = Math.floor(Math.random() * pool.length);
-                state.patternTarget.add(pool[idx]); pool.splice(idx, 1);
-            }
-            els.blocker.style.display = 'block';
-            els.status.textContent = `Level ${state.level} - 瞬間記憶`;
-            els.status.style.color = 'var(--purple)';
-            const speed = SPEEDS[difficulty];
-            await sleep(500);
-            state.patternTarget.forEach(idx => { els.grid.children[idx].classList.add('active-pattern'); });
-            playTone('pattern');
-            await sleep(speed.patternTime);
-            Array.from(els.grid.children).forEach(c => c.classList.remove('active-pattern'));
-            if (!state.active) return;
-            els.blocker.style.display = 'none';
-            els.status.textContent = "指出所有位置";
-            els.status.style.color = 'white';
-        }
-
-        function startReactionRound(difficulty) {
-            if (!state.active) return;
-            els.status.textContent = "燈亮即按！(限時)";
-            els.status.style.color = '#facc15';
-            const delay = Math.random() * 1000 + 500; 
-            timers.reaction = setTimeout(() => {
-                if (!state.active) return;
-                if (currentReactionTarget !== -1) els.grid.children[currentReactionTarget].classList.remove('active');
-                currentReactionTarget = Math.floor(Math.random() * GRID_SIZE);
-                els.grid.children[currentReactionTarget].classList.add('active');
-                playTone('flash');
-                const speed = SPEEDS[difficulty];
-                const reduction = state.score * 20;
-                const timeLimit = Math.max(speed.reactionMin, speed.reactionMax - reduction);
-                timers.reactionTimeout = setTimeout(() => {
-                   if(state.active && currentReactionTarget !== -1) handleFail(els.grid.children[currentReactionTarget]);
-                }, timeLimit);
-            }, delay);
-        }
-
-        function handleInput(index, cell) {
-            if (state.mode === 'reaction') {
-                if (currentReactionTarget === -1) return;
-                if (index === currentReactionTarget) {
-                    clearTimeout(timers.reactionTimeout);
-                    playTone('good'); cell.classList.remove('active'); flashCell(cell, 'correct');
-                    state.score++;
-                    updateScoreUI();
-                    if (state.score > state.highScores.reaction) {
-                        state.highScores.reaction = state.score; saveHighScores(); fireConfetti();
-                    }
-                    currentReactionTarget = -1;
-                    startReactionRound(els.diff.value);
-                } else {
-                    clearTimeout(timers.reactionTimeout);
-                    handleFail(cell);
-                }
-                return;
-            }
-
-            if (state.mode === 'pattern') {
-                if (state.patternTarget.has(index)) {
-                    if (!cell.classList.contains('correct')) { 
-                        playTone('good'); cell.classList.add('correct');
-                        state.patternTarget.delete(index);
-                        if (state.patternTarget.size === 0) handleLevelComplete();
-                    }
-                } else if (cell.classList.contains('correct')) {
-                    return; 
-                } else {
-                    handleFail(cell);
-                }
-                return;
-            }
-
+        function handleInput(i, c) {
+            if (state.mode === 'reaction') { if (currentReactionTarget === -1) return; if (i === currentReactionTarget) { clearTimeout(timers.reactionTimeout); playTone('good'); c.classList.remove('active'); flashCell(c, 'correct'); state.score++; updateScoreUI(); if (state.score > state.highScores.reaction) { state.highScores.reaction = state.score; saveHighScores(); fireConfetti(); } currentReactionTarget = -1; startReactionRound(els.diff.value); } else { clearTimeout(timers.reactionTimeout); handleFail(c); } return; }
+            if (state.mode === 'pattern') { if (state.patternTarget.has(i)) { if (!c.classList.contains('correct')) { playTone('good'); c.classList.add('correct'); state.patternTarget.delete(i); if (state.patternTarget.size === 0) handleLevelComplete(); } } else if (!c.classList.contains('correct')) handleFail(c); return; }
             if (state.userSequence.length >= state.sequence.length) return;
-            let expected;
-            if (state.mode === 'forward') expected = state.sequence[state.userSequence.length];
-            else expected = state.sequence[state.sequence.length - 1 - state.userSequence.length];
-
-            if (index === expected) {
-                playTone('good'); flashCell(cell, 'correct');
-                state.userSequence.push(index);
-                if (state.userSequence.length === state.sequence.length) handleLevelComplete();
-            } else {
-                handleFail(cell);
-            }
+            let exp = state.mode === 'forward' ? state.sequence[state.userSequence.length] : state.sequence[state.sequence.length - 1 - state.userSequence.length];
+            if (i === exp) { playTone('good'); flashCell(c, 'correct'); state.userSequence.push(i); if (state.userSequence.length === state.sequence.length) handleLevelComplete(); } else handleFail(c);
         }
 
         function handleLevelComplete() {
-            // 圖形記憶極限檢查：Lv.23 = 25格全亮
-            if (state.mode === 'pattern' && state.level >= 23) {
-                gameClearSequence();
-                return;
-            }
-
-            els.status.textContent = "正確！";
-            els.status.style.color = 'var(--success)';
-            els.blocker.style.display = 'block';
-            if (state.level > state.highScores[state.mode]) {
-                state.highScores[state.mode] = state.level;
-                saveHighScores(); fireConfetti();
-            } else {
-                playTone('win');
-            }
-            timers.flash = setTimeout(() => {
-                state.level++; state.score = state.level;
-                Array.from(els.grid.children).forEach(c => c.className = 'cell');
-                const diff = els.diff.value;
-                if(state.mode === 'pattern') startPatternRound(diff);
-                else startMemoryRound(diff);
-            }, 800);
+            if (state.mode === 'pattern' && state.level >= 23) { gameClearSequence(); return; }
+            els.status.textContent = "正確！"; els.status.style.color = 'var(--success)'; els.blocker.style.display = 'block';
+            if (state.level > state.highScores[state.mode]) { state.highScores[state.mode] = state.level; saveHighScores(); fireConfetti(); } else playTone('win');
+            timers.flash = setTimeout(() => { state.level++; state.score = state.level; Array.from(els.grid.children).forEach(c => c.className = 'cell'); const d = els.diff.value; if(state.mode === 'pattern') startPatternRound(d); else startMemoryRound(d); }, 800);
         }
 
-        // --- 完美通關邏輯 ---
-        function gameClearSequence() {
-            state.gameWon = true;
-            els.status.textContent = "完美通關！(MAX)"; 
-            els.status.style.color = 'var(--purple)';
-            els.blocker.style.display = 'block';
-            
-            // 更新最高分
-            if (state.level > state.highScores[state.mode]) {
-                state.highScores[state.mode] = state.level;
-                saveHighScores();
-            }
-            
-            playTone('win');
-            fireConfetti();
-            
-            // 延遲後顯示結算
-            setTimeout(() => {
-                state.active = false;
-                els.startBtn.disabled = false;
-                els.startBtn.textContent = "再次挑戰";
-                els.startBtn.style.display = 'inline-block';
-                els.shareBtn.style.display = 'inline-block';
-                openShareModal(); // 自動開啟分享卡慶祝
-            }, 2500);
+        function gameClearSequence() { state.gameWon = true; els.status.textContent = "完美通關(MAX)"; els.status.style.color = 'var(--purple)'; els.blocker.style.display = 'block'; if (state.level > state.highScores[state.mode]) { state.highScores[state.mode] = state.level; saveHighScores(); } playTone('win'); fireConfetti(); setTimeout(() => { state.active = false; els.startBtn.disabled = false; els.startBtn.textContent = "再次挑戰"; els.startBtn.style.display = 'inline-block'; els.shareBtn.style.display = 'inline-block'; checkLeaderboardQualification(); }, 2500); }
+
+        function handleFail(c) { 
+            playTone('bad'); flashCell(c, 'wrong'); els.status.textContent = "失敗"; els.status.style.color = 'var(--danger)'; state.active = false; clearTimeout(timers.flash); els.blocker.style.display = 'block'; els.startBtn.disabled = false; els.startBtn.textContent = "重試"; els.startBtn.style.display = 'inline-block'; els.shareBtn.style.display = 'inline-block'; 
+            checkLeaderboardQualification();
         }
 
-        function handleFail(cell) {
-            playTone('bad'); flashCell(cell, 'wrong');
-            els.status.textContent = "任務失敗";
-            els.status.style.color = 'var(--danger)';
-            state.active = false;
-            clearTimeout(timers.flash); 
-            els.blocker.style.display = 'block';
-            els.startBtn.disabled = false;
-            els.startBtn.textContent = "重新挑戰";
-            els.startBtn.style.display = 'inline-block';
-            els.shareBtn.style.display = 'inline-block';
-        }
+        function flashCell(c, t) { c.classList.add(t); setTimeout(() => c.classList.remove(t), 200); }
+        function updateScoreUI(r=false) { els.score.textContent = r ? (state.mode==='reaction'?0:els.startLvl.value) : state.score; els.best.textContent = state.highScores[state.mode] || 0; }
+        function saveHighScores() { localStorage.setItem('neuro_trainer_scores_ultra_v2', JSON.stringify(state.highScores)); updateScoreUI(); }
 
-        function flashCell(cell, type) {
-            cell.classList.add(type); setTimeout(() => cell.classList.remove(type), 200);
-        }
-
-        function updateScoreUI(reset = false) {
-            if (reset) {
-                const isReaction = state.mode === 'reaction';
-                els.score.textContent = isReaction ? 0 : (els.startLvl.disabled ? 1 : els.startLvl.value);
-            } else {
-                els.score.textContent = state.score;
-            }
-            els.best.textContent = state.highScores[state.mode] || 0;
-        }
-
-        const sleep = ms => new Promise(r => timers.flash = setTimeout(r, ms));
-
+        // --- Leaderboard UI ---
         window.openModal = id => document.getElementById(`modal-${id}`).style.display = 'flex';
         window.closeModal = id => document.getElementById(`modal-${id}`).style.display = 'none';
 
-        window.openShareModal = function() {
-            const modeName = MODE_NAMES[state.mode];
-            const diffName = SPEEDS[els.diff.value].name;
-            
-            // 計算「有效成績」
-            // 預設為當前分數
-            let displayScore = state.score;
-            
-            if (state.mode !== 'reaction') {
-                // 記憶/圖形模式
-                if (!state.active) {
-                    if (state.gameWon) {
-                        displayScore = state.level; // 完美通關顯示滿分
-                    } else if (state.level === state.startLevel && state.startLevel > 1) {
-                        displayScore = 0; // 跳級失敗
-                    } else {
-                        // 否則成績為「上一關」(已完成的等級)
-                        displayScore = Math.max(0, state.level - 1);
-                    }
-                }
-            }
-
-            document.getElementById('shareModeLabel').textContent = modeName;
-            document.getElementById('shareScoreVal').textContent = (state.mode === 'reaction' ? displayScore : `LV.${displayScore}`);
-            document.getElementById('shareDiffVal').textContent = diffName;
-            
-            // 結果標籤
-            let resultLabel = "COMPLETED";
-            if (state.gameWon) resultLabel = "MISSION ACCOMPLISHED";
-            else if (state.mode !== 'reaction' && displayScore === 0 && state.startLevel > 1) resultLabel = "ATTEMPT FAILED";
-            document.getElementById('shareResultLabel').textContent = resultLabel;
-
-            // 評級邏輯
-            let rating = "GOOD";
-            const s = displayScore;
-            if (state.mode === 'reaction') {
-                if (s > 25) rating = "LEGENDARY";
-                else if (s > 20) rating = "S-TIER";
-                else if (s > 15) rating = "ELITE";
-                else if (s > 10) rating = "ADVANCED";
-            } else {
-                if (state.gameWon || s >= 23) rating = "MAXIMUM"; // 圖形記憶極限
-                else if (s >= 12) rating = "LEGENDARY";
-                else if (s >= 9) rating = "ELITE";
-                else if (s >= 6) rating = "ADVANCED";
-                else if (s === 0) rating = "TRY AGAIN";
-            }
-            
-            document.getElementById('shareRatingVal').textContent = rating;
-            openModal('share');
+        window.openLeaderboard = () => {
+            openModal('leaderboard');
+            window.switchLbTab(els.diff.value);
         };
 
-        window.copyResultText = function() {
-            const modeName = MODE_NAMES[state.mode];
-            const diffName = SPEEDS[els.diff.value].name;
+        window.switchLbTab = async (diff) => {
+            document.querySelectorAll('.lb-filter-btn').forEach(b => b.classList.remove('active'));
+            const btns = document.querySelectorAll('.lb-filter-btn');
+            if(diff === 'normal') btns[0].classList.add('active'); else if(diff === 'fast') btns[1].classList.add('active'); else btns[2].classList.add('active');
             
-            // 複製時同樣使用有效成績邏輯
-            let finalScore = state.score;
-            if (state.mode !== 'reaction' && !state.active) {
-                if (state.gameWon) finalScore = state.level;
-                else if (state.level === state.startLevel && state.startLevel > 1) finalScore = 0;
-                else finalScore = Math.max(0, state.level - 1);
+            const listEl = document.getElementById('lb-list-container');
+            listEl.innerHTML = ''; document.getElementById('lb-loading').style.display = 'block';
+            document.getElementById('lb-current-view').textContent = `${MODE_NAMES[state.mode]} - ${SPEEDS[diff].name}`;
+
+            const allData = await LB.fetch();
+            const filtered = allData.filter(d => d.mode === state.mode && d.difficulty === diff)
+                                    .sort((a,b) => b.score - a.score || a.timestamp - b.timestamp)
+                                    .slice(0, 10);
+            
+            document.getElementById('lb-loading').style.display = 'none';
+            if(filtered.length === 0) listEl.innerHTML = '<div style="text-align:center; color:#64748b; padding:20px;">尚無紀錄</div>';
+            
+            filtered.forEach((d, i) => {
+                const div = document.createElement('div'); div.className = `lb-item top-${i+1}`;
+                const nameDisplay = d.name ? d.name.replace(/</g,'&lt;') : 'Unknown';
+                div.innerHTML = `<div class="lb-rank">#${i+1}</div><div class="lb-info"><div class="lb-name">${nameDisplay}</div><div class="lb-date">${new Date(d.timestamp).toLocaleDateString()}</div></div><div class="lb-score">${state.mode==='reaction'?d.score:'Lv.'+d.score}</div>`;
+                listEl.appendChild(div);
+            });
+        };
+
+        function getFinalScore() {
+            if (state.mode === 'reaction') return state.score;
+            if (state.gameWon) return state.level;
+            if (state.level === state.startLevel && state.startLevel > 1) return 0;
+            return Math.max(0, state.level - 1);
+        }
+
+        async function checkLeaderboardQualification() {
+            const score = getFinalScore();
+            if (score === 0) return;
+
+            const allData = await LB.fetch();
+            const currentDiff = els.diff.value;
+            
+            let filtered = allData.filter(d => d.mode === state.mode && d.difficulty === currentDiff);
+            filtered.sort((a, b) => b.score - a.score || a.timestamp - b.timestamp);
+            
+            let qualifies = false;
+            if (filtered.length < 10) {
+                qualifies = true;
+            } else {
+                const tenthPlace = filtered[9];
+                if (score > tenthPlace.score) qualifies = true;
             }
-            
-            const scoreText = state.mode === 'reaction' ? finalScore + "分" : "Lv." + finalScore + (state.gameWon ? " (MAX)" : "");
-            const text = `🧠 Neuro-X Ultra 認知訓練\n----------------\n模式：${modeName}\n難度：${diffName}\n成績：${scoreText}\n----------------\n快來挑戰！ #NeuroXUltra #蝦仁藥師`;
-            
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed"; textArea.style.left = "-9999px"; textArea.style.top = "0";
-            document.body.appendChild(textArea);
-            textArea.focus(); textArea.select();
-            
-            try {
-                document.execCommand('copy');
-                const btn = document.querySelector('.btn-copy');
-                const org = btn.innerHTML;
-                btn.innerHTML = "✅ 已複製";
-                setTimeout(() => btn.innerHTML = org, 2000);
-            } catch (err) {
-                const btn = document.querySelector('.btn-copy');
-                btn.innerHTML = "❌ 複製失敗";
-                setTimeout(() => btn.innerHTML = "📋 複製成績", 2000);
+
+            if (qualifies) {
+                pendingSubmit = { mode: state.mode, difficulty: currentDiff, score: score };
+                document.getElementById('submit-score-display').textContent = (state.mode === 'reaction' ? score : 'Lv.' + score);
+                openModal('submit');
             }
-            document.body.removeChild(textArea);
+        }
+
+        window.submitToLeaderboard = async () => {
+            const name = document.getElementById('player-name-input').value.trim().substring(0, 8) || "Player";
+            if (!pendingSubmit) return;
+            const btn = document.querySelector('.submit-btn');
+            btn.textContent = "處理中..."; btn.disabled = true;
+
+            const success = await LB.save(name, pendingSubmit.mode, pendingSubmit.difficulty, pendingSubmit.score);
+            
+            closeModal('submit');
+            if (success) {
+                alert("上榜成功！");
+                openLeaderboard();
+            } else {
+                alert("儲存失敗");
+            }
+            btn.textContent = "登錄"; btn.disabled = false;
+        };
+
+        window.openShareModal = function() {
+            const score = getFinalScore();
+            document.getElementById('shareModeLabel').textContent = MODE_NAMES[state.mode];
+            document.getElementById('shareScoreVal').textContent = (state.mode === 'reaction' ? score : `LV.${score}`);
+            document.getElementById('shareDiffVal').textContent = SPEEDS[els.diff.value].name;
+            
+            let res = "COMPLETED";
+            if(state.gameWon) res = "MISSION ACCOMPLISHED";
+            else if(state.mode !== 'reaction' && score === 0 && state.startLevel > 1) res = "ATTEMPT FAILED";
+            document.getElementById('shareResultLabel').textContent = res;
+
+            let r = "GOOD";
+            if (state.mode === 'reaction') { if(score>25)r="LEGENDARY"; else if(score>20)r="S-TIER"; else if(score>15)r="ELITE"; else if(score>10)r="ADVANCED"; } 
+            else { if(state.gameWon || score>=23)r="MAXIMUM"; else if(score>=12)r="LEGENDARY"; else if(score>=9)r="ELITE"; else if(score>=6)r="ADVANCED"; else if(score===0)r="TRY AGAIN"; }
+            document.getElementById('shareRatingVal').textContent = r;
+            openModal('share');
+        };
+        window.copyResultText = function() { /* ... */ 
+            const score = getFinalScore();
+            const text = `🧠 Neuro-X Ultra 認知訓練\n----------------\n模式：${MODE_NAMES[state.mode]}\n難度：${SPEEDS[els.diff.value].name}\n成績：${state.mode==='reaction'?score: 'Lv.'+score}\n#NeuroXUltra #蝦仁藥師`;
+            const ta = document.createElement("textarea"); ta.value = text; ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.focus(); ta.select();
+            try { document.execCommand('copy'); const b=document.querySelector('.btn-copy'),o=b.innerHTML; b.innerHTML="✅"; setTimeout(()=>b.innerHTML=o,2000); } catch(e){} document.body.removeChild(ta);
         };
 
         initGrid();
