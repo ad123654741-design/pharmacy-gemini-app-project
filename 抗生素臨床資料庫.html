@@ -241,8 +241,8 @@
                 getSpectrumColor(code) {
                     if (!code) return 'spectrum-gray';
                     const c = String(code).toUpperCase().trim(); 
-                    if (c === 'G' || c === 'V' || c === '非常有效' || c === '有效') return 'spectrum-green';
-                    if (c === 'Y' || c === 'E' || c === '可能有效') return 'spectrum-yellow';
+                    if (c === 'G' || c === 'V' || c === '非常有效') return 'spectrum-green';
+                    if (c === 'Y' || c === 'E' || c === '有效') return 'spectrum-yellow';
                     if (c === 'R' || c === 'I' || c === '無效') return 'spectrum-red';
                     return 'spectrum-gray';
                 },
@@ -250,8 +250,8 @@
                 getSpectrumLabel(code) {
                      if (!code) return '無資料';
                      const c = String(code).toUpperCase().trim();
-                     if (c === 'G' || c === 'V' || c === '非常有效' || c === '有效') return '有效 (Susceptible)';
-                     if (c === 'Y' || c === 'E' || c === '可能有效') return '可能有效 (Possibly Effective)';
+                     if (c === 'G' || c === 'V' || c === '非常有效') return '非常有效 (Susceptible)';
+                     if (c === 'Y' || c === 'E' || c === '有效') return '有效 (Intermediate)';
                      if (c === 'R' || c === 'I' || c === '無效') return '無效 (Resistant)';
                      return c;
                 },
@@ -497,11 +497,11 @@
                 </div>
             </div>
 
-            <!-- Tab 3: 抗菌譜 (修正定義與正方形) -->
+            <!-- Tab 3: 抗菌譜 (修復空白欄位) -->
             <div x-show="activeTab === 2" class="h-full overflow-hidden flex flex-col" x-cloak>
                 <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap gap-4 text-xs font-medium sticky top-0 z-30">
-                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 有效</div>
-                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#eab308] border border-[#ca8a04] mr-2"></span> 可能有效</div>
+                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 非常有效</div>
+                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#eab308] border border-[#ca8a04] mr-2"></span> 有效</div>
                     <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
                 </div>
 
@@ -510,12 +510,12 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-100">
                                 <tr>
-                                    <!-- 修正表頭 CSS: 移除 flex，改用 align-bottom -->
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 bg-gray-100 z-20 border-r border-gray-200 shadow-sm w-28 min-w-[110px] align-bottom pb-4">
+                                    <!-- 修正: 寬度減半 (w-28 -> w-14, min-w 110 -> 56) -->
+                                    <th class="px-2 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 bg-gray-100 z-20 border-r border-gray-200 shadow-sm w-14 min-w-[56px] align-bottom pb-4">
                                         抗生素名稱
                                     </th>
                                     <template x-for="(bacteria, idx) in antibiogramHeaders" :key="idx">
-                                        <th class="p-0 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-8 min-w-[2rem] align-bottom bg-gray-50 border-b border-gray-200">
+                                        <th class="px-1 py-1 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-4 min-w-[32px] max-w-[40px] align-bottom bg-gray-50 border-b border-gray-200">
                                             <div class="vertical-header-container">
                                                 <div class="vertical-text" x-text="bacteria"></div>
                                             </div>
@@ -526,9 +526,10 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template x-for="row in filteredAntibiogramData" :key="row.id">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-2 text-sm font-bold text-gray-800 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-sm" x-text="row.antibiotic"></td>
+                                        <!-- 修正: 縮小內距、字體、增加 truncate 與提示 -->
+                                        <td class="px-2 py-2 text-xs font-bold text-gray-800 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-sm truncate max-w-[56px]" x-text="row.antibiotic" :title="row.antibiotic"></td>
                                         <template x-for="(status, index) in row.spectrum" :key="index">
-                                            <td class="p-0.5 text-center w-8 h-8">
+                                            <td class="p-0.5 text-center h-8">
                                                 <div class="w-full h-full min-h-[24px] rounded-sm shadow-sm transition-transform hover:scale-110 cursor-pointer"
                                                      :class="getSpectrumColor(status)"
                                                      :title="getSpectrumLabel(status)">
