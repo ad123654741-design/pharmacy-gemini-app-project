@@ -196,7 +196,6 @@
                     if (!rawArray || rawArray.length < 2) return;
                     
                     const headerRow = rawArray[0];
-                    // 修正：增加對 text 屬性的檢查，防止 trim() 錯誤
                     const validIndices = headerRow
                         .map((col, index) => ({ text: col, index: index }))
                         .filter(item => item.index > 0 && item.text && String(item.text).trim() !== '')
@@ -326,9 +325,10 @@
         .table-header { @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0 z-10; }
         .table-cell { @apply px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-100; }
         
+        /* 修改2: 調整黃色為更明亮的 yellow-300 (#fde047)，邊框 yellow-500 */
         .spectrum-deep-green { background-color: #15803d; border: 1px solid #14532d; }
         .spectrum-green { background-color: #22c55e; border: 1px solid #16a34a; }
-        .spectrum-yellow { background-color: #eab308; border: 1px solid #ca8a04; }
+        .spectrum-yellow { background-color: #fde047; border: 1px solid #eab308; } 
         .spectrum-red { background-color: #ef4444; border: 1px solid #dc2626; }
         .spectrum-gray { background-color: #f3f4f6; }
 
@@ -337,7 +337,6 @@
             text-orientation: mixed;
             transform: rotate(180deg); 
             white-space: nowrap;
-            max-height: 100px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -358,33 +357,31 @@
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
     <div x-data="antibioticApp" x-init="initData()" class="flex-1 flex flex-col h-full max-w-7xl mx-auto w-full bg-white shadow-2xl sm:rounded-xl sm:my-4 sm:overflow-hidden relative">
-        <!-- ============== Header ============== -->
+
         <header class="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
             <div class="px-6 py-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-start gap-6">
-                    <!-- Logo & Title -->
                     <div class="flex items-center space-x-3 flex-shrink-0">
                         <div class="bg-blue-600 text-white p-2 rounded-lg shadow-lg shadow-blue-200">
                             <i class="fa-solid fa-staff-snake text-2xl"></i>
                         </div>
                         <div>
                             <h1 class="text-xl font-bold text-slate-800 tracking-tight">抗生素臨床資料庫</h1>
-                            <p class="text-xs text-slate-500 font-medium">Antibiotic Clinical Decision Support</p>
+                            <p class="text-xs text-slate-500 font-medium">台北榮民總醫院玉里分院</p>
                         </div>
                     </div>
                     
-                    <!-- Search Bar -->
                     <div class="relative w-full md:w-80 group">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-search text-gray-400 group-focus-within:text-blue-500 transition-colors"></i>
                         </span>
-                        <input type="text" x-model="searchQuery" placeholder="搜尋藥名、菌種..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder-gray-400">
+                        <input type="text" x-model="searchQuery" placeholder="輸入藥名、感染症..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder-gray-400">
                         <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" x-cloak><i class="fa-solid fa-times-circle"></i></button>
                     </div>
 
-                    <!-- Creator Info (Right Aligned) -->
                     <div class="md:ml-auto text-right text-xs text-gray-400 leading-tight mt-2 md:mt-0 flex-shrink-0">
-                        <p class="font-medium text-gray-500">製作者 : 林其仁藥師</p>
+                        <!-- 修改1: 更新製作者資訊 -->
+                        <p class="font-medium text-gray-500">製作者 : 林其仁藥師、陳梓騏藥師</p>
                         <p class="mt-0.5">更新日期 : 2026/01/28</p>
                     </div>
                 </div>
@@ -482,33 +479,49 @@
                 </div>
             </div>
 
-            <!-- Tab 3: 抗菌譜 (修正版：移除 p-4 與 overflow-hidden，確保滿版不穿透) -->
+            <!-- Tab 3: 抗菌譜 -->
             <div x-show="activeTab === 2" class="h-full overflow-hidden flex flex-col" x-cloak>
                 <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap gap-4 text-xs font-medium sticky top-0 z-30 shadow-sm">
                     <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#15803d] border border-[#14532d] mr-2"></span> 非常有效</div>
                     <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 有效</div>
-                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#eab308] border border-[#ca8a04] mr-2"></span> 可能有效</div>
+                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#fde047] border border-[#eab308] mr-2"></span> 可能有效</div>
                     <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
                 </div>
 
-                <!-- 修正：移除 padding-4，改為全版 (p-0)，確保 sticky top-0 沒有縫隙 -->
                 <div class="flex-1 overflow-auto bg-white p-0">
-                    <!-- 修正：移除 overflow-hidden, 增加 border-separate 確保邊框渲染正確 -->
-                    <div class="inline-block min-w-full align-middle relative">
+                    <div class="inline-block min-w-full align-middle border-0 relative">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
                             <thead class="bg-gray-100">
                                 <tr>
-                                    <!-- 左上角: z-50, h-24 -->
-                                    <th class="px-2 py-0 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 top-0 bg-gray-100 z-50 border-r border-b border-gray-200 shadow-sm w-7 min-w-[28px] align-bottom h-24">
+                                    <th class="px-2 py-0 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 top-0 bg-gray-100 z-50 border-r border-b border-gray-200 shadow-sm w-28 min-w-[112px] align-bottom h-24">
                                         <div class="h-24 flex items-end justify-center pb-2 w-full">
                                             名稱
                                         </div>
                                     </th>
                                     <template x-for="(bacteria, idx) in antibiogramHeaders" :key="idx">
-                                        <!-- 表頭: z-40, h-24 -->
-                                        <th class="px-0 py-0 text-center text-xs font-bold text-gray-600 tracking-wider sticky top-0 z-40 w-2 min-w-[0.5rem] max-w-[0.75rem] align-bottom bg-gray-100 border-b border-gray-200 h-24">
-                                            <div class="vertical-header-container h-24 flex items-end justify-center pb-2">
-                                                <div class="vertical-text text-[10px] font-bold" x-text="bacteria"></div>
+                                        <th class="px-0 py-0 text-center text-xs font-bold text-gray-600 tracking-wider sticky top-0 z-40 w-6 min-w-[24px] max-w-[24px] align-bottom bg-gray-100 border-b border-gray-200 h-24">
+                                            <div class="vertical-header-container h-24 flex items-end justify-center pb-1 overflow-hidden">
+                                                <div class="vertical-text text-[10px] font-bold origin-bottom" 
+                                                     x-text="bacteria"
+                                                     style="font-size: 10px;"
+                                                     x-init="$nextTick(() => {
+                                                         $el.style.fontSize = '10px';
+                                                         $el.style.transform = 'rotate(180deg)';
+                                                         $el.style.transformOrigin = 'center';
+                                                         const maxHeight = 88;
+                                                         if ($el.scrollHeight > maxHeight) {
+                                                             let size = 10;
+                                                             while ($el.scrollHeight > maxHeight && size > 8) {
+                                                                 size -= 0.5;
+                                                                 $el.style.fontSize = size + 'px';
+                                                             }
+                                                             if ($el.scrollHeight > maxHeight) {
+                                                                 const scale = maxHeight / $el.scrollHeight;
+                                                                 $el.style.transform = `rotate(180deg) scale(${scale})`;
+                                                             }
+                                                         }
+                                                     })">
+                                                </div>
                                             </div>
                                         </th>
                                     </template>
@@ -517,12 +530,11 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template x-for="row in filteredAntibiogramData" :key="row.id">
                                     <tr class="hover:bg-gray-50">
-                                        <!-- 左側欄: z-30 -->
-                                        <td class="px-1 py-1 text-[10px] font-bold text-gray-800 bg-white sticky left-0 z-30 border-r border-b border-gray-200 shadow-sm truncate max-w-[28px]" x-text="row.antibiotic" :title="row.antibiotic"></td>
+                                        <!-- 修改3: 字體放大至 text-xs (12px) -->
+                                        <td class="px-2 py-1 text-xs font-bold text-gray-800 bg-white sticky left-0 z-30 border-r border-b border-gray-200 shadow-sm truncate max-w-[112px]" x-text="row.antibiotic" :title="row.antibiotic"></td>
                                         <template x-for="(status, index) in row.spectrum" :key="index">
-                                            <!-- 資料格: z-0 -->
-                                            <td class="p-0 text-center w-2 h-2 min-w-[0.5rem] z-0 border-b border-gray-100">
-                                                <div class="w-full h-full min-h-[8px] transition-transform hover:scale-110 cursor-pointer"
+                                            <td class="p-0 text-center w-6 h-6 min-w-[24px] z-0 border-b border-gray-100">
+                                                <div class="w-full h-full min-h-[24px] transition-transform hover:scale-110 cursor-pointer"
                                                      :class="getSpectrumColor(status)"
                                                      :title="getSpectrumLabel(status)">
                                                 </div>
