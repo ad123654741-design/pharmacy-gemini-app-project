@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抗生素臨床資料庫 | Clinical Antibiotic Database</title>
+    
+    <!-- 引入 Tailwind CSS (UI 設計) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 PapaParse (CSV 解析工具) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <!-- 引入 Google Fonts (字體優化) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 引入 FontAwesome (圖標) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 應用程式邏輯 -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('antibioticApp', () => ({
+                // ==========================================
+                // ★★★ 使用者設定區 ★★★
+                // ==========================================
+                
+                // 改為 false 以使用您的 Google Sheet 資料
+                useMockData: false, 
+
+                // Google Sheet CSV 連結
+                sheetUrls: {
+                    dosing: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTix-cImj3HSTXEoicX5ynUdpiAbggV8QDO2bIXPxKHxhFKasrEN3XXGPwC7uLdMwmOgNKFdoQT9Q8A/pub?output=csv",
+                    infections: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTix-cImj3HSTXEoicX5ynUdpiAbggV8QDO2bIXPxKHxhFKasrEN3XXGPwC7uLdMwmOgNKFdoQT9Q8A/pub?gid=2074228386&single=true&output=csv",
+                    antibiogram: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTix-cImj3HSTXEoicX5ynUdpiAbggV8QDO2bIXPxKHxhFKasrEN3XXGPwC7uLdMwmOgNKFdoQT9Q8A/pub?gid=346527080&single=true&output=csv",
+                    pediatric: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTix-cImj3HSTXEoicX5ynUdpiAbggV8QDO2bIXPxKHxhFKasrEN3XXGPwC7uLdMwmOgNKFdoQT9Q8A/pub?output=csv",
+                    ivGuide: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTix-cImj3HSTXEoicX5ynUdpiAbggV8QDO2bIXPxKHxhFKasrEN3XXGPwC7uLdMwmOgNKFdoQT9Q8A/pub?output=csv"
+                },
+
+                // ==========================================
+                // 系統變數
+                // ==========================================
+                activeTab: 0,
+                searchQuery: '',
+                isLoading: false,
+                errorMsg: null,
+                
+                // 彈跳視窗控制
+                modalType: null, // 'infection' or 'iv'
+                selectedItem: null,
+
+                tabs: [
+                    { name: '成人劑量', icon: 'fa-solid fa-calculator' },
+                    { name: '經驗性療法', icon: 'fa-solid fa-bacteria' },
+                    { name: '抗菌譜', icon: 'fa-solid fa-table-cells' },
+                    { name: '兒科劑量', icon: 'fa-solid fa-child' },
+                    { name: '注射指引', icon: 'fa-solid fa-syringe' }
+                ],
+
+                dosingData: [],
+                infectionData: [],
+                antibiogramData: [],
+                antibiogramHeaders: [],
+                pediatricData: [],
+                ivGuideData: [],
+
+                // ==========================================
+                // 初始化與資料抓取
+                // ==========================================
+                async initData() {
+                    this.isLoading = true;
+                    this.errorMsg = null;
+
+                    try {
+                        if (this.useMockData) {
+                            this.dosingData = this.mockData.dosing;
+                            this.infectionData = this.mockData.infections;
+                            this.processAntibiogram(this.mockData.antibiogram);
+                            this.pediatricData = this.mockData.pediatric;
+                            this.ivGuideData = this.mockData.ivGuide;
+                            await new Promise(r => setTimeout(r, 800)); 
+                        } else {
+                            const results = await Promise.allSettled([
+                                this.fetchCSV(this.sheetUrls.dosing, 'dosing'),
+                                this.fetchCSV(this.sheetUrls.infections, 'infections'),
+                                this.fetchCSV(this.sheetUrls.antibiogram, 'antibiogram'),
+                                this.fetchCSV(this.sheetUrls.pediatric, 'pediatric'),
+                                this.fetchCSV(this.sheetUrls.ivGuide, 'ivGuide')
+                            ]);
+                            
+                            const failed = results.filter(r => r.status === 'rejected');
+                            if (failed.length > 0) {
+                                console.warn('部分資料載入失敗，可能是 CSV 連結無效或格式錯誤');
+                            }
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        this.errorMsg = "資料載入發生錯誤，請檢查網路或連結。";
+                        this.useMockData = true; // Fallback
+                        this.initData(); // Reload mock
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                fetchCSV(url, type) {
+                    return new Promise((resolve, reject) => {
+                        if (!url) { reject("URL missing"); return; }
+                        
+                        Papa.parse(url, {
+                            download: true,
+                            header: type !== 'antibiogram',
+                            skipEmptyLines: true, 
+                            complete: (results) => {
+                                try {
+                                    if (type === 'dosing') this.mapDosingData(results.data);
+                                    if (type === 'infections') this.mapInfectionData(results.data);
+                                    if (type === 'antibiogram') this.processAntibiogram(results.data);
+                                    if (type === 'pediatric') this.mapPediatricData(results.data);
+                                    if (type === 'ivGuide') this.mapIvGuideData(results.data);
+                                    resolve();
+                                } catch (err) {
+                                    console.error(`解析 ${type} 資料時發生錯誤:`, err);
+                                    reject(err);
+                                }
+                            },
+                            error: (err) => reject(err)
+                        });
+                    });
+                },
+
+                // ==========================================
+                // 資料處理邏輯
+                // ==========================================
+                
+                mapDosingData(data) {
+                    this.dosingData = data
+                        .filter(row => row['Generic Name'] || row['學名']) 
+                        .map((row, index) => ({
+                            id: `dose-${index}`,
+                            genericName: row['Generic Name'] || row['學名'] || '',
+                            brandName: row['Brand Name'] || row['商品名'] || '',
+                            stdDose: row['Standard Dose'] || row['常用劑量'] || '',
+                            renalAdj: row['Renal Adj'] || row['腎功能調整'] || '',
+                            hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || '',
+                            notes: row['Notes'] || row['備註'] || ''
+                        }));
+                },
+
+                mapInfectionData(data) {
+                    this.infectionData = data
+                        .filter(row => row['Infection Type'] || row['感染症'])
+                        .map((row, index) => ({
+                            id: `inf-${index}`,
+                            system: row['System'] || row['系統'] || '',
+                            infectionType: row['Infection Type'] || row['感染症'] || '',
+                            pathogens: row['Pathogens'] || row['常見菌種'] || '',
+                            firstLine: row['First Line'] || row['首選藥物'] || '',
+                            alternative: row['Alternative'] || row['替代藥物'] || '',
+                            comments: row['Comments'] || row['備註'] || row['詳細說明'] || '無詳細說明',
+                            duration: row['Duration'] || row['建議療程'] || '',
+                            dosingTips: row['Dosing Tips'] || row['劑量建議'] || ''
+                        }));
+                },
+
+                mapPediatricData(data) {
+                    this.pediatricData = data
+                        .filter(row => row['Generic Name'] || row['學名'])
+                        .map((row, index) => ({
+                            id: `ped-${index}`,
+                            genericName: row['Generic Name'] || row['學名'] || '',
+                            brandName: row['Brand Name'] || row['商品名'] || '',
+                            pediatricDose: row['Pediatric Dose'] || row['兒科劑量'] || '',
+                            notes: row['Notes'] || row['備註'] || ''
+                        }));
+                },
+
+                mapIvGuideData(data) {
+                    this.ivGuideData = data
+                        .filter(row => row['Generic Name'] || row['學名'])
+                        .map((row, index) => ({
+                            id: `iv-${index}`,
+                            genericName: row['Generic Name'] || row['學名'] || '',
+                            route: row['Route'] || row['給藥途徑'] || '',
+                            fluid: row['Fluid'] || row['靜脈輸注液'] || '',
+                            volume: row['Volume'] || row['每瓶稀釋液體積'] || '',
+                            conc: row['Concentration'] || row['給藥濃度'] || '',
+                            rate: row['Rate'] || row['給藥速率'] || '',
+                            storeRoom: row['Storage Room Temp'] || row['配製後(室溫)'] || '',
+                            storeFridge: row['Storage Fridge'] || row['配製後(冷藏)'] || '',
+                            dilutedRoom: row['Diluted Room Temp'] || row['進一步稀釋後(室溫)'] || '',
+                            dilutedFridge: row['Diluted Fridge'] || row['進一步稀釋後(冷藏)'] || '',
+                            details: row['Details'] || row['詳細說明'] || '暫無詳細資料'
+                        }));
+                },
+
+                processAntibiogram(rawArray) {
+                    if (!rawArray || rawArray.length < 2) return;
+                    
+                    const headerRow = rawArray[0];
+                    // ★ 智慧解析：找出所有非空白的表頭索引
+                    // 跳過索引 0 (抗生素名稱)，只抓取後面的菌種欄位
+                    const validIndices = headerRow
+                        .map((col, index) => ({ text: col, index: index }))
+                        .filter(item => item.index > 0 && item.text && item.text.trim() !== '')
+                        .map(item => item.index);
+
+                    // 根據索引提取表頭文字
+                    this.antibiogramHeaders = validIndices.map(i => headerRow[i]);
+
+                    const dataRows = rawArray.slice(1);
+                    this.antibiogramData = dataRows
+                        .filter(row => row && row.length > 0 && row[0]) 
+                        .map((row, index) => ({
+                            id: `abx-${index}`,
+                            antibiotic: row[0],
+                            // ★ 智慧對齊：只提取對應有效表頭索引的資料，自動跳過中間的空欄位
+                            spectrum: validIndices.map(i => row[i])
+                        }));
+                },
+
+                // ==========================================
+                // 互動功能
+                // ==========================================
+
+                openModal(type, item) {
+                    this.modalType = type;
+                    this.selectedItem = item;
+                },
+
+                closeModal() {
+                    this.modalType = null;
+                    setTimeout(() => { this.selectedItem = null; }, 200);
+                },
+
+                formatLineBreaks(text) {
+                    if (!text) return '';
+                    return text.replace(/\n/g, '<br>');
+                },
+
+                getSpectrumColor(code) {
+                    if (!code) return 'spectrum-gray';
+                    const c = String(code).toUpperCase().trim(); 
+                    if (c === 'G' || c === 'V' || c === '非常有效' || c === '有效') return 'spectrum-green';
+                    if (c === 'Y' || c === 'E' || c === '可能有效') return 'spectrum-yellow';
+                    if (c === 'R' || c === 'I' || c === '無效') return 'spectrum-red';
+                    return 'spectrum-gray';
+                },
+
+                getSpectrumLabel(code) {
+                     if (!code) return '無資料';
+                     const c = String(code).toUpperCase().trim();
+                     if (c === 'G' || c === 'V' || c === '非常有效' || c === '有效') return '有效 (Susceptible)';
+                     if (c === 'Y' || c === 'E' || c === '可能有效') return '可能有效 (Possibly Effective)';
+                     if (c === 'R' || c === 'I' || c === '無效') return '無效 (Resistant)';
+                     return c;
+                },
+
+                // ==========================================
+                // 搜尋過濾
+                // ==========================================
+                
+                get filteredDosingData() {
+                    if (!this.searchQuery) return this.dosingData;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.dosingData.filter(item => 
+                        item.genericName.toLowerCase().includes(q) || 
+                        item.brandName.toLowerCase().includes(q)
+                    );
+                },
+
+                get filteredInfectionData() {
+                    if (!this.searchQuery) return this.infectionData;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.infectionData.filter(item => 
+                        item.infectionType.toLowerCase().includes(q) || 
+                        item.pathogens.toLowerCase().includes(q) ||
+                        item.system.toLowerCase().includes(q)
+                    );
+                },
+
+                get filteredAntibiogramData() {
+                     if (!this.searchQuery) return this.antibiogramData;
+                     const q = this.searchQuery.toLowerCase();
+                     return this.antibiogramData.filter(item => 
+                        item.antibiotic.toLowerCase().includes(q)
+                     );
+                },
+
+                get filteredPediatricData() {
+                    if (!this.searchQuery) return this.pediatricData;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.pediatricData.filter(item => 
+                        item.genericName.toLowerCase().includes(q) || 
+                        item.brandName.toLowerCase().includes(q)
+                    );
+                },
+
+                get filteredIvGuideData() {
+                    if (!this.searchQuery) return this.ivGuideData;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.ivGuideData.filter(item => 
+                        item.genericName.toLowerCase().includes(q)
+                    );
+                },
+
+                // Mock Data (擴充)
+                mockData: {
+                    dosing: [
+                        { id: 'dose-1', genericName: 'Amoxicillin', brandName: 'Amolin', stdDose: '250-500mg q8h', renalAdj: 'CCr 10-30: q12h\nCCr <10: q24h', hepaticAdj: '無須調整', notes: '口服吸收良好' }
+                    ],
+                    infections: [
+                        { id: 'inf-1', system: '呼吸道', infectionType: '社區型肺炎 (CAP)', pathogens: 'S. pneumoniae', firstLine: 'Amoxicillin + Macrolide', alternative: 'Levofloxacin', comments: '若有合併症風險請考慮升階。', duration: '5-7 天' }
+                    ],
+                    antibiogram: [
+                        ['Antibiotic', 'MSSA', 'MRSA', 'S.pneumo', 'E.coli', 'P.aeruginosa'],
+                        ['Oxacillin', 'G', 'R', 'Y', 'R', 'R']
+                    ],
+                    pediatric: [
+                        { id: 'ped-1', genericName: 'Amoxicillin', brandName: 'Amolin', pediatricDose: '20-40 mg/kg/day divided q8h', notes: '懸浮液需冷藏' },
+                        { id: 'ped-2', genericName: 'Azithromycin', brandName: 'Zithromax', pediatricDose: '10 mg/kg on day 1, then 5 mg/kg days 2-5', notes: '與食物並服可減少胃腸不適' }
+                    ],
+                    ivGuide: [
+                        { id: 'iv-1', genericName: 'Vancomycin', route: 'IV drip', fluid: 'D5W, NS', volume: '100-250 ml', conc: '5 mg/ml', rate: '< 10 mg/min', storeRoom: '24 hr', storeFridge: '14 days', dilutedRoom: '24 hr', dilutedFridge: '14 days', details: '須注意 Red Man Syndrome，輸注時間建議至少 60 分鐘或速率 < 10mg/min。' },
+                        { id: 'iv-2', genericName: 'Acyclovir', route: 'IV drip', fluid: 'D5W, NS', volume: '100 ml', conc: '7 mg/ml', rate: '60 min', storeRoom: '12 hr', storeFridge: '不可冷藏', dilutedRoom: '24 hr', dilutedFridge: '不可冷藏', details: '濃度過高或輸注太快易導致結晶性腎病變。' }
+                    ]
+                }
+            }));
+        });
+    </script>
+    
+    <!-- 引入 Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f3f4f6; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 表格樣式 */
+        .table-header { @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50 sticky top-0 z-10; }
+        .table-cell { @apply px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-100; }
+        
+        /* 抗菌譜顏色 */
+        .spectrum-green { background-color: #22c55e; border: 1px solid #16a34a; }
+        .spectrum-yellow { background-color: #eab308; border: 1px solid #ca8a04; }
+        .spectrum-red { background-color: #ef4444; border: 1px solid #dc2626; }
+        .spectrum-gray { background-color: #f3f4f6; }
+
+        /* 直式文字 CSS */
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg); 
+            white-space: nowrap;
+            max-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+        }
+        .vertical-header-container {
+            height: 140px; 
+            display: flex; 
+            align-items: flex-end; 
+            justify-content: center;
+            padding-bottom: 8px;
+        }
+
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <div x-data="antibioticApp" x-init="initData()" class="flex-1 flex flex-col h-full max-w-7xl mx-auto w-full bg-white shadow-2xl sm:rounded-xl sm:my-4 sm:overflow-hidden relative">
+
+        <!-- ============== Header ============== -->
+        <header class="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
+            <div class="px-6 py-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="bg-blue-600 text-white p-2 rounded-lg shadow-lg shadow-blue-200">
+                            <i class="fa-solid fa-staff-snake text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-slate-800 tracking-tight">抗生素臨床資料庫</h1>
+                            <p class="text-xs text-slate-500 font-medium">Antibiotic Clinical Decision Support</p>
+                        </div>
+                    </div>
+                    <div class="relative w-full md:w-80 group">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-gray-400 group-focus-within:text-blue-500 transition-colors"></i>
+                        </span>
+                        <input type="text" x-model="searchQuery" placeholder="搜尋藥名、菌種..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder-gray-400">
+                        <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" x-cloak><i class="fa-solid fa-times-circle"></i></button>
+                    </div>
+                </div>
+                <nav class="flex space-x-1 mt-6 overflow-x-auto no-scrollbar border-b border-gray-100">
+                    <template x-for="(tab, index) in tabs" :key="index">
+                        <button @click="activeTab = index" :class="activeTab === index ? 'border-blue-500 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'" class="group whitespace-nowrap py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg flex items-center space-x-2">
+                            <i :class="tab.icon"></i>
+                            <span x-text="tab.name"></span>
+                        </button>
+                    </template>
+                </nav>
+            </div>
+        </header>
+
+        <!-- ============== Content ============== -->
+        <main class="flex-1 overflow-hidden relative bg-gray-50/50">
+            
+            <div x-show="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 z-50 backdrop-blur-sm">
+                <div class="flex flex-col items-center">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-3"></i>
+                    <p class="text-sm text-gray-500 font-medium animate-pulse">正在從資料庫同步數據...</p>
+                </div>
+            </div>
+
+            <div x-show="errorMsg" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 w-full max-w-md" x-cloak>
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-lg flex justify-between items-start">
+                    <p class="text-sm text-red-700 ml-3" x-text="errorMsg"></p>
+                    <button @click="errorMsg = null" class="text-red-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
+                </div>
+            </div>
+
+            <!-- Tab 1: 成人劑量調整 -->
+            <div x-show="activeTab === 0" class="h-full overflow-y-auto p-4 md:p-6" x-transition:enter="transition ease-out duration-200">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="table-header w-1/6">抗生素名稱</th>
+                                    <th class="table-header w-1/6">常用劑量</th>
+                                    <th class="table-header w-1/4">腎功能調整</th> 
+                                    <th class="table-header w-1/4">肝功能調整</th> 
+                                    <th class="table-header w-1/6">備註</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="item in filteredDosingData" :key="item.id">
+                                    <tr class="hover:bg-blue-50/30 transition-colors duration-150">
+                                        <td class="table-cell">
+                                            <div class="font-bold text-slate-800" x-text="item.genericName"></div>
+                                            <div class="text-xs text-blue-500 mt-1 font-medium bg-blue-50 inline-block px-2 py-0.5 rounded" x-text="item.brandName"></div>
+                                        </td>
+                                        <td class="table-cell">
+                                            <span class="text-gray-600 font-mono text-xs bg-gray-100 px-2 py-1 rounded" x-text="item.stdDose"></span>
+                                        </td>
+                                        <td class="table-cell whitespace-normal text-xs text-gray-600" x-html="formatLineBreaks(item.renalAdj)"></td>
+                                        <td class="table-cell whitespace-normal text-xs text-gray-600" x-html="formatLineBreaks(item.hepaticAdj)"></td>
+                                        <td class="table-cell whitespace-normal text-xs text-gray-500 italic" x-text="item.notes"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: 經驗性療法 (含 Modal) -->
+            <div x-show="activeTab === 1" class="h-full overflow-y-auto p-4 md:p-6" x-cloak>
+                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                    <template x-for="item in filteredInfectionData" :key="item.id">
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow duration-200 flex flex-col h-full relative group">
+                            <div class="flex justify-between items-start mb-3">
+                                <h3 class="text-lg font-bold text-slate-800" x-text="item.infectionType"></h3>
+                                <span class="px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full" x-text="item.system"></span>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">可能致病菌</div>
+                                <p class="text-sm text-gray-700 italic" x-text="item.pathogens"></p>
+                            </div>
+
+                            <div class="mt-auto space-y-3">
+                                <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
+                                    <div class="text-xs font-bold text-emerald-700 mb-1 flex items-center">
+                                        <i class="fa-solid fa-check-circle mr-1"></i> 首選藥物
+                                    </div>
+                                    <div class="text-sm text-slate-700 font-medium" x-text="item.firstLine"></div>
+                                </div>
+                                <div class="bg-amber-50 p-3 rounded-lg border border-amber-100">
+                                    <div class="text-xs font-bold text-amber-700 mb-1 flex items-center">
+                                        <i class="fa-solid fa-exchange-alt mr-1"></i> 替代藥物
+                                    </div>
+                                    <div class="text-sm text-slate-700" x-text="item.alternative"></div>
+                                </div>
+                                
+                                <button @click="openModal('infection', item)" class="w-full mt-2 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-info-circle"></i> 查看完整建議與備註
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Tab 3: 抗菌譜 (修正定義與正方形) -->
+            <div x-show="activeTab === 2" class="h-full overflow-hidden flex flex-col" x-cloak>
+                <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap gap-4 text-xs font-medium sticky top-0 z-30">
+                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 有效</div>
+                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#eab308] border border-[#ca8a04] mr-2"></span> 可能有效</div>
+                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
+                </div>
+
+                <div class="flex-1 overflow-auto bg-white p-4">
+                    <div class="inline-block min-w-full align-middle border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <!-- 修正表頭 CSS: 移除 flex，改用 align-bottom -->
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 bg-gray-100 z-20 border-r border-gray-200 shadow-sm w-28 min-w-[110px] align-bottom pb-4">
+                                        抗生素名稱
+                                    </th>
+                                    <template x-for="(bacteria, idx) in antibiogramHeaders" :key="idx">
+                                        <th class="p-0 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-8 min-w-[2rem] align-bottom bg-gray-50 border-b border-gray-200">
+                                            <div class="vertical-header-container">
+                                                <div class="vertical-text" x-text="bacteria"></div>
+                                            </div>
+                                        </th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="row in filteredAntibiogramData" :key="row.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-2 text-sm font-bold text-gray-800 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-sm" x-text="row.antibiotic"></td>
+                                        <template x-for="(status, index) in row.spectrum" :key="index">
+                                            <td class="p-0.5 text-center w-8 h-8">
+                                                <div class="w-full h-full min-h-[24px] rounded-sm shadow-sm transition-transform hover:scale-110 cursor-pointer"
+                                                     :class="getSpectrumColor(status)"
+                                                     :title="getSpectrumLabel(status)">
+                                                </div>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 4: 兒科劑量 (新增) -->
+            <div x-show="activeTab === 3" class="h-full overflow-y-auto p-4 md:p-6" x-transition:enter="transition ease-out duration-200">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="table-header w-1/4">抗生素名稱</th>
+                                    <th class="table-header w-1/2">兒科建議劑量</th>
+                                    <th class="table-header w-1/4">備註</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="item in filteredPediatricData" :key="item.id">
+                                    <tr class="hover:bg-blue-50/30 transition-colors duration-150">
+                                        <td class="table-cell">
+                                            <div class="font-bold text-slate-800" x-text="item.genericName"></div>
+                                            <div class="text-xs text-blue-500 mt-1 font-medium bg-blue-50 inline-block px-2 py-0.5 rounded" x-text="item.brandName"></div>
+                                        </td>
+                                        <td class="table-cell whitespace-normal text-sm font-mono text-gray-600 leading-relaxed" x-html="formatLineBreaks(item.pediatricDose)"></td>
+                                        <td class="table-cell whitespace-normal text-xs text-gray-500 italic" x-text="item.notes"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: 注射給藥指引 (新增) -->
+            <div x-show="activeTab === 4" class="h-full overflow-y-auto p-4 md:p-6" x-transition:enter="transition ease-out duration-200">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="table-header sticky left-0 z-20 bg-gray-50 border-r border-gray-200 shadow-sm w-40">藥品學名</th>
+                                    <th class="table-header min-w-[100px]">給藥途徑</th>
+                                    <th class="table-header min-w-[100px]">靜脈輸注液</th>
+                                    <th class="table-header min-w-[120px]">稀釋液體積</th>
+                                    <th class="table-header min-w-[100px]">給藥濃度</th>
+                                    <th class="table-header min-w-[120px]">給藥速率</th>
+                                    <th class="table-header min-w-[120px]">配製後(室溫)</th>
+                                    <th class="table-header min-w-[120px]">配製後(冷藏)</th>
+                                    <th class="table-header min-w-[120px]">稀釋後(室溫)</th>
+                                    <th class="table-header min-w-[120px]">稀釋後(冷藏)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="item in filteredIvGuideData" :key="item.id">
+                                    <tr class="hover:bg-blue-50/30 transition-colors duration-150">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600 bg-white sticky left-0 z-10 border-r border-gray-200 shadow-sm cursor-pointer hover:text-blue-800 hover:bg-blue-50" 
+                                            @click="openModal('iv', item)">
+                                            <div class="flex items-center gap-2">
+                                                <span x-text="item.genericName"></span>
+                                                <i class="fa-solid fa-circle-info text-xs opacity-50"></i>
+                                            </div>
+                                        </td>
+                                        <td class="table-cell text-xs" x-text="item.route"></td>
+                                        <td class="table-cell text-xs" x-text="item.fluid"></td>
+                                        <td class="table-cell text-xs" x-text="item.volume"></td>
+                                        <td class="table-cell text-xs" x-text="item.conc"></td>
+                                        <td class="table-cell text-xs" x-text="item.rate"></td>
+                                        <td class="table-cell text-xs" x-text="item.storeRoom"></td>
+                                        <td class="table-cell text-xs" x-text="item.storeFridge"></td>
+                                        <td class="table-cell text-xs" x-text="item.dilutedRoom"></td>
+                                        <td class="table-cell text-xs" x-text="item.dilutedFridge"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 共用 Modal (支援 感染症 與 注射指引) -->
+            <div x-show="modalType" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
+                <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div x-show="modalType" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal()"></div>
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                    <div x-show="modalType" x-transition.scale class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
+                        
+                        <!-- Modal Content: Infection -->
+                        <div x-show="modalType === 'infection'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                             <!-- (維持原有感染症 Modal 內容) -->
+                             <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
+                                <div>
+                                    <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.infectionType"></h3>
+                                    <span class="mt-1 inline-block px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full" x-text="selectedItem?.system"></span>
+                                </div>
+                                <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
+                            </div>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-700 mb-1">治療建議與備註</h4>
+                                    <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed" x-html="formatLineBreaks(selectedItem?.comments)"></div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><h4 class="text-xs font-bold text-gray-500 uppercase">建議療程</h4><p class="text-sm font-medium text-gray-900" x-text="selectedItem?.duration || '未提供'"></p></div>
+                                    <div><h4 class="text-xs font-bold text-gray-500 uppercase">劑量提示</h4><p class="text-sm font-medium text-gray-900" x-text="selectedItem?.dosingTips || '參閱劑量表'"></p></div>
+                                </div>
+                                <div class="border-t border-gray-100 pt-3 mt-2"><h4 class="text-xs font-bold text-gray-500 uppercase mb-2">藥物選擇複習</h4><div class="text-sm space-y-1"><p><span class="font-bold text-emerald-600">首選:</span> <span x-text="selectedItem?.firstLine"></span></p><p><span class="font-bold text-amber-600">替代:</span> <span x-text="selectedItem?.alternative"></span></p></div></div>
+                            </div>
+                        </div>
+
+                        <!-- Modal Content: IV Guide (新功能) -->
+                        <div x-show="modalType === 'iv'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
+                                <div>
+                                    <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3>
+                                    <p class="text-sm text-gray-500">注射給藥詳細資訊</p>
+                                </div>
+                                <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <!-- 藥物基本配製資訊 -->
+                                <div class="grid grid-cols-2 gap-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                    <div><span class="text-xs text-blue-600 font-bold block">途徑</span><span class="text-sm text-gray-800" x-text="selectedItem?.route"></span></div>
+                                    <div><span class="text-xs text-blue-600 font-bold block">輸注液</span><span class="text-sm text-gray-800" x-text="selectedItem?.fluid"></span></div>
+                                    <div><span class="text-xs text-blue-600 font-bold block">體積</span><span class="text-sm text-gray-800" x-text="selectedItem?.volume"></span></div>
+                                    <div><span class="text-xs text-blue-600 font-bold block">速率</span><span class="text-sm text-gray-800" x-text="selectedItem?.rate"></span></div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-700 mb-1"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4>
+                                    <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100 h-48 overflow-y-auto" x-html="formatLineBreaks(selectedItem?.details)"></div>
+                                </div>
+                                
+                                <div class="text-xs text-gray-400 italic text-right">
+                                    * 請務必再次核對臨床藥學指引
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                            <button type="button" @click="closeModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                                關閉
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+        
+        <footer class="bg-white border-t border-gray-200 py-3 px-6 text-center text-xs text-gray-400">
+            <p>資料僅供臨床參考，實際用藥請依病人狀況與醫院指引調整。</p>
+        </footer>
+    </div>
+</body>
+</html>
