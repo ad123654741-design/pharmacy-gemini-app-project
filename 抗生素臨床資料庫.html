@@ -47,7 +47,6 @@
                 modalType: null, 
                 selectedItem: null,
 
-                // 修改：調整頁籤順序
                 tabs: [
                     { name: '成人劑量', icon: 'fa-solid fa-calculator' },
                     { name: '兒科劑量', icon: 'fa-solid fa-child' },
@@ -139,6 +138,7 @@
                             id: `dose-${index}`,
                             genericName: row['Generic Name'] || row['學名'] || '',
                             brandName: row['Brand Name'] || row['商品名'] || '',
+                            form: row['Form'] || row['劑型'] || '', 
                             stdDose: row['Standard Dose'] || row['常用劑量'] || '',
                             renalAdj: row['Renal Adj'] || row['腎功能調整'] || '',
                             hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || '',
@@ -174,6 +174,7 @@
                             id: `ped-${index}`,
                             genericName: row['Generic Name'] || row['學名'] || '',
                             brandName: row['Brand Name'] || row['商品名'] || '',
+                            form: row['Form'] || row['劑型'] || '',
                             pediatricDose: row['Pediatric Dose'] || row['兒科劑量'] || row['兒科建議劑量'] || '',
                             notes: row['Notes'] || row['備註'] || ''
                         }));
@@ -239,10 +240,14 @@
                     return text.replace(/\n/g, '<br>');
                 },
 
+                // ★ 修改顏色邏輯：B/VG 改為 spectrum-blue (中藍色)
                 getSpectrumColor(code) {
                     if (!code) return 'spectrum-gray';
                     const c = String(code).toUpperCase().trim(); 
-                    if (c === 'VG' || c === '++' || c === '非常有效') return 'spectrum-deep-green';
+                    
+                    // 非常有效: B, VG, ++ (改為中藍色)
+                    if (c === 'B' || c === 'VG' || c === '++' || c === '非常有效') return 'spectrum-blue';
+                    
                     if (c === 'G' || c === 'V' || c === '有效' || c === '+') return 'spectrum-green';
                     if (c === 'Y' || c === 'E' || c === '可能有效' || c === '+/-') return 'spectrum-yellow';
                     if (c === 'R' || c === 'I' || c === '無效' || c === '-') return 'spectrum-red';
@@ -252,11 +257,23 @@
                 getSpectrumLabel(code) {
                      if (!code) return '無資料';
                      const c = String(code).toUpperCase().trim();
-                     if (c === 'VG' || c === '++' || c === '非常有效') return '非常有效 (Very Effective)';
+                     if (c === 'B' || c === 'VG' || c === '++' || c === '非常有效') return '非常有效 (Very Effective)';
                      if (c === 'G' || c === 'V' || c === '有效' || c === '+') return '有效 (Susceptible)';
                      if (c === 'Y' || c === 'E' || c === '可能有效' || c === '+/-') return '可能有效 (Possibly Effective)';
                      if (c === 'R' || c === 'I' || c === '無效' || c === '-') return '無效 (Resistant)';
                      return c;
+                },
+                
+                getFormClass(form) {
+                    if (!form) return 'bg-gray-100 text-gray-600 border-gray-200';
+                    const f = form.toUpperCase();
+                    if (f.includes('IV') || f.includes('IM') || f.includes('INJ') || f.includes('針')) {
+                        return 'bg-purple-50 text-purple-700 border-purple-200';
+                    }
+                    if (f.includes('PO') || f.includes('ORAL') || f.includes('CAP') || f.includes('TAB') || f.includes('口服')) {
+                        return 'bg-orange-50 text-orange-700 border-orange-200';
+                    }
+                    return 'bg-teal-50 text-teal-700 border-teal-200';
                 },
 
                 get filteredDosingData() {
@@ -306,7 +323,7 @@
                 // Mock Data (擴充)
                 mockData: {
                     dosing: [
-                        { id: 'dose-1', genericName: 'Amoxicillin', brandName: 'Amolin', stdDose: '250-500mg q8h', renalAdj: 'CCr 10-30: q12h\nCCr <10: q24h', hepaticAdj: '無須調整', notes: '口服吸收良好' }
+                        { id: 'dose-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', stdDose: '250-500mg q8h', renalAdj: 'CCr 10-30: q12h\nCCr <10: q24h', hepaticAdj: '無須調整', notes: '口服吸收良好' }
                     ],
                     infections: [
                         { id: 'inf-1', system: '呼吸道', infectionType: '社區型肺炎 (CAP)', pathogens: 'S. pneumoniae', firstLine: 'Amoxicillin + Macrolide', alternative: 'Levofloxacin', comments: '若有合併症風險請考慮升階。', duration: '5-7 天' }
@@ -314,10 +331,10 @@
                     antibiogram: [
                         ['Antibiotic', 'MSSA', 'MRSA', 'S.pneumo', 'E.coli', 'P.aeruginosa'],
                         ['Oxacillin', 'G', 'R', 'Y', 'R', 'R'],
-                        ['Vancomycin', 'VG', 'G', 'G', 'R', 'R']
+                        ['Vancomycin', 'B', 'G', 'G', 'R', 'R'] // 修改範例資料 B
                     ],
                     pediatric: [
-                        { id: 'ped-1', genericName: 'Amoxicillin', brandName: 'Amolin', pediatricDose: '20-40 mg/kg/day divided q8h', notes: '懸浮液需冷藏' }
+                        { id: 'ped-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', pediatricDose: '20-40 mg/kg/day divided q8h', notes: '懸浮液需冷藏' }
                     ],
                     ivGuide: [
                         { id: 'iv-1', genericName: 'Vancomycin', route: 'IV drip', fluid: 'D5W, NS', volume: '100-250 ml', conc: '5 mg/ml', rate: '< 10 mg/min', storeRoom: '24 hr', storeFridge: '14 days', dilutedRoom: '24 hr', dilutedFridge: '14 days', details: '須注意 Red Man Syndrome' }
@@ -345,13 +362,16 @@
         .table-cell { @apply px-6 py-4 whitespace-nowrap text-sm text-gray-700 border-b border-gray-100 align-top text-left; }
         
         .sticky-col { @apply sticky left-0 z-10 bg-white border-r border-gray-200 shadow-md; }
-        .sticky-col-header { @apply sticky left-0 z-20 bg-gray-50 border-r border-gray-200 shadow-md; }
+        .sticky-col-header { @apply sticky left-0 z-20 bg-teal-800 text-white border-r border-teal-900 shadow-md; }
 
         .spectrum-deep-green { background-color: #15803d; border: 1px solid #14532d; }
         .spectrum-green { background-color: #22c55e; border: 1px solid #16a34a; }
         .spectrum-yellow { background-color: #fde047; border: 1px solid #eab308; } 
         .spectrum-red { background-color: #ef4444; border: 1px solid #dc2626; }
         .spectrum-gray { background-color: #f3f4f6; }
+        
+        /* 修改: 降低藍色飽和度 (Blue-400) */
+        .spectrum-blue { background-color: #60a5fa; border: 1px solid #3b82f6; }
 
         .vertical-text {
             writing-mode: vertical-rl;
@@ -377,13 +397,13 @@
 
 <body class="text-slate-800 h-screen flex flex-col overflow-hidden">
 
-    <div x-data="antibioticApp" x-init="initData()" class="flex-1 flex flex-col h-full max-w-[98%] mx-auto w-full bg-white shadow-2xl sm:rounded-xl sm:my-4 sm:overflow-hidden relative border-t-4 border-blue-600">
+    <div x-data="antibioticApp" x-init="initData()" class="flex-1 flex flex-col h-full max-w-[98%] mx-auto w-full bg-white shadow-2xl sm:rounded-xl sm:my-4 sm:overflow-hidden relative border-t-4 border-teal-600">
 
         <header class="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
             <div class="px-6 py-4">
                 <div class="flex flex-col md:flex-row md:items-center justify-start gap-6">
                     <div class="flex items-center space-x-3 flex-shrink-0">
-                        <div class="bg-blue-600 text-white p-2 rounded-lg shadow-lg shadow-blue-200">
+                        <div class="bg-teal-600 text-white p-2 rounded-lg shadow-lg shadow-teal-200">
                             <i class="fa-solid fa-staff-snake text-2xl"></i>
                         </div>
                         <div>
@@ -394,9 +414,9 @@
                     
                     <div class="relative w-full md:w-80 group">
                         <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-search text-gray-400 group-focus-within:text-blue-500 transition-colors"></i>
+                            <i class="fa-solid fa-search text-gray-400 group-focus-within:text-teal-500 transition-colors"></i>
                         </span>
-                        <input type="text" x-model="searchQuery" placeholder="輸入藥名、感染症..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder-gray-400">
+                        <input type="text" x-model="searchQuery" placeholder="輸入藥名、感染症..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder-gray-400">
                         <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" x-cloak><i class="fa-solid fa-times-circle"></i></button>
                     </div>
 
@@ -409,7 +429,7 @@
 
                 <nav class="flex space-x-1 mt-6 overflow-x-auto no-scrollbar border-b border-gray-100">
                     <template x-for="(tab, index) in tabs" :key="index">
-                        <button @click="activeTab = index" :class="activeTab === index ? 'border-blue-500 text-blue-600 bg-blue-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'" class="group whitespace-nowrap py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg flex items-center space-x-2">
+                        <button @click="activeTab = index" :class="activeTab === index ? 'border-teal-500 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'" class="group whitespace-nowrap py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg flex items-center space-x-2">
                             <i :class="tab.icon"></i>
                             <span x-text="tab.name"></span>
                         </button>
@@ -422,7 +442,7 @@
             
             <div x-show="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 z-50 backdrop-blur-sm">
                 <div class="flex flex-col items-center">
-                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-blue-500 mb-3"></i>
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-teal-500 mb-3"></i>
                     <p class="text-sm text-gray-500 font-medium animate-pulse">正在從資料庫同步數據...</p>
                 </div>
             </div>
@@ -439,7 +459,7 @@
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-teal-800 text-white">
                                 <tr>
                                     <th class="table-header sticky-col-header w-40 min-w-[160px] pl-6 text-left">抗生素名稱</th>
                                     <th class="table-header min-w-[160px] pl-6 text-left">建議劑量</th>
@@ -447,24 +467,31 @@
                                     <th class="table-header min-w-[220px] pl-6 text-left">肝功能調整</th> 
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <template x-for="item in filteredDosingData" :key="item.id">
-                                    <tr class="hover:bg-blue-50/30 transition-colors duration-150">
-                                        <td class="table-cell sticky-col cursor-pointer hover:bg-blue-50 group pl-6 text-left"
+                            <tbody class="divide-y divide-gray-200">
+                                <template x-for="(item, index) in filteredDosingData" :key="item.id">
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
+                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left"
+                                            :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('dosing', item)">
-                                            <div class="flex items-center gap-2">
-                                                <div class="flex flex-col">
-                                                    <span class="font-bold text-blue-700 group-hover:text-blue-900" x-text="item.genericName"></span>
-                                                    <span class="text-xs text-gray-500 font-normal" x-text="item.brandName"></span>
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div class="flex flex-col gap-0.5">
+                                                    <span class="font-bold text-teal-800 group-hover:text-teal-900 leading-tight" x-text="item.genericName"></span>
+                                                    <div class="flex items-center flex-wrap gap-1.5">
+                                                        <span x-show="item.form" 
+                                                              class="text-[10px] px-1.5 py-0.5 rounded border whitespace-nowrap font-medium"
+                                                              :class="getFormClass(item.form)" 
+                                                              x-text="item.form"></span>
+                                                        <span class="text-xs text-gray-500 font-normal" x-text="item.brandName"></span>
+                                                    </div>
                                                 </div>
-                                                <i class="fa-solid fa-circle-info text-blue-400 text-sm ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                <i class="fa-solid fa-circle-info text-teal-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"></i>
                                             </div>
                                         </td>
                                         <td class="table-cell pl-6 text-left">
-                                            <span class="text-gray-700 font-medium text-xs bg-gray-100 px-2 py-1 rounded inline-block" x-text="item.stdDose"></span>
+                                            <span class="text-gray-800 font-medium text-sm" x-text="item.stdDose"></span>
                                         </td>
-                                        <td class="table-cell whitespace-normal text-xs text-gray-600 leading-relaxed pl-6 text-left" x-html="formatLineBreaks(item.renalAdj)"></td>
-                                        <td class="table-cell whitespace-normal text-xs text-gray-600 leading-relaxed pl-6 text-left" x-html="formatLineBreaks(item.hepaticAdj)"></td>
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-relaxed pl-6 text-left" x-html="formatLineBreaks(item.renalAdj)"></td>
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-relaxed pl-6 text-left" x-html="formatLineBreaks(item.hepaticAdj)"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -473,31 +500,38 @@
                 </div>
             </div>
 
-            <!-- Tab 1: 兒科劑量 (位置變更) -->
+            <!-- Tab 1: 兒科劑量 -->
             <div x-show="activeTab === 1" class="h-full overflow-y-auto p-0" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-teal-800 text-white">
                                 <tr>
                                     <th class="table-header sticky-col-header w-40 min-w-[160px] pl-6 text-left">抗生素名稱</th>
                                     <th class="table-header w-auto pl-6 text-left">兒科建議劑量</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <template x-for="item in filteredPediatricData" :key="item.id">
-                                    <tr class="hover:bg-blue-50/30 transition-colors duration-150">
-                                        <td class="table-cell sticky-col cursor-pointer hover:bg-blue-50 group pl-6 text-left"
+                            <tbody class="divide-y divide-gray-200">
+                                <template x-for="(item, index) in filteredPediatricData" :key="item.id">
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
+                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left"
+                                            :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('pediatric', item)">
-                                            <div class="flex items-center gap-2">
-                                                <div class="flex flex-col">
-                                                    <span class="font-bold text-blue-700 group-hover:text-blue-900" x-text="item.genericName"></span>
-                                                    <span class="text-xs text-gray-500 font-normal" x-text="item.brandName"></span>
+                                            <div class="flex items-center justify-between gap-2">
+                                                <div class="flex flex-col gap-0.5">
+                                                    <span class="font-bold text-teal-800 group-hover:text-teal-900 leading-tight" x-text="item.genericName"></span>
+                                                    <div class="flex items-center flex-wrap gap-1.5">
+                                                        <span x-show="item.form" 
+                                                              class="text-[10px] px-1.5 py-0.5 rounded border whitespace-nowrap font-medium"
+                                                              :class="getFormClass(item.form)" 
+                                                              x-text="item.form"></span>
+                                                        <span class="text-xs text-gray-500 font-normal" x-text="item.brandName"></span>
+                                                    </div>
                                                 </div>
-                                                <i class="fa-solid fa-circle-info text-blue-400 text-sm ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                <i class="fa-solid fa-circle-info text-teal-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"></i>
                                             </div>
                                         </td>
-                                        <td class="table-cell whitespace-normal text-sm font-mono text-gray-700 leading-relaxed bg-gray-50/50 pl-6 text-left" x-html="formatLineBreaks(item.pediatricDose)"></td>
+                                        <td class="table-cell whitespace-normal text-sm font-mono text-gray-700 leading-relaxed pl-6 text-left" x-html="formatLineBreaks(item.pediatricDose)"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -506,12 +540,12 @@
                 </div>
             </div>
 
-            <!-- Tab 2: 注射給藥指引 (位置變更) -->
+            <!-- Tab 2: 注射給藥指引 -->
             <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
-                            <thead class="bg-gray-50">
+                            <thead class="bg-teal-800 text-white">
                                 <tr>
                                     <th class="table-header sticky-col-header w-40 min-w-[160px] pl-6 text-left">藥品學名</th>
                                     <th class="table-header min-w-[100px] pl-6 text-left">給藥途徑</th>
@@ -523,14 +557,15 @@
                                     <th class="table-header min-w-[160px] pl-6 text-left">稀釋後保存</th>
                                 </tr>
                             </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <template x-for="item in filteredIvGuideData" :key="item.id">
-                                    <tr class="hover:bg-blue-50/30 transition-colors duration-150">
-                                        <td class="table-cell sticky-col cursor-pointer hover:bg-blue-50 group pl-6 text-left" 
+                            <tbody class="divide-y divide-gray-200">
+                                <template x-for="(item, index) in filteredIvGuideData" :key="item.id">
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
+                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left" 
+                                            :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('iv', item)">
                                             <div class="flex items-center gap-2">
-                                                <span class="font-bold text-blue-700 group-hover:text-blue-900" x-text="item.genericName"></span>
-                                                <i class="fa-solid fa-circle-info text-blue-400 text-sm ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                                <span class="font-bold text-teal-800 group-hover:text-teal-900" x-text="item.genericName"></span>
+                                                <i class="fa-solid fa-circle-info text-teal-500 text-sm ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                             </div>
                                         </td>
                                         <td class="table-cell text-xs pl-6 text-left" x-text="item.route"></td>
@@ -540,21 +575,21 @@
                                         <td class="table-cell text-xs pl-6 text-left" x-text="item.rate"></td>
                                         <td class="table-cell text-xs pl-6 text-left">
                                             <div class="flex items-start gap-1">
-                                                <span class="text-gray-400 font-medium whitespace-nowrap">室溫:</span>
+                                                <span class="text-gray-500 font-medium whitespace-nowrap">室溫:</span>
                                                 <span x-text="item.storeRoom || '-'"></span>
                                             </div>
                                             <div class="flex items-start gap-1 mt-1">
-                                                <span class="text-blue-400 font-medium whitespace-nowrap">冷藏:</span>
+                                                <span class="text-teal-600 font-medium whitespace-nowrap">冷藏:</span>
                                                 <span x-text="item.storeFridge || '-'"></span>
                                             </div>
                                         </td>
                                         <td class="table-cell text-xs pl-6 text-left">
                                             <div class="flex items-start gap-1">
-                                                <span class="text-gray-400 font-medium whitespace-nowrap">室溫:</span>
+                                                <span class="text-gray-500 font-medium whitespace-nowrap">室溫:</span>
                                                 <span x-text="item.dilutedRoom || '-'"></span>
                                             </div>
                                             <div class="flex items-start gap-1 mt-1">
-                                                <span class="text-blue-400 font-medium whitespace-nowrap">冷藏:</span>
+                                                <span class="text-teal-600 font-medium whitespace-nowrap">冷藏:</span>
                                                 <span x-text="item.dilutedFridge || '-'"></span>
                                             </div>
                                         </td>
@@ -566,14 +601,14 @@
                 </div>
             </div>
 
-            <!-- Tab 3: 經驗性療法 (位置變更) -->
+            <!-- Tab 3: 經驗性療法 -->
             <div x-show="activeTab === 3" class="h-full overflow-y-auto p-4 md:p-6" x-cloak>
                 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     <template x-for="item in filteredInfectionData" :key="item.id">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow duration-200 flex flex-col h-full relative group">
                             <div class="flex justify-between items-start mb-3">
                                 <h3 class="text-lg font-bold text-slate-800" x-text="item.infectionType"></h3>
-                                <span class="px-2 py-1 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full" x-text="item.system"></span>
+                                <span class="px-2 py-1 text-xs font-semibold text-teal-600 bg-teal-100 rounded-full" x-text="item.system"></span>
                             </div>
                             <div class="mb-4">
                                 <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">可能致病菌</div>
@@ -588,7 +623,7 @@
                                     <div class="text-xs font-bold text-amber-700 mb-1 flex items-center"><i class="fa-solid fa-exchange-alt mr-1"></i> 替代藥物</div>
                                     <div class="text-sm text-slate-700" x-text="item.alternative"></div>
                                 </div>
-                                <button @click="openModal('infection', item)" class="w-full mt-2 py-2 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                <button @click="openModal('infection', item)" class="w-full mt-2 py-2 text-xs font-medium text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-info-circle"></i> 查看完整建議與備註
                                 </button>
                             </div>
@@ -597,13 +632,22 @@
                 </div>
             </div>
 
-            <!-- Tab 4: 抗菌譜 (位置變更) -->
+            <!-- Tab 4: 抗菌譜 -->
             <div x-show="activeTab === 4" class="h-full overflow-hidden flex flex-col" x-cloak>
-                <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap gap-4 text-xs font-medium sticky top-0 z-30 shadow-sm">
-                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#15803d] border border-[#14532d] mr-2"></span> 非常有效</div>
-                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 有效</div>
-                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#fde047] border border-[#eab308] mr-2"></span> 可能有效</div>
-                    <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
+                <!-- 修改: Flex wrap 與 justify-between -->
+                <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-sm">
+                    <div class="flex flex-wrap gap-4 text-xs font-medium">
+                        <!-- ★ 使用新的 spectrum-blue 樣式 -->
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm spectrum-blue mr-2"></span> 非常有效</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 有效</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#fde047] border border-[#eab308] mr-2"></span> 可能有效</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
+                    </div>
+                    <!-- ★ 新增 PDF 按鈕 -->
+                    <a href="#" target="_blank" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center">
+                        <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 抗菌譜PDF
+                        <!-- ★★★ 請在此處修改 PDF 檔案連結 (例如 href="https://example.com/antibiogram.pdf") ★★★ -->
+                    </a>
                 </div>
 
                 <div class="flex-1 overflow-auto bg-white p-0">
@@ -619,7 +663,6 @@
                                     <template x-for="(bacteria, idx) in antibiogramHeaders" :key="idx">
                                         <th class="px-0 py-0 text-center text-xs font-bold text-gray-600 tracking-wider sticky top-0 z-40 w-6 min-w-[24px] max-w-[24px] align-bottom bg-gray-100 border-b border-gray-200 h-24">
                                             <div class="vertical-header-container h-24 flex items-end justify-center pb-1 overflow-hidden">
-                                                <!-- 修改：偵測 activeTab === 4 -->
                                                 <div class="vertical-text text-[10px] font-bold origin-bottom" 
                                                      x-text="bacteria"
                                                      style="font-size: 10px;"
@@ -678,7 +721,7 @@
                         <!-- Infection Modal -->
                         <div x-show="modalType === 'infection'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                              <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
-                                <div><h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.infectionType"></h3><span class="mt-1 inline-block px-2 py-0.5 text-xs font-semibold text-blue-600 bg-blue-100 rounded-full" x-text="selectedItem?.system"></span></div>
+                                <div><h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.infectionType"></h3><span class="mt-1 inline-block px-2 py-0.5 text-xs font-semibold text-teal-600 bg-teal-100 rounded-full" x-text="selectedItem?.system"></span></div>
                                 <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                             </div>
                             <div class="space-y-4">
@@ -691,15 +734,21 @@
                         <!-- IV Guide Modal -->
                         <div x-show="modalType === 'iv'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                             <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
-                                <div><h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3><p class="text-sm text-gray-500">注射給藥詳細資訊</p></div>
+                                <div>
+                                    <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3>
+                                    <div class="mt-1 flex items-center gap-2">
+                                        <span x-show="selectedItem?.form" class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-800" x-text="selectedItem?.form"></span>
+                                        <p class="text-sm text-gray-500">注射給藥詳細資訊</p>
+                                    </div>
+                                </div>
                                 <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                             </div>
                             <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-3 bg-blue-50 p-3 rounded-lg border border-blue-100">
-                                    <div><span class="text-xs text-blue-600 font-bold block">途徑</span><span class="text-sm text-gray-800" x-text="selectedItem?.route"></span></div>
-                                    <div><span class="text-xs text-blue-600 font-bold block">輸注液</span><span class="text-sm text-gray-800" x-text="selectedItem?.fluid"></span></div>
-                                    <div><span class="text-xs text-blue-600 font-bold block">體積</span><span class="text-sm text-gray-800" x-text="selectedItem?.volume"></span></div>
-                                    <div><span class="text-xs text-blue-600 font-bold block">速率</span><span class="text-sm text-gray-800" x-text="selectedItem?.rate"></span></div>
+                                <div class="grid grid-cols-2 gap-3 bg-teal-50 p-3 rounded-lg border border-teal-100">
+                                    <div><span class="text-xs text-teal-600 font-bold block">途徑</span><span class="text-sm text-gray-800" x-text="selectedItem?.route"></span></div>
+                                    <div><span class="text-xs text-teal-600 font-bold block">輸注液</span><span class="text-sm text-gray-800" x-text="selectedItem?.fluid"></span></div>
+                                    <div><span class="text-xs text-teal-600 font-bold block">體積</span><span class="text-sm text-gray-800" x-text="selectedItem?.volume"></span></div>
+                                    <div><span class="text-xs text-teal-600 font-bold block">速率</span><span class="text-sm text-gray-800" x-text="selectedItem?.rate"></span></div>
                                 </div>
                                 <div><h4 class="text-sm font-bold text-gray-700 mb-1"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100 h-48 overflow-y-auto" x-html="formatLineBreaks(selectedItem?.details)"></div></div>
                                 <div class="text-xs text-gray-400 italic text-right">* 請務必再次核對臨床藥學指引</div>
@@ -711,13 +760,16 @@
                             <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
                                 <div>
                                     <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3>
-                                    <span class="text-sm text-gray-500" x-text="selectedItem?.brandName"></span>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-sm text-gray-500" x-text="selectedItem?.brandName"></span>
+                                        <span x-show="selectedItem?.form" class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-800" x-text="selectedItem?.form"></span>
+                                    </div>
                                 </div>
                                 <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                             </div>
                             <div class="space-y-4">
-                                <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                                    <div class="text-xs font-bold text-blue-700 mb-1">建議劑量 (Suggested Dose)</div>
+                                <div class="bg-teal-50 p-3 rounded-lg border border-teal-100">
+                                    <div class="text-xs font-bold text-teal-700 mb-1">建議劑量 (Suggested Dose)</div>
                                     <div class="text-sm text-slate-700 font-medium" x-text="selectedItem?.stdDose"></div>
                                 </div>
                                 
@@ -744,14 +796,17 @@
                              <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
                                 <div>
                                     <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3>
-                                    <span class="text-sm text-gray-500" x-text="selectedItem?.brandName"></span>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-sm text-gray-500" x-text="selectedItem?.brandName"></span>
+                                        <span x-show="selectedItem?.form" class="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-800" x-text="selectedItem?.form"></span>
+                                    </div>
                                 </div>
                                 <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                             </div>
                             <div class="space-y-4">
                                 <div>
-                                    <h4 class="text-sm font-bold text-blue-700 mb-1">兒科建議劑量</h4>
-                                    <div class="text-sm text-gray-700 bg-blue-50 p-4 rounded-lg leading-relaxed border border-blue-100 font-mono" x-html="formatLineBreaks(selectedItem?.pediatricDose)"></div>
+                                    <h4 class="text-sm font-bold text-teal-700 mb-1">兒科建議劑量</h4>
+                                    <div class="text-sm text-gray-700 bg-teal-50 p-4 rounded-lg leading-relaxed border border-teal-100 font-mono" x-html="formatLineBreaks(selectedItem?.pediatricDose)"></div>
                                 </div>
                                 <div>
                                     <h4 class="text-xs font-bold text-gray-500 uppercase mb-1">備註 (Notes)</h4>
@@ -761,7 +816,7 @@
                         </div>
 
                         <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                            <button type="button" @click="closeModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                            <button type="button" @click="closeModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
                                 關閉
                             </button>
                         </div>
