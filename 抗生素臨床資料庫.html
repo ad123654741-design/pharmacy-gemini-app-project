@@ -139,11 +139,10 @@
                             genericName: row['Generic Name'] || row['學名'] || '',
                             brandName: row['Brand Name'] || row['商品名'] || '',
                             form: row['Form'] || row['劑型'] || '', 
-                            stdDose: row['Standard Dose'] || row['常用劑量'] || '',
-                            renalAdj: row['Renal Adj'] || row['腎功能調整'] || '',
-                            hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || '',
-                            // 新增: 讀取建議監測項目
-                            monitoring: row['Monitoring'] || row['建議監測項目'] || '',
+                            stdDose: row['Standard Dose'] || row['常用劑量'] || row['建議劑量'] || '',
+                            renalAdj: row['Renal Adj'] || row['腎功能調整'] || row['Renal'] || '',
+                            hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
+                            monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
                             notes: row['Notes'] || row['備註'] || ''
                         }));
                 },
@@ -177,11 +176,10 @@
                             genericName: row['Generic Name'] || row['學名'] || '',
                             brandName: row['Brand Name'] || row['商品名'] || '',
                             form: row['Form'] || row['劑型'] || '',
-                            pediatricDose: row['Pediatric Dose'] || row['兒科劑量'] || row['兒科建議劑量'] || '',
-                            renalAdj: row['Renal Adj'] || row['腎功能調整'] || '',
-                            hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || '',
-                            // 新增: 讀取建議監測項目
-                            monitoring: row['Monitoring'] || row['建議監測項目'] || '',
+                            pediatricDose: row['Pediatric Dose'] || row['兒科劑量'] || row['兒科建議劑量'] || row['Dose'] || '',
+                            renalAdj: row['Renal Adj'] || row['腎功能調整'] || row['Renal'] || '',
+                            hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
+                            monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
                             notes: row['Notes'] || row['備註'] || ''
                         }));
                 },
@@ -249,7 +247,10 @@
                 getSpectrumColor(code) {
                     if (!code) return 'spectrum-gray';
                     const c = String(code).toUpperCase().trim(); 
-                    if (c === 'VG' || c === '++' || c === '非常有效') return 'spectrum-deep-green';
+                    
+                    // 修改：加入 'B' 為藍色
+                    if (c === 'B' || c === 'VG' || c === '++' || c === '非常有效') return 'spectrum-blue';
+                    
                     if (c === 'G' || c === 'V' || c === '有效' || c === '+') return 'spectrum-green';
                     if (c === 'Y' || c === 'E' || c === '可能有效' || c === '+/-') return 'spectrum-yellow';
                     if (c === 'R' || c === 'I' || c === '無效' || c === '-') return 'spectrum-red';
@@ -259,7 +260,8 @@
                 getSpectrumLabel(code) {
                      if (!code) return '無資料';
                      const c = String(code).toUpperCase().trim();
-                     if (c === 'VG' || c === '++' || c === '非常有效') return '非常有效 (Very Effective)';
+                     // 修改：加入 'B' 的標籤
+                     if (c === 'B' || c === 'VG' || c === '++' || c === '非常有效') return '非常有效 (Very Effective)';
                      if (c === 'G' || c === 'V' || c === '有效' || c === '+') return '有效 (Susceptible)';
                      if (c === 'Y' || c === 'E' || c === '可能有效' || c === '+/-') return '可能有效 (Possibly Effective)';
                      if (c === 'R' || c === 'I' || c === '無效' || c === '-') return '無效 (Resistant)';
@@ -322,7 +324,7 @@
                     );
                 },
 
-                // Mock Data
+                // Mock Data (擴充)
                 mockData: {
                     dosing: [
                         { id: 'dose-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', stdDose: '250-500mg q8h', renalAdj: 'CCr 10-30: q12h\nCCr <10: q24h', hepaticAdj: '無須調整', monitoring: '定期監測腎功能', notes: '口服吸收良好' }
@@ -366,6 +368,7 @@
         .sticky-col { @apply sticky left-0 z-10 bg-white border-r border-gray-200 shadow-md; }
         .sticky-col-header { @apply sticky left-0 z-20 bg-teal-800 text-white border-r border-teal-900 shadow-md; }
 
+        /* 修改：使用 spectrum-blue */
         .spectrum-blue { background-color: #60a5fa; border: 1px solid #3b82f6; }
         .spectrum-green { background-color: #22c55e; border: 1px solid #16a34a; }
         .spectrum-yellow { background-color: #fde047; border: 1px solid #eab308; } 
@@ -532,7 +535,7 @@
                                                 <i class="fa-solid fa-circle-info text-teal-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"></i>
                                             </div>
                                         </td>
-                                        <td class="table-cell whitespace-normal text-sm font-mono text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.pediatricDose)"></td>
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.pediatricDose)"></td>
                                         <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.renalAdj)"></td>
                                         <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.hepaticAdj)"></td>
                                     </tr>
@@ -646,6 +649,7 @@
                     </div>
                     <a href="#" target="_blank" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center">
                         <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 抗菌譜PDF
+                        <!-- ★★★ 請在此處修改 PDF 連結 ★★★ -->
                     </a>
                 </div>
 
@@ -772,12 +776,6 @@
                                     <div class="text-sm text-slate-700 font-medium" x-text="selectedItem?.stdDose"></div>
                                 </div>
                                 
-                                <!-- 新增: 建議監測項目區塊 -->
-                                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
-                                    <div class="text-xs font-bold text-purple-700 mb-2">建議監測項目 (Monitoring)</div>
-                                    <div class="text-sm text-slate-700 font-medium" x-html="formatLineBreaks(selectedItem?.monitoring || '無特殊建議')"></div>
-                                </div>
-                                
                                 <div class="grid md:grid-cols-2 gap-4">
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">腎功能調整 (Renal)</h4>
@@ -788,10 +786,14 @@
                                         <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 h-full leading-relaxed" x-html="formatLineBreaks(selectedItem?.hepaticAdj)"></div>
                                     </div>
                                 </div>
+                                
+                                <div class="mt-6 pt-2">
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">建議監測項目 (Monitoring)</h4>
+                                    <div class="text-sm text-slate-700 font-medium bg-purple-50 p-3 rounded-lg border border-purple-100" x-html="formatLineBreaks(selectedItem?.monitoring || '無特殊建議')"></div>
+                                </div>
 
-                                <div>
+                                <div class="mt-4">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">備註 (Notes)</h4>
-                                    <!-- 修改: 使用 x-html 支援換行 -->
                                     <div class="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg border border-yellow-100 leading-relaxed" x-html="formatLineBreaks(selectedItem?.notes)"></div>
                                 </div>
                             </div>
@@ -815,13 +817,6 @@
                                     <div class="text-sm text-gray-700 bg-teal-50 p-4 rounded-lg leading-relaxed border border-teal-100 font-mono" x-html="formatLineBreaks(selectedItem?.pediatricDose)"></div>
                                 </div>
                                 
-                                <!-- 新增: 建議監測項目區塊 (兒科) -->
-                                <div class="bg-purple-50 p-3 rounded-lg border border-purple-100">
-                                    <div class="text-xs font-bold text-purple-700 mb-2">建議監測項目 (Monitoring)</div>
-                                    <div class="text-sm text-slate-700 font-medium" x-html="formatLineBreaks(selectedItem?.monitoring || '無特殊建議')"></div>
-                                </div>
-
-                                <!-- 新增: 兒科腎/肝功能調整顯示 -->
                                 <div class="grid md:grid-cols-2 gap-4">
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">腎功能調整 (Renal)</h4>
@@ -832,9 +827,14 @@
                                         <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 h-full leading-relaxed" x-html="formatLineBreaks(selectedItem?.hepaticAdj || '無特殊建議')"></div>
                                     </div>
                                 </div>
-                                <div>
+                                
+                                <div class="mt-6 pt-2">
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">建議監測項目 (Monitoring)</h4>
+                                    <div class="text-sm text-slate-700 font-medium bg-purple-50 p-3 rounded-lg border border-purple-100" x-html="formatLineBreaks(selectedItem?.monitoring || '無特殊建議')"></div>
+                                </div>
+
+                                <div class="mt-4">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">備註 (Notes)</h4>
-                                    <!-- 修改: 使用 x-html 支援換行 -->
                                     <div class="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg border border-yellow-100 leading-relaxed" x-html="formatLineBreaks(selectedItem?.notes)"></div>
                                 </div>
                             </div>
