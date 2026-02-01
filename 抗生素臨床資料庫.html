@@ -46,6 +46,11 @@
                 
                 modalType: null, 
                 selectedItem: null,
+                
+                // ★ 新增：經驗性療法專用變數
+                selectedSystem: '',
+                localInfectionSearch: '',
+                viewingInfection: null,
 
                 tabs: [
                     { name: '成人劑量', icon: 'fa-solid fa-calculator' },
@@ -140,6 +145,7 @@
                             brandName: row['Brand Name'] || row['商品名'] || '',
                             form: row['Form'] || row['劑型'] || '', 
                             stdDose: row['Standard Dose'] || row['常用劑量'] || row['建議劑量'] || '',
+                            detailedDose: row['Detailed Dose'] || row['詳細治療劑量'] || '', 
                             renalAdj: row['Renal Adj'] || row['腎功能調整'] || row['Renal'] || '',
                             hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
                             monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
@@ -173,6 +179,7 @@
                             brandName: row['Brand Name'] || row['商品名'] || '',
                             form: row['Form'] || row['劑型'] || '',
                             pediatricDose: row['Pediatric Dose'] || row['兒科劑量'] || row['兒科建議劑量'] || row['Dose'] || '',
+                            detailedDose: row['Detailed Dose'] || row['詳細治療劑量'] || '',
                             renalAdj: row['Renal Adj'] || row['腎功能調整'] || row['Renal'] || '',
                             hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
                             monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
@@ -242,6 +249,37 @@
                     return text.replace(/\n/g, '<br>');
                 },
 
+                renderTable(text) {
+                    if (!text) return '<span class="text-gray-400">無資料</span>';
+                    
+                    if (text.includes('|')) {
+                        const lines = text.split('\n').filter(line => line.trim() !== '');
+                        let html = '<div class="overflow-x-auto"><table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden">';
+                        
+                        lines.forEach((line, index) => {
+                            const cols = line.split('|');
+                            if (index === 0) {
+                                html += '<thead class="bg-blue-100 text-slate-700 font-bold"><tr>';
+                                cols.forEach(col => {
+                                    html += `<th class="px-3 py-2 border-b border-gray-200 text-left">${col.trim()}</th>`;
+                                });
+                                html += '</tr></thead><tbody class="bg-white divide-y divide-gray-100">';
+                            } else {
+                                html += `<tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">`;
+                                cols.forEach(col => {
+                                    html += `<td class="px-3 py-2 border-r border-gray-100 last:border-r-0 align-top">${col.trim()}</td>`;
+                                });
+                                html += '</tr>';
+                            }
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        return html;
+                    }
+                    
+                    return this.formatLineBreaks(text);
+                },
+
                 getSpectrumColor(code) {
                     if (!code) return 'spectrum-gray';
                     const c = String(code).toUpperCase().trim(); 
@@ -272,6 +310,23 @@
                         return 'bg-orange-50 text-orange-700 border-orange-200';
                     }
                     return 'bg-teal-50 text-teal-700 border-teal-200';
+                },
+
+                // ★ 新增: 經驗性療法邏輯
+                get uniqueSystems() {
+                    const systems = new Set(this.infectionData.map(i => i.system).filter(s => s));
+                    return Array.from(systems).sort();
+                },
+
+                get filteredInfectionList() {
+                    return this.infectionData.filter(item => {
+                        const matchesSystem = this.selectedSystem === '' || item.system === this.selectedSystem;
+                        const searchLower = this.localInfectionSearch.toLowerCase();
+                        const matchesSearch = this.localInfectionSearch === '' || 
+                                              item.infectionType.toLowerCase().includes(searchLower) ||
+                                              item.pathogens.toLowerCase().includes(searchLower);
+                        return matchesSystem && matchesSearch;
+                    });
                 },
 
                 get filteredDosingData() {
@@ -318,10 +373,12 @@
                     );
                 },
 
-                // Mock Data
+                // Mock Data (擴充)
                 mockData: {
                     dosing: [
-                        { id: 'dose-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', stdDose: '250-500mg q8h', renalAdj: 'CCr 10-30: q12h\nCCr <10: q24h', hepaticAdj: '無須調整', monitoring: '定期監測腎功能', notes: '口服吸收良好' }
+                        { id: 'dose-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', stdDose: '250-500mg q8h', 
+                          detailedDose: '適應症 | 建議劑量\n一般感染 | 250-500mg q8h\n嚴重感染 | 500-875mg q12h',
+                          renalAdj: 'CCr 10-30: q12h\nCCr <10: q24h', hepaticAdj: '無須調整', monitoring: '定期監測腎功能', notes: '口服吸收良好' }
                     ],
                     infections: [
                         { id: 'inf-1', system: '呼吸道', infectionType: '社區型肺炎 (CAP)', pathogens: 'S. pneumoniae', firstLine: 'Amoxicillin + Macrolide', alternative: 'Levofloxacin', comments: '若有合併症風險請考慮升階。', duration: '5-7 天' }
@@ -332,7 +389,9 @@
                         ['Vancomycin', 'B', 'G', 'G', 'R', 'R']
                     ],
                     pediatric: [
-                        { id: 'ped-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', pediatricDose: '20-40 mg/kg/day divided q8h', renalAdj: 'CCr < 10: 50% dose', hepaticAdj: 'No adjustment', monitoring: '', notes: '懸浮液需冷藏' }
+                        { id: 'ped-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', pediatricDose: '20-40 mg/kg/day divided q8h', 
+                          detailedDose: '適應症 | 兒童劑量\n一般 | 20-40 mg/kg/day divided q8h\n中耳炎 | 80-90 mg/kg/day divided q12h',
+                          renalAdj: 'CCr < 10: 50% dose', hepaticAdj: 'No adjustment', monitoring: '', notes: '懸浮液需冷藏' }
                     ],
                     ivGuide: [
                         { id: 'iv-1', genericName: 'Vancomycin', route: 'IV drip', fluid: 'D5W, NS', volume: '100-250 ml', conc: '5 mg/ml', rate: '< 10 mg/min', storeRoom: '24 hr', storeFridge: '14 days', dilutedRoom: '24 hr', dilutedFridge: '14 days', details: '須注意 Red Man Syndrome' }
@@ -600,32 +659,106 @@
                 </div>
             </div>
 
-            <!-- Tab 3: 經驗性療法 -->
-            <div x-show="activeTab === 3" class="h-full overflow-y-auto p-4 md:p-6 pb-24" x-cloak>
-                <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                    <template x-for="item in filteredInfectionData" :key="item.id">
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow duration-200 flex flex-col h-full relative group">
-                            <div class="flex justify-between items-start mb-3">
-                                <h3 class="text-lg font-bold text-slate-800" x-text="item.infectionType"></h3>
-                                <span class="px-2 py-1 text-xs font-semibold text-teal-600 bg-teal-100 rounded-full" x-text="item.system"></span>
-                            </div>
-                            <div class="mb-4">
-                                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">可能致病菌</div>
-                                <p class="text-sm text-gray-700 italic" x-text="item.pathogens"></p>
-                            </div>
-                            <div class="mt-auto space-y-3">
-                                <div class="bg-emerald-50 p-3 rounded-lg border border-emerald-100">
-                                    <div class="text-xs font-bold text-emerald-700 mb-1 flex items-center"><i class="fa-solid fa-check-circle mr-1"></i> 首選藥物</div>
-                                    <div class="text-sm text-slate-700 font-medium" x-text="item.firstLine"></div>
+            <!-- Tab 3: 經驗性療法 (修正版：左右側佈局 + 獨立捲動) -->
+            <div x-show="activeTab === 3" class="h-full flex flex-col md:flex-row overflow-hidden" x-cloak>
+                <!-- Left Column: List & Filter -->
+                <div class="w-full md:w-1/3 flex flex-col border-r border-gray-200 bg-white h-[40%] md:h-full z-10 shadow-md md:shadow-none">
+                    <div class="p-4 bg-teal-50 border-b border-teal-100 space-y-3 flex-shrink-0">
+                         <div>
+                            <label class="block text-xs font-bold text-teal-700 mb-1">感染症大類</label>
+                            <select x-model="selectedSystem" class="w-full text-sm border-gray-200 rounded-md focus:border-teal-500 focus:ring-teal-500">
+                                <option value="">全部顯示 (All Systems)</option>
+                                <template x-for="sys in uniqueSystems" :key="sys">
+                                    <option :value="sys" x-text="sys"></option>
+                                </template>
+                            </select>
+                         </div>
+                         <div>
+                             <label class="block text-xs font-bold text-teal-700 mb-1">搜尋感染症</label>
+                             <div class="relative">
+                                 <i class="fa-solid fa-search absolute left-3 top-2.5 text-gray-400 text-xs"></i>
+                                 <input type="text" x-model="localInfectionSearch" placeholder="輸入關鍵字..." class="w-full pl-8 pr-3 py-2 text-sm border-gray-200 rounded-md focus:border-teal-500 focus:ring-teal-500">
+                             </div>
+                         </div>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto bg-white">
+                        <ul>
+                            <template x-for="item in filteredInfectionList" :key="item.id">
+                                <li @click="viewingInfection = item" 
+                                    class="px-4 py-3 border-b border-gray-50 cursor-pointer hover:bg-teal-50 transition-colors group"
+                                    :class="viewingInfection?.id === item.id ? 'bg-teal-50 border-l-4 border-l-teal-500' : 'border-l-4 border-l-transparent'">
+                                    <div class="flex justify-between items-center">
+                                        <div>
+                                            <div class="text-sm font-bold text-gray-800 group-hover:text-teal-700" x-text="item.infectionType"></div>
+                                            <div class="text-xs text-gray-400 mt-0.5" x-text="item.system"></div>
+                                        </div>
+                                        <i class="fa-solid fa-chevron-right text-xs text-gray-300 group-hover:text-teal-400"></i>
+                                    </div>
+                                </li>
+                            </template>
+                            <li x-show="filteredInfectionList.length === 0" class="p-8 text-center text-gray-400 text-sm">
+                                無符合資料
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Column: Details -->
+                <div class="w-full md:w-2/3 h-[60%] md:h-full bg-gray-50 flex flex-col relative">
+                    <template x-if="viewingInfection">
+                        <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-24">
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="bg-teal-600 px-6 py-4 border-b border-teal-700">
+                                    <div class="flex justify-between items-start">
+                                         <div>
+                                             <span class="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-teal-800 text-teal-100 mb-2" x-text="viewingInfection.system"></span>
+                                             <h2 class="text-xl font-bold text-white leading-tight" x-text="viewingInfection.infectionType"></h2>
+                                         </div>
+                                    </div>
                                 </div>
-                                <div class="bg-amber-50 p-3 rounded-lg border border-amber-100">
-                                    <div class="text-xs font-bold text-amber-700 mb-1 flex items-center"><i class="fa-solid fa-exchange-alt mr-1"></i> 替代藥物</div>
-                                    <div class="text-sm text-slate-700" x-text="item.alternative"></div>
+                                <div class="p-6 space-y-6">
+                                    <div>
+                                        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">可能致病菌 (Pathogens)</h4>
+                                        <div class="p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm text-gray-700 font-medium" x-text="viewingInfection.pathogens"></div>
+                                    </div>
+
+                                    <div class="grid gap-4 md:grid-cols-2">
+                                         <div class="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                                            <h4 class="text-xs font-bold text-emerald-700 mb-2 flex items-center"><i class="fa-solid fa-check-circle mr-1.5"></i> 首選藥物</h4>
+                                            <div class="text-sm text-gray-800 font-bold" x-text="viewingInfection.firstLine"></div>
+                                         </div>
+                                         <div class="p-4 bg-amber-50 rounded-lg border border-amber-100">
+                                            <h4 class="text-xs font-bold text-amber-700 mb-2 flex items-center"><i class="fa-solid fa-exchange-alt mr-1.5"></i> 替代藥物</h4>
+                                            <div class="text-sm text-gray-800" x-text="viewingInfection.alternative"></div>
+                                         </div>
+                                    </div>
+
+                                    <div class="grid gap-4 md:grid-cols-2">
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-1">建議療程</h4>
+                                            <p class="text-sm text-gray-800" x-text="viewingInfection.duration || '未提供'"></p>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-bold text-gray-400 uppercase mb-1">劑量提示</h4>
+                                            <p class="text-sm text-gray-800" x-text="viewingInfection.dosingTips || '參閱劑量表'"></p>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                         <h4 class="text-xs font-bold text-gray-400 uppercase mb-2">治療備註 (Comments)</h4>
+                                         <div class="text-sm text-gray-600 bg-yellow-50/50 p-4 rounded-lg border border-yellow-100/50 leading-loose" x-html="formatLineBreaks(viewingInfection.comments)"></div>
+                                    </div>
                                 </div>
-                                <button @click="openModal('infection', item)" class="w-full mt-2 py-2 text-xs font-medium text-teal-600 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors flex items-center justify-center gap-2">
-                                    <i class="fa-solid fa-info-circle"></i> 查看完整建議與備註
-                                </button>
                             </div>
+                        </div>
+                    </template>
+                    
+                    <template x-if="!viewingInfection">
+                        <div class="flex-1 flex flex-col items-center justify-center text-gray-400 p-8">
+                            <i class="fa-solid fa-hand-holding-medical text-6xl mb-4 text-gray-200"></i>
+                            <p class="text-lg font-medium">請從左側選擇感染症</p>
+                            <p class="text-sm">查看詳細治療建議與用藥指引</p>
                         </div>
                     </template>
                 </div>
@@ -642,6 +775,7 @@
                     </div>
                     <a href="#" target="_blank" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center">
                         <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 抗菌譜PDF
+                        <!-- ★★★ 請在此處修改 PDF 連結 ★★★ -->
                     </a>
                 </div>
 
@@ -707,7 +841,6 @@
             </div>
 
             <!-- Modal (Generic) -->
-            <!-- 修改: 彈窗結構改為 flex flex-col max-h-[85vh]，修復滾動與裁切問題 -->
             <div x-show="modalType" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
                 <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
                     <div x-show="modalType" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal()"></div>
@@ -749,7 +882,7 @@
                                     <div><span class="text-xs text-teal-600 font-bold block">體積</span><span class="text-sm text-gray-800" x-text="selectedItem?.volume"></span></div>
                                     <div><span class="text-xs text-teal-600 font-bold block">速率</span><span class="text-sm text-gray-800" x-text="selectedItem?.rate"></span></div>
                                 </div>
-                                <div><h4 class="text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100" x-html="formatLineBreaks(selectedItem?.details)"></div></div>
+                                <div><h4 class="text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100 h-48 overflow-y-auto" x-html="formatLineBreaks(selectedItem?.details)"></div></div>
                                 <div class="text-xs text-gray-400 italic text-right">* 請務必再次核對臨床藥學指引</div>
                             </div>
                         </div>
@@ -771,8 +904,9 @@
                             </div>
                             <div class="space-y-4 px-4 pb-4 sm:p-6 sm:pt-0 overflow-y-auto flex-1">
                                 <div class="mt-4">
-                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">建議劑量 (Suggested Dose)</h4>
-                                    <div class="text-sm text-slate-700 font-medium bg-teal-50 p-3 rounded-lg border border-teal-100" x-text="selectedItem?.stdDose"></div>
+                                    <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">治療劑量 (Therapeutic Dose)</h4>
+                                    <!-- 修改: 使用 renderTable 支援表格顯示，優先讀取 detailedDose -->
+                                    <div class="text-sm text-slate-700 font-medium bg-teal-50 p-3 rounded-lg border border-teal-100" x-html="renderTable(selectedItem?.detailedDose || selectedItem?.stdDose)"></div>
                                 </div>
                                 
                                 <div class="grid md:grid-cols-2 gap-4">
@@ -815,8 +949,9 @@
                             </div>
                             <div class="space-y-4 px-4 pb-4 sm:p-6 sm:pt-0 overflow-y-auto flex-1">
                                 <div class="mt-4">
-                                    <h4 class="text-sm font-bold text-teal-700 mb-2">兒科建議劑量</h4>
-                                    <div class="text-sm text-gray-700 bg-teal-50 p-4 rounded-lg leading-relaxed border border-teal-100 font-mono" x-html="formatLineBreaks(selectedItem?.pediatricDose)"></div>
+                                    <h4 class="text-sm font-bold text-teal-700 mb-2">治療劑量 (Therapeutic Dose)</h4>
+                                    <!-- 修改: 移除 font-mono, 改為與成人一致的 text-slate-700 font-medium, p-3 -->
+                                    <div class="text-sm text-slate-700 font-medium bg-teal-50 p-3 rounded-lg border border-teal-100 leading-relaxed" x-html="renderTable(selectedItem?.detailedDose || selectedItem?.pediatricDose)"></div>
                                 </div>
                                 
                                 <div class="grid md:grid-cols-2 gap-4">
