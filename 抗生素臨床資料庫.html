@@ -155,6 +155,7 @@
                             renalAdj: row['Renal Adj'] || row['腎功能調整'] || row['Renal'] || '',
                             hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
                             monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
+                            sideEffects: row['Side Effects'] || row['副作用'] || '',
                             notes: row['Notes'] || row['備註'] || '',
                             micromedex: row['micromedex'] || row['Micromedex'] || '' 
                         }));
@@ -190,6 +191,7 @@
                             renalAdj: row['Renal Adj'] || row['腎功能調整'] || row['Renal'] || '',
                             hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
                             monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
+                            sideEffects: row['Side Effects'] || row['副作用'] || '',
                             notes: row['Notes'] || row['備註'] || '',
                             micromedex: row['micromedex'] || row['Micromedex'] || ''
                         }));
@@ -596,27 +598,23 @@
                     </button>
                 </div>
 
-                <!-- 修改: 將 pb-24 減至 pb-8 -->
                 <div class="flex-1 overflow-y-auto p-0 pb-8">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
                             <thead class="bg-teal-800 text-white">
                                 <tr>
-                                    <!-- 修改: 固定寬度 w-[210px] -->
                                     <th class="table-header sticky-col-header w-[210px] min-w-[210px] pl-6 text-left">抗生素名稱</th>
-                                    <!-- 修改: 最小寬度 min-w-[220px] -->
                                     <th class="table-header min-w-[220px] pl-6 text-left">建議劑量</th>
-                                    <!-- 修改: 最小寬度 min-w-[210px] -->
                                     <th class="table-header min-w-[210px] pl-6 text-left">腎功能調整</th> 
-                                    <!-- 修改: 固定寬度 w-[140px] -->
                                     <th class="table-header w-[140px] min-w-[140px] pl-6 text-left">肝功能調整</th> 
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 <template x-for="(item, index) in filteredDosingData" :key="item.id">
-                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
-                                        <!-- 修改: 固定寬度 w-[210px] max-w-[210px] whitespace-normal -->
-                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[210px] min-w-[210px] max-w-[210px] whitespace-normal"
+                                    <!-- 修改: 移除 tr 的 hover:bg 與 transition，只保留 group -->
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="group">
+                                        <!-- 修改: 凍結欄位加入 transition-colors duration-200 與 group-hover:bg-teal-100 -->
+                                        <td class="table-cell sticky-col cursor-pointer pl-6 text-left w-[210px] min-w-[210px] max-w-[210px] whitespace-normal group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200"
                                             :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('dosing', item)">
                                             <div class="flex items-center justify-between gap-2">
@@ -633,13 +631,12 @@
                                                 <i class="fa-solid fa-circle-info text-teal-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"></i>
                                             </div>
                                         </td>
-                                        <td class="table-cell pl-6 text-left">
+                                        <!-- 修改: 其他欄位加入 transition-colors duration-200 與 group-hover:bg-teal-100 -->
+                                        <td class="table-cell pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100">
                                             <span class="text-gray-800 font-medium text-sm" x-text="item.stdDose"></span>
                                         </td>
-                                        <!-- 修改: 移除固定寬度限制，使用 min-w -->
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left min-w-[210px]" x-html="formatLineBreaks(item.renalAdj)"></td>
-                                        <!-- 修改: 固定寬度 w-[140px] max-w-[140px] -->
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] min-w-[140px] max-w-[140px]" x-html="formatLineBreaks(item.hepaticAdj)"></td>
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left min-w-[210px] transition-colors duration-200 group-hover:bg-teal-100" x-html="formatLineBreaks(item.renalAdj)"></td>
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] min-w-[140px] max-w-[140px] transition-colors duration-200 group-hover:bg-teal-100" x-html="formatLineBreaks(item.hepaticAdj)"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -669,27 +666,23 @@
                     </button>
                 </div>
 
-                <!-- 修改: 將 pb-24 減至 pb-8 -->
                 <div class="flex-1 overflow-y-auto p-0 pb-8">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
                             <thead class="bg-teal-800 text-white">
                                 <tr>
-                                    <!-- 修改: 固定寬度 w-[210px] -->
                                     <th class="table-header sticky-col-header w-[210px] min-w-[210px] pl-6 text-left">抗生素名稱</th>
-                                    <!-- 修改: 最小寬度 min-w-[220px] -->
                                     <th class="table-header min-w-[220px] pl-6 text-left">兒科劑量</th>
-                                    <!-- 修改: 最小寬度 min-w-[210px] -->
                                     <th class="table-header min-w-[210px] pl-6 text-left">腎功能調整</th>
-                                    <!-- 修改: 固定寬度 w-[140px] -->
                                     <th class="table-header w-[140px] min-w-[140px] pl-6 text-left">肝功能調整</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 <template x-for="(item, index) in filteredPediatricData" :key="item.id">
-                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
-                                        <!-- 修改: 固定寬度 w-[210px] max-w-[210px] whitespace-normal -->
-                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[210px] min-w-[210px] max-w-[210px] whitespace-normal"
+                                    <!-- 修改: 移除 tr 的 hover:bg 與 transition，只保留 group -->
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="group">
+                                        <!-- 修改: 凍結欄位加入 transition-colors duration-200 與 group-hover:bg-teal-100 -->
+                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[210px] min-w-[210px] max-w-[210px] whitespace-normal group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200"
                                             :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('pediatric', item)">
                                             <div class="flex items-center justify-between gap-2">
@@ -706,11 +699,10 @@
                                                 <i class="fa-solid fa-circle-info text-teal-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"></i>
                                             </div>
                                         </td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.pediatricDose)"></td>
-                                        <!-- 修改: 移除固定寬度限制，使用 min-w -->
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left min-w-[210px]" x-html="formatLineBreaks(item.renalAdj)"></td>
-                                        <!-- 修改: 固定寬度 w-[140px] max-w-[140px] -->
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] min-w-[140px] max-w-[140px]" x-html="formatLineBreaks(item.hepaticAdj)"></td>
+                                        <!-- 修改: 其他欄位加入 transition-colors duration-200 與 group-hover:bg-teal-100 -->
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100" x-html="formatLineBreaks(item.pediatricDose)"></td>
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left min-w-[210px] transition-colors duration-200 group-hover:bg-teal-100" x-html="formatLineBreaks(item.renalAdj)"></td>
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] min-w-[140px] max-w-[140px] transition-colors duration-200 group-hover:bg-teal-100" x-html="formatLineBreaks(item.hepaticAdj)"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -720,8 +712,7 @@
             </div>
 
             <!-- Tab 2: 注射給藥指引 -->
-            <!-- 修改: 將 pb-24 改為 pb-2，減少底部留白 -->
-            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0 pb-2" x-transition:enter="transition ease-out duration-200">
+            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0 pb-8" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
@@ -739,9 +730,10 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 <template x-for="(item, index) in filteredIvGuideData" :key="item.id">
-                                    <!-- 修改: 加入 h-32 (128px) 增加最小高度 -->
-                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50 h-32">
-                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left" 
+                                    <!-- 修改: 移除 tr 的 hover:bg 與 transition，只保留 group -->
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="group h-32">
+                                        <!-- 修改: 凍結欄位加入 transition-colors duration-200 與 group-hover:bg-teal-100 -->
+                                        <td class="table-cell sticky-col cursor-pointer pl-6 text-left group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200" 
                                             :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('iv', item)">
                                             <div class="flex items-center gap-2">
@@ -749,12 +741,13 @@
                                                 <i class="fa-solid fa-circle-info text-teal-500 text-sm ml-auto opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                             </div>
                                         </td>
-                                        <td class="table-cell text-xs pl-6 text-left" x-text="item.route"></td>
-                                        <td class="table-cell text-xs pl-6 text-left" x-text="item.fluid"></td>
-                                        <td class="table-cell text-xs pl-6 text-left" x-text="item.volume"></td>
-                                        <td class="table-cell text-xs pl-6 text-left" x-text="item.conc"></td>
-                                        <td class="table-cell text-xs pl-6 text-left" x-text="item.rate"></td>
-                                        <td class="table-cell text-xs pl-6 text-left">
+                                        <!-- 修改: 其他欄位加入 transition-colors duration-200 與 group-hover:bg-teal-100 -->
+                                        <td class="table-cell text-xs pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100" x-text="item.route"></td>
+                                        <td class="table-cell text-xs pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100" x-text="item.fluid"></td>
+                                        <td class="table-cell text-xs pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100" x-text="item.volume"></td>
+                                        <td class="table-cell text-xs pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100" x-text="item.conc"></td>
+                                        <td class="table-cell text-xs pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100" x-text="item.rate"></td>
+                                        <td class="table-cell text-xs pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100">
                                             <div class="flex items-start gap-1">
                                                 <span class="text-gray-500 font-medium whitespace-nowrap">室溫:</span>
                                                 <span x-text="item.storeRoom || '-'"></span>
@@ -764,7 +757,7 @@
                                                 <span x-text="item.storeFridge || '-'"></span>
                                             </div>
                                         </td>
-                                        <td class="table-cell text-xs pl-6 text-left">
+                                        <td class="table-cell text-xs pl-6 text-left transition-colors duration-200 group-hover:bg-teal-100">
                                             <div class="flex items-start gap-1">
                                                 <span class="text-gray-500 font-medium whitespace-nowrap">室溫:</span>
                                                 <span x-text="item.dilutedRoom || '-'"></span>
@@ -952,9 +945,12 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template x-for="row in filteredAntibiogramData" :key="row.id">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-2 py-1 text-xs font-bold text-gray-800 bg-white sticky left-0 z-30 border-r border-b border-gray-200 shadow-sm truncate max-w-[112px]" x-text="row.name" :title="row.name"></td>
+                                        <!-- 修改: 加入左側亮條效果 -->
+                                        <td class="table-cell sticky-col group text-left w-28 min-w-[112px] group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-150">
+                                            <div class="px-2 py-1 text-xs font-bold text-gray-800 truncate" x-text="row.name" :title="row.name"></div>
+                                        </td>
                                         <template x-for="(status, index) in row.spectrum" :key="index">
-                                            <td class="p-0 text-center w-6 h-6 min-w-[24px] z-0 border-b border-gray-100">
+                                            <td class="p-0 text-center w-6 h-6 min-w-[24px] z-0 border-b border-gray-100 group-hover:bg-teal-100 transition-colors duration-150">
                                                 <div class="w-full h-full min-h-[24px] transition-transform hover:scale-110 cursor-pointer"
                                                      :class="getSpectrumColor(status)"
                                                      :title="getSpectrumLabel(status)">
