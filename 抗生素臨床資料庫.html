@@ -381,7 +381,7 @@
                     );
                 },
 
-                // 修復：加入 currentAntibiogramHeaders getter
+                // 動態切換表頭
                 get currentAntibiogramHeaders() {
                     if (!this.isTransposed) {
                         return this.antibiogramHeaders;
@@ -391,7 +391,7 @@
                     }
                 },
 
-                // 修復：加入 filteredAntibiogramData (包含轉置邏輯)
+                // 動態切換內容列
                 get filteredAntibiogramData() {
                      const q = this.searchQuery.toLowerCase();
 
@@ -596,26 +596,27 @@
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-0 pb-24">
+                <!-- 修改: 將 pb-24 減至 pb-8 -->
+                <div class="flex-1 overflow-y-auto p-0 pb-8">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
                             <thead class="bg-teal-800 text-white">
                                 <tr>
-                                    <!-- 修改: 加寬至 180px -->
-                                    <th class="table-header sticky-col-header w-[180px] min-w-[180px] pl-6 text-left">抗生素名稱</th>
-                                    <!-- 修改: 微調至 220px -->
+                                    <!-- 修改: 固定寬度 w-[210px] -->
+                                    <th class="table-header sticky-col-header w-[210px] min-w-[210px] pl-6 text-left">抗生素名稱</th>
+                                    <!-- 修改: 最小寬度 min-w-[220px] -->
                                     <th class="table-header min-w-[220px] pl-6 text-left">建議劑量</th>
-                                    <!-- 修改: 加寬至 200px (最小) -->
-                                    <th class="table-header min-w-[200px] pl-6 text-left">腎功能調整</th> 
-                                    <!-- 修改: 加寬至 180px (最小) -->
-                                    <th class="table-header min-w-[180px] pl-6 text-left">肝功能調整</th> 
+                                    <!-- 修改: 最小寬度 min-w-[210px] -->
+                                    <th class="table-header min-w-[210px] pl-6 text-left">腎功能調整</th> 
+                                    <!-- 修改: 固定寬度 w-[140px] -->
+                                    <th class="table-header w-[140px] min-w-[140px] pl-6 text-left">肝功能調整</th> 
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 <template x-for="(item, index) in filteredDosingData" :key="item.id">
                                     <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
-                                        <!-- 修改: 對應表頭寬度 180px -->
-                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[180px] min-w-[180px] whitespace-normal"
+                                        <!-- 修改: 固定寬度 w-[210px] max-w-[210px] whitespace-normal -->
+                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[210px] min-w-[210px] max-w-[210px] whitespace-normal"
                                             :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('dosing', item)">
                                             <div class="flex items-center justify-between gap-2">
@@ -635,8 +636,10 @@
                                         <td class="table-cell pl-6 text-left">
                                             <span class="text-gray-800 font-medium text-sm" x-text="item.stdDose"></span>
                                         </td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.renalAdj)"></td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.hepaticAdj)"></td>
+                                        <!-- 修改: 移除固定寬度限制，使用 min-w -->
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left min-w-[210px]" x-html="formatLineBreaks(item.renalAdj)"></td>
+                                        <!-- 修改: 固定寬度 w-[140px] max-w-[140px] -->
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] min-w-[140px] max-w-[140px]" x-html="formatLineBreaks(item.hepaticAdj)"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -666,26 +669,27 @@
                     </button>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-0 pb-24">
+                <!-- 修改: 將 pb-24 減至 pb-8 -->
+                <div class="flex-1 overflow-y-auto p-0 pb-8">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
                             <thead class="bg-teal-800 text-white">
                                 <tr>
-                                    <!-- 修改: 加寬至 180px -->
-                                    <th class="table-header sticky-col-header w-[180px] min-w-[180px] pl-6 text-left">抗生素名稱</th>
-                                    <!-- 修改: 微調至 220px -->
+                                    <!-- 修改: 固定寬度 w-[210px] -->
+                                    <th class="table-header sticky-col-header w-[210px] min-w-[210px] pl-6 text-left">抗生素名稱</th>
+                                    <!-- 修改: 最小寬度 min-w-[220px] -->
                                     <th class="table-header min-w-[220px] pl-6 text-left">兒科劑量</th>
-                                    <!-- 修改: 加寬至 200px (最小) -->
-                                    <th class="table-header min-w-[200px] pl-6 text-left">腎功能調整</th>
-                                    <!-- 修改: 加寬至 180px (最小) -->
-                                    <th class="table-header min-w-[180px] pl-6 text-left">肝功能調整</th>
+                                    <!-- 修改: 最小寬度 min-w-[210px] -->
+                                    <th class="table-header min-w-[210px] pl-6 text-left">腎功能調整</th>
+                                    <!-- 修改: 固定寬度 w-[140px] -->
+                                    <th class="table-header w-[140px] min-w-[140px] pl-6 text-left">肝功能調整</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
                                 <template x-for="(item, index) in filteredPediatricData" :key="item.id">
                                     <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
-                                        <!-- 修改: 對應表頭寬度 180px -->
-                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[180px] min-w-[180px] whitespace-normal"
+                                        <!-- 修改: 固定寬度 w-[210px] max-w-[210px] whitespace-normal -->
+                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[210px] min-w-[210px] max-w-[210px] whitespace-normal"
                                             :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
                                             @click="openModal('pediatric', item)">
                                             <div class="flex items-center justify-between gap-2">
@@ -703,71 +707,10 @@
                                             </div>
                                         </td>
                                         <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.pediatricDose)"></td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.renalAdj)"></td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.hepaticAdj)"></td>
-                                    </tr>
-                                </template>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tab 1: 兒科劑量 -->
-            <div x-show="activeTab === 1" class="h-full flex flex-col overflow-hidden" x-transition:enter="transition ease-out duration-200">
-                
-                <div class="px-6 py-2 bg-white border-b border-gray-200 flex items-center space-x-2 flex-shrink-0">
-                    <button @click="dosageFormFilter = 'ALL'" 
-                            :class="dosageFormFilter === 'ALL' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                            class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
-                        全部 (All)
-                    </button>
-                    <button @click="dosageFormFilter = 'IV'" 
-                            :class="dosageFormFilter === 'IV' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                            class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
-                        針劑 (IV/IM)
-                    </button>
-                    <button @click="dosageFormFilter = 'PO'" 
-                            :class="dosageFormFilter === 'PO' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-                            class="px-3 py-1.5 rounded-full text-xs font-medium transition-colors">
-                        口服 (PO)
-                    </button>
-                </div>
-
-                <div class="flex-1 overflow-y-auto p-0 pb-24">
-                    <div class="overflow-x-auto h-full">
-                        <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
-                            <thead class="bg-teal-800 text-white">
-                                <tr>
-                                    <th class="table-header sticky-col-header w-[160px] max-w-[160px] pl-6 text-left">抗生素名稱</th>
-                                    <th class="table-header min-w-[210px] pl-6 text-left">兒科劑量</th>
-                                    <th class="table-header w-[140px] max-w-[140px] pl-6 text-left">腎功能調整</th>
-                                    <th class="table-header w-[140px] max-w-[140px] pl-6 text-left">肝功能調整</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                <template x-for="(item, index) in filteredPediatricData" :key="item.id">
-                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="transition-colors duration-150 hover:bg-teal-100/50">
-                                        <td class="table-cell sticky-col cursor-pointer group pl-6 text-left w-[160px] max-w-[160px] whitespace-normal"
-                                            :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'"
-                                            @click="openModal('pediatric', item)">
-                                            <div class="flex items-center justify-between gap-2">
-                                                <div class="flex flex-col gap-0.5">
-                                                    <span class="font-bold text-teal-800 group-hover:text-teal-900 leading-tight" x-text="item.genericName"></span>
-                                                    <div class="flex items-center flex-wrap gap-1.5">
-                                                        <span x-show="item.form" 
-                                                              class="text-[10px] px-1.5 py-0.5 rounded border whitespace-nowrap font-medium"
-                                                              :class="getFormClass(item.form)" 
-                                                              x-text="item.form"></span>
-                                                        <span class="text-xs text-gray-500 font-normal" x-text="item.brandName"></span>
-                                                    </div>
-                                                </div>
-                                                <i class="fa-solid fa-circle-info text-teal-400 text-sm opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"></i>
-                                            </div>
-                                        </td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left" x-html="formatLineBreaks(item.pediatricDose)"></td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] max-w-[140px]" x-html="formatLineBreaks(item.renalAdj)"></td>
-                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] max-w-[140px]" x-html="formatLineBreaks(item.hepaticAdj)"></td>
+                                        <!-- 修改: 移除固定寬度限制，使用 min-w -->
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left min-w-[210px]" x-html="formatLineBreaks(item.renalAdj)"></td>
+                                        <!-- 修改: 固定寬度 w-[140px] max-w-[140px] -->
+                                        <td class="table-cell whitespace-normal text-sm text-gray-700 leading-loose pl-6 text-left w-[140px] min-w-[140px] max-w-[140px]" x-html="formatLineBreaks(item.hepaticAdj)"></td>
                                     </tr>
                                 </template>
                             </tbody>
@@ -777,7 +720,8 @@
             </div>
 
             <!-- Tab 2: 注射給藥指引 -->
-            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0 pb-24" x-transition:enter="transition ease-out duration-200">
+            <!-- 修改: 將 pb-24 減至 pb-8 -->
+            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0 pb-8" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
