@@ -144,7 +144,7 @@
                             hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
                             monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
                             notes: row['Notes'] || row['備註'] || '',
-                            micromedex: row['micromedex'] || row['Micromedex'] || '' // 新增讀取 micromedex 欄位
+                            micromedex: row['micromedex'] || row['Micromedex'] || '' 
                         }));
                 },
 
@@ -165,7 +165,6 @@
                 },
 
                 mapPediatricData(data) {
-                    // 移除嚴格檢查，避免因欄位名稱微小差異導致全空
                     this.pediatricData = data
                         .filter(row => row['Generic Name'] || row['學名'])
                         .map((row, index) => ({
@@ -178,7 +177,7 @@
                             hepaticAdj: row['Hepatic Adj'] || row['肝功能調整'] || row['Hepatic'] || '',
                             monitoring: row['Monitoring'] || row['建議監測項目'] || row['Monitor'] || '',
                             notes: row['Notes'] || row['備註'] || '',
-                            micromedex: row['micromedex'] || row['Micromedex'] || '' // 新增讀取 micromedex 欄位
+                            micromedex: row['micromedex'] || row['Micromedex'] || ''
                         }));
                 },
 
@@ -203,7 +202,7 @@
                             dilutedRoom: row['Diluted Room Temp'] || row['進一步稀釋後(室溫)'] || '',
                             dilutedFridge: row['Diluted Fridge'] || row['進一步稀釋後(冷藏)'] || '',
                             details: row['Details'] || row['詳細說明'] || '暫無詳細資料',
-                            micromedex: row['micromedex'] || row['Micromedex'] || '' // 新增讀取 micromedex 欄位
+                            micromedex: row['micromedex'] || row['Micromedex'] || ''
                         }));
                 },
 
@@ -319,7 +318,7 @@
                     );
                 },
 
-                // Mock Data (擴充)
+                // Mock Data
                 mockData: {
                     dosing: [
                         { id: 'dose-1', genericName: 'Amoxicillin', form: 'PO', brandName: 'Amolin', stdDose: '250-500mg q8h', renalAdj: 'CCr 10-30: q12h\nCCr <10: q24h', hepaticAdj: '無須調整', monitoring: '定期監測腎功能', notes: '口服吸收良好' }
@@ -451,7 +450,7 @@
             </div>
 
             <!-- Tab 0: 成人劑量調整 -->
-            <div x-show="activeTab === 0" class="h-full overflow-y-auto p-0" x-transition:enter="transition ease-out duration-200">
+            <div x-show="activeTab === 0" class="h-full overflow-y-auto p-0 pb-24" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
@@ -497,7 +496,7 @@
             </div>
 
             <!-- Tab 1: 兒科劑量 -->
-            <div x-show="activeTab === 1" class="h-full overflow-y-auto p-0" x-transition:enter="transition ease-out duration-200">
+            <div x-show="activeTab === 1" class="h-full overflow-y-auto p-0 pb-24" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
@@ -541,7 +540,7 @@
             </div>
 
             <!-- Tab 2: 注射給藥指引 -->
-            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0" x-transition:enter="transition ease-out duration-200">
+            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0 pb-24" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
@@ -602,7 +601,7 @@
             </div>
 
             <!-- Tab 3: 經驗性療法 -->
-            <div x-show="activeTab === 3" class="h-full overflow-y-auto p-4 md:p-6" x-cloak>
+            <div x-show="activeTab === 3" class="h-full overflow-y-auto p-4 md:p-6 pb-24" x-cloak>
                 <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                     <template x-for="item in filteredInfectionData" :key="item.id">
                         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow duration-200 flex flex-col h-full relative group">
@@ -643,11 +642,10 @@
                     </div>
                     <a href="#" target="_blank" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center">
                         <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 抗菌譜PDF
-                        <!-- ★★★ 請在此處修改 PDF 連結 ★★★ -->
                     </a>
                 </div>
 
-                <div class="flex-1 overflow-auto bg-white p-0">
+                <div class="flex-1 overflow-auto bg-white p-0 pb-24">
                     <div class="inline-block min-w-full align-middle border-0 relative">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
                             <thead class="bg-gray-100">
@@ -709,28 +707,29 @@
             </div>
 
             <!-- Modal (Generic) -->
+            <!-- 修改: 彈窗結構改為 flex flex-col max-h-[85vh]，修復滾動與裁切問題 -->
             <div x-show="modalType" class="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true" x-cloak>
                 <div class="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
                     <div x-show="modalType" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeModal()"></div>
                     
-                    <div x-show="modalType" x-transition.scale class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-[90%] md:w-[60%] max-w-none">
+                    <div x-show="modalType" x-transition.scale class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-[90%] md:w-[60%] max-w-none flex flex-col max-h-[85vh]">
                         
                         <!-- Infection Modal -->
-                        <div x-show="modalType === 'infection'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                             <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
+                        <div x-show="modalType === 'infection'" class="bg-white flex flex-col h-full overflow-hidden">
+                             <div class="flex justify-between items-start border-b border-gray-100 px-4 pt-5 pb-3 sm:p-6 sm:pb-4 flex-shrink-0">
                                 <div><h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.infectionType"></h3><span class="mt-1 inline-block px-2 py-0.5 text-xs font-semibold text-teal-600 bg-teal-100 rounded-full" x-text="selectedItem?.system"></span></div>
                                 <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                             </div>
-                            <div class="space-y-4">
-                                <div><h4 class="text-sm font-bold text-gray-700 mb-2">治療建議與備註</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed" x-html="formatLineBreaks(selectedItem?.comments)"></div></div>
+                            <div class="space-y-4 px-4 pb-4 sm:p-6 sm:pt-0 overflow-y-auto flex-1">
+                                <div><h4 class="text-sm font-bold text-gray-700 mb-2 mt-4">治療建議與備註</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed" x-html="formatLineBreaks(selectedItem?.comments)"></div></div>
                                 <div class="grid grid-cols-2 gap-4"><div><h4 class="text-xs font-bold text-gray-500 uppercase mb-2">建議療程</h4><p class="text-sm font-medium text-gray-900" x-text="selectedItem?.duration || '未提供'"></p></div><div><h4 class="text-xs font-bold text-gray-500 uppercase mb-2">劑量提示</h4><p class="text-sm font-medium text-gray-900" x-text="selectedItem?.dosingTips || '參閱劑量表'"></p></div></div>
                                 <div class="border-t border-gray-100 pt-3 mt-2"><h4 class="text-xs font-bold text-gray-500 uppercase mb-2">藥物選擇複習</h4><div class="text-sm space-y-1"><p><span class="font-bold text-emerald-600">首選:</span> <span x-text="selectedItem?.firstLine"></span></p><p><span class="font-bold text-amber-600">替代:</span> <span x-text="selectedItem?.alternative"></span></p></div></div>
                             </div>
                         </div>
 
                         <!-- IV Guide Modal -->
-                        <div x-show="modalType === 'iv'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
+                        <div x-show="modalType === 'iv'" class="bg-white flex flex-col h-full overflow-hidden">
+                            <div class="flex justify-between items-start border-b border-gray-100 px-4 pt-5 pb-3 sm:p-6 sm:pb-4 flex-shrink-0">
                                 <div>
                                     <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3>
                                     <div class="mt-1 flex items-center gap-2">
@@ -743,21 +742,21 @@
                                     <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                                 </div>
                             </div>
-                            <div class="space-y-4">
-                                <div class="grid grid-cols-2 gap-3 bg-teal-50 p-3 rounded-lg border border-teal-100">
+                            <div class="space-y-4 px-4 pb-4 sm:p-6 sm:pt-0 overflow-y-auto flex-1">
+                                <div class="grid grid-cols-2 gap-3 bg-teal-50 p-3 rounded-lg border border-teal-100 mt-4">
                                     <div><span class="text-xs text-teal-600 font-bold block">途徑</span><span class="text-sm text-gray-800" x-text="selectedItem?.route"></span></div>
                                     <div><span class="text-xs text-teal-600 font-bold block">輸注液</span><span class="text-sm text-gray-800" x-text="selectedItem?.fluid"></span></div>
                                     <div><span class="text-xs text-teal-600 font-bold block">體積</span><span class="text-sm text-gray-800" x-text="selectedItem?.volume"></span></div>
                                     <div><span class="text-xs text-teal-600 font-bold block">速率</span><span class="text-sm text-gray-800" x-text="selectedItem?.rate"></span></div>
                                 </div>
-                                <div><h4 class="text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100 h-48 overflow-y-auto" x-html="formatLineBreaks(selectedItem?.details)"></div></div>
+                                <div><h4 class="text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100" x-html="formatLineBreaks(selectedItem?.details)"></div></div>
                                 <div class="text-xs text-gray-400 italic text-right">* 請務必再次核對臨床藥學指引</div>
                             </div>
                         </div>
 
                         <!-- Adult Dosing Modal -->
-                        <div x-show="modalType === 'dosing'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
+                        <div x-show="modalType === 'dosing'" class="bg-white flex flex-col h-full overflow-hidden">
+                            <div class="flex justify-between items-start border-b border-gray-100 px-4 pt-5 pb-3 sm:p-6 sm:pb-4 flex-shrink-0">
                                 <div>
                                     <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3>
                                     <div class="flex items-center gap-2 mt-1">
@@ -770,8 +769,8 @@
                                     <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                                 </div>
                             </div>
-                            <div class="space-y-4">
-                                <div>
+                            <div class="space-y-4 px-4 pb-4 sm:p-6 sm:pt-0 overflow-y-auto flex-1">
+                                <div class="mt-4">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">建議劑量 (Suggested Dose)</h4>
                                     <div class="text-sm text-slate-700 font-medium bg-teal-50 p-3 rounded-lg border border-teal-100" x-text="selectedItem?.stdDose"></div>
                                 </div>
@@ -779,15 +778,15 @@
                                 <div class="grid md:grid-cols-2 gap-4">
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">腎功能調整 (Renal)</h4>
-                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 h-full leading-relaxed" x-html="formatLineBreaks(selectedItem?.renalAdj)"></div>
+                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 leading-relaxed" x-html="formatLineBreaks(selectedItem?.renalAdj)"></div>
                                     </div>
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">肝功能調整 (Hepatic)</h4>
-                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 h-full leading-relaxed" x-html="formatLineBreaks(selectedItem?.hepaticAdj)"></div>
+                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 leading-relaxed" x-html="formatLineBreaks(selectedItem?.hepaticAdj)"></div>
                                     </div>
                                 </div>
                                 
-                                <div class="mt-8 pt-4">
+                                <div class="mt-8 pt-4 border-t border-gray-100">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">建議監測項目 (Monitoring)</h4>
                                     <div class="text-sm text-slate-700 font-medium bg-purple-50 p-3 rounded-lg border border-purple-100" x-html="formatLineBreaks(selectedItem?.monitoring || '無特殊建議')"></div>
                                 </div>
@@ -800,8 +799,8 @@
                         </div>
 
                         <!-- Pediatric Dosing Modal -->
-                        <div x-show="modalType === 'pediatric'" class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                             <div class="flex justify-between items-start border-b border-gray-100 pb-3 mb-4">
+                        <div x-show="modalType === 'pediatric'" class="bg-white flex flex-col h-full overflow-hidden">
+                             <div class="flex justify-between items-start border-b border-gray-100 px-4 pt-5 pb-3 sm:p-6 sm:pb-4 flex-shrink-0">
                                 <div>
                                     <h3 class="text-xl leading-6 font-bold text-gray-900" x-text="selectedItem?.genericName"></h3>
                                     <div class="flex items-center gap-2 mt-1">
@@ -814,8 +813,8 @@
                                     <button @click="closeModal()" class="text-gray-400 hover:text-gray-500"><i class="fa-solid fa-times text-xl"></i></button>
                                 </div>
                             </div>
-                            <div class="space-y-4">
-                                <div>
+                            <div class="space-y-4 px-4 pb-4 sm:p-6 sm:pt-0 overflow-y-auto flex-1">
+                                <div class="mt-4">
                                     <h4 class="text-sm font-bold text-teal-700 mb-2">兒科建議劑量</h4>
                                     <div class="text-sm text-gray-700 bg-teal-50 p-4 rounded-lg leading-relaxed border border-teal-100 font-mono" x-html="formatLineBreaks(selectedItem?.pediatricDose)"></div>
                                 </div>
@@ -823,27 +822,28 @@
                                 <div class="grid md:grid-cols-2 gap-4">
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">腎功能調整 (Renal)</h4>
-                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 h-full leading-relaxed" x-html="formatLineBreaks(selectedItem?.renalAdj || '無特殊建議')"></div>
+                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 leading-relaxed" x-html="formatLineBreaks(selectedItem?.renalAdj || '無特殊建議')"></div>
                                     </div>
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">肝功能調整 (Hepatic)</h4>
-                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 h-full leading-relaxed" x-html="formatLineBreaks(selectedItem?.hepaticAdj || '無特殊建議')"></div>
+                                        <div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100 leading-relaxed" x-html="formatLineBreaks(selectedItem?.hepaticAdj || '無特殊建議')"></div>
                                     </div>
                                 </div>
                                 
-                                <div class="mt-8 pt-4">
+                                <div class="mt-8 pt-4 border-t border-gray-100">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">建議監測項目 (Monitoring)</h4>
                                     <div class="text-sm text-slate-700 font-medium bg-purple-50 p-3 rounded-lg border border-purple-100" x-html="formatLineBreaks(selectedItem?.monitoring || '無特殊建議')"></div>
                                 </div>
 
                                 <div class="mt-4">
                                     <h4 class="text-xs font-bold text-gray-500 uppercase mb-2">備註 (Notes)</h4>
+                                    <!-- 補回遺漏的 div -->
                                     <div class="text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg border border-yellow-100 leading-relaxed" x-html="formatLineBreaks(selectedItem?.notes)"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-gray-200 mt-auto flex-shrink-0">
                             <button type="button" @click="closeModal()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
                                 關閉
                             </button>
