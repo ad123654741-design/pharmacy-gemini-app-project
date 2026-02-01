@@ -720,8 +720,7 @@
             </div>
 
             <!-- Tab 2: 注射給藥指引 -->
-            <!-- 修改: 將 pb-24 減至 pb-8 -->
-            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0 pb-8" x-transition:enter="transition ease-out duration-200">
+            <div x-show="activeTab === 2" class="h-full overflow-y-auto p-0 pb-24" x-transition:enter="transition ease-out duration-200">
                 <div class="bg-white border-0 overflow-hidden h-full">
                     <div class="overflow-x-auto h-full">
                         <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
@@ -734,7 +733,8 @@
                                     <th class="table-header min-w-[100px] pl-6 text-left">給藥濃度</th>
                                     <th class="table-header min-w-[120px] pl-6 text-left">給藥速率</th>
                                     <th class="table-header min-w-[160px] pl-6 text-left">配製後保存</th>
-                                    <th class="table-header min-w-[160px] pl-6 text-left">稀釋後保存</th>
+                                    <!-- 修改: 標題改為 進一步稀釋 -->
+                                    <th class="table-header min-w-[160px] pl-6 text-left">進一步稀釋</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
