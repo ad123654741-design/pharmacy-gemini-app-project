@@ -47,8 +47,11 @@
                 modalType: null, 
                 selectedItem: null,
                 
-                // ★ 新增：劑型篩選變數 (ALL, IV, PO)
+                // 劑型篩選變數
                 dosageFormFilter: 'ALL',
+                
+                // 抗菌譜轉置狀態
+                isTransposed: false,
 
                 // 經驗性療法專用變數
                 selectedSystem: '',
@@ -174,7 +177,6 @@
                 },
 
                 mapPediatricData(data) {
-                    // 移除嚴格檢查
                     this.pediatricData = data
                         .filter(row => row['Generic Name'] || row['學名'])
                         .map((row, index) => ({
@@ -233,10 +235,16 @@
                         .filter(row => row && row.length > 0 && row[0]) 
                         .map((row, index) => ({
                             id: `abx-${index}`,
-                            antibiotic: row[0],
+                            // ★ 修正：將 row[0] 指派給 name 屬性，統一資料結構
+                            name: row[0],
+                            antibiotic: row[0], // 保留原本屬性以防萬一
                             spectrum: validIndices.map(i => row[i])
                         }));
                 },
+
+                // ==========================================
+                // 互動功能
+                // ==========================================
 
                 openModal(type, item) {
                     this.modalType = type;
@@ -246,6 +254,10 @@
                 closeModal() {
                     this.modalType = null;
                     setTimeout(() => { this.selectedItem = null; }, 200);
+                },
+
+                toggleTranspose() {
+                    this.isTransposed = !this.isTransposed;
                 },
 
                 formatLineBreaks(text) {
@@ -316,7 +328,6 @@
                     return 'bg-teal-50 text-teal-700 border-teal-200';
                 },
 
-                // ★ 新增: 檢查劑型是否符合篩選
                 checkFormFilter(form) {
                     if (this.dosageFormFilter === 'ALL') return true;
                     if (!form) return false;
@@ -347,7 +358,6 @@
                 },
 
                 get filteredDosingData() {
-                    // ★ 修改: 增加劑型篩選邏輯
                     let data = this.dosingData;
                     if (this.dosageFormFilter !== 'ALL') {
                         data = data.filter(item => this.checkFormFilter(item.form));
@@ -371,16 +381,45 @@
                     );
                 },
 
+                // 動態切換表頭
+                get currentAntibiogramHeaders() {
+                    if (!this.isTransposed) {
+                        return this.antibiogramHeaders;
+                    } else {
+                        // 轉置模式：表頭變為抗生素名稱
+                        // 修正：現在資料結構已有 name 屬性
+                        return this.antibiogramData.map(d => d.name);
+                    }
+                },
+
+                // 動態切換內容列
                 get filteredAntibiogramData() {
-                     if (!this.searchQuery) return this.antibiogramData;
                      const q = this.searchQuery.toLowerCase();
-                     return this.antibiogramData.filter(item => 
-                        item.antibiotic.toLowerCase().includes(q)
-                     );
+
+                     if (!this.isTransposed) {
+                         // 一般模式：搜尋過濾抗生素名稱
+                         if (!this.searchQuery) return this.antibiogramData;
+                         return this.antibiogramData.filter(item => 
+                            item.name.toLowerCase().includes(q)
+                         );
+                     } else {
+                         // 轉置模式：
+                         // 1. 建立菌種 Rows
+                         const transposedRows = this.antibiogramHeaders.map((bacteria, idx) => ({
+                             id: `bac-${idx}`,
+                             name: bacteria, // 這裡用 name 統一欄位名稱
+                             spectrum: this.antibiogramData.map(d => d.spectrum[idx])
+                         }));
+
+                         // 2. 搜尋過濾菌種名稱
+                         if (!this.searchQuery) return transposedRows;
+                         return transposedRows.filter(row => 
+                            row.name.toLowerCase().includes(q)
+                         );
+                     }
                 },
 
                 get filteredPediatricData() {
-                    // ★ 修改: 增加劑型篩選邏輯
                     let data = this.pediatricData;
                     if (this.dosageFormFilter !== 'ALL') {
                         data = data.filter(item => this.checkFormFilter(item.form));
@@ -540,7 +579,6 @@
             <!-- Tab 0: 成人劑量調整 -->
             <div x-show="activeTab === 0" class="h-full flex flex-col overflow-hidden" x-transition:enter="transition ease-out duration-200">
                 
-                <!-- ★ 新增: 劑型篩選按鈕列 -->
                 <div class="px-6 py-2 bg-white border-b border-gray-200 flex items-center space-x-2 flex-shrink-0">
                     <button @click="dosageFormFilter = 'ALL'" 
                             :class="dosageFormFilter === 'ALL' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
@@ -606,7 +644,6 @@
             <!-- Tab 1: 兒科劑量 -->
             <div x-show="activeTab === 1" class="h-full flex flex-col overflow-hidden" x-transition:enter="transition ease-out duration-200">
                 
-                <!-- ★ 新增: 劑型篩選按鈕列 (兒科) -->
                 <div class="px-6 py-2 bg-white border-b border-gray-200 flex items-center space-x-2 flex-shrink-0">
                     <button @click="dosageFormFilter = 'ALL'" 
                             :class="dosageFormFilter === 'ALL' ? 'bg-teal-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
@@ -728,7 +765,7 @@
                 </div>
             </div>
 
-            <!-- Tab 3: 經驗性療法 -->
+            <!-- Tab 3: 經驗性療法 (修正版：左右側佈局 + 獨立捲動) -->
             <div x-show="activeTab === 3" class="h-full flex flex-col md:flex-row overflow-hidden" x-cloak>
                 <!-- Left Column: List & Filter -->
                 <div class="w-full md:w-1/3 flex flex-col border-r border-gray-200 bg-white h-[40%] md:h-full z-10 shadow-md md:shadow-none">
@@ -835,6 +872,7 @@
 
             <!-- Tab 4: 抗菌譜 -->
             <div x-show="activeTab === 4" class="h-full overflow-hidden flex flex-col" x-cloak>
+                <!-- 修改: Flex wrap 與 justify-between -->
                 <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-sm">
                     <div class="flex flex-wrap gap-4 text-xs font-medium">
                         <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm spectrum-blue mr-2"></span> 非常有效</div>
@@ -842,9 +880,19 @@
                         <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#fde047] border border-[#eab308] mr-2"></span> 可能有效</div>
                         <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
                     </div>
-                    <a href="#" target="_blank" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center">
-                        <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 抗菌譜PDF
-                    </a>
+                    
+                    <div class="flex items-center gap-3">
+                        <!-- ★ 新增: 轉置按鈕 -->
+                        <button @click="toggleTranspose()" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center">
+                            <i class="fa-solid fa-retweet mr-1.5 text-gray-500"></i> 
+                            <span x-text="isTransposed ? '切換為抗生素視角' : '切換為菌種視角'"></span>
+                        </button>
+                        
+                        <a href="#" target="_blank" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center">
+                            <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 抗菌譜PDF
+                            <!-- ★★★ 請在此處修改 PDF 檔案連結 (例如 href="https://example.com/antibiogram.pdf") ★★★ -->
+                        </a>
+                    </div>
                 </div>
 
                 <div class="flex-1 overflow-auto bg-white p-0 pb-24">
@@ -853,15 +901,14 @@
                             <thead class="bg-gray-100">
                                 <tr>
                                     <th class="px-2 py-0 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 top-0 bg-gray-100 z-50 border-r border-b border-gray-200 shadow-sm w-28 min-w-[112px] align-bottom h-24">
-                                        <div class="h-24 flex items-end justify-center pb-2 w-full">
-                                            名稱
-                                        </div>
+                                        <!-- 修改: 動態顯示左上角標題 -->
+                                        <div class="h-24 flex items-end justify-center pb-2 w-full" x-text="isTransposed ? '菌種' : '抗生素'"></div>
                                     </th>
-                                    <template x-for="(bacteria, idx) in antibiogramHeaders" :key="idx">
+                                    <template x-for="(col, idx) in currentAntibiogramHeaders" :key="idx">
                                         <th class="px-0 py-0 text-center text-xs font-bold text-gray-600 tracking-wider sticky top-0 z-40 w-6 min-w-[24px] max-w-[24px] align-bottom bg-gray-100 border-b border-gray-200 h-24">
                                             <div class="vertical-header-container h-24 flex items-end justify-center pb-1 overflow-hidden">
                                                 <div class="vertical-text text-[10px] font-bold origin-bottom" 
-                                                     x-text="bacteria"
+                                                     x-text="col"
                                                      style="font-size: 10px;"
                                                      x-effect="if (activeTab === 4) {
                                                          $nextTick(() => {
@@ -891,7 +938,8 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 <template x-for="row in filteredAntibiogramData" :key="row.id">
                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-2 py-1 text-xs font-bold text-gray-800 bg-white sticky left-0 z-30 border-r border-b border-gray-200 shadow-sm truncate max-w-[112px]" x-text="row.antibiotic" :title="row.antibiotic"></td>
+                                        <!-- 修改: 使用 row.name -->
+                                        <td class="px-2 py-1 text-xs font-bold text-gray-800 bg-white sticky left-0 z-30 border-r border-b border-gray-200 shadow-sm truncate max-w-[112px]" x-text="row.name" :title="row.name"></td>
                                         <template x-for="(status, index) in row.spectrum" :key="index">
                                             <td class="p-0 text-center w-6 h-6 min-w-[24px] z-0 border-b border-gray-100">
                                                 <div class="w-full h-full min-h-[24px] transition-transform hover:scale-110 cursor-pointer"
@@ -950,7 +998,7 @@
                                     <div><span class="text-xs text-teal-600 font-bold block">體積</span><span class="text-sm text-gray-800" x-text="selectedItem?.volume"></span></div>
                                     <div><span class="text-xs text-teal-600 font-bold block">速率</span><span class="text-sm text-gray-800" x-text="selectedItem?.rate"></span></div>
                                 </div>
-                                <div><h4 class="text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100" x-html="formatLineBreaks(selectedItem?.details)"></div></div>
+                                <div><h4 class="text-sm font-bold text-gray-700 mb-2"><i class="fa-solid fa-clipboard-list mr-1"></i> 詳細說明與注意事項</h4><div class="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg leading-relaxed border border-gray-100 h-48 overflow-y-auto" x-html="formatLineBreaks(selectedItem?.details)"></div></div>
                                 <div class="text-xs text-gray-400 italic text-right">* 請務必再次核對臨床藥學指引</div>
                             </div>
                         </div>
