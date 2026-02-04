@@ -309,18 +309,54 @@
         if (!strExpiry) return { type: 'empty', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-400', label: '未設定' };
         
         const parts = strExpiry.split('-');
-        // 簡單檢查格式
+        // 簡單檢查格式 (至少要有 YYYY-MM)
         if (parts.length < 2) return { type: 'empty', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-400', label: '未設定' };
 
-        const expY = parseInt(parts[0]); const expM = parseInt(parts[1]);
+        const expY = parseInt(parts[0], 10);
+        const expM = parseInt(parts[1], 10);
+        const expD = parts[2] ? parseInt(parts[2], 10) : null; // 取得日 (如果有)
+
         if (isNaN(expY) || isNaN(expM)) return { type: 'empty', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-400', label: '未設定' };
         
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // 歸零時間，只比對日期
+
+        let isExpired = false;
+
+        // 判斷過期邏輯
+        if (expD !== null && !isNaN(expD)) {
+            // === 情況 A: 有指定日期 (YYYY-MM-DD) ===
+            // 建立效期當日的 Date 物件 (注意月份要 -1)
+            const expiryDate = new Date(expY, expM - 1, expD);
+            // 如果 效期日期 < 今天，就是過期
+            if (expiryDate < today) {
+                isExpired = true;
+            }
+        } else {
+            // === 情況 B: 只指定月份 (YYYY-MM) ===
+            // 邏輯：該月結束前都算有效。
+            // 只有當「現在年份 > 效期年份」或「年份相同但現在月份 > 效期月份」時才算過期
+            // 簡單算法：計算月差。如果 (效期 - 現在) < 0 代表過期
+            // 注意：today.getMonth() 是 0-11，所以要 +1 變成 1-12 來跟 expM (1-12) 比較
+            const currentMonthDiff = (expY - today.getFullYear()) * 12 + (expM - (today.getMonth() + 1));
+            if (currentMonthDiff < 0) {
+                isExpired = true;
+            }
+        }
+
+        if (isExpired) {
+            return { type: 'expired', bg: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-800', label: '過期' };
+        }
+
+        // 判斷近效期 (6個月內)
+        // 為了保持一致性，近效期檢查統一使用「月份差」來判斷比較直觀
         const diffMonths = (expY - today.getFullYear()) * 12 + (expM - (today.getMonth() + 1));
         
-        // 修正：加深顏色，確保可讀性
-        if (diffMonths < 0) return { type: 'expired', bg: 'bg-rose-50', border: 'border-rose-500', text: 'text-rose-800', label: '過期' };
-        if (diffMonths < 6) return { type: 'warning', bg: 'bg-yellow-50', border: 'border-yellow-500', text: 'text-yellow-800', label: '近效期' };
+        // 補充：如果有指定日期且還沒過期，但已經是當月了 (diffMonths === 0)，當然也是近效期
+        if (diffMonths < 6) {
+             return { type: 'warning', bg: 'bg-yellow-50', border: 'border-yellow-500', text: 'text-yellow-800', label: '近效期' };
+        }
+
         return { type: 'ok', bg: 'bg-emerald-50', border: 'border-emerald-500', text: 'text-emerald-800', label: '正常' };
       };
 
