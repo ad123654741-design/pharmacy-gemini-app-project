@@ -84,8 +84,42 @@
       Cloud: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19c0-3.037-2.463-5.5-5.5-5.5S6.5 15.963 6.5 19"></path><path d="M4 19c0-5.523 4.477-10 10-10 1.95 0 3.766.559 5.313 1.526"></path><path d="M20 19c0-3.037-2.463-5.5-5.5-5.5-1.077 0-2.083.313-2.935.856"></path><path d="M22 19c0-7.18-5.82-13-13-13-1.859 0-3.633.388-5.253 1.092"></path></svg>,
       ChevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>,
       Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+      // New Mail Icon
+      Mail: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>,
+      Send: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>,
       // New icon for splash screen
       AmbulanceBig: () => <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"></path><path d="M14 9h4l4 4v4c0 .6-.4 1-1 1h-2"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle><path d="M10 2v4h4V2z"></path><path d="M7 2h2"></path><path d="M15 2h2"></path></svg>
+    };
+
+    // === 系統訊息視窗 (取代原生的 alert/confirm) ===
+    const SystemModal = ({ config, onClose }) => {
+      if (!config) return null;
+      return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className={`px-5 py-3 border-b flex justify-between items-center ${config.type === 'error' ? 'bg-rose-100 border-rose-200 text-rose-700' : 'bg-slate-100 border-slate-200 text-slate-700'}`}>
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                {config.type === 'error' ? <Icons.AlertTriangle /> : <Icons.AmbulanceBig className="w-5 h-5" />} 
+                {config.title}
+              </h3>
+              <button onClick={onClose}><Icons.XCircle className="w-5 h-5 opacity-50 hover:opacity-100" /></button>
+            </div>
+            <div className="p-5 text-gray-700 whitespace-pre-wrap leading-relaxed">
+              {config.message}
+            </div>
+            <div className="p-4 bg-gray-50 border-t flex gap-3 justify-end">
+              {config.onConfirm ? (
+                <>
+                  <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 font-bold hover:bg-gray-100">取消</button>
+                  <button onClick={() => { config.onConfirm(); onClose(); }} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-sm">確認執行</button>
+                </>
+              ) : (
+                <button onClick={onClose} className="w-full px-4 py-2 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-700">關閉</button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
     };
 
     // === 智慧效期輸入元件 ===
@@ -166,11 +200,22 @@
       const GRID_COLS = 40;
       const GRID_ROWS = 30;
 
-      // Google Sheet API URL 管理
+      // Google Sheet API URL 管理 (資料存取)
       const DEFAULT_GS_URL = "https://script.google.com/macros/s/AKfycbw9P7K5tSHkAI-KOQKEuEqyIYszLUVfLiUOZDcZSTMZr9k96ME2r_NHETo1RgNSpbQZjA/exec";
       const [gsUrl, setGsUrl] = useState(() => localStorage.getItem('gs_url') || DEFAULT_GS_URL);
       const [syncStatus, setSyncStatus] = useState('idle'); // idle, syncing, success, error
       
+      // 郵件相關 State
+      const [mailConfig, setMailConfig] = useState(() => {
+        const saved = localStorage.getItem('ecart_mail_config');
+        return saved ? JSON.parse(saved) : { email: '', apiUrl: '' };
+      });
+      const [showMailModal, setShowMailModal] = useState(false);
+      const [isMailTesting, setIsMailTesting] = useState(false);
+
+      // 系統訊息視窗 State (取代 alert)
+      const [modalConfig, setModalConfig] = useState(null);
+
       // Loading State
       const [isLoading, setIsLoading] = useState(true);
 
@@ -259,8 +304,14 @@
 
       // === 輔助邏輯 (狀態計算) ===
       const getStatus = (expiry) => {
-        if (!expiry) return { type: 'empty', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-400', label: '未設定' };
-        const parts = expiry.split('-');
+        // 修正：強制轉型為字串並去空白，防止 split 報錯
+        const strExpiry = String(expiry || '').trim();
+        if (!strExpiry) return { type: 'empty', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-400', label: '未設定' };
+        
+        const parts = strExpiry.split('-');
+        // 簡單檢查格式
+        if (parts.length < 2) return { type: 'empty', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-400', label: '未設定' };
+
         const expY = parseInt(parts[0]); const expM = parseInt(parts[1]);
         if (isNaN(expY) || isNaN(expM)) return { type: 'empty', bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-400', label: '未設定' };
         
@@ -304,6 +355,97 @@
       };
 
       const getTotalQty = (batches) => batches ? batches.reduce((acc, b) => acc + (parseInt(b.qty)||0), 0) : 0;
+
+      // === 郵件處理邏輯 ===
+      const saveMailConfig = () => {
+        localStorage.setItem('ecart_mail_config', JSON.stringify(mailConfig));
+        setModalConfig({ title: "設定", message: "設定已儲存" });
+      };
+
+      const sendMail = async (type = 'test', items = []) => {
+        if (!mailConfig.apiUrl || !mailConfig.email) {
+          setModalConfig({ title: "設定錯誤", message: "請先完成郵件設定 (URL 與 Email)", type: 'error' });
+          return;
+        }
+        
+        setIsMailTesting(true);
+        try {
+          const response = await fetch(mailConfig.apiUrl, {
+            method: 'POST',
+            mode: 'no-cors', // Google Script 的特性
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: type,
+              to: mailConfig.email,
+              items: items
+            })
+          });
+          
+          setModalConfig({ 
+             title: type === 'test' ? "測試發送" : "警報發送", 
+             message: type === 'test' ? "測試請求已發送！\n請檢查您的信箱 (若未收到請檢查垃圾郵件或 Script 部署權限)。" : "警報清單已發送！",
+             type: 'success'
+          });
+          
+        } catch (error) {
+          console.error("Mail Error:", error);
+          setModalConfig({ title: "發送失敗", message: "請檢查 URL 是否正確或網路連線", type: 'error' });
+        } finally {
+          setIsMailTesting(false);
+        }
+      };
+
+      const checkAndSendAlert = () => {
+        try {
+          // 防呆：檢查 trays 資料是否存在
+          if (!trays || !Array.isArray(trays)) {
+             setModalConfig({ title: "資料異常", message: "無法讀取藥盤資料，請重整頁面後再試。", type: 'error' });
+             return;
+          }
+
+          let alertItems = [];
+          
+          // 使用更安全的迴圈方式：層層檢查 null/undefined
+          trays.forEach(tray => {
+            if (!tray || !tray.slots || !Array.isArray(tray.slots)) return;
+
+            tray.slots.forEach(slot => {
+               if (!slot || !slot.batches || !Array.isArray(slot.batches)) return;
+
+               slot.batches.forEach(batch => {
+                 // 修正關鍵：如果 batch 本身是 null/undefined，直接跳過，防止存取屬性時崩潰
+                 if (!batch) return;
+
+                 const s = getStatus(batch.expiry);
+                 if (s.type === 'warning' || s.type === 'expired') {
+                   alertItems.push({
+                     trayName: tray.name || '未命名藥盤',
+                     name: slot.name || '未命名藥品',
+                     expiry: batch.expiry || '未知效期',
+                     qty: batch.qty || 0,
+                     status: s.label
+                   });
+                 }
+               });
+            });
+          });
+
+          if (alertItems.length > 0) {
+            // 使用自定義 Modal 取代 window.confirm
+            setModalConfig({
+              title: "掃描完成",
+              message: `共發現 ${alertItems.length} 項異常藥品 (過期或近效期)。\n是否立即發送清單至 ${mailConfig.email}？`,
+              type: 'info',
+              onConfirm: () => sendMail('alert', alertItems)
+            });
+          } else {
+            setModalConfig({ title: "掃描完成", message: "目前所有藥品效期皆正常，無需發送警報。", type: 'info' });
+          }
+        } catch (e) {
+          console.error("Check Alert Error:", e);
+          setModalConfig({ title: "發生錯誤", message: "檢查過程發生錯誤：" + e.message + "\n請截圖聯繫管理員。", type: 'error' });
+        }
+      };
 
       // === 匯出報表功能 (HTML 列印) ===
       const handleExportReport = () => {
@@ -617,6 +759,14 @@
             </div>
             
             <div className="flex items-center px-4 bg-slate-900 border-l border-slate-800 shadow-[-10px_0_10px_rgba(0,0,0,0.5)] z-20 gap-2 shrink-0">
+               {/* Mail Settings Button - Added to left side */}
+               <div className="mr-2 border-r border-slate-700 pr-2">
+                 <button onClick={() => setShowMailModal(true)} className="px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition text-slate-400 hover:text-white hover:bg-slate-800" title="郵件通知設定">
+                    <Icons.Mail />
+                    <span className="hidden sm:inline">通知</span>
+                 </button>
+               </div>
+               
                <div className="flex bg-black/40 rounded p-0.5 border border-slate-700">
                 <button onClick={()=>{setMode('view');setSelectedSlot(null);}} className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='view'?'bg-blue-600 text-white':'text-slate-400 hover:text-white'}`}><Icons.Layout /> 盤點</button>
                 <button onClick={()=>{setMode('list');setSelectedSlot(null);}} className={`px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='list'?'bg-purple-600 text-white':'text-slate-400 hover:text-white'}`}><Icons.List /> 清單</button>
@@ -816,6 +966,70 @@
               </div>
             )}
           </div>
+
+          {/* System Message Modal (Replaces Native Alert) */}
+          <SystemModal config={modalConfig} onClose={() => setModalConfig(null)} />
+
+          {/* Mail Configuration Modal */}
+          {showMailModal && (
+             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+               <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col">
+                  <div className="px-5 py-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2"><Icons.Mail /> 郵件通知設定</h3>
+                    <button onClick={() => setShowMailModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.XCircle /></button>
+                  </div>
+                  <div className="p-6 space-y-4 text-gray-800">
+                     <p className="text-sm text-gray-500">當藥品過期或接近效期時，可透過 Email 接收通知。</p>
+                     
+                     <div>
+                       <label className="text-xs font-bold text-gray-500 uppercase block mb-1">收件人 Email</label>
+                       <input 
+                         type="email" 
+                         value={mailConfig.email} 
+                         onChange={e => setMailConfig({...mailConfig, email: e.target.value})}
+                         placeholder="example@hospital.org.tw"
+                         className="w-full p-2.5 border border-gray-300 rounded text-gray-900 font-bold focus:ring-2 focus:ring-blue-500 outline-none" 
+                       />
+                     </div>
+
+                     <div>
+                       <label className="text-xs font-bold text-gray-500 uppercase block mb-1">Google Script 發信程式 URL</label>
+                       <textarea 
+                         value={mailConfig.apiUrl} 
+                         onChange={e => setMailConfig({...mailConfig, apiUrl: e.target.value})}
+                         placeholder="請貼上您部署的 Google Apps Script 網址 (https://script.google.com/...)"
+                         className="w-full p-2.5 border border-gray-300 rounded text-xs font-mono text-gray-600 h-20 focus:ring-2 focus:ring-blue-500 outline-none resize-none" 
+                       />
+                     </div>
+                     
+                     <div className="flex gap-2 pt-2">
+                        <button 
+                           onClick={() => sendMail('test')}
+                           disabled={isMailTesting || !mailConfig.email || !mailConfig.apiUrl}
+                           className={`flex-1 py-2 rounded-lg font-bold border flex items-center justify-center gap-2 ${isMailTesting ? 'bg-gray-100 text-gray-400' : 'border-slate-300 text-slate-700 hover:bg-slate-50'}`}
+                        >
+                           {isMailTesting ? '發送中...' : <><Icons.Send /> 測試發信</>}
+                        </button>
+                        <button 
+                           onClick={saveMailConfig} 
+                           className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center gap-2"
+                        >
+                           <Icons.Save /> 儲存設定
+                        </button>
+                     </div>
+                     
+                     <hr className="border-gray-200" />
+                     
+                     <button 
+                       onClick={checkAndSendAlert}
+                       className="w-full py-3 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700 flex items-center justify-center gap-2 shadow-sm"
+                     >
+                       <Icons.AlertTriangle /> 立即檢查並發送異常報告
+                     </button>
+                  </div>
+               </div>
+             </div>
+          )}
 
           {/* Tray Menu Modal */}
           {trayMenuOpen && (
