@@ -678,6 +678,9 @@
       });
       const [showTextSizeModal, setShowTextSizeModal] = useState(false);
       
+      // 新增：設定模式下的手機版專用「畫格/滾動」切換狀態 (預設電腦版為 true，手機版為 false 以便先滾動尋找位置)
+      const [adminDrawMode, setAdminDrawMode] = useState(window.innerWidth >= 768);
+
       // Feature: Paste Mode & Clipboard
       const [clipboard, setClipboard] = useState(null); 
       const [pasteMode, setPasteMode] = useState(false);
@@ -1153,7 +1156,19 @@
       const isOverlapping = (rect1, rect2) => { return (rect1.x < rect2.x + rect2.w && rect1.x + rect1.w > rect2.x && rect1.y < rect2.y + rect2.h && rect1.y + rect1.h > rect2.y); };
       const getGridCoordinates = (e) => { if (!gridContainerRef.current) return null; const container = gridContainerRef.current; const computedStyle = window.getComputedStyle(container); const paddingLeft = parseFloat(computedStyle.paddingLeft); const paddingTop = parseFloat(computedStyle.paddingTop); const contentWidth = container.clientWidth - paddingLeft - parseFloat(computedStyle.paddingRight); const contentHeight = container.clientHeight - paddingTop - parseFloat(computedStyle.paddingBottom); const cellW = contentWidth / GRID_COLS; const cellH = contentHeight / GRID_ROWS; const x = Math.floor((e.nativeEvent.offsetX - paddingLeft) / cellW); const y = Math.floor((e.nativeEvent.offsetY - paddingTop) / cellH); if (x < 0 || x >= GRID_COLS || y < 0 || y >= GRID_ROWS) return null; return { x, y }; };
       
-      const handlePointerDown = (e) => { if (mode !== 'admin') return; const coords = getGridCoordinates(e); if (!coords) return; const clickedSlot = activeTray.slots.find(s => coords.x >= s.x && coords.x < s.x + s.w && coords.y >= s.y && coords.y < s.y + s.h); if (clickedSlot) return; e.currentTarget.setPointerCapture(e.pointerId); setIsDrawing(true); setDragStart(coords); setDragCurrent(coords); setSelectedSlot(null); };
+      const handlePointerDown = (e) => { 
+          if (mode !== 'admin') return; 
+          if (!adminDrawMode) return; // 若處於手機版的滑動模式，則阻擋畫格動作
+          const coords = getGridCoordinates(e); 
+          if (!coords) return; 
+          const clickedSlot = activeTray.slots.find(s => coords.x >= s.x && coords.x < s.x + s.w && coords.y >= s.y && coords.y < s.y + s.h); 
+          if (clickedSlot) return; 
+          e.currentTarget.setPointerCapture(e.pointerId); 
+          setIsDrawing(true); 
+          setDragStart(coords); 
+          setDragCurrent(coords); 
+          setSelectedSlot(null); 
+      };
       const handlePointerMove = (e) => { if (!isDrawing) return; const coords = getGridCoordinates(e); if (coords) setDragCurrent(coords); };
       const handlePointerUp = (e) => { if (!isDrawing) return; setIsDrawing(false); e.currentTarget.releasePointerCapture(e.pointerId); if (!dragStart || !dragCurrent) return; const x = Math.min(dragStart.x, dragCurrent.x); const y = Math.min(dragStart.y, dragCurrent.y); const w = Math.abs(dragStart.x - dragCurrent.x) + 1; const h = Math.abs(dragStart.y - dragCurrent.y) + 1; const newRect = { x, y, w, h }; if (activeTray.slots.some(slot => isOverlapping(newRect, slot))) { alert("區域重疊"); return; } const newSlot = { id: `s-${Date.now()}`, ...newRect, name: '新區域', highAlert: false, requiredQty: 0, batches: [] }; const updatedSlots = [...activeTray.slots, newSlot]; const newData = trays.map(t => String(t.id) === String(activeTrayId) ? { ...t, slots: updatedSlots } : t); saveToSheet(newData); setSelectedSlot(newSlot); setEditForm({ ...newSlot }); };
       const openEditModal = (slot) => { setSelectedSlot(slot); const sortedBatches = slot.batches ? [...slot.batches].sort((a, b) => { const dateA = a.expiry || '9999'; const dateB = b.expiry || '9999'; if (dateA < dateB) return -1; if (dateA > dateB) return 1; return 0; }) : []; setEditForm({ ...slot, batches: sortedBatches.map(b => ({...b})) }); };
@@ -1281,6 +1296,25 @@
 
           {/* Workspace */}
           <div className="flex-1 overflow-auto bg-slate-950 relative cursor-grab active:cursor-grabbing p-2 md:p-4 pb-24 md:pb-4">
+            
+            {/* 手機板設定模式專用：畫格與滾動切換懸浮按鈕 */}
+            {mode === 'admin' && (
+               <div className="fixed bottom-6 right-4 z-50 md:hidden">
+                  <button
+                    onClick={() => setAdminDrawMode(!adminDrawMode)}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.6)] font-bold text-white transition-all border-2 ${
+                      adminDrawMode ? 'bg-amber-600 border-amber-400' : 'bg-blue-600 border-blue-400'
+                    }`}
+                  >
+                    {adminDrawMode ? <Icons.Edit className="w-5 h-5"/> : <Icons.Layers className="w-5 h-5"/>}
+                    <div className="flex flex-col text-left">
+                       <span className="leading-tight text-sm">{adminDrawMode ? '畫格模式' : '滑動模式'}</span>
+                       <span className="text-[10px] opacity-80 leading-tight font-normal">{adminDrawMode ? '點擊切換滑動' : '點擊切換畫格'}</span>
+                    </div>
+                  </button>
+               </div>
+            )}
+
             {mode === 'list' ? (
               <div className="w-full min-h-full min-w-[800px] flex flex-col bg-slate-900 rounded-lg border-2 border-slate-800 shadow-2xl overflow-hidden relative">
                 {/* Top Toolbar for List Mode */}
@@ -1417,14 +1451,14 @@
             ) : (
                /* ... Grid Mode ... */
               <div className="w-full min-h-full min-w-[800px] min-h-[600px] flex flex-col">
-                 <div ref={gridContainerRef} className={`relative flex-1 bg-slate-900 rounded-lg border-2 border-slate-800 shadow-2xl overflow-hidden ${mode==='admin'?'cursor-crosshair ring-1 ring-amber-500/30': (pasteMode ? 'cursor-copy ring-2 ring-yellow-500/50' : '')}`}
+                 <div ref={gridContainerRef} className={`relative flex-1 bg-slate-900 rounded-lg border-2 border-slate-800 shadow-2xl overflow-hidden ${mode==='admin'?(adminDrawMode ? 'cursor-crosshair ring-2 ring-amber-500/50' : 'cursor-grab ring-2 ring-blue-500/50') : (pasteMode ? 'cursor-copy ring-2 ring-yellow-500/50' : '')}`}
                   style={{ 
                     display: 'grid', 
                     gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`, 
                     gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`, 
                     gap: '1px', 
                     padding: '2px', 
-                    touchAction: mode === 'admin' ? 'none' : 'auto',
+                    touchAction: (mode === 'admin' && adminDrawMode) ? 'none' : 'auto',
                     backgroundImage: `linear-gradient(to right, rgba(30, 41, 59, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(30, 41, 59, 0.5) 1px, transparent 1px)`,
                     backgroundSize: `calc(100% / ${GRID_COLS}) calc(100% / ${GRID_ROWS})`
                   }}
@@ -1477,7 +1511,7 @@
                 <div className="mt-2 flex flex-col md:flex-row justify-between items-start md:items-center text-[10px] text-slate-500 px-2 shrink-0 gap-y-2 pb-4">
                   <div className="font-bold">{activeTray.name} - GS模式</div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <span>{mode==='view' ? (pasteMode ? '📋 貼上模式：點擊格子貼上效期' : '提示：點擊藥品以管理庫存') : '提示：按住並拖曳畫出新格子'}</span>
+                    <span>{mode==='view' ? (pasteMode ? '📋 貼上模式：點擊格子貼上效期' : '提示：點擊藥品以管理庫存') : (adminDrawMode ? '提示：按住並拖曳畫出新格子' : '提示：請點擊右下角切換為「畫格模式」以新增')}</span>
                     <span className="border-l border-slate-600 pl-2 ml-1 text-slate-600 whitespace-nowrap">製作者 : 林其仁藥師、陳梓騏藥師</span>
                     <span className="border-l border-slate-600 pl-2 ml-1 text-slate-600 whitespace-nowrap">版本日期 : 2026/02/08</span>
                   </div>
