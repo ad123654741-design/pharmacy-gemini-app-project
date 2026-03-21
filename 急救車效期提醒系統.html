@@ -962,9 +962,8 @@
             .page-header { position: fixed; top: 0; width: 100%; text-align: center; background: white; z-index: 1000; padding-bottom: 10px; }
             .page-footer { position: fixed; bottom: 0; width: 100%; height: 50px; background: white; border-top: 1px solid #ccc; padding-top: 5px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
             
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; page-break-inside: auto; }
-            tr { break-inside: avoid; page-break-inside: avoid; }
-            td, th { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; line-height: 1.4; font-size: 11px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; line-height: 1.4; font-size: 11px; }
             
             /* Core fix for page breaks */
             thead { display: table-header-group; }
@@ -1424,7 +1423,6 @@
                     gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`, 
                     gap: '1px', 
                     padding: '2px', 
-                    touchAction: mode === 'admin' ? 'none' : 'auto',
                     backgroundImage: `linear-gradient(to right, rgba(30, 41, 59, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(30, 41, 59, 0.5) 1px, transparent 1px)`,
                     backgroundSize: `calc(100% / ${GRID_COLS}) calc(100% / ${GRID_ROWS})`
                   }}
@@ -1474,12 +1472,12 @@
                     );
                   })}
                 </div>
-                <div className="mt-2 flex flex-col sm:flex-row justify-between items-start sm:items-center text-[10px] text-slate-500 px-2 shrink-0 pb-8 sm:pb-2 gap-y-2">
-                  <div className="font-bold">{activeTray.name} - GS模式</div>
-                  <div className="flex flex-wrap items-center gap-2">
+                <div className="mt-2 flex justify-between items-center text-[10px] text-slate-500 px-2 h-6 shrink-0">
+                  <div>{activeTray.name} - GS模式</div>
+                  <div className="flex items-center gap-2">
                     <span>{mode==='view' ? (pasteMode ? '📋 貼上模式：點擊格子貼上效期' : '提示：點擊藥品以管理庫存') : '提示：按住並拖曳畫出新格子'}</span>
-                    <span className="border-l border-slate-600 pl-2 text-slate-600 whitespace-nowrap">製作者 : 林其仁藥師、陳梓騏藥師</span>
-                    <span className="border-l border-slate-600 pl-2 text-slate-600 whitespace-nowrap">版本日期 : 2026/02/08</span>
+                    <span className="border-l border-slate-600 pl-2 ml-1 text-slate-600">製作者 : 林其仁藥師、陳梓騏藥師</span>
+                    <span className="border-l border-slate-600 pl-2 ml-1 text-slate-600">版本日期 : 2026/02/08</span>
                   </div>
                 </div>
               </div>
@@ -1497,7 +1495,7 @@
                 reportMode={reportMode}
             />
           )}
-          {/* Passcode Modal */}
+          {/* ... existing Modals ... */}
           {showPasscodeModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden p-6 text-center">
@@ -1509,7 +1507,6 @@
               </div>
             </div>
           )}
-          {/* Mail Modal */}
           {showMailModal && (
              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col">
@@ -1528,7 +1525,6 @@
                </div>
              </div>
           )}
-          {/* Text Size Modal */}
           {showTextSizeModal && (
              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden flex flex-col">
@@ -1557,7 +1553,6 @@
                </div>
              </div>
           )}
-          {/* Tray Menu Modal */}
           {trayMenuOpen && (
             <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-white w-full max-w-sm rounded-xl shadow-xl overflow-hidden">
