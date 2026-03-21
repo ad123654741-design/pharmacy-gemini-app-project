@@ -6,6 +6,51 @@
     <title>榮字病房 - 院外適應借藥計算機</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 深色模式下的全域顏色覆蓋 (減少更動 HTML 結構) */
+            .dark .bg-white { @apply bg-gray-800 border-gray-700; }
+            .dark .bg-gray-50 { @apply bg-gray-900 border-gray-700; }
+            .dark .text-gray-800 { @apply text-gray-100; }
+            .dark .text-gray-700 { @apply text-gray-200; }
+            .dark .text-gray-600 { @apply text-gray-300; }
+            .dark .text-gray-500 { @apply text-gray-400; }
+            .dark .border-gray-200 { @apply border-gray-700; }
+            .dark .border-gray-300 { @apply border-gray-600; }
+            
+            /* 特定區塊主題的深色調整 */
+            .dark .bg-teal-50 { @apply bg-teal-900/30 border-teal-800; }
+            .dark .bg-teal-100 { @apply bg-teal-900/60 border-teal-700 text-teal-300; }
+            .dark .text-teal-800 { @apply text-teal-300; }
+            .dark .text-teal-600 { @apply text-teal-400; }
+            
+            .dark .bg-medical-50 { @apply bg-sky-900/20 border-sky-800/50; }
+            .dark .text-medical-700 { @apply text-sky-400; }
+            .dark .text-medical-600 { @apply text-sky-400; }
+            .dark .text-medical-500 { @apply text-sky-500; }
+            
+            .dark .bg-blue-50 { @apply bg-blue-900/20 border-blue-800/50; }
+            .dark .bg-blue-100 { @apply bg-blue-900/60 text-blue-300; }
+            
+            .dark .bg-emerald-50 { @apply bg-emerald-900/20 border-emerald-800/50; }
+            .dark .bg-emerald-100 { @apply bg-emerald-900/60 text-emerald-300; }
+            
+            .dark .bg-amber-50 { @apply bg-amber-900/20 border-amber-800/50; }
+            .dark .bg-amber-100 { @apply bg-amber-900/50 text-amber-300; }
+            .dark .text-amber-800 { @apply text-amber-400; }
+            .dark .text-amber-600 { @apply text-amber-500; }
+            
+            .dark .bg-indigo-50 { @apply bg-indigo-900/20 border-indigo-800/50; }
+            .dark .bg-indigo-100 { @apply bg-indigo-900/60 border-indigo-700; }
+            .dark .text-indigo-800 { @apply text-indigo-300; }
+            .dark .text-indigo-700 { @apply text-indigo-400; }
+
+            /* 輸入框與其他細節的深色覆蓋 */
+            .dark input[type="text"] { @apply bg-gray-700 border-gray-600 text-white placeholder-gray-400; }
+            .dark .bg-white\/70 { @apply bg-gray-800/70; }
+            .dark .bg-white\/50 { @apply bg-gray-800/50; }
+        }
+    </style>
     <!-- 引入 FontAwesome 圖示 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- 引入 Google Fonts -->
@@ -18,6 +63,7 @@
 
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -37,6 +83,23 @@
         }
     </script>
     <style>
+        /* 筆記本網格背景 */
+        .bg-notebook-grid {
+            background-color: #fdfdfd;
+            background-image: 
+                linear-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(203, 213, 225, 0.4) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+
+        /* 筆記本網格背景 - 深色模式 */
+        .dark .bg-notebook-grid {
+            background-color: #111827; /* gray-900 */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+        }
+        
         /* 客製化 Flatpickr 假日紅字樣式 */
         .flatpickr-day.is-holiday {
             color: #ef4444 !important; /* text-red-500 */
@@ -53,11 +116,27 @@
             cursor: pointer;
             background-color: white !important;
         }
+        .dark input[readonly] {
+            background-color: #374151 !important; /* gray-700 */
+        }
     </style>
+    
+    <!-- 在 head 載入時先判定深色模式，避免閃爍 -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen p-3 md:p-8">
+<body class="bg-notebook-grid text-gray-800 font-sans min-h-screen p-3 md:p-8 transition-colors duration-300">
 
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-3xl mx-auto relative">
+        <!-- 深色模式切換按鈕 -->
+        <button id="darkModeToggle" onclick="toggleDarkMode()" class="absolute top-0 right-0 md:-right-4 p-2 md:p-3 rounded-full bg-white text-gray-500 hover:text-medical-600 shadow-sm border border-gray-200 transition-all z-10 focus:outline-none">
+            <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+            <i class="fa-solid fa-sun hidden dark:inline text-lg"></i>
+        </button>
+
         <!-- 標頭 -->
         <header class="mb-5 text-center">
             <h1 class="text-xl md:text-3xl font-bold text-medical-700 flex items-center justify-center gap-2 md:gap-3">
@@ -93,7 +172,10 @@
                 </div>
                 
                 <div id="holidayListContainer" class="mt-5 hidden">
-                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-2 border-t pt-3">已設定之特定假日</h3>
+                    <div class="flex justify-between items-center mb-2 border-t pt-3">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase">已設定之特定假日</h3>
+                        <button onclick="clearAllHolidays(this)" class="text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded bg-red-50 border border-red-100 dark:bg-red-900/30 dark:border-red-800 transition-colors"><i class="fa-solid fa-trash-can mr-1"></i>全部清除</button>
+                    </div>
                     <div id="holidayTags" class="flex flex-wrap gap-2">
                         <!-- 動態插入假日標籤 -->
                     </div>
@@ -237,6 +319,60 @@
         let startPicker, endPicker, holiStartPicker, holiEndPicker, dataDatePicker;
         let lastStartDate = ""; // 用於追蹤離院日期是否改變，以連動資料日期
 
+        // --- 深色模式切換邏輯 ---
+        function toggleDarkMode() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // --- 數字跳動動畫 ---
+        function animateValue(obj, end, duration = 150) {
+            if (!obj) return;
+            // 如果結果不是數字（例如防呆時的 '-'），直接更新不跑動畫
+            if (isNaN(end)) {
+                obj.textContent = end;
+                return;
+            }
+            let start = 0; // 每次重新計算時從 0 開始
+            end = parseInt(end, 10);
+            
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                // 改為等速 (linear) 動畫，確保每個數字跳動速度一致，避免最後停頓
+                obj.textContent = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                } else {
+                    obj.textContent = end;
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // --- 連假資料儲存 (LocalStorage) ---
+        function saveHolidaysToLocal() {
+            localStorage.setItem('customHolidays', JSON.stringify(Array.from(customHolidays)));
+        }
+
+        function loadHolidaysFromLocal() {
+            const saved = localStorage.getItem('customHolidays');
+            if (saved) {
+                try {
+                    const parsedDates = JSON.parse(saved);
+                    parsedDates.forEach(d => customHolidays.add(d));
+                } catch (e) {
+                    console.error("連假資料讀取失敗", e);
+                }
+            }
+        }
+
         // 共用日期選擇器設定 (包含標記紅字功能)
         const datePickerConfig = {
             locale: "zh_tw",
@@ -256,13 +392,29 @@
 
         // 初始化所有日期選擇器
         document.addEventListener('DOMContentLoaded', function() {
+            loadHolidaysFromLocal(); // 載入記憶的連假
+
             startPicker = flatpickr("#startDate", datePickerConfig);
             endPicker = flatpickr("#endDate", datePickerConfig);
             dataDatePicker = flatpickr("#dataDate", datePickerConfig); // 新增資料日期選擇器
             
-            // 連假設定的選擇器不觸發計算
-            holiStartPicker = flatpickr("#holiStart", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d" });
-            holiEndPicker = flatpickr("#holiEnd", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d" });
+            // 新增連假起迄日期的即時防呆檢查
+            const checkHolidayDates = function() {
+                const startVal = document.getElementById('holiStart').value;
+                const endVal = document.getElementById('holiEnd').value;
+                if (startVal && endVal) {
+                    if (new Date(endVal) < new Date(startVal)) {
+                        alert('【設定錯誤】連假迄日不能早於起日！請重新選擇。');
+                        holiEndPicker.clear(); // 清空錯誤的設定，避免誤會
+                    }
+                }
+            };
+
+            // 連假設定的選擇器不觸發計算，加入 onChange 即時檢查
+            holiStartPicker = flatpickr("#holiStart", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d", onChange: checkHolidayDates });
+            holiEndPicker = flatpickr("#holiEnd", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d", onChange: checkHolidayDates });
+
+            renderHolidays(); // 渲染記憶的連假標籤
         });
 
         // --- 手動時間輸入防呆驗證 ---
@@ -310,7 +462,10 @@
             
             let start = new Date(startVal);
             let end = new Date(endVal);
-            if (end < start) return alert('連假迄日不能早於起日');
+            if (end < start) {
+                if (holiEndPicker) holiEndPicker.clear();
+                return alert('【設定錯誤】連假迄日不能早於起日！');
+            }
 
             let current = new Date(start);
             while (current <= end) {
@@ -323,6 +478,8 @@
             holiStartPicker.clear();
             holiEndPicker.clear();
             
+            saveHolidaysToLocal(); // 儲存至 LocalStorage
+            
             renderHolidays();
             // 重繪日曆，讓剛加入的假日變紅字
             startPicker.redraw();
@@ -333,12 +490,50 @@
 
         function removeHoliday(dateStr) {
             customHolidays.delete(dateStr);
+            saveHolidaysToLocal(); // 更新 LocalStorage
+
             renderHolidays();
             // 重繪日曆
             startPicker.redraw();
             endPicker.redraw();
             if(dataDatePicker) dataDatePicker.redraw();
             calculateMedication();
+        }
+
+        function clearAllHolidays(btnElement) {
+            // 若沒有傳入 btnElement，則抓取按鈕本身
+            const btn = btnElement || document.querySelector('button[onclick^="clearAllHolidays"]');
+
+            if (btn.dataset.confirm === 'true') {
+                customHolidays.clear();
+                saveHolidaysToLocal(); // 更新 LocalStorage
+
+                renderHolidays();
+                // 重繪日曆
+                startPicker.redraw();
+                endPicker.redraw();
+                if(dataDatePicker) dataDatePicker.redraw();
+                calculateMedication();
+
+                // 重置按鈕狀態
+                btn.dataset.confirm = 'false';
+                btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i>全部清除';
+                btn.classList.remove('bg-red-600', 'text-white', 'border-red-600');
+            } else {
+                // 第一次點擊：進入確認狀態 (取代會被預覽環境阻擋的原生 confirm)
+                btn.dataset.confirm = 'true';
+                btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>確定清除？(再點一次)';
+                btn.classList.add('bg-red-600', 'text-white', 'border-red-600');
+                
+                // 3 秒後自動還原按鈕
+                setTimeout(() => {
+                    if (btn.dataset.confirm === 'true') {
+                        btn.dataset.confirm = 'false';
+                        btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i>全部清除';
+                        btn.classList.remove('bg-red-600', 'text-white', 'border-red-600');
+                    }
+                }, 3000);
+            }
         }
 
         function renderHolidays() {
@@ -475,7 +670,7 @@
             // === 演算法結束 ===
 
             // --- 介面更新 ---
-            totalDaysEl.textContent = totalDays;
+            animateValue(totalDaysEl, totalDays); // 替換原本的 textContent 加入跳動動畫
             
             const formatStr = (date) => {
                 const m = date.getMonth() + 1;
@@ -524,9 +719,9 @@
                 let diffTimeChange = startDateOnly - dataDateObj;
                 let diffDaysChange = Math.round(diffTimeChange / (1000 * 60 * 60 * 24));
 
-                // 顯示結果
-                machineDefaultDaysEl.textContent = totalDays;
-                machineChangeDaysEl.textContent = diffDaysChange;
+                // 顯示結果 (替換原本的 textContent 加入跳動動畫)
+                animateValue(machineDefaultDaysEl, totalDays);
+                animateValue(machineChangeDaysEl, diffDaysChange);
             }
         }
     </script>
