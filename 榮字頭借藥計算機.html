@@ -11,7 +11,7 @@
     <!-- 引入 Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- 引入 Flatpickr 日期時間選擇器 (用於 24H制 與 特定假日紅字) -->
+    <!-- 引入 Flatpickr 日期時間選擇器 (用於特定假日紅字) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/zh-tw.js"></script>
@@ -64,7 +64,7 @@
                 <i class="fa-solid fa-pills"></i>
                 榮字病房 - 院外適應借藥計算機
             </h1>
-            <p class="text-gray-500 mt-2 text-xs md:text-sm">支援跨連假、凌晨轉檔漏單自動補足計算 (15:01 切點)</p>
+            <p class="text-gray-500 mt-2 text-xs md:text-sm">支援跨連假、凌晨轉檔漏單自動補足計算 by 其仁</p>
         </header>
 
         <!-- 連假設定卡片 -->
@@ -103,7 +103,7 @@
 
         <!-- 主要計算卡片 -->
         <main class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-5">
-            <!-- 輸入區 (加入明顯區塊劃分) -->
+            <!-- 輸入區 -->
             <div class="p-5 md:p-6 bg-medical-50 border-b border-medical-100">
                 <h2 class="text-lg font-bold text-medical-700 mb-5 flex items-center gap-2">
                     <i class="fa-regular fa-calendar-check"></i> 請假日期與時間設定 (24H制)
@@ -114,7 +114,7 @@
                     <!-- 起始區塊 (藍色系) -->
                     <div class="flex-1 bg-blue-50 border border-blue-200 p-4 md:p-5 rounded-xl shadow-sm relative mt-3 md:mt-0">
                         <div class="absolute -top-3 left-4 bg-blue-100 text-blue-800 text-sm font-bold px-3 py-1 rounded shadow-sm flex items-center gap-1">
-                            <i class="fa-solid fa-arrow-right-from-bracket"></i> 出發 (請假起)
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i> 離院 (請假起)
                         </div>
                         <div class="mt-3 space-y-4">
                             <div>
@@ -123,8 +123,10 @@
                                     class="w-full px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
                             </div>
                             <div>
-                                <label for="startTime" class="block text-sm font-medium text-gray-700 mb-1">時間</label>
-                                <input type="text" id="startTime" value="09:30"
+                                <label for="startTime" class="block text-sm font-medium text-gray-700 mb-1">時間 <span class="text-xs text-gray-500 font-normal">(手動輸入)</span></label>
+                                <input type="text" id="startTime" value="09:00" placeholder="HH:MM" maxlength="5"
+                                    oninput="this.value = this.value.replace(/[^0-9:]/g, '')"
+                                    onblur="validateTime(this)"
                                     class="w-full px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
                             </div>
                         </div>
@@ -142,8 +144,10 @@
                                     class="w-full px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
                             </div>
                             <div>
-                                <label for="endTime" class="block text-sm font-medium text-gray-700 mb-1">時間</label>
-                                <input type="text" id="endTime" value="18:00"
+                                <label for="endTime" class="block text-sm font-medium text-gray-700 mb-1">時間 <span class="text-xs text-gray-500 font-normal">(手動輸入)</span></label>
+                                <input type="text" id="endTime" value="18:00" placeholder="HH:MM" maxlength="5"
+                                    oninput="this.value = this.value.replace(/[^0-9:]/g, '')"
+                                    onblur="validateTime(this)"
                                     class="w-full px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all">
                             </div>
                         </div>
@@ -183,28 +187,26 @@
                         </div>
                     </div>
 
-                    <!-- 送單日建議 -->
-                    <div class="bg-amber-50 rounded-xl p-5 border border-amber-200 flex flex-col justify-center">
-                        <span class="text-amber-800 text-base font-bold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-bell text-lg"></i> 藥局送單提醒
+                    <!-- 藥包機設定 -->
+                    <div class="bg-indigo-50 rounded-xl p-5 border border-indigo-200 flex flex-col justify-center">
+                        <span class="text-indigo-800 text-base font-bold mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-gear text-lg"></i> 藥包機設定
                         </span>
                         
                         <div class="mt-1">
-                            <span class="text-gray-600 text-sm block mb-1">建議最遲送單日：</span>
-                            <div id="submitDateDisplay" class="text-2xl md:text-3xl font-bold text-amber-600 mb-2">
-                                尚未計算
-                            </div>
-                            <span id="submitRuleText" class="text-xs md:text-sm text-amber-800 bg-amber-100 px-2 py-1 rounded-md font-medium">
-                                原則為請假前一天送單
-                            </span>
+                            <label for="dataDate" class="block text-sm font-medium text-gray-700 mb-1">資料日期 <span class="text-xs text-gray-500 font-normal">(預設為離院前一天)</span></label>
+                            <input type="text" id="dataDate" placeholder="選擇日期"
+                                class="w-full px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                         </div>
 
-                        <div class="mt-5 pt-4 border-t border-amber-200/60 flex flex-col md:flex-row gap-3 md:gap-4 text-sm text-amber-800 font-bold">
-                            <div class="flex items-center gap-2 bg-white/50 px-3 py-2 rounded-lg">
-                                <i class="fa-regular fa-clock text-medical-600"></i> 12:00 前送單
+                        <div class="mt-4 pt-4 border-t border-indigo-200/60 grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-white/70 p-3 rounded-lg border border-indigo-100 shadow-sm">
+                                <span class="text-xs text-gray-500 font-bold block mb-1">內定天數 <br>(借藥天數)</span>
+                                <div id="machineDefaultDays" class="text-3xl font-bold text-indigo-700">-</div>
                             </div>
-                            <div class="flex items-center gap-2 bg-white/50 px-3 py-2 rounded-lg">
-                                <i class="fa-solid fa-box-open text-medical-600"></i> 16:00 前給藥
+                            <div class="bg-white/70 p-3 rounded-lg border border-indigo-100 shadow-sm">
+                                <span class="text-xs text-gray-500 font-bold block mb-1">異動天數 <br>(離院-資料日期)</span>
+                                <div id="machineChangeDays" class="text-3xl font-bold text-indigo-700">-</div>
                             </div>
                         </div>
                     </div>
@@ -215,13 +217,15 @@
         <!-- 規範備忘錄 -->
         <section class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 md:p-6 text-sm md:text-base text-gray-600 mb-8">
             <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2 text-base md:text-lg">
-                <i class="fa-solid fa-book-medical text-medical-500"></i> 借藥與包藥邏輯備忘錄
+                <i class="fa-solid fa-book-medical text-medical-500"></i> 借藥與包藥邏輯
             </h3>
             <ul class="space-y-3 list-disc list-inside">
-                <li><strong class="text-gray-800">基本送單：</strong>不論平假日，原則上應於請假**前一天**送單。</li>
-                <li><strong class="text-gray-800">最小單位：</strong>借藥以「日」為單位（當日 <strong class="text-medical-600">15:01</strong> 至隔日 <strong class="text-medical-600">15:01</strong>）。</li>
-                <li><strong class="text-medical-600">防漏單機制 (凌晨 01:00 轉檔)：</strong>系統會自動檢查病人請假期間，是否會錯過每日凌晨 01:00 的常規包藥轉檔。若有錯過，系統會自動將該日份的藥物加算進借藥天數中，避免病人回病房後無藥可用。</li>
-                <li><strong class="text-medical-600">假日展延機制：</strong>週末與連假藥局無包藥作業。若借藥應涵蓋期限剛好落在假日，系統會自動將包藥天數延展至**下一個工作日的 15:01**。</li>
+                <li><strong class="text-medical-600">送單原則：</strong><span class="text-gray-800">平日原則上應於請假前一天送單(12:00 前送單，16:00 前給藥)。</span></li>
+                <li><strong class="text-medical-600">最小單位：</strong><span class="text-gray-800">借藥以「日」為單位（當日 15:01 至隔日 15:01）。</span></li>
+                <li><strong class="text-medical-600">防漏單機制 (凌晨 01:00 轉檔)：</strong><span class="text-gray-800">系統會自動檢查病人請假期間，是否會錯過每日凌晨 01:00 的常規包藥轉檔。若有錯過，系統會將該日份的藥物加進借藥天數中，避免病人回病房後無藥可用。</span></li>
+                <li><strong class="text-medical-600">假日展延機制：</strong><span class="text-gray-800">週末與連假藥局無包藥作業。若借藥末日落在假日，系統會自動將包藥天數延展至下一個工作日的 15:01。</span></li>
+                <li><strong class="text-medical-600">借藥注意事項：</strong><span class="text-gray-800">請以單日的轉檔資料進行借藥，若用3日資料去轉，外投貼紙藥量會變成3倍。</span></li>
+                <li><strong class="text-medical-600">特殊頻率藥品：</strong><span class="text-gray-800">QW、Q2D此類藥品需人工進處方log判讀是否需給藥，一定要進系統看。</span></li>
             </ul>
         </section>
         
@@ -230,7 +234,8 @@
     <script>
         // --- 變數與套件初始化 ---
         let customHolidays = new Set();
-        let startPicker, endPicker, holiStartPicker, holiEndPicker;
+        let startPicker, endPicker, holiStartPicker, holiEndPicker, dataDatePicker;
+        let lastStartDate = ""; // 用於追蹤離院日期是否改變，以連動資料日期
 
         // 共用日期選擇器設定 (包含標記紅字功能)
         const datePickerConfig = {
@@ -249,28 +254,41 @@
             onChange: function() { calculateMedication(); }
         };
 
-        // 共用時間選擇器設定 (強制 24H 制)
-        const timePickerConfig = {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true,
-            disableMobile: "true",
-            onChange: function() { calculateMedication(); }
-        };
-
-        // 初始化所有選擇器
+        // 初始化所有日期選擇器
         document.addEventListener('DOMContentLoaded', function() {
             startPicker = flatpickr("#startDate", datePickerConfig);
             endPicker = flatpickr("#endDate", datePickerConfig);
+            dataDatePicker = flatpickr("#dataDate", datePickerConfig); // 新增資料日期選擇器
             
             // 連假設定的選擇器不觸發計算
             holiStartPicker = flatpickr("#holiStart", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d" });
             holiEndPicker = flatpickr("#holiEnd", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d" });
-
-            flatpickr("#startTime", timePickerConfig);
-            flatpickr("#endTime", timePickerConfig);
         });
+
+        // --- 手動時間輸入防呆驗證 ---
+        function validateTime(input) {
+            let val = input.value;
+            // 如果空值則回復預設
+            if (!val) {
+                input.value = input.defaultValue;
+                val = input.defaultValue;
+            }
+            
+            // 防呆處理：護理人員若直接輸入如 0930 (4碼數字)，系統自動補上冒號變成 09:30
+            if (val.length === 4 && !val.includes(':') && !isNaN(val)) {
+                val = val.substring(0, 2) + ':' + val.substring(2);
+                input.value = val;
+            }
+
+            // 正則驗證：小時 00-23，分鐘 00-59
+            const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
+            if (!timeRegex.test(val)) {
+                alert("時間格式錯誤或超出範圍！\n\n【防呆提示】\n• 小時請輸入 00-23\n• 分鐘請輸入 00-59\n• 格式範例：09:30");
+                input.value = input.defaultValue; // 錯誤則重置為預設值
+            }
+            // 驗證通過後觸發計算
+            calculateMedication();
+        }
 
         // --- 連假設定相關邏輯 ---
         function toggleHolidaySettings() {
@@ -309,6 +327,7 @@
             // 重繪日曆，讓剛加入的假日變紅字
             startPicker.redraw();
             endPicker.redraw();
+            if(dataDatePicker) dataDatePicker.redraw();
             calculateMedication(); 
         }
 
@@ -318,6 +337,7 @@
             // 重繪日曆
             startPicker.redraw();
             endPicker.redraw();
+            if(dataDatePicker) dataDatePicker.redraw();
             calculateMedication();
         }
 
@@ -369,7 +389,6 @@
             const endDateInput = document.getElementById('endDate').value;
             const endTimeInput = document.getElementById('endTime').value;
             const errorMsg = document.getElementById('errorMsg');
-            const errorText = document.getElementById('errorText');
             
             // UI
             const totalDaysEl = document.getElementById('totalDays');
@@ -377,19 +396,23 @@
             const coverageRangeText = document.getElementById('coverageRangeText');
             const delayNotice = document.getElementById('delayNotice');
             const delayNoticeText = document.getElementById('delayNoticeText');
-            const submitDateDisplayEl = document.getElementById('submitDateDisplay');
+            
+            // 藥包機 UI
+            const machineDefaultDaysEl = document.getElementById('machineDefaultDays');
+            const machineChangeDaysEl = document.getElementById('machineChangeDays');
 
             if (!startDateInput || !endDateInput || !startTimeInput || !endTimeInput) return;
 
             const startDateTime = new Date(`${startDateInput}T${startTimeInput}`);
             const endDateTime = new Date(`${endDateInput}T${endTimeInput}`);
 
-            // 防呆
+            // 防呆：日期先後
             if (endDateTime < startDateTime) {
                 errorMsg.classList.remove('hidden');
                 totalDaysEl.textContent = '-';
                 coverageDetails.classList.add('hidden');
-                submitDateDisplayEl.textContent = '無法計算';
+                machineDefaultDaysEl.textContent = '-';
+                machineChangeDaysEl.textContent = '-';
                 return;
             } else {
                 errorMsg.classList.add('hidden');
@@ -477,13 +500,34 @@
                 delayNotice.classList.add('hidden');
             }
 
-            // 送單日
-            let submitDate = new Date(startDateTime);
-            submitDate.setDate(submitDate.getDate() - 1);
-            const submitM = submitDate.getMonth() + 1;
-            const submitD = submitDate.getDate();
-            const submitDayName = ['日', '一', '二', '三', '四', '五', '六'][submitDate.getDay()];
-            submitDateDisplayEl.innerHTML = `${submitDate.getFullYear()}年${submitM}月${submitD}日 <span class="text-xl md:text-2xl">(${submitDayName})</span>`;
+            // === 藥包機設定計算 (內定與異動天數) ===
+            let startDateOnly = new Date(startDateInput);
+            startDateOnly.setHours(0,0,0,0);
+
+            // 如果離院日期有改變，連動將資料日期預設為「離院前一天」
+            if (startDateInput !== lastStartDate) {
+                lastStartDate = startDateInput;
+                let dataDateObj = new Date(startDateOnly);
+                dataDateObj.setDate(dataDateObj.getDate() - 1); // 減去一天
+                if (dataDatePicker) {
+                    dataDatePicker.setDate(dataDateObj); // 這行會觸發 Flatpickr 的顯示更新
+                }
+            }
+
+            // 抓取當前資料日期的值來進行計算
+            let dataDateVal = document.getElementById('dataDate').value;
+            if (dataDateVal) {
+                let dataDateObj = new Date(dataDateVal);
+                dataDateObj.setHours(0,0,0,0);
+                
+                // 異動天數 = 離院日 - 資料日期
+                let diffTimeChange = startDateOnly - dataDateObj;
+                let diffDaysChange = Math.round(diffTimeChange / (1000 * 60 * 60 * 24));
+
+                // 顯示結果
+                machineDefaultDaysEl.textContent = totalDays;
+                machineChangeDaysEl.textContent = diffDaysChange;
+            }
         }
     </script>
 </body>
