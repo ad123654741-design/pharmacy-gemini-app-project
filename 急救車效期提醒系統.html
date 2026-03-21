@@ -672,6 +672,11 @@
       const [modalConfig, setModalConfig] = useState(null);
       const [isLoading, setIsLoading] = useState(true);
       const [reportMode, setReportMode] = useState('current');
+      const [expiryTextSize, setExpiryTextSize] = useState(() => {
+        const saved = localStorage.getItem('ecart_expiry_text_size');
+        return saved ? parseInt(saved, 10) : 100;
+      });
+      const [showTextSizeModal, setShowTextSizeModal] = useState(false);
       
       // Feature: Paste Mode & Clipboard
       const [clipboard, setClipboard] = useState(null); 
@@ -1184,7 +1189,7 @@
       }
 
       return (
-        <div className="h-screen w-screen flex flex-col">
+        <div className="min-h-screen h-[100dvh] w-full flex flex-col overflow-hidden">
           {/* Header */}
           <header className="bg-slate-800 border-b border-slate-700 p-0 flex justify-between items-stretch shrink-0 h-12 z-30 relative">
             <div className="flex-1 flex overflow-hidden px-2 gap-2 items-center">
@@ -1225,6 +1230,7 @@
                      {showAdvancedMenu && (
                         <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
                              <button onClick={() => { setShowMailModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Mail /> 郵件通知設定</button>
+                             <button onClick={() => { setShowTextSizeModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Settings /> 調整效期文字大小</button>
                              <button onClick={handleExportJSON} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Download /> 資料備份 (匯出)</button>
                              <button onClick={() => fileInputRef.current.click()} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 flex items-center gap-2"><Icons.Upload /> 資料還原 (匯入)</button>
                         </div>
@@ -1311,10 +1317,16 @@
                       <tr>
                         {(reportMode === 'all_data' || reportMode === 'all_abnormal') && (<th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10">來源藥車</th>)}
                         <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10">藥品名稱</th>
-                        {(reportMode === 'current' || reportMode === 'all_data') && (<><th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 text-right">應備量</th><th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 text-right">數量</th></>)}
-                        {(reportMode === 'all_abnormal') && (<th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 text-right">數量</th>)}
-                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10">效期 (YYYY-MM-DD)</th>
-                        <th className="px-4 py-3 font-bold border-b border-slate-700 text-center bg-slate-800 sticky top-0 z-10">狀態</th>
+                        {(reportMode === 'current' || reportMode === 'all_data') && (
+                          <>
+                            <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 text-right whitespace-nowrap">應備量</th>
+                            <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 text-right whitespace-nowrap text-emerald-400">現有總量</th>
+                            <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 text-right whitespace-nowrap">數量</th>
+                          </>
+                        )}
+                        {(reportMode === 'all_abnormal') && (<th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 text-right whitespace-nowrap">數量</th>)}
+                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 sticky top-0 z-10 whitespace-nowrap">效期 (YYYY-MM-DD)</th>
+                        <th className="px-4 py-3 font-bold border-b border-slate-700 text-center bg-slate-800 sticky top-0 z-10 whitespace-nowrap">狀態</th>
                       </tr>
                     </thead>
                     <tbody className="">
@@ -1343,6 +1355,7 @@
                                            <div className="flex flex-wrap items-center gap-2"><span className="leading-snug">{slot.name}</span>{slot.highAlert && <span className="whitespace-nowrap text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-bold">High Alert</span>}</div>
                                          </td>
                                          <td className="px-4 py-3 font-mono text-right text-slate-500">{requiredQty}</td>
+                                         <td className="px-4 py-3 font-mono text-right font-bold text-rose-500">0</td>
                                          <td className="px-4 py-3 font-mono text-right text-slate-500">0</td>
                                          <td className="px-4 py-3 font-mono text-slate-500">-</td>
                                          <td className="px-4 py-3 text-center"><span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-black border-2 tracking-wide bg-slate-800 text-slate-500 border-slate-700 shadow-sm">無庫存</span></td>
@@ -1359,7 +1372,7 @@
                                           <div className="flex flex-wrap items-center gap-2"><span className="leading-snug">{slot.name}</span>{slot.highAlert && <span className="whitespace-nowrap text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-bold">High Alert</span>}</div>
                                         </td>
                                         <td className="px-4 py-3 font-mono text-right text-white font-bold" rowSpan={isFirstBatch ? sortedBatches.length : 1} style={{display: isFirstBatch ? 'table-cell' : 'none'}}>{requiredQty}</td>
-                                        <td className="px-4 py-3 font-mono text-right text-white font-bold" rowSpan={isFirstBatch ? sortedBatches.length : 1} style={{display: isFirstBatch ? 'table-cell' : 'none'}}>{totalQty}</td>
+                                        <td className={`px-4 py-3 font-mono text-right font-bold ${totalQty !== requiredQty ? 'text-rose-400' : 'text-emerald-400'}`} rowSpan={isFirstBatch ? sortedBatches.length : 1} style={{display: isFirstBatch ? 'table-cell' : 'none'}}>{totalQty}</td>
                                         
                                         <td className="px-4 py-3 font-mono text-right text-white font-bold">{batch.qty}</td>
                                         <td className="px-4 py-3 font-mono text-slate-300">{batch.expiry || '未設定'}</td>
@@ -1410,7 +1423,6 @@
                     gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`, 
                     gap: '1px', 
                     padding: '2px', 
-                    touchAction: mode === 'admin' ? 'none' : 'auto',
                     backgroundImage: `linear-gradient(to right, rgba(30, 41, 59, 0.5) 1px, transparent 1px), linear-gradient(to bottom, rgba(30, 41, 59, 0.5) 1px, transparent 1px)`,
                     backgroundSize: `calc(100% / ${GRID_COLS}) calc(100% / ${GRID_ROWS})`
                   }}
@@ -1450,7 +1462,7 @@
                             const s = getStatus(batch.expiry);
                             return (
                               <div key={batch.id} className={`flex justify-between items-center text-[8px] md:text-[9px] px-1 rounded-sm ${s.bg} ${s.text} bg-opacity-90`}>
-                                <span className="font-mono tracking-tighter truncate">{batch.expiry}</span>
+                                <span className="font-mono tracking-tighter truncate" style={expiryTextSize !== 100 ? { fontSize: `${expiryTextSize}%`, lineHeight: 1 } : {}}>{batch.expiry}</span>
                                 <span className="font-bold ml-1">x{batch.qty}</span>
                               </div>
                             )
@@ -1509,6 +1521,34 @@
                      <div className="flex gap-2 pt-2"><button onClick={() => sendMail('test')} disabled={isMailTesting || !mailConfig.email || !mailConfig.apiUrl} className={`flex-1 py-2 rounded-lg font-bold border flex items-center justify-center gap-2 ${isMailTesting ? 'bg-gray-100 text-gray-400' : 'border-slate-300 text-slate-700 hover:bg-slate-50'}`}>{isMailTesting ? '發送中...' : <><Icons.Send /> 測試發信</>}</button><button onClick={saveMailConfig} className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center gap-2"><Icons.Save /> 儲存設定</button></div>
                      <hr className="border-gray-200" />
                      <button onClick={checkAndSendAlert} className="w-full py-3 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700 flex items-center justify-center gap-2 shadow-sm"><Icons.AlertTriangle /> 立即檢查並發送異常報告</button>
+                  </div>
+               </div>
+             </div>
+          )}
+          {showTextSizeModal && (
+             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+               <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden flex flex-col">
+                  <div className="px-5 py-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2"><Icons.Settings /> 調整效期文字大小</h3>
+                    <button onClick={() => setShowTextSizeModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.XCircle /></button>
+                  </div>
+                  <div className="p-6 space-y-4 text-gray-800">
+                     <p className="text-sm text-gray-500">請選擇藥盤檢視模式下的效期文字大小：</p>
+                     <div className="grid grid-cols-2 gap-3">
+                         {[100, 125, 150, 175].map(size => (
+                             <button 
+                                key={size}
+                                onClick={() => { 
+                                    setExpiryTextSize(size); 
+                                    localStorage.setItem('ecart_expiry_text_size', size);
+                                    setShowTextSizeModal(false);
+                                }}
+                                className={`py-2 rounded-lg font-bold border transition-colors ${expiryTextSize === size ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                             >
+                                 {size}%
+                             </button>
+                         ))}
+                     </div>
                   </div>
                </div>
              </div>
