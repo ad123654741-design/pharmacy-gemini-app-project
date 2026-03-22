@@ -658,6 +658,9 @@
             holiEndPicker = flatpickr("#holiEnd", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d", onChange: checkHolidayDates });
 
             renderHolidays(); 
+            
+            // 網頁初次載入時，強制觸發一次選項邏輯，確保畫面區塊與預設值正確顯示
+            handleSubmitTimeChange(); 
         });
 
         // --- 手動時間輸入防呆驗證 ---
@@ -687,29 +690,25 @@
             const compHint = document.getElementById('computerDateHint');
             const packedEndDateHint = document.getElementById('packedEndDateHint');
             
+            // 確保已包區間設定區塊永遠顯示
+            if (packedDiv) packedDiv.classList.remove('hidden');
+
             // 更新 UI 顯示與設定
             if (submitType === 'before') {
                 labelDisplay.textContent = '請假前一日';
-                packedDiv.classList.add('hidden');
                 compHint.textContent = '(預設為請假離院前一日)';
                 compHint.className = 'text-xs text-indigo-600 font-normal';
+                if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01)';
             } else if (submitType === 'today') {
                 labelDisplay.textContent = '請假當日';
-                packedDiv.classList.remove('hidden'); // 【修正】確實展開已包區間
                 compHint.textContent = '(預設為請假當日)';
                 compHint.className = 'text-xs text-indigo-600 font-normal';
                 if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01，<span class="text-red-500 font-bold">星期五或連假需注意設定!</span>)';
             } else if (submitType === 'holiday') {
                 labelDisplay.textContent = '假日期間';
-                packedDiv.classList.remove('hidden');
                 compHint.textContent = '(請手動輸入電腦日期後計算)';
                 compHint.className = 'text-xs text-red-500 font-bold';
                 if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01)';
-                
-                // 假日無預設，清空電腦日期
-                if (computerDatePicker) {
-                    computerDatePicker.clear();
-                }
             }
 
             // 強制觸發一次預設電腦日期的更新 (透過將 lastStartDate 清空來觸發計算內的邏輯)
@@ -871,6 +870,33 @@
 
             if (!startDateInput || !endDateInput || !startTimeInput || !endTimeInput) return;
 
+            // ==========================================
+            // [關鍵修正] 預設值處理必須移到最前方，確保能立刻套用並參與本次計算
+            // ==========================================
+            let startDateOnly = new Date(startDateInput);
+            startDateOnly.setHours(0,0,0,0);
+
+            if (startDateInput !== lastStartDate) {
+                lastStartDate = startDateInput;
+                if (submitType === 'before') {
+                    let compDateObj = new Date(startDateOnly);
+                    compDateObj.setDate(compDateObj.getDate() - 1); 
+                    if (computerDatePicker) computerDatePicker.setDate(compDateObj);
+                    
+                    if (packedDatePicker) packedDatePicker.setDate(startDateOnly); // 前一日送單，預設已包至起日
+                } else if (submitType === 'today') {
+                    if (computerDatePicker) computerDatePicker.setDate(startDateOnly); 
+                    
+                    let packedDateObj = new Date(startDateOnly);
+                    packedDateObj.setDate(packedDateObj.getDate() + 1);
+                    if (packedDatePicker) packedDatePicker.setDate(packedDateObj); // 當日送單，預設已包至起日+1
+                } else if (submitType === 'holiday') {
+                    if (computerDatePicker) computerDatePicker.clear();
+                    if (packedDatePicker) packedDatePicker.clear();
+                }
+            }
+            // ==========================================
+
             const startDateTime = new Date(`${startDateInput}T${startTimeInput}`);
             const endDateTime = new Date(`${endDateInput}T${endTimeInput}`);
 
@@ -934,24 +960,30 @@
             baseStartDate1501.setHours(15, 1, 0, 0);
             let baseDiffMs = finalEndBoundary - baseStartDate1501;
             let baseTotalDays = Math.round(baseDiffMs / (1000 * 60 * 60 * 24));
-            if (baseTotalDays < 1) baseTotalDays = 1;
+            
+            // [修正] 移除 baseTotalDays < 1 的強制進位，讓極短請假能自然算出 0 天
+            if (baseTotalDays < 0) baseTotalDays = 0; 
 
-            // 5. 根據「送單時間」扣除已包天數 (得出實際包藥起點與天數)
+            // 5. 根據「已包區間」精準扣除已包天數 (得出實際包藥起點與天數)
             let actualStartDate1501 = new Date(baseStartDate1501);
             let finalTotalDays = baseTotalDays;
             let deductDays = 0;
 
-            if (submitType === 'today' || submitType === 'holiday') {
-                // 【修正】當日或假日期間送單：一律依照輸入的「已包區間迄日」來精準扣除
-                const packedEndDateVal = document.getElementById('packedEndDate').value;
-                if (packedEndDateVal) {
-                    let packedEndObj = new Date(`${packedEndDateVal}T15:01:00`);
-                    if (packedEndObj > actualStartDate1501) {
-                        actualStartDate1501 = packedEndObj;
-                        deductDays = Math.round((actualStartDate1501 - baseStartDate1501) / (1000 * 60 * 60 * 24));
-                        finalTotalDays = Math.round((finalEndBoundary - actualStartDate1501) / (1000 * 60 * 60 * 24));
-                        if (finalTotalDays < 0) finalTotalDays = 0;
+            // [修正] 所有送單情境一律套用已包區間迄日的扣除邏輯
+            const packedEndDateVal = document.getElementById('packedEndDate').value;
+            if (packedEndDateVal) {
+                let packedEndObj = new Date(`${packedEndDateVal}T15:01:00`);
+                if (packedEndObj > actualStartDate1501) {
+                    actualStartDate1501 = packedEndObj;
+                    deductDays = Math.round((actualStartDate1501 - baseStartDate1501) / (1000 * 60 * 60 * 24));
+                    
+                    // 防止 deductDays 扣超過 baseTotalDays 造成畫面詳細面板混淆
+                    if (deductDays > baseTotalDays) {
+                        deductDays = baseTotalDays;
                     }
+                    
+                    finalTotalDays = baseTotalDays - deductDays;
+                    if (finalTotalDays < 0) finalTotalDays = 0;
                 }
             }
 
@@ -993,30 +1025,7 @@
             calcDeductDaysEl.textContent = `- ${deductDays} 天`;
             calcFinalDaysEl.textContent = `${finalTotalDays} 天`;
 
-            // === 藥包機設定計算 (電腦日期連動與異動天數) ===
-            let startDateOnly = new Date(startDateInput);
-            startDateOnly.setHours(0,0,0,0);
-
-            // 若離院日期變更或送單時間變更(已清空lastStartDate)，則動態更改電腦日期預設值
-            if (startDateInput !== lastStartDate) {
-                lastStartDate = startDateInput;
-                if (submitType === 'before') {
-                    let compDateObj = new Date(startDateOnly);
-                    compDateObj.setDate(compDateObj.getDate() - 1); // 減一天
-                    if (computerDatePicker) computerDatePicker.setDate(compDateObj);
-                } else if (submitType === 'today') {
-                    if (computerDatePicker) computerDatePicker.setDate(startDateOnly); // 當天
-                    // 預設已包1日 (以請假起日+1)
-                    let packedDateObj = new Date(startDateOnly);
-                    packedDateObj.setDate(packedDateObj.getDate() + 1);
-                    if (packedDatePicker) packedDatePicker.setDate(packedDateObj);
-                } else if (submitType === 'holiday') {
-                    // 假日不給預設
-                    if (computerDatePicker) computerDatePicker.clear();
-                }
-            }
-
-            // 計算異動天數 = 包藥末日 - 包藥天數(內定天數) - 電腦日期
+            // === 藥包機設定計算 (異動天數) ===
             let compDateVal = document.getElementById('computerDate').value;
             if (compDateVal && finalTotalDays !== undefined) {
                 let compDateObj = new Date(compDateVal);
