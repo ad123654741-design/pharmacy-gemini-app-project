@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>榮字病房 - 院外適應借藥計算</title>
+    <title>榮字病房 - 院外適應借藥計算機</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style type="text/tailwindcss">
@@ -23,6 +23,13 @@
             .dark .bg-teal-100 { @apply bg-teal-900/60 border-teal-700 text-teal-300; }
             .dark .text-teal-800 { @apply text-teal-300; }
             .dark .text-teal-600 { @apply text-teal-400; }
+            
+            .dark .bg-orange-50 { @apply bg-orange-900/30 border-orange-800; }
+            .dark .bg-orange-100 { @apply bg-orange-900/60 text-orange-300; }
+            .dark .bg-orange-200 { @apply bg-orange-900/80 text-orange-200; }
+            .dark .text-orange-900 { @apply text-orange-200; }
+            .dark .text-orange-800 { @apply text-orange-300; }
+            .dark .text-orange-600 { @apply text-orange-400; }
             
             .dark .bg-medical-50 { @apply bg-sky-900/20 border-sky-800/50; }
             .dark .text-medical-700 { @apply text-sky-400; }
@@ -49,6 +56,9 @@
             .dark input[type="text"] { @apply bg-gray-700 border-gray-600 text-white placeholder-gray-400; }
             .dark .bg-white\/70 { @apply bg-gray-800/70; }
             .dark .bg-white\/50 { @apply bg-gray-800/50; }
+            
+            /* Radio 樣式優化 */
+            .dark input[type="radio"] { @apply bg-gray-700 border-gray-600; }
         }
     </style>
     <!-- 引入 FontAwesome 圖示 -->
@@ -56,7 +66,7 @@
     <!-- 引入 Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- 引入 Flatpickr 日期時間選擇器 (用於特定假日紅字) -->
+    <!-- 引入 Flatpickr 日期時間選擇器 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/zh-tw.js"></script>
@@ -94,7 +104,7 @@
 
         /* 筆記本網格背景 - 深色模式 */
         .dark .bg-notebook-grid {
-            background-color: #111827; /* gray-900 */
+            background-color: #111827;
             background-image: 
                 linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
@@ -102,9 +112,9 @@
         
         /* 客製化 Flatpickr 假日紅字樣式 */
         .flatpickr-day.is-holiday {
-            color: #ef4444 !important; /* text-red-500 */
+            color: #ef4444 !important;
             font-weight: 700;
-            background-color: #fef2f2; /* bg-red-50 */
+            background-color: #fef2f2;
             border-color: #fca5a5;
         }
         .flatpickr-day.is-holiday:hover {
@@ -117,7 +127,7 @@
             background-color: white !important;
         }
         .dark input[readonly] {
-            background-color: #374151 !important; /* gray-700 */
+            background-color: #374151 !important;
         }
     </style>
     
@@ -131,17 +141,32 @@
 <body class="bg-notebook-grid text-gray-800 font-sans min-h-screen p-3 md:p-8 transition-colors duration-300">
 
     <div class="max-w-3xl mx-auto relative">
-        <!-- 深色模式切換按鈕 -->
-        <button id="darkModeToggle" onclick="toggleDarkMode()" class="absolute top-0 right-0 md:-right-4 p-2 md:p-3 rounded-full bg-white text-gray-500 hover:text-medical-600 shadow-sm border border-gray-200 transition-all z-10 focus:outline-none">
-            <i class="fa-solid fa-moon dark:hidden text-lg"></i>
-            <i class="fa-solid fa-sun hidden dark:inline text-lg"></i>
-        </button>
+        <!-- 設定選單與深色模式切換 -->
+        <div class="absolute top-0 right-0 md:-right-4 z-20">
+            <button id="settingsDropdownBtn" onclick="toggleSettingsMenu()" class="p-2 md:p-3 rounded-full bg-white text-gray-500 hover:text-medical-600 shadow-sm border border-gray-200 transition-all focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-medical-400">
+                <i class="fa-solid fa-gear text-lg"></i>
+            </button>
+            
+            <!-- 下拉選單 -->
+            <div id="settingsMenu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all transform origin-top-right">
+                <div class="py-1">
+                    <button onclick="toggleDarkMode(); closeSettingsMenu();" class="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors">
+                        <i class="fa-solid fa-circle-half-stroke text-gray-400 dark:text-gray-500"></i>
+                        <span>切換深淺色主題</span>
+                    </button>
+                    <button onclick="openInstructionsModal(); closeSettingsMenu();" class="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 transition-colors border-t border-gray-50 dark:border-gray-700">
+                        <i class="fa-solid fa-book-open text-gray-400 dark:text-gray-500"></i>
+                        <span>程式操作說明</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- 標頭 -->
         <header class="mb-5 text-center">
             <h1 class="text-xl md:text-3xl font-bold text-medical-700 flex items-center justify-center gap-2 md:gap-3">
                 <i class="fa-solid fa-pills"></i>
-                榮字病房 院外適應借藥計算
+                榮字病房 - 院外適應借藥計算機
             </h1>
             <p class="text-gray-500 mt-2 text-xs md:text-sm">支援連假、防轉檔漏包計算 by 其仁 最後更新:2026/03</p>
         </header>
@@ -150,13 +175,13 @@
         <section class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-5">
             <div class="p-4 bg-teal-50 border-b border-teal-100 flex justify-between items-center cursor-pointer" onclick="toggleHolidaySettings()">
                 <h2 class="text-base font-bold text-teal-800 flex items-center gap-2">
-                    <i class="fa-solid fa-umbrella-beach"></i> 連續假期設定 (非必填)
+                    <i class="fa-solid fa-umbrella-beach"></i> 不包藥日(假日)設定 - 非必填
                 </h2>
                 <i id="holidayToggleIcon" class="fa-solid fa-chevron-down text-teal-600 transition-transform"></i>
             </div>
             
             <div id="holidaySettingsBody" class="p-5 md:p-6 hidden">
-                <p class="text-xs md:text-sm text-gray-600 mb-4">若遇國定假日，請在此設定。設定後將在日曆上以<span class="text-red-500 font-bold mx-1">紅字</span>標示。週末(六、日)系統已預設為紅字。</p>
+                <p class="text-[11px] md:text-sm text-gray-600 mb-4 leading-relaxed">若遇國定假日、天災不包藥，請在此設定。設定後將在日曆上以<span class="text-red-500 font-bold mx-1">紅字</span>標示。週末(六、日)系統已預設為紅字。</p>
                 <div class="flex flex-col md:flex-row gap-3 items-end">
                     <div class="flex-1 w-full">
                         <label class="block text-sm font-medium text-gray-700 mb-1">連假起日</label>
@@ -167,7 +192,7 @@
                         <input type="text" id="holiEnd" placeholder="選擇日期" class="w-full px-4 py-3 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none">
                     </div>
                     <button onclick="addHolidayRange()" class="w-full md:w-auto px-6 py-3 md:py-2 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors">
-                        加入連假
+                        加入假日
                     </button>
                 </div>
                 
@@ -179,6 +204,50 @@
                     <div id="holidayTags" class="flex flex-wrap gap-2">
                         <!-- 動態插入假日標籤 -->
                     </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 送單時間卡片 (新增) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-5 relative">
+            <div class="p-4 bg-orange-50 border-b border-orange-100 flex justify-between items-center cursor-pointer" onclick="toggleSubmitTimeSettings()">
+                <h2 class="text-base font-bold text-orange-800 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left"></i> 送單時間 
+                    <span id="submitTimeLabelDisplay" class="text-sm font-normal ml-1 bg-orange-200 px-2 py-0.5 rounded text-orange-900 shadow-sm border border-orange-300/50">請假前一日</span>
+                </h2>
+                <i id="submitTimeToggleIcon" class="fa-solid fa-chevron-up text-orange-600 transition-transform"></i>
+            </div>
+            
+            <div id="submitTimeSettingsBody" class="p-5 md:p-6 transition-all duration-300">
+                <!-- Radio 群組 -->
+                <div class="flex gap-4 md:gap-6 items-center flex-wrap">
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" name="submitTime" value="before" checked onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
+                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
+                            <span class="hidden md:inline">請假前一日</span><span class="md:hidden">前一日</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" name="submitTime" value="today" onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
+                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
+                            <span class="hidden md:inline">請假當日</span><span class="md:hidden">當日</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" name="submitTime" value="holiday" onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
+                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
+                            假日期間
+                        </span>
+                    </label>
+                </div>
+
+                <!-- 已包區間 (假日期間才顯示) -->
+                <div id="packedRangeDiv" class="hidden mt-4 pt-4 border-t border-orange-100 dark:border-gray-600">
+                    <label for="packedEndDate" class="block text-sm font-medium text-gray-700 mb-1">
+                        已包區間迄日 <span id="packedEndDateHint" class="text-xs text-gray-500 font-normal">(病房已有藥物至此日15:01)</span>
+                    </label>
+                    <input type="text" id="packedEndDate" placeholder="選擇已包至哪一天" 
+                        class="w-full md:w-1/2 px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all">
                 </div>
             </div>
         </section>
@@ -253,12 +322,35 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                     <!-- 天數統計 -->
                     <div class="bg-gray-50 rounded-xl p-5 border border-gray-200 flex flex-col items-center justify-center relative">
+                        <!-- 詳細計算按鈕 -->
+                        <div class="absolute top-3 right-3">
+                            <button onclick="toggleCalcDetails()" class="text-xs text-medical-600 hover:text-medical-800 font-bold bg-medical-50 dark:bg-sky-900/40 px-2 py-1.5 rounded border border-medical-200 dark:border-sky-800 transition-colors shadow-sm">
+                                <i class="fa-solid fa-calculator"></i> 詳細計算
+                            </button>
+                        </div>
+
                         <span class="text-gray-500 text-sm md:text-base font-bold mb-1">需包藥天數</span>
                         <div class="flex items-baseline gap-1 mt-1 mb-3">
                             <span id="totalDays" class="text-6xl md:text-7xl font-bold text-medical-600">-</span>
                             <span class="text-xl text-gray-600 font-medium">天</span>
                         </div>
                         
+                        <!-- 詳細計算面板 (預設隱藏) -->
+                        <div id="calcDetailsBox" class="hidden w-full mb-3 text-xs text-gray-600 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 p-3 rounded-lg text-left shadow-inner space-y-1.5">
+                            <div class="flex justify-between border-b dark:border-gray-700 pb-1">
+                                <span>原推算應包區間 (含防漏/展延)：</span>
+                                <span id="calcBaseDays" class="font-bold text-gray-700 dark:text-gray-300"></span>
+                            </div>
+                            <div class="flex justify-between border-b dark:border-gray-700 pb-1 text-red-500 dark:text-red-400">
+                                <span>扣除病房已包區間：</span>
+                                <span id="calcDeductDays" class="font-bold"></span>
+                            </div>
+                            <div class="flex justify-between text-medical-600 dark:text-medical-400 pt-0.5">
+                                <span class="font-bold">實際需包天數：</span>
+                                <span id="calcFinalDays" class="font-bold text-sm"></span>
+                            </div>
+                        </div>
+
                         <!-- 邏輯解釋標籤 -->
                         <div id="coverageDetails" class="w-full bg-white p-3 rounded-lg border border-gray-200 text-xs md:text-sm text-gray-600 text-center hidden">
                             <div class="font-bold text-gray-700 mb-1">實際包藥涵蓋區間：</div>
@@ -273,23 +365,30 @@
 
                     <!-- 藥包機設定 -->
                     <div class="bg-indigo-50 rounded-xl p-5 border border-indigo-200 flex flex-col justify-center">
-                        <span class="text-indigo-800 text-base font-bold mb-3 flex items-center gap-2">
-                            <i class="fa-solid fa-gear text-lg"></i> 藥包機設定
-                        </span>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-indigo-800 text-base font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-gear text-lg"></i> 藥包機設定
+                            </span>
+                            <button onclick="openMachineModal()" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-2 py-1 rounded transition-colors flex items-center gap-1 border border-indigo-200 shadow-sm dark:bg-indigo-900/60 dark:border-indigo-700 dark:text-indigo-300 dark:hover:bg-indigo-800/60">
+                                <i class="fa-solid fa-circle-question"></i> 說明
+                            </button>
+                        </div>
                         
                         <div class="mt-1">
-                            <label for="dataDate" class="block text-sm font-medium text-gray-700 mb-1">資料日期 <span class="text-xs text-gray-500 font-normal">(預設為離院前一天)</span></label>
-                            <input type="text" id="dataDate" placeholder="選擇日期"
+                            <label for="computerDate" class="block text-sm font-medium text-gray-700 mb-1">
+                                電腦日期 <span id="computerDateHint" class="text-xs text-indigo-600 font-normal">(預設為請假離院前一日)</span>
+                            </label>
+                            <input type="text" id="computerDate" placeholder="選擇日期"
                                 class="w-full px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
                         </div>
 
                         <div class="mt-4 pt-4 border-t border-indigo-200/60 grid grid-cols-2 gap-4 text-center">
-                            <div class="bg-white/70 p-3 rounded-lg border border-indigo-100 shadow-sm">
+                            <div class="bg-white/70 p-3 rounded-lg border border-indigo-100 shadow-sm flex flex-col justify-center">
                                 <span class="text-xs text-gray-500 font-bold block mb-1">內定天數 <br>(借藥天數)</span>
                                 <div id="machineDefaultDays" class="text-3xl font-bold text-indigo-700">-</div>
                             </div>
-                            <div class="bg-white/70 p-3 rounded-lg border border-indigo-100 shadow-sm">
-                                <span class="text-xs text-gray-500 font-bold block mb-1">異動天數 <br>(離院-資料日期)</span>
+                            <div class="bg-white/70 p-3 rounded-lg border border-indigo-100 shadow-sm flex flex-col justify-center">
+                                <span class="text-[10px] md:text-xs text-gray-500 font-bold block mb-1">異動天數 <br><span class="opacity-80 scale-90 inline-block">(包藥末日-包藥-電腦)</span></span>
                                 <div id="machineChangeDays" class="text-3xl font-bold text-indigo-700">-</div>
                             </div>
                         </div>
@@ -306,20 +405,102 @@
             <ul class="space-y-3 list-disc list-inside">
                 <li><strong class="text-medical-600">送單原則：</strong><span class="text-gray-800">平日原則上應於請假前一天送單(12:00 前送單，16:00 前給藥)。</span></li>
                 <li><strong class="text-medical-600">最小單位：</strong><span class="text-gray-800">借藥以「日」為單位（當日 15:01 至隔日 15:01）。</span></li>
-                <li><strong class="text-medical-600">防漏包機制 (凌晨 01:00 轉檔)：</strong><span class="text-gray-800">系統會自動檢查病人請假期間，是否會錯過每日凌晨 01:00 的常規包藥轉檔。若有錯過，系統會將該日份的藥物加進借藥天數中，避免病人回病房後無藥可用。</span></li>
+                <li><strong class="text-medical-600">防漏單機制 (凌晨 01:00 轉檔)：</strong><span class="text-gray-800">系統會自動檢查病人請假期間，是否會錯過每日凌晨 01:00 的常規包藥轉檔。若有錯過，系統會將該日份的藥物加進借藥天數中，避免病人回病房後無藥可用。</span></li>
                 <li><strong class="text-medical-600">假日展延機制：</strong><span class="text-gray-800">週末與連假藥局無包藥作業。若借藥末日落在假日，系統會自動將包藥天數延展至下一個工作日的 15:01。</span></li>
                 <li><strong class="text-medical-600">借藥注意事項：</strong><span class="text-gray-800">請以單日的轉檔資料進行借藥，若用3日資料去轉，外投貼紙藥量會變成3倍。</span></li>
-                <li><strong class="text-medical-600">特殊頻率藥品：</strong><span class="text-gray-800">QW、Q2D此類藥品需人工進處方log判讀是否需給藥，一定要進系統看。</span></li>
+                <li><strong class="text-medical-600">特殊頻率藥品：</strong><span class="text-gray-800">QXW、QXD頻率處方一定要進系統人工判讀是否需給藥。</span></li>
+                <li><strong class="text-medical-600">外投貼紙日期：</strong><span class="text-gray-800">右上角顯示的日期為電腦日期，不論內定天數和異動天數為何都不會變。</span></li>
+                <li><strong class="text-medical-600">內定天數：</strong><span class="text-gray-800">由系統推算應包含的用藥區間減去已包區間後所得的實際需包藥區間之天數。</span></li>
+                <li><strong class="text-medical-600">異動天數：</strong><span class="text-gray-800">是基於電腦日期計算，而非轉檔資料日期。</span></li>
+                <li><strong class="text-medical-600">已領走借藥後又開藥：</strong><span class="text-gray-800">因首日量藥袋不會自動計算借藥天數，會造成藥物少給的狀況，請護理師自行計算所缺數量後，以異常加領方式(原因寫院外適應加藥補領)至藥局領藥。</span></li>
             </ul>
         </section>
         
     </div>
 
+    <!-- 藥包機設定說明 Modal (預設隱藏) -->
+    <div id="machineInfoModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col">
+            <div class="p-4 bg-indigo-50 dark:bg-indigo-900/40 border-b border-indigo-100 dark:border-indigo-800 flex justify-between items-center">
+                <h3 class="font-bold text-indigo-800 dark:text-indigo-300 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i> 藥包機計算邏輯說明
+                </h3>
+                <button onclick="closeMachineModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4 text-sm text-gray-600 dark:text-gray-300">
+                <div>
+                    <strong class="text-indigo-600 dark:text-indigo-400 block mb-1">內定天數 (借藥天數)</strong>
+                    <p>由系統經過「防漏單機制」、「假日展延機制」等推算出來的【原始總需求天數】，再扣除【病房已包區間天數】後，所得出的最終實際需包藥天數。</p>
+                </div>
+                <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+                    <strong class="text-indigo-600 dark:text-indigo-400 block mb-1">異動天數</strong>
+                    <p>用於校正包藥機的日期偏移。<br>公式為：<code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-300">包藥末日 - 內定天數 - 電腦日期</code></p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">* 註：若需包藥天數為 0，則異動天數強制設為 0。</p>
+                </div>
+                <!-- 新增電腦日期鎖控原則說明 -->
+                <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+                    <strong class="text-indigo-600 dark:text-indigo-400 block mb-1">電腦日期鎖控原則</strong>
+                    <p>為避免產生不合理的異動天數，系統限制電腦日期<strong class="text-red-500 dark:text-red-400">不可晚於「實際包藥起始日」</strong>。</p>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">* 實際包藥起始日 = 包藥末日 - 內定天數。手動選擇超過此日期的未來時間，系統將自動阻擋並清空。</p>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 text-right">
+                <button onclick="closeMachineModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors text-sm">
+                    我知道了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 程式操作說明 Modal (預設隱藏) -->
+    <div id="instructionsModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 transition-opacity">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-4 bg-medical-50 dark:bg-sky-900/40 border-b border-medical-100 dark:border-sky-800 flex justify-between items-center sticky top-0 z-10">
+                <h3 class="font-bold text-medical-800 dark:text-medical-300 flex items-center gap-2">
+                    <i class="fa-solid fa-book-open"></i> 程式操作說明
+                </h3>
+                <button onclick="closeInstructionsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto space-y-5 text-sm text-gray-600 dark:text-gray-300">
+                <div>
+                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第一步：設定不包藥日(假日) <span class="text-xs font-normal text-gray-500">[非必填]</span></strong>
+                    <p>若遇國定假日或天災停止上班，請在此區塊加入不包藥日期，系統在計算展延時會自動跳過這些日子。一般週末(六、日)系統已預設排除，不需重複設定。</p>
+                </div>
+                <div>
+                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第二步：選擇「送單時間」</strong>
+                    <p>依據您實際送出借藥單的時間選擇：</p>
+                    <ul class="list-disc list-inside mt-1 space-y-1 ml-1 text-gray-700 dark:text-gray-200">
+                        <li><span class="font-medium">請假前一日</span>：常規作業，不扣除天數。</li>
+                        <li><span class="font-medium">請假當日</span>：系統會自動扣除 1 天 (因當日早上病房已收到當天份常規藥)。</li>
+                        <li><span class="font-medium">假日期間</span>：需手動輸入「已包區間迄日」，系統會扣除該日期之前的天數。</li>
+                    </ul>
+                </div>
+                <div>
+                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第三步：設定「請假起迄時間」</strong>
+                    <p>輸入病人離院與返回的確切日期及時間 (24小時制)。輸入完成或按下 Enter 後，系統會自動在下方顯示「需包藥天數」及「實際包藥涵蓋區間」。可點擊結果區的「詳細計算」按鈕查看天數扣減細節。</p>
+                </div>
+                <div>
+                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第四步：確認「藥包機設定」</strong>
+                    <p>系統會依據送單時間自動帶入「電腦日期」，並依循公式計算出提供給藥包機設定的「內定天數」與「異動天數」。若有特殊需求，您也可手動修改電腦日期，系統會即時驗證並重新計算異動天數。</p>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 text-right sticky bottom-0">
+                <button onclick="closeInstructionsModal()" class="px-4 py-2 bg-medical-600 hover:bg-medical-700 text-white rounded-lg font-medium transition-colors text-sm">
+                    我瞭解了
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- 變數與套件初始化 ---
         let customHolidays = new Set();
-        let startPicker, endPicker, holiStartPicker, holiEndPicker, dataDatePicker;
-        let lastStartDate = ""; // 用於追蹤離院日期是否改變，以連動資料日期
+        let startPicker, endPicker, holiStartPicker, holiEndPicker, computerDatePicker, packedDatePicker;
+        let lastStartDate = ""; // 用於追蹤離院日期是否改變，以連動電腦日期
 
         // --- 深色模式切換邏輯 ---
         function toggleDarkMode() {
@@ -330,6 +511,67 @@
                 document.documentElement.classList.add('dark');
                 localStorage.setItem('theme', 'dark');
             }
+        }
+
+        // --- 詳細計算面板顯示切換 ---
+        function toggleCalcDetails() {
+            const box = document.getElementById('calcDetailsBox');
+            if (box.classList.contains('hidden')) {
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        // --- 設定選單下拉邏輯 ---
+        function toggleSettingsMenu() {
+            const menu = document.getElementById('settingsMenu');
+            menu.classList.toggle('hidden');
+        }
+        
+        function closeSettingsMenu() {
+            const menu = document.getElementById('settingsMenu');
+            if (menu) menu.classList.add('hidden');
+        }
+        
+        // 點擊選單外部自動關閉
+        document.addEventListener('click', function(event) {
+            const dropdownBtn = document.getElementById('settingsDropdownBtn');
+            const menu = document.getElementById('settingsMenu');
+            if (dropdownBtn && menu && !dropdownBtn.contains(event.target) && !menu.contains(event.target)) {
+                menu.classList.add('hidden');
+            }
+        });
+
+        // --- 程式操作說明彈窗邏輯 ---
+        function openInstructionsModal() {
+            document.getElementById('instructionsModal').classList.remove('hidden');
+        }
+        
+        function closeInstructionsModal() {
+            document.getElementById('instructionsModal').classList.add('hidden');
+        }
+
+        // --- 送單時間區塊摺疊邏輯 ---
+        function toggleSubmitTimeSettings() {
+            const body = document.getElementById('submitTimeSettingsBody');
+            const icon = document.getElementById('submitTimeToggleIcon');
+            if (body.classList.contains('hidden')) {
+                body.classList.remove('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                body.classList.add('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+        
+        // --- 藥包機說明彈窗邏輯 ---
+        function openMachineModal() {
+            document.getElementById('machineInfoModal').classList.remove('hidden');
+        }
+        
+        function closeMachineModal() {
+            document.getElementById('machineInfoModal').classList.add('hidden');
         }
 
         // --- 數字跳動動畫 ---
@@ -347,7 +589,7 @@
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                // 改為等速 (linear) 動畫，確保每個數字跳動速度一致，避免最後停頓
+                // 等速 (linear) 動畫
                 obj.textContent = Math.floor(progress * (end - start) + start);
                 if (progress < 1) {
                     window.requestAnimationFrame(step);
@@ -378,13 +620,12 @@
         // 共用日期選擇器設定 (包含標記紅字功能)
         const datePickerConfig = {
             locale: "zh_tw",
-            disableMobile: "true", // 強制用套件介面，確保手機上能顯示紅字
+            disableMobile: "true", 
             dateFormat: "Y-m-d",
             onDayCreate: function(dObj, dStr, fp, dayElem) {
                 const dateObj = dayElem.dateObj;
                 const day = dateObj.getDay();
                 const dateStr = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
-                // 六、日 或 自訂連假，加上紅字樣式
                 if (day === 0 || day === 6 || customHolidays.has(dateStr)) {
                     dayElem.classList.add("is-holiday");
                 }
@@ -398,7 +639,8 @@
 
             startPicker = flatpickr("#startDate", datePickerConfig);
             endPicker = flatpickr("#endDate", datePickerConfig);
-            dataDatePicker = flatpickr("#dataDate", datePickerConfig); // 新增資料日期選擇器
+            computerDatePicker = flatpickr("#computerDate", datePickerConfig); // 電腦日期選擇器
+            packedDatePicker = flatpickr("#packedEndDate", datePickerConfig); // 已包區間日期選擇器
             
             // 新增連假起迄日期的即時防呆檢查
             const checkHolidayDates = function() {
@@ -407,40 +649,71 @@
                 if (startVal && endVal) {
                     if (new Date(endVal) < new Date(startVal)) {
                         alert('【設定錯誤】連假迄日不能早於起日！請重新選擇。');
-                        holiEndPicker.clear(); // 清空錯誤的設定，避免誤會
+                        holiEndPicker.clear(); 
                     }
                 }
             };
 
-            // 連假設定的選擇器不觸發計算，加入 onChange 即時檢查
             holiStartPicker = flatpickr("#holiStart", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d", onChange: checkHolidayDates });
             holiEndPicker = flatpickr("#holiEnd", { locale: "zh_tw", disableMobile: "true", dateFormat: "Y-m-d", onChange: checkHolidayDates });
 
-            renderHolidays(); // 渲染記憶的連假標籤
+            renderHolidays(); 
         });
 
         // --- 手動時間輸入防呆驗證 ---
         function validateTime(input) {
             let val = input.value;
-            // 如果空值則回復預設
             if (!val) {
                 input.value = input.defaultValue;
                 val = input.defaultValue;
             }
-            
-            // 防呆處理：護理人員若直接輸入如 0930 (4碼數字)，系統自動補上冒號變成 09:30
             if (val.length === 4 && !val.includes(':') && !isNaN(val)) {
                 val = val.substring(0, 2) + ':' + val.substring(2);
                 input.value = val;
             }
-
-            // 正則驗證：小時 00-23，分鐘 00-59
             const timeRegex = /^([01]?[0-9]|2[0-3]):([0-5][0-9])$/;
             if (!timeRegex.test(val)) {
                 alert("時間格式錯誤或超出範圍！\n\n【防呆提示】\n• 小時請輸入 00-23\n• 分鐘請輸入 00-59\n• 格式範例：09:30");
-                input.value = input.defaultValue; // 錯誤則重置為預設值
+                input.value = input.defaultValue; 
             }
-            // 驗證通過後觸發計算
+            calculateMedication();
+        }
+
+        // --- 送單時間變更邏輯 ---
+        function handleSubmitTimeChange() {
+            const submitType = document.querySelector('input[name="submitTime"]:checked').value;
+            const labelDisplay = document.getElementById('submitTimeLabelDisplay');
+            const packedDiv = document.getElementById('packedRangeDiv');
+            const compHint = document.getElementById('computerDateHint');
+            const packedEndDateHint = document.getElementById('packedEndDateHint');
+            
+            // 更新 UI 顯示與設定
+            if (submitType === 'before') {
+                labelDisplay.textContent = '請假前一日';
+                packedDiv.classList.add('hidden');
+                compHint.textContent = '(預設為請假離院前一日)';
+                compHint.className = 'text-xs text-indigo-600 font-normal';
+            } else if (submitType === 'today') {
+                labelDisplay.textContent = '請假當日';
+                packedDiv.classList.remove('hidden'); // 【修正】確實展開已包區間
+                compHint.textContent = '(預設為請假當日)';
+                compHint.className = 'text-xs text-indigo-600 font-normal';
+                if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01，<span class="text-red-500 font-bold">星期五或連假需注意設定!</span>)';
+            } else if (submitType === 'holiday') {
+                labelDisplay.textContent = '假日期間';
+                packedDiv.classList.remove('hidden');
+                compHint.textContent = '(請手動輸入電腦日期後計算)';
+                compHint.className = 'text-xs text-red-500 font-bold';
+                if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01)';
+                
+                // 假日無預設，清空電腦日期
+                if (computerDatePicker) {
+                    computerDatePicker.clear();
+                }
+            }
+
+            // 強制觸發一次預設電腦日期的更新 (透過將 lastStartDate 清空來觸發計算內的邏輯)
+            lastStartDate = ""; 
             calculateMedication();
         }
 
@@ -476,58 +749,51 @@
                 current.setDate(current.getDate() + 1);
             }
             
-            // 清空輸入框
             holiStartPicker.clear();
             holiEndPicker.clear();
-            
-            saveHolidaysToLocal(); // 儲存至 LocalStorage
-            
+            saveHolidaysToLocal(); 
             renderHolidays();
-            // 重繪日曆，讓剛加入的假日變紅字
+            
             startPicker.redraw();
             endPicker.redraw();
-            if(dataDatePicker) dataDatePicker.redraw();
+            if(computerDatePicker) computerDatePicker.redraw();
+            if(packedDatePicker) packedDatePicker.redraw();
             calculateMedication(); 
         }
 
         function removeHoliday(dateStr) {
             customHolidays.delete(dateStr);
-            saveHolidaysToLocal(); // 更新 LocalStorage
+            saveHolidaysToLocal(); 
 
             renderHolidays();
-            // 重繪日曆
             startPicker.redraw();
             endPicker.redraw();
-            if(dataDatePicker) dataDatePicker.redraw();
+            if(computerDatePicker) computerDatePicker.redraw();
+            if(packedDatePicker) packedDatePicker.redraw();
             calculateMedication();
         }
 
         function clearAllHolidays(btnElement) {
-            // 若沒有傳入 btnElement，則抓取按鈕本身
             const btn = btnElement || document.querySelector('button[onclick^="clearAllHolidays"]');
-
             if (btn.dataset.confirm === 'true') {
                 customHolidays.clear();
-                saveHolidaysToLocal(); // 更新 LocalStorage
-
+                saveHolidaysToLocal(); 
                 renderHolidays();
-                // 重繪日曆
+                
                 startPicker.redraw();
                 endPicker.redraw();
-                if(dataDatePicker) dataDatePicker.redraw();
+                if(computerDatePicker) computerDatePicker.redraw();
+                if(packedDatePicker) packedDatePicker.redraw();
                 calculateMedication();
 
-                // 重置按鈕狀態
                 btn.dataset.confirm = 'false';
                 btn.innerHTML = '<i class="fa-solid fa-trash-can mr-1"></i>全部清除';
                 btn.classList.remove('bg-red-600', 'text-white', 'border-red-600');
             } else {
-                // 第一次點擊：進入確認狀態 (取代會被預覽環境阻擋的原生 confirm)
                 btn.dataset.confirm = 'true';
                 btn.innerHTML = '<i class="fa-solid fa-triangle-exclamation mr-1"></i>確定清除？(再點一次)';
                 btn.classList.add('bg-red-600', 'text-white', 'border-red-600');
                 
-                // 3 秒後自動還原按鈕
                 setTimeout(() => {
                     if (btn.dataset.confirm === 'true') {
                         btn.dataset.confirm = 'false';
@@ -565,9 +831,9 @@
         // --- 核心計算邏輯 ---
         function isWorkingDay(dateObj) {
             const day = dateObj.getDay();
-            if (day === 0 || day === 6) return false; // 六、日
+            if (day === 0 || day === 6) return false; 
             const dateStr = dateObj.getFullYear() + '-' + String(dateObj.getMonth() + 1).padStart(2, '0') + '-' + String(dateObj.getDate()).padStart(2, '0');
-            if (customHolidays.has(dateStr)) return false; // 自訂連假
+            if (customHolidays.has(dateStr)) return false; 
             return true;
         }
 
@@ -586,17 +852,22 @@
             const endDateInput = document.getElementById('endDate').value;
             const endTimeInput = document.getElementById('endTime').value;
             const errorMsg = document.getElementById('errorMsg');
+            const submitType = document.querySelector('input[name="submitTime"]:checked').value;
             
-            // UI
+            // UI Elements
             const totalDaysEl = document.getElementById('totalDays');
             const coverageDetails = document.getElementById('coverageDetails');
             const coverageRangeText = document.getElementById('coverageRangeText');
             const delayNotice = document.getElementById('delayNotice');
             const delayNoticeText = document.getElementById('delayNoticeText');
             
-            // 藥包機 UI
             const machineDefaultDaysEl = document.getElementById('machineDefaultDays');
             const machineChangeDaysEl = document.getElementById('machineChangeDays');
+            
+            // Calc Info Elements
+            const calcBaseDaysEl = document.getElementById('calcBaseDays');
+            const calcDeductDaysEl = document.getElementById('calcDeductDays');
+            const calcFinalDaysEl = document.getElementById('calcFinalDays');
 
             if (!startDateInput || !endDateInput || !startTimeInput || !endTimeInput) return;
 
@@ -610,17 +881,18 @@
                 coverageDetails.classList.add('hidden');
                 machineDefaultDaysEl.textContent = '-';
                 machineChangeDaysEl.textContent = '-';
+                calcBaseDaysEl.textContent = '-';
+                calcDeductDaysEl.textContent = '-';
+                calcFinalDaysEl.textContent = '-';
                 return;
             } else {
                 errorMsg.classList.add('hidden');
             }
 
-            // === 演算法開始 (切點更新為 15:01) ===
+            // === 演算法開始 ===
             
-            // 1. 基本需求結束點
+            // 1. 推算原始所需結束點 (包含凌晨01:00漏單補足)
             let maxCoverageEnd = new Date(endDateTime);
-
-            // 2. 凌晨 01:00 漏單捕捉
             let currentDay = new Date(startDateTime);
             currentDay.setHours(0, 0, 0, 0);
             let endDay = new Date(endDateTime);
@@ -629,13 +901,11 @@
             while (currentDay <= endDay) {
                 let runTime = new Date(currentDay);
                 runTime.setHours(1, 0, 0, 0);
-
                 if (startDateTime <= runTime && runTime < endDateTime) {
                     if (isWorkingDay(currentDay)) {
                         let nextWorkDay = getNextWorkingDay(currentDay);
                         let runCoverageEnd = new Date(nextWorkDay);
-                        runCoverageEnd.setHours(15, 1, 0, 0); // 包到下一個工作日的 15:01
-                        
+                        runCoverageEnd.setHours(15, 1, 0, 0); 
                         if (runCoverageEnd > maxCoverageEnd) {
                             maxCoverageEnd = new Date(runCoverageEnd);
                         }
@@ -644,35 +914,51 @@
                 currentDay.setDate(currentDay.getDate() + 1);
             }
 
-            // 3. 借藥最小單位切點 (進位至 15:01)
+            // 2. 借藥最小單位切點 (進位至 15:01)
             let finalEndBoundary = new Date(maxCoverageEnd);
-            // 超過 15:01 就要多包一天 (15:02 開始算跨日)
             if (finalEndBoundary.getHours() > 15 || (finalEndBoundary.getHours() === 15 && finalEndBoundary.getMinutes() > 1)) {
                 finalEndBoundary.setDate(finalEndBoundary.getDate() + 1);
             }
             finalEndBoundary.setHours(15, 1, 0, 0);
 
-            // 4. 假日展延機制
-            let originalEndBoundary = new Date(finalEndBoundary); // 紀錄還沒順延前的時間
+            // 3. 假日展延機制
+            let originalEndBoundary = new Date(finalEndBoundary);
             let isDelayed = false;
-
             while (!isWorkingDay(finalEndBoundary)) {
                 finalEndBoundary.setDate(finalEndBoundary.getDate() + 1);
                 isDelayed = true;
             }
 
-            // 5. 計算總天數
-            let startDate1501 = new Date(startDateTime);
-            startDate1501.setHours(15, 1, 0, 0);
-            
-            let diffMs = finalEndBoundary - startDate1501;
-            let totalDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-            if (totalDays < 1) totalDays = 1;
+            // 4. 計算原始總天數 (基底)
+            let baseStartDate1501 = new Date(startDateTime);
+            baseStartDate1501.setHours(15, 1, 0, 0);
+            let baseDiffMs = finalEndBoundary - baseStartDate1501;
+            let baseTotalDays = Math.round(baseDiffMs / (1000 * 60 * 60 * 24));
+            if (baseTotalDays < 1) baseTotalDays = 1;
+
+            // 5. 根據「送單時間」扣除已包天數 (得出實際包藥起點與天數)
+            let actualStartDate1501 = new Date(baseStartDate1501);
+            let finalTotalDays = baseTotalDays;
+            let deductDays = 0;
+
+            if (submitType === 'today' || submitType === 'holiday') {
+                // 【修正】當日或假日期間送單：一律依照輸入的「已包區間迄日」來精準扣除
+                const packedEndDateVal = document.getElementById('packedEndDate').value;
+                if (packedEndDateVal) {
+                    let packedEndObj = new Date(`${packedEndDateVal}T15:01:00`);
+                    if (packedEndObj > actualStartDate1501) {
+                        actualStartDate1501 = packedEndObj;
+                        deductDays = Math.round((actualStartDate1501 - baseStartDate1501) / (1000 * 60 * 60 * 24));
+                        finalTotalDays = Math.round((finalEndBoundary - actualStartDate1501) / (1000 * 60 * 60 * 24));
+                        if (finalTotalDays < 0) finalTotalDays = 0;
+                    }
+                }
+            }
 
             // === 演算法結束 ===
 
             // --- 介面更新 ---
-            animateValue(totalDaysEl, totalDays); // 替換原本的 textContent 加入跳動動畫
+            animateValue(totalDaysEl, finalTotalDays); 
             
             const formatStr = (date) => {
                 const m = date.getMonth() + 1;
@@ -684,46 +970,90 @@
             };
             
             coverageDetails.classList.remove('hidden');
-            coverageRangeText.textContent = `${formatStr(startDate1501)} ~ ${formatStr(finalEndBoundary)}`;
+            // 顯示實際包藥涵蓋區間
+            if (finalTotalDays === 0) {
+                coverageRangeText.textContent = `病房已有藥物，不需再包`;
+            } else {
+                coverageRangeText.textContent = `${formatStr(actualStartDate1501)} ~ ${formatStr(finalEndBoundary)}`;
+            }
 
             // 處理順延文字
-            if (isDelayed) {
+            if (isDelayed && finalTotalDays > 0) {
                 delayNotice.classList.remove('hidden');
                 delayNoticeText.innerHTML = `
                     <i class="fa-solid fa-circle-info text-amber-600"></i> 
                     <strong>順延說明：</strong><br>
-                    原包藥迄日為 <span class="font-bold text-gray-700 underline decoration-amber-400 decoration-2">${formatStr(originalEndBoundary)}</span>，因適逢假日/連假無包藥作業，故自動順延包藥至下一個工作日 <span class="font-bold text-medical-700">${formatStr(finalEndBoundary)}</span>。`;
+                    原包藥迄日為 <span class="font-bold text-gray-700 underline decoration-amber-400 decoration-2">${formatStr(originalEndBoundary)}</span>，因適逢假日/連假無包藥作業，故自動順延至下一個工作日 <span class="font-bold text-medical-700">${formatStr(finalEndBoundary)}</span>。`;
             } else {
                 delayNotice.classList.add('hidden');
             }
 
-            // === 藥包機設定計算 (內定與異動天數) ===
+            // 更新詳細計算面板資訊
+            calcBaseDaysEl.textContent = `${baseTotalDays} 天`;
+            calcDeductDaysEl.textContent = `- ${deductDays} 天`;
+            calcFinalDaysEl.textContent = `${finalTotalDays} 天`;
+
+            // === 藥包機設定計算 (電腦日期連動與異動天數) ===
             let startDateOnly = new Date(startDateInput);
             startDateOnly.setHours(0,0,0,0);
 
-            // 如果離院日期有改變，連動將資料日期預設為「離院前一天」
+            // 若離院日期變更或送單時間變更(已清空lastStartDate)，則動態更改電腦日期預設值
             if (startDateInput !== lastStartDate) {
                 lastStartDate = startDateInput;
-                let dataDateObj = new Date(startDateOnly);
-                dataDateObj.setDate(dataDateObj.getDate() - 1); // 減去一天
-                if (dataDatePicker) {
-                    dataDatePicker.setDate(dataDateObj); // 這行會觸發 Flatpickr 的顯示更新
+                if (submitType === 'before') {
+                    let compDateObj = new Date(startDateOnly);
+                    compDateObj.setDate(compDateObj.getDate() - 1); // 減一天
+                    if (computerDatePicker) computerDatePicker.setDate(compDateObj);
+                } else if (submitType === 'today') {
+                    if (computerDatePicker) computerDatePicker.setDate(startDateOnly); // 當天
+                    // 預設已包1日 (以請假起日+1)
+                    let packedDateObj = new Date(startDateOnly);
+                    packedDateObj.setDate(packedDateObj.getDate() + 1);
+                    if (packedDatePicker) packedDatePicker.setDate(packedDateObj);
+                } else if (submitType === 'holiday') {
+                    // 假日不給預設
+                    if (computerDatePicker) computerDatePicker.clear();
                 }
             }
 
-            // 抓取當前資料日期的值來進行計算
-            let dataDateVal = document.getElementById('dataDate').value;
-            if (dataDateVal) {
-                let dataDateObj = new Date(dataDateVal);
-                dataDateObj.setHours(0,0,0,0);
+            // 計算異動天數 = 包藥末日 - 包藥天數(內定天數) - 電腦日期
+            let compDateVal = document.getElementById('computerDate').value;
+            if (compDateVal && finalTotalDays !== undefined) {
+                let compDateObj = new Date(compDateVal);
+                compDateObj.setHours(0,0,0,0);
                 
-                // 異動天數 = 離院日 - 資料日期
-                let diffTimeChange = startDateOnly - dataDateObj;
+                // 改用「包藥末日」(即最終展延到的日期) 當作計算基準，避免因假日展延導致原本用「請假迄日」出現的負數問題
+                let actualEndDateOnly = new Date(finalEndBoundary);
+                actualEndDateOnly.setHours(0,0,0,0);
+                
+                // 包藥末日 扣掉 內定天數 (實際包藥起始日)
+                let targetDateMs = actualEndDateOnly.getTime() - (finalTotalDays * 24 * 60 * 60 * 1000);
+                
+                // 【新增防呆鎖控】檢查電腦日期是否大於實際包藥起始日
+                if (compDateObj.getTime() > targetDateMs) {
+                    alert('電腦資料日期不可晚於實際包藥起始日！');
+                    if (computerDatePicker) computerDatePicker.clear(); // 清空錯誤的電腦日期
+                    animateValue(machineDefaultDaysEl, finalTotalDays);
+                    machineChangeDaysEl.textContent = '-';
+                    return; // 終止後續計算，等待使用者重新輸入合理日期
+                }
+
+                // 扣掉電腦日期 (相差天數)
+                let diffTimeChange = targetDateMs - compDateObj.getTime();
+                
                 let diffDaysChange = Math.round(diffTimeChange / (1000 * 60 * 60 * 24));
 
-                // 顯示結果 (替換原本的 textContent 加入跳動動畫)
-                animateValue(machineDefaultDaysEl, totalDays);
+                // 當需包藥天數為 0 時，異動天數也強制為 0
+                if (finalTotalDays === 0) {
+                    diffDaysChange = 0;
+                }
+
+                animateValue(machineDefaultDaysEl, finalTotalDays);
                 animateValue(machineChangeDaysEl, diffDaysChange);
+            } else {
+                // 電腦日期未填時，仍顯示內定天數，但異動天數為 -
+                animateValue(machineDefaultDaysEl, finalTotalDays);
+                machineChangeDaysEl.textContent = '-';
             }
         }
     </script>
