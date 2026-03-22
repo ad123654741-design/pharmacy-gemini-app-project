@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>榮字病房 - 院外適應借藥計算機</title>
+    <title>榮字病房 - 院外適應借藥計算</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style type="text/tailwindcss">
@@ -166,7 +166,7 @@
         <header class="mb-5 text-center">
             <h1 class="text-xl md:text-3xl font-bold text-medical-700 flex items-center justify-center gap-2 md:gap-3">
                 <i class="fa-solid fa-pills"></i>
-                榮字病房 - 院外適應借藥計算機
+                榮字病房 - 院外適應借藥計算
             </h1>
             <p class="text-gray-500 mt-2 text-xs md:text-sm">支援連假、防轉檔漏包計算 by 其仁 最後更新:2026/03</p>
         </header>
@@ -408,6 +408,7 @@
                 <li><strong class="text-medical-600">防漏單機制 (凌晨 01:00 轉檔)：</strong><span class="text-gray-800">系統會自動檢查病人請假期間，是否會錯過每日凌晨 01:00 的常規包藥轉檔。若有錯過，系統會將該日份的藥物加進借藥天數中，避免病人回病房後無藥可用。</span></li>
                 <li><strong class="text-medical-600">假日展延機制：</strong><span class="text-gray-800">週末與連假藥局無包藥作業。若借藥末日落在假日，系統會自動將包藥天數延展至下一個工作日的 15:01。</span></li>
                 <li><strong class="text-medical-600">借藥注意事項：</strong><span class="text-gray-800">請以單日的轉檔資料進行借藥，若用3日資料去轉，外投貼紙藥量會變成3倍。</span></li>
+                <li><strong class="text-medical-600">大夜班取消包藥：</strong><span class="text-gray-800">當病房有提前送單時，凌晨轉檔仍會有該病患資料，需請大夜取消勾選避免重複包藥。</span></li>
                 <li><strong class="text-medical-600">特殊頻率藥品：</strong><span class="text-gray-800">QXW、QXD頻率處方一定要進系統人工判讀是否需給藥。</span></li>
                 <li><strong class="text-medical-600">外投貼紙日期：</strong><span class="text-gray-800">右上角顯示的日期為電腦日期，不論內定天數和異動天數為何都不會變。</span></li>
                 <li><strong class="text-medical-600">內定天數：</strong><span class="text-gray-800">由系統推算應包含的用藥區間減去已包區間後所得的實際需包藥區間之天數。</span></li>
