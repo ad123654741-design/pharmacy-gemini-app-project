@@ -168,7 +168,7 @@
                 <i class="fa-solid fa-pills"></i>
                 榮字病房 - 院外適應借藥計算
             </h1>
-            <p class="text-gray-500 mt-2 text-xs md:text-sm"> 製作者:梓騏、其仁 最後更新:2026/03</p>
+            <p class="text-gray-500 mt-2 text-xs md:text-sm">製作者 : 梓騏、其仁 | 更新日期 : 2026/03</p>
         </header>
 
         <!-- 連假設定卡片 -->
@@ -208,54 +208,9 @@
             </div>
         </section>
 
-        <!-- 送單時間卡片 (新增) -->
-        <section class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-5 relative">
-            <div class="p-4 bg-orange-50 border-b border-orange-100 flex justify-between items-center cursor-pointer" onclick="toggleSubmitTimeSettings()">
-                <h2 class="text-base font-bold text-orange-800 flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left"></i> 送單時間 
-                    <span id="submitTimeLabelDisplay" class="text-sm font-normal ml-1 bg-orange-200 px-2 py-0.5 rounded text-orange-900 shadow-sm border border-orange-300/50">請假前一日</span>
-                </h2>
-                <i id="submitTimeToggleIcon" class="fa-solid fa-chevron-up text-orange-600 transition-transform"></i>
-            </div>
-            
-            <div id="submitTimeSettingsBody" class="p-5 md:p-6 transition-all duration-300">
-                <!-- Radio 群組 -->
-                <div class="flex gap-4 md:gap-6 items-center flex-wrap">
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="radio" name="submitTime" value="before" checked onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
-                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
-                            <span class="hidden md:inline">請假前一日</span><span class="md:hidden">前一日</span>
-                        </span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="radio" name="submitTime" value="today" onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
-                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
-                            <span class="hidden md:inline">請假當日</span><span class="md:hidden">當日</span>
-                        </span>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                        <input type="radio" name="submitTime" value="holiday" onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
-                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
-                            假日期間
-                        </span>
-                    </label>
-                </div>
-
-                <!-- 已包區間 (假日期間才顯示) -->
-                <div id="packedRangeDiv" class="hidden mt-4 pt-4 border-t border-orange-100 dark:border-gray-600">
-                    <label for="packedEndDate" class="block text-sm font-medium text-gray-700 mb-1">
-                        已包區間迄日 <span id="packedEndDateHint" class="text-xs text-gray-500 font-normal">(病房已有藥物至此日15:01)</span>
-                    </label>
-                    <input type="text" id="packedEndDate" placeholder="選擇已包至哪一天" 
-                        class="w-full md:w-1/2 px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all">
-                </div>
-            </div>
-        </section>
-
-        <!-- 主要計算卡片 -->
-        <main class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-5">
-            <!-- 輸入區 -->
-            <div class="p-5 md:p-6 bg-medical-50 border-b border-medical-100">
+        <!-- 請假日期與時間設定卡片 (原區塊互換至此) -->
+        <section class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-5">
+            <div class="p-5 md:p-6 bg-medical-50">
                 <h2 class="text-lg font-bold text-medical-700 mb-5 flex items-center gap-2">
                     <i class="fa-regular fa-calendar-check"></i> 請假日期與時間設定 (24H制)
                 </h2>
@@ -312,6 +267,51 @@
                 <div id="errorMsg" class="hidden mt-5 text-red-500 text-sm flex items-center gap-2 bg-red-50 p-3 rounded-lg border border-red-100">
                     <i class="fa-solid fa-circle-exclamation text-lg"></i>
                     <span id="errorText" class="font-medium">請假迄日時間不能早於起日時間！</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 送單時間與主要計算卡片 -->
+        <main class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-5">
+            <!-- 送單時間區塊 (原區塊互換至此) -->
+            <div class="p-4 bg-orange-50 border-b border-orange-100 flex justify-between items-center cursor-pointer" onclick="toggleSubmitTimeSettings()">
+                <h2 class="text-base font-bold text-orange-800 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left"></i> 送單時間 
+                    <span id="submitTimeLabelDisplay" class="text-sm font-normal ml-1 bg-orange-200 px-2 py-0.5 rounded text-orange-900 shadow-sm border border-orange-300/50">請假前一日</span>
+                </h2>
+                <i id="submitTimeToggleIcon" class="fa-solid fa-chevron-up text-orange-600 transition-transform"></i>
+            </div>
+            
+            <div id="submitTimeSettingsBody" class="p-5 md:p-6 transition-all duration-300 border-b border-gray-200 dark:border-gray-700">
+                <!-- Radio 群組 -->
+                <div class="flex gap-4 md:gap-6 items-center flex-wrap">
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" name="submitTime" value="before" checked onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
+                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
+                            <span class="hidden md:inline">請假前一日</span><span class="md:hidden">前一日</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" name="submitTime" value="today" onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
+                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
+                            <span class="hidden md:inline">請假當日</span><span class="md:hidden">當日</span>
+                        </span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer group">
+                        <input type="radio" name="submitTime" value="holiday" onchange="handleSubmitTimeChange()" class="w-4 h-4 text-orange-600 focus:ring-orange-500">
+                        <span class="text-gray-700 group-hover:text-orange-600 font-medium transition-colors">
+                            假日期間
+                        </span>
+                    </label>
+                </div>
+
+                <!-- 已包區間 (現在所有送單時間皆會顯示) -->
+                <div id="packedRangeDiv" class="mt-4 pt-4 border-t border-orange-100 dark:border-gray-600">
+                    <label for="packedEndDate" class="block text-sm font-medium text-gray-700 mb-1">
+                        已包區間迄日 <span id="packedEndDateHint" class="text-xs text-gray-500 font-normal">(病房已有藥物至此日15:01)</span>
+                    </label>
+                    <input type="text" id="packedEndDate" placeholder="選擇已包至哪一天" 
+                        class="w-full md:w-1/2 px-4 py-3 md:py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all">
                 </div>
             </div>
 
@@ -414,7 +414,6 @@
                 <li><strong class="text-medical-600">內定天數：</strong><span class="text-gray-800">由系統推算應包含的用藥區間減去已包區間後所得的實際需包藥區間之天數。</span></li>
                 <li><strong class="text-medical-600">異動天數：</strong><span class="text-gray-800">是基於電腦日期計算，而非轉檔資料日期。</span></li>
                 <li><strong class="text-medical-600">已領走借藥後又開藥：</strong><span class="text-gray-800">因首日量藥袋不會自動計算借藥天數，會造成藥物少給的狀況，請護理師自行計算所缺數量後，以異常加領方式(原因寫院外適應加藥補領)至藥局領藥。</span></li>
-                <li><strong class="text-medical-600">院外適應扣帳：</strong><span class="text-gray-800">院外適應借藥不會一次扣帳，仍是依照系統每日扣；請假期間只會影響藥包機是否抓的到資料。</span></li>
             </ul>
         </section>
         
@@ -473,17 +472,17 @@
                     <p>若遇國定假日或天災停止上班，請在此區塊加入不包藥日期，系統在計算展延時會自動跳過這些日子。一般週末(六、日)系統已預設排除，不需重複設定。</p>
                 </div>
                 <div>
-                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第二步：選擇「送單時間」</strong>
+                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第二步：設定「請假起迄時間」</strong>
+                    <p>輸入病人離院與返回的確切日期及時間 (24小時制)。輸入完成或按下 Enter 後，系統會自動在下方顯示「需包藥天數」及「實際包藥涵蓋區間」。可點擊結果區的「詳細計算」按鈕查看天數扣減細節。</p>
+                </div>
+                <div>
+                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第三步：選擇「送單時間」</strong>
                     <p>依據您實際送出借藥單的時間選擇：</p>
                     <ul class="list-disc list-inside mt-1 space-y-1 ml-1 text-gray-700 dark:text-gray-200">
                         <li><span class="font-medium">請假前一日</span>：常規作業，不扣除天數。</li>
                         <li><span class="font-medium">請假當日</span>：系統會自動扣除 1 天 (因當日早上病房已收到當天份常規藥)。</li>
                         <li><span class="font-medium">假日期間</span>：需手動輸入「已包區間迄日」，系統會扣除該日期之前的天數。</li>
                     </ul>
-                </div>
-                <div>
-                    <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第三步：設定「請假起迄時間」</strong>
-                    <p>輸入病人離院與返回的確切日期及時間 (24小時制)。輸入完成或按下 Enter 後，系統會自動在下方顯示「需包藥天數」及「實際包藥涵蓋區間」。可點擊結果區的「詳細計算」按鈕查看天數扣減細節。</p>
                 </div>
                 <div>
                     <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第四步：確認「藥包機設定」</strong>
@@ -710,7 +709,7 @@
                 labelDisplay.textContent = '假日期間';
                 compHint.textContent = '(請手動輸入電腦日期後計算)';
                 compHint.className = 'text-xs text-red-500 font-bold';
-                if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01)';
+                if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01，<span class="text-red-500 font-bold">請手動輸入</span>)';
             }
 
             // 強制觸發一次預設電腦日期的更新 (透過將 lastStartDate 清空來觸發計算內的邏輯)
