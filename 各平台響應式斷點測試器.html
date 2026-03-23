@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<!-- ========================================== -->
+<!-- 1. HTML HEAD & 資源載入 (Head & Resources) -->
+<!-- ========================================== -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>專業響應式斷點測試器 (Responsive Checker)</title>
+    
+    <!-- 載入 Tailwind CSS 作為 UI 樣式框架 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 自訂字體與基礎樣式 -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #f8fafc; /* 柔和的背景色，凸顯內容 */
+        }
+
+        /* 隱藏捲軸但保留滾動功能 (美化 UI) */
+        .hide-scrollbar::-webkit-scrollbar {
+            height: 8px;
+        }
+        .hide-scrollbar::-webkit-scrollbar-track {
+            background: #e2e8f0; 
+            border-radius: 4px;
+        }
+        .hide-scrollbar::-webkit-scrollbar-thumb {
+            background: #94a3b8; 
+            border-radius: 4px;
+        }
+        .hide-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #64748b; 
+        }
+
+        /* iframe 容器的過渡動畫，讓縮放時更滑順 */
+        .device-wrapper {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top left;
+        }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- ========================================== -->
+    <!-- 2. UI 結構: 頂部操作列 (Header Controls) -->
+    <!-- ========================================== -->
+    <header class="bg-white border-b border-slate-200 shadow-sm p-4 z-10 flex-shrink-0">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-4 justify-between">
+            
+            <!-- 標誌與標題 -->
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center font-bold">R</div>
+                <h1 class="text-xl font-bold text-slate-800">響應式測試器</h1>
+            </div>
+
+            <!-- 網址輸入區 -->
+            <form id="urlForm" class="flex-1 w-full max-w-2xl flex gap-2">
+                <div class="relative flex-1">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                        </svg>
+                    </div>
+                    <input 
+                        type="url" 
+                        id="urlInput" 
+                        required
+                        placeholder="請輸入包含 https:// 的完整網址" 
+                        class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                        value="https://example.com"
+                    >
+                </div>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                    載入測試
+                </button>
+            </form>
+
+            <!-- 縮放控制區 -->
+            <div class="flex items-center gap-3 bg-slate-100 px-4 py-2 rounded-lg">
+                <label for="zoomSlider" class="text-sm font-medium text-slate-600 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                    </svg>
+                    預覽縮放
+                </label>
+                <input type="range" id="zoomSlider" min="0.25" max="1" step="0.05" value="0.5" class="w-24 accent-indigo-600">
+                <span id="zoomValue" class="text-sm font-bold text-indigo-600 w-12 text-right">50%</span>
+            </div>
+        </div>
+        
+        <!-- 系統提示訊息 (解釋 iframe 限制) -->
+        <div class="max-w-7xl mx-auto mt-3 text-xs text-amber-600 flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            提醒：若畫面呈現空白或拒絕連線，通常是因為目標網站設定了安全機制 (X-Frame-Options) 禁止被嵌入。請測試您自己開發的網站。
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 3. UI 結構: 主要展示區 (Main Display Area) -->
+    <!-- ========================================== -->
+    <main class="flex-1 overflow-x-auto overflow-y-auto bg-slate-50 hide-scrollbar p-8">
+        <div id="devicesContainer" class="flex gap-12 items-start w-max mx-auto">
+            <!-- JavaScript 會動態在這裡生成裝置框架 -->
+        </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 4. 程式邏輯 (JavaScript Logic) -->
+    <!-- ========================================== -->
+    <script>
+        // --- 變數與設定區 ---
+        
+        // 定義要測試的裝置尺寸清單 (可隨時在此新增或修改)
+        const devices = [
+            { id: 'mobile', name: '手機 (iPhone 13)', width: 390, height: 844, icon: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z' },
+            { id: 'tablet', name: '平板 (iPad Mini)', width: 768, height: 1024, icon: 'M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z' }, // 使用相似的圖示
+            { id: 'laptop', name: '筆電 (13吋)', width: 1280, height: 800, icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+            { id: 'desktop', name: '桌機 (Full HD)', width: 1920, height: 1080, icon: 'M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' }
+        ];
+
+        // 取得 DOM 元素
+        const form = document.getElementById('urlForm');
+        const urlInput = document.getElementById('urlInput');
+        const devicesContainer = document.getElementById('devicesContainer');
+        const zoomSlider = document.getElementById('zoomSlider');
+        const zoomValue = document.getElementById('zoomValue');
+
+        // 目前的網址與縮放比例狀態
+        let currentUrl = urlInput.value;
+        let currentZoom = parseFloat(zoomSlider.value);
+
+        // --- 核心功能函數 ---
+
+        /**
+         * 初始化並渲染所有裝置的 UI 框架
+         */
+        function renderDevices() {
+            devicesContainer.innerHTML = ''; // 清空容器
+
+            devices.forEach(device => {
+                // 1. 建立單一裝置的卡片外框
+                const deviceCard = document.createElement('div');
+                deviceCard.className = 'flex flex-col gap-3';
+
+                // 2. 建立裝置資訊標頭 (名稱與尺寸)
+                const header = `
+                    <div class="flex items-center justify-between bg-white px-4 py-3 rounded-xl shadow-sm border border-slate-200">
+                        <div class="flex items-center gap-2 text-slate-700 font-medium">
+                            <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${device.icon}" />
+                            </svg>
+                            ${device.name}
+                        </div>
+                        <div class="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">
+                            ${device.width} × ${device.height}
+                        </div>
+                    </div>
+                `;
+
+                // 3. 建立動態縮放容器與 iframe
+                // 這裡的邏輯是：外層容器 (wrapper) 根據縮放比例設定固定寬高，
+                // 內層的 iframe 保持真實尺寸，並利用 CSS transform 縮放，確保響應式斷點能被正確觸發。
+                const iframeContainer = document.createElement('div');
+                iframeContainer.className = 'bg-white rounded-xl shadow-md border border-slate-300 overflow-hidden relative';
+                
+                // 動態計算縮放後外層需要佔用的空間
+                const scaledWidth = device.width * currentZoom;
+                const scaledHeight = device.height * currentZoom;
+                iframeContainer.style.width = `${scaledWidth}px`;
+                iframeContainer.style.height = `${scaledHeight}px`;
+
+                // 實際載入網頁的 iframe
+                const iframe = `
+                    <iframe 
+                        src="${currentUrl}" 
+                        class="device-wrapper absolute top-0 left-0 bg-white"
+                        style="width: ${device.width}px; height: ${device.height}px; transform: scale(${currentZoom}); border: none;"
+                        sandbox="allow-same-origin allow-scripts allow-forms"
+                        title="${device.name} preview"
+                    ></iframe>
+                `;
+
+                iframeContainer.innerHTML = iframe;
+                deviceCard.innerHTML = header;
+                deviceCard.appendChild(iframeContainer);
+                
+                devicesContainer.appendChild(deviceCard);
+            });
+        }
+
+        /**
+         * 更新網址功能
+         */
+        function loadUrl(e) {
+            e.preventDefault(); // 防止表單預設提交重整頁面
+            let rawUrl = urlInput.value.trim();
+            
+            // 基本防呆：若使用者忘記打 http/https，自動補上
+            if (rawUrl && !rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+                rawUrl = 'https://' + rawUrl;
+                urlInput.value = rawUrl;
+            }
+
+            currentUrl = rawUrl;
+            
+            // 找出所有 iframe 並更新 src 屬性
+            const iframes = document.querySelectorAll('iframe');
+            iframes.forEach(iframe => {
+                // 先給一個短暫的透明度變化，提升載入的 UX 體驗
+                iframe.style.opacity = '0.5';
+                iframe.src = currentUrl;
+                iframe.onload = () => iframe.style.opacity = '1';
+            });
+        }
+
+        /**
+         * 處理縮放比例變更
+         */
+        function handleZoomChange(e) {
+            currentZoom = parseFloat(e.target.value);
+            zoomValue.textContent = `${Math.round(currentZoom * 100)}%`;
+            
+            // 重新計算所有卡片容器的大小與 iframe 的縮放
+            const wrappers = document.querySelectorAll('.device-wrapper');
+            wrappers.forEach((wrapper, index) => {
+                const device = devices[index];
+                const container = wrapper.parentElement;
+                
+                // 更新外層容器大小
+                container.style.width = `${device.width * currentZoom}px`;
+                container.style.height = `${device.height * currentZoom}px`;
+                
+                // 更新 iframe 縮放比例
+                wrapper.style.transform = `scale(${currentZoom})`;
+            });
+        }
+
+        // --- 事件監聽與初始化 ---
+        
+        form.addEventListener('submit', loadUrl);
+        zoomSlider.addEventListener('input', handleZoomChange);
+
+        // 頁面載入時，首次渲染所有裝置
+        renderDevices();
+
+    </script>
+</body>
+</html>
