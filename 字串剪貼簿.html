@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常用字串管理員 Snippet Manager</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- 引入 Google Fonts: Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .snippet-card { transition: all 0.15s ease-out; }
+        .snippet-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08); border-color: #c7d2fe; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col relative">
+
+    <!-- ========================================== -->
+    <!-- 區塊 1: 頂部導覽列 (Header) -->
+    <!-- ========================================== -->
+    <header class="bg-white shadow-sm sticky top-0 z-30">
+        <div class="max-w-[1440px] mx-auto px-4 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i class="ph-fill ph-cards text-2xl text-indigo-600"></i>
+                <h1 class="text-lg font-bold text-slate-900 tracking-tight hidden sm:block">Snippet Manager</h1>
+            </div>
+            <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+                <!-- 搜尋框 (桌面版顯示於此，手機版會自動縮小) -->
+                <div class="relative w-full max-w-[200px] sm:max-w-[250px]">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="search-input" placeholder="搜尋字串..." class="w-full pl-9 pr-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-slate-50 focus:bg-white">
+                </div>
+                
+                <!-- 設定按鈕 -->
+                <button onclick="settingsManager.open()" class="text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 p-1.5 rounded-md transition-colors shrink-0" title="分類設定">
+                    <i class="ph-fill ph-gear text-xl"></i>
+                </button>
+                <!-- 新增按鈕 -->
+                <button onclick="uiManager.openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-colors shadow-sm shrink-0">
+                    <i class="ph ph-plus-circle text-base"></i>
+                    <span class="hidden sm:inline">新增字串</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- 區塊 2: 主要內容區 -->
+    <!-- ========================================== -->
+    <main class="flex-grow max-w-[1440px] mx-auto px-4 py-6 w-full flex flex-col md:flex-row gap-6">
+        <!-- 左側分類導覽 -->
+        <aside class="w-full md:w-36 shrink-0">
+            <h2 class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2 flex justify-between items-center">
+                <span>分類 Categories</span>
+            </h2>
+            <nav id="category-nav" class="flex md:flex-col gap-0.5 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                <!-- 動態生成 -->
+            </nav>
+        </aside>
+
+        <!-- 右側卡片網格 -->
+        <section class="flex-grow overflow-hidden">
+            <div id="status-message" class="hidden mb-4 p-3 rounded-lg bg-blue-50 text-blue-700 flex items-center gap-2 text-sm">
+                <i class="ph ph-spinner animate-spin text-lg"></i>
+                <span id="status-text">載入中...</span>
+            </div>
+
+            <div id="snippets-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                <!-- 動態生成 -->
+            </div>
+            
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400">
+                <i class="ph ph-empty text-5xl mb-3 text-slate-300"></i>
+                <p id="empty-state-text" class="text-base font-medium text-slate-500">此分類目前沒有字串</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- 區塊 3: 編輯/新增 字串 (Modal) -->
+    <!-- ========================================== -->
+    <div id="snippet-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform" id="modal-content">
+            <div class="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800" id="modal-title">新增字串</h3>
+                <button onclick="uiManager.closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-md hover:bg-slate-200">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5">
+                <form id="snippet-form" class="space-y-3">
+                    <input type="hidden" id="form-id">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">分類 (Category)</label>
+                        <select id="form-category" required class="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white cursor-pointer">
+                            <!-- 動態選項 -->
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">標題 (Title)</label>
+                        <input type="text" id="form-title" required placeholder="例如：公司統編" class="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">內容 (Content)</label>
+                        <textarea id="form-content" required rows="4" placeholder="請輸入要複製的文字內容..." class="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+                    </div>
+                    <div class="pt-3 flex gap-2">
+                        <button type="button" onclick="uiManager.closeModal()" class="flex-1 px-3 py-1.5 text-sm border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 font-medium">取消</button>
+                        <button type="submit" class="flex-1 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium flex justify-center items-center gap-1.5">
+                            <i class="ph ph-floppy-disk"></i> 儲存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 區塊 4: 分類設定管理 (Settings Modal) -->
+    <!-- ========================================== -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform" id="settings-content">
+            <div class="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="ph-fill ph-gear"></i> 管理分類標籤</h3>
+                <button onclick="settingsManager.close()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-md hover:bg-slate-200">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 flex flex-col h-[60vh] max-h-[450px]">
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="new-category-input" placeholder="輸入新分類名稱..." class="flex-grow px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <button onclick="settingsManager.addCategory()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">新增</button>
+                </div>
+                <!-- 分類列表 (含排序與刪除) -->
+                <div class="flex-grow overflow-y-auto pr-2 space-y-1" id="settings-category-list">
+                    <!-- 動態生成 -->
+                </div>
+                <div class="pt-4 mt-2 border-t border-slate-100">
+                    <button onclick="settingsManager.save()" class="w-full px-3 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium flex justify-center items-center gap-1.5">
+                        <i class="ph ph-check-circle"></i> 儲存設定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 區塊 5: 自訂刪除確認 (Confirm Modal) -->
+    <!-- ========================================== -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-[320px] overflow-hidden transform scale-95 transition-transform" id="confirm-content">
+            <div class="p-5 text-center">
+                <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="ph-fill ph-warning text-2xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800 mb-1">確定要刪除嗎？</h3>
+                <p class="text-xs text-slate-500 mb-5">此動作無法復原，請確認是否繼續。</p>
+                <div class="flex gap-2">
+                    <button onclick="dialogManager.cancelConfirm()" class="flex-1 px-3 py-2 text-sm border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 font-medium transition-colors">取消</button>
+                    <button id="confirm-btn-yes" class="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition-colors">確認刪除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 區塊 6: 吐司提示 (加上更長的寬度以容納標題) -->
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 bg-slate-800/90 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2.5 transition-all duration-300 z-[70] pointer-events-none max-w-[90vw] whitespace-nowrap">
+        <i class="ph-fill ph-check-circle text-green-400 text-lg shrink-0"></i>
+        <span id="toast-message" class="text-sm font-medium truncate">已處理！</span>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JavaScript 核心邏輯 -->
+    <!-- ========================================== -->
+    <script>
+        const CONFIG = {
+            // TODO: 部署後將你的 URL 貼到這裡
+            GOOGLE_SHEETS_API_URL: "https://script.google.com/macros/s/AKfycbxoAWQMN0Uhei-yQ835-vxxv6ItdqpBe8TIpkI2dLe4pIwQTdQJ99QVp_VJd4_V2dMJ/exec", 
+            DEFAULT_CATEGORY: "全部 (All)",
+            SYSTEM_ID: "__SYSTEM_CATEGORIES__"
+        };
+
+        let appState = {
+            snippets: [],
+            categories: ["公司資訊", "程式設計", "客服用語"], 
+            currentCategory: CONFIG.DEFAULT_CATEGORY,
+            searchQuery: "" // 新增：搜尋關鍵字狀態
+        };
+
+        /** API 與資料服務 */
+        const dataService = {
+            isUsingGoogleSheets: () => CONFIG.GOOGLE_SHEETS_API_URL.length > 10,
+
+            async fetchSnippets() {
+                if (this.isUsingGoogleSheets()) {
+                    try {
+                        uiManager.showStatus("載入資料中...", true);
+                        const response = await fetch(CONFIG.GOOGLE_SHEETS_API_URL);
+                        const data = await response.json();
+                        this.processRawData(data.data || []);
+                        uiManager.hideStatus();
+                    } catch (error) {
+                        uiManager.showStatus("讀取失敗，請檢查網路。", false, true);
+                    }
+                } else {
+                    const localData = localStorage.getItem('snippet_manager_data');
+                    this.processRawData(localData ? JSON.parse(localData) : [
+                        { id: Date.now().toString(), category: "公司資訊", title: "公司統編", content: "12345678" }
+                    ]);
+                }
+            },
+
+            processRawData(rawData) {
+                const sysSnippet = rawData.find(s => s.id === CONFIG.SYSTEM_ID);
+                if (sysSnippet) {
+                    try { appState.categories = JSON.parse(sysSnippet.content); } catch(e){}
+                }
+                appState.snippets = rawData.filter(s => s.id !== CONFIG.SYSTEM_ID);
+            },
+
+            async saveSnippet(snippetData, isSystem = false) {
+                if (this.isUsingGoogleSheets()) {
+                    try {
+                        if(!isSystem) uiManager.showStatus("儲存中...", true);
+                        const response = await fetch(CONFIG.GOOGLE_SHEETS_API_URL, {
+                            method: "POST",
+                            body: JSON.stringify({ action: "save", data: snippetData })
+                        });
+                        const result = await response.json();
+                        if(result.status === 'success' && !isSystem) await this.fetchSnippets();
+                    } catch (error) {
+                        uiManager.showToast("儲存失敗", true);
+                    }
+                } else {
+                    const rawData = [
+                        ...appState.snippets, 
+                        { id: CONFIG.SYSTEM_ID, category: "SYSTEM", title: "SYS", content: JSON.stringify(appState.categories) }
+                    ];
+                    
+                    if (!isSystem) {
+                        if (snippetData.id) {
+                            const index = rawData.findIndex(s => s.id === snippetData.id);
+                            if(index > -1) rawData[index] = snippetData;
+                        } else {
+                            snippetData.id = Date.now().toString();
+                            rawData.push(snippetData);
+                        }
+                    } else {
+                        const idx = rawData.findIndex(s => s.id === CONFIG.SYSTEM_ID);
+                        if(idx > -1) rawData[idx] = snippetData;
+                    }
+
+                    localStorage.setItem('snippet_manager_data', JSON.stringify(rawData));
+                    this.processRawData(rawData);
+                }
+            },
+
+            async saveCategories() {
+                const sysSnippet = {
+                    id: CONFIG.SYSTEM_ID,
+                    category: "SYSTEM",
+                    title: "CATEGORIES_CONFIG",
+                    content: JSON.stringify(appState.categories)
+                };
+                await this.saveSnippet(sysSnippet, true);
+            },
+
+            async deleteSnippet(id) {
+                if (this.isUsingGoogleSheets()) {
+                    try {
+                        uiManager.showStatus("刪除中...", true);
+                        await fetch(CONFIG.GOOGLE_SHEETS_API_URL, {
+                            method: "POST",
+                            body: JSON.stringify({ action: "delete", id: id })
+                        });
+                        await this.fetchSnippets();
+                    } catch (error) {
+                        uiManager.showToast("刪除失敗", true);
+                    }
+                } else {
+                    const rawData = localStorage.getItem('snippet_manager_data');
+                    let parsed = rawData ? JSON.parse(rawData) : [];
+                    parsed = parsed.filter(s => s.id !== id);
+                    localStorage.setItem('snippet_manager_data', JSON.stringify(parsed));
+                    this.processRawData(parsed);
+                }
+                uiManager.render();
+                uiManager.showToast("已刪除！");
+            }
+        };
+
+        const dialogManager = {
+            confirmCallback: null,
+            openConfirm(onConfirm) {
+                this.confirmCallback = onConfirm;
+                const modal = document.getElementById('confirm-modal');
+                const content = document.getElementById('confirm-content');
+                document.getElementById('confirm-btn-yes').onclick = () => {
+                    if (this.confirmCallback) this.confirmCallback();
+                    this.cancelConfirm();
+                };
+                modal.classList.remove('hidden');
+                void modal.offsetWidth; 
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            },
+            cancelConfirm() {
+                const modal = document.getElementById('confirm-modal');
+                const content = document.getElementById('confirm-content');
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+                this.confirmCallback = null;
+            }
+        };
+
+        /** 分類設定管理員 (新增上下排序功能) */
+        const settingsManager = {
+            tempCategories: [],
+            open() {
+                this.tempCategories = [...appState.categories];
+                this.renderList();
+                document.getElementById('new-category-input').value = "";
+                
+                const modal = document.getElementById('settings-modal');
+                const content = document.getElementById('settings-content');
+                modal.classList.remove('hidden');
+                void modal.offsetWidth; 
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            },
+            close() {
+                const modal = document.getElementById('settings-modal');
+                const content = document.getElementById('settings-content');
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            },
+            renderList() {
+                const container = document.getElementById('settings-category-list');
+                container.innerHTML = '';
+                if(this.tempCategories.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">目前沒有自訂分類，請在上方新增</p>';
+                    return;
+                }
+                this.tempCategories.forEach((cat, index) => {
+                    const div = document.createElement('div');
+                    div.className = "flex justify-between items-center py-1.5 px-2 bg-white hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-lg group transition-colors";
+                    
+                    // 控制排序按鈕的可用性
+                    const isFirst = index === 0;
+                    const isLast = index === this.tempCategories.length - 1;
+                    const btnClass = "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 p-1 rounded transition-colors";
+                    const disabledClass = "text-slate-200 cursor-not-allowed pointer-events-none";
+
+                    div.innerHTML = `
+                        <span class="text-sm text-slate-700 font-medium">${utils.escapeHTML(cat)}</span>
+                        <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="settingsManager.moveUp(${index})" class="${btnClass} ${isFirst ? disabledClass : ''}" title="往上移">
+                                <i class="ph ph-caret-up text-base"></i>
+                            </button>
+                            <button onclick="settingsManager.moveDown(${index})" class="${btnClass} ${isLast ? disabledClass : ''}" title="往下移">
+                                <i class="ph ph-caret-down text-base"></i>
+                            </button>
+                            <div class="w-px h-4 bg-slate-200 mx-1"></div>
+                            <button onclick="settingsManager.removeCategory(${index})" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors" title="刪除分類">
+                                <i class="ph ph-trash text-base"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            },
+            addCategory() {
+                const input = document.getElementById('new-category-input');
+                const val = input.value.trim();
+                if (val && !this.tempCategories.includes(val)) {
+                    this.tempCategories.push(val);
+                    input.value = "";
+                    this.renderList();
+                } else if(this.tempCategories.includes(val)) {
+                    uiManager.showToast("分類已存在！", true);
+                }
+            },
+            removeCategory(index) {
+                this.tempCategories.splice(index, 1);
+                this.renderList();
+            },
+            // 新增：往上移
+            moveUp(index) {
+                if (index > 0) {
+                    const temp = this.tempCategories[index - 1];
+                    this.tempCategories[index - 1] = this.tempCategories[index];
+                    this.tempCategories[index] = temp;
+                    this.renderList();
+                }
+            },
+            // 新增：往下移
+            moveDown(index) {
+                if (index < this.tempCategories.length - 1) {
+                    const temp = this.tempCategories[index + 1];
+                    this.tempCategories[index + 1] = this.tempCategories[index];
+                    this.tempCategories[index] = temp;
+                    this.renderList();
+                }
+            },
+            async save() {
+                if(this.tempCategories.length === 0) {
+                    uiManager.showToast("至少需要一個分類！", true);
+                    return;
+                }
+                appState.categories = [...this.tempCategories];
+                if(!appState.categories.includes(appState.currentCategory)) {
+                    appState.currentCategory = CONFIG.DEFAULT_CATEGORY;
+                }
+                uiManager.showStatus("正在儲存分類設定...", true);
+                await dataService.saveCategories();
+                uiManager.hideStatus();
+                this.close();
+                uiManager.render();
+                uiManager.showToast("分類設定已更新！");
+            }
+        };
+
+        const uiManager = {
+            async init() {
+                // 綁定表單提交
+                document.getElementById('snippet-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const snippetData = {
+                        id: document.getElementById('form-id').value,
+                        category: document.getElementById('form-category').value.trim(),
+                        title: document.getElementById('form-title').value.trim(),
+                        content: document.getElementById('form-content').value.trim()
+                    };
+                    uiManager.closeModal();
+                    await dataService.saveSnippet(snippetData);
+                    uiManager.render();
+                });
+
+                // 綁定搜尋框事件 (即時過濾)
+                document.getElementById('search-input').addEventListener('input', (e) => {
+                    appState.searchQuery = e.target.value.trim().toLowerCase();
+                    this.renderSnippets(); // 僅重新渲染卡片區塊
+                });
+
+                if(!dataService.isUsingGoogleSheets()) {
+                    setTimeout(() => this.showToast("目前為 LocalStorage 預覽模式"), 500);
+                }
+                await dataService.fetchSnippets();
+                this.render();
+            },
+
+            render() {
+                this.renderSidebarNav();
+                this.renderSnippets();
+            },
+
+            renderSidebarNav() {
+                const nav = document.getElementById('category-nav');
+                nav.innerHTML = '';
+                
+                const allNavs = [CONFIG.DEFAULT_CATEGORY, ...appState.categories];
+                
+                allNavs.forEach(category => {
+                    const isActive = category === appState.currentCategory;
+                    const btn = document.createElement('button');
+                    btn.className = `text-left px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap w-full flex justify-between items-center ${isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100'}`;
+                    btn.innerText = category;
+                    btn.onclick = () => {
+                        appState.currentCategory = category;
+                        // 切換分類時清空搜尋
+                        appState.searchQuery = "";
+                        document.getElementById('search-input').value = "";
+                        this.render();
+                    };
+                    nav.appendChild(btn);
+                });
+            },
+
+            renderSnippets() {
+                const container = document.getElementById('snippets-container');
+                const emptyState = document.getElementById('empty-state');
+                const emptyStateText = document.getElementById('empty-state-text');
+                container.innerHTML = '';
+
+                // 1. 根據分類過濾
+                let filtered = appState.currentCategory === CONFIG.DEFAULT_CATEGORY 
+                    ? appState.snippets 
+                    : appState.snippets.filter(s => s.category === appState.currentCategory);
+
+                // 2. 根據搜尋字串過濾 (同時比對標題與內容)
+                if (appState.searchQuery) {
+                    filtered = filtered.filter(s => 
+                        s.title.toLowerCase().includes(appState.searchQuery) || 
+                        s.content.toLowerCase().includes(appState.searchQuery)
+                    );
+                }
+
+                if (filtered.length === 0) {
+                    container.classList.add('hidden');
+                    emptyStateText.innerText = appState.searchQuery ? "找不到符合的搜尋結果" : "此分類目前沒有字串";
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                container.classList.remove('hidden');
+                emptyState.classList.add('hidden');
+
+                [...filtered].reverse().forEach(snippet => {
+                    const card = document.createElement('div');
+                    card.className = "snippet-card bg-white border border-slate-200 rounded-lg p-3 flex flex-col h-full group relative";
+                    
+                    const safeDisplayContent = utils.escapeHTML(snippet.content);
+                    const encodedContent = encodeURIComponent(snippet.content);
+                    // 將標題也編碼，傳給複製功能使用
+                    const encodedTitle = encodeURIComponent(snippet.title);
+                    
+                    // UI/UX 更新：複製按鈕帶入標題參數
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-1.5 gap-2">
+                            <h3 class="font-bold text-slate-800 text-sm leading-snug truncate flex-grow" title="${snippet.title}">${snippet.title}</h3>
+                            <button onclick="utils.copyText(decodeURIComponent('${encodedContent}'), decodeURIComponent('${encodedTitle}'))" class="shrink-0 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded flex items-center gap-1 px-1.5 py-1 transition-colors border border-indigo-100 hover:border-indigo-600" title="複製內容">
+                                <i class="ph ph-copy text-sm"></i><span class="text-[11px] font-bold">複製</span>
+                            </button>
+                        </div>
+                        <div class="flex items-center justify-between mb-2 min-h-[20px]">
+                            <span class="text-[10px] font-medium px-1.5 py-0.5 ${appState.categories.includes(snippet.category) ? 'bg-slate-100 text-slate-500' : 'bg-orange-50 text-orange-600 border border-orange-100'} rounded truncate max-w-[65%] leading-none" title="${!appState.categories.includes(snippet.category) ? '此分類已從設定中移除' : ''}">${snippet.category}</span>
+                            <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="uiManager.openModal('${snippet.id}')" class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="編輯">
+                                    <i class="ph ph-pencil-simple text-sm"></i>
+                                </button>
+                                <button onclick="dialogManager.openConfirm(() => dataService.deleteSnippet('${snippet.id}'))" class="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="刪除">
+                                    <i class="ph ph-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded border border-slate-100 mt-auto">
+                            <pre class="text-xs text-slate-500 font-mono whitespace-pre-wrap line-clamp-2 break-words m-0 leading-relaxed">${safeDisplayContent}</pre>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            },
+
+            openModal(id = null) {
+                const modal = document.getElementById('snippet-modal');
+                const content = document.getElementById('modal-content');
+                const title = document.getElementById('modal-title');
+                const selectEl = document.getElementById('form-category');
+                
+                selectEl.innerHTML = '';
+                appState.categories.forEach(cat => {
+                    const opt = document.createElement('option');
+                    opt.value = cat;
+                    opt.innerText = cat;
+                    selectEl.appendChild(opt);
+                });
+
+                if (id) {
+                    const snippet = appState.snippets.find(s => s.id === id);
+                    document.getElementById('form-id').value = snippet.id;
+                    
+                    if(!appState.categories.includes(snippet.category)) {
+                        const opt = document.createElement('option');
+                        opt.value = snippet.category;
+                        opt.innerText = snippet.category + " (已廢棄)";
+                        selectEl.appendChild(opt);
+                    }
+
+                    selectEl.value = snippet.category;
+                    document.getElementById('form-title').value = snippet.title;
+                    document.getElementById('form-content').value = snippet.content;
+                    title.innerText = "編輯字串";
+                } else {
+                    document.getElementById('snippet-form').reset();
+                    document.getElementById('form-id').value = "";
+                    selectEl.value = appState.currentCategory !== CONFIG.DEFAULT_CATEGORY ? appState.currentCategory : appState.categories[0];
+                    title.innerText = "新增字串";
+                }
+
+                modal.classList.remove('hidden');
+                void modal.offsetWidth; 
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            },
+
+            closeModal() {
+                const modal = document.getElementById('snippet-modal');
+                const content = document.getElementById('modal-content');
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            },
+
+            showStatus(text, isSpinner = false, isError = false) {
+                const msg = document.getElementById('status-message');
+                msg.querySelector('#status-text').innerText = text;
+                msg.querySelector('i').className = isSpinner ? 'ph ph-spinner animate-spin text-lg' : (isError ? 'ph ph-warning-circle text-lg' : 'ph ph-info text-lg');
+                msg.className = `mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${isError ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`;
+                msg.classList.remove('hidden');
+            },
+            hideStatus() { document.getElementById('status-message').classList.add('hidden'); },
+
+            showToast(message, isError = false) {
+                const toast = document.getElementById('toast');
+                document.getElementById('toast-message').innerText = message;
+                toast.querySelector('i').className = isError ? 'ph-fill ph-x-circle text-red-400 text-lg shrink-0' : 'ph-fill ph-check-circle text-green-400 text-lg shrink-0';
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2500);
+            }
+        };
+
+        const utils = {
+            escapeHTML(str) {
+                return str.replace(/[&<>'"]/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag] || tag));
+            },
+            // 修改：複製功能現在接收 title，讓提示更聰明
+            async copyText(text, title = "內容") {
+                const successMessage = `已複製：${title}`;
+                try {
+                    await navigator.clipboard.writeText(text);
+                    uiManager.showToast(successMessage);
+                } catch (err) {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try { 
+                        document.execCommand('copy'); 
+                        uiManager.showToast(successMessage); 
+                    } 
+                    catch (err) { uiManager.showToast("複製失敗", true); }
+                    document.body.removeChild(textArea);
+                }
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => uiManager.init());
+    </script>
+</body>
+</html>
