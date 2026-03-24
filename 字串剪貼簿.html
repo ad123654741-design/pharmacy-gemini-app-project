@@ -425,11 +425,15 @@
                 if(!appState.categories.includes(appState.currentCategory)) {
                     appState.currentCategory = CONFIG.DEFAULT_CATEGORY;
                 }
+                
+                // 修改：先瞬間關閉視窗並重繪畫面，提升流暢度
+                this.close();
+                uiManager.render();
+                
+                // 在背景非同步儲存設定至 Google Sheets
                 uiManager.showStatus("正在儲存分類設定...", true);
                 await dataService.saveCategories();
                 uiManager.hideStatus();
-                this.close();
-                uiManager.render();
                 uiManager.showToast("分類設定已更新！");
             }
         };
