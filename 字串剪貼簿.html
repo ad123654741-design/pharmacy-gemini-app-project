@@ -31,9 +31,14 @@
             <div class="flex items-center gap-2">
                 <i class="ph-fill ph-cards text-2xl text-indigo-600"></i>
                 <h1 class="text-lg font-bold text-slate-900 tracking-tight hidden sm:block">Snippet Manager</h1>
+                <!-- 1. 修改：將狀態提示列移至標題後方，縮小並適應 Header 高度 -->
+                <div id="status-message" class="hidden ml-2 px-2 py-1 rounded-md text-xs flex items-center gap-1.5 transition-opacity">
+                    <i class="ph ph-spinner animate-spin text-sm"></i>
+                    <span id="status-text">載入中...</span>
+                </div>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
-                <!-- 搜尋框 (桌面版顯示於此，手機版會自動縮小) -->
+                <!-- 搜尋框 -->
                 <div class="relative w-full max-w-[200px] sm:max-w-[250px]">
                     <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                     <input type="text" id="search-input" placeholder="搜尋字串..." class="w-full pl-9 pr-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-slate-50 focus:bg-white">
@@ -68,11 +73,7 @@
 
         <!-- 右側卡片網格 -->
         <section class="flex-grow overflow-hidden">
-            <div id="status-message" class="hidden mb-4 p-3 rounded-lg bg-blue-50 text-blue-700 flex items-center gap-2 text-sm">
-                <i class="ph ph-spinner animate-spin text-lg"></i>
-                <span id="status-text">載入中...</span>
-            </div>
-
+            <!-- 已移除此處原本的狀態提示 -->
             <div id="snippets-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
                 <!-- 動態生成 -->
             </div>
@@ -171,7 +172,7 @@
         </div>
     </div>
 
-    <!-- 區塊 6: 吐司提示 (加上更長的寬度以容納標題) -->
+    <!-- 區塊 6: 吐司提示 -->
     <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 bg-slate-800/90 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2.5 transition-all duration-300 z-[70] pointer-events-none max-w-[90vw] whitespace-nowrap">
         <i class="ph-fill ph-check-circle text-green-400 text-lg shrink-0"></i>
         <span id="toast-message" class="text-sm font-medium truncate">已處理！</span>
@@ -182,7 +183,6 @@
     <!-- ========================================== -->
     <script>
         const CONFIG = {
-            // TODO: 部署後將你的 URL 貼到這裡
             GOOGLE_SHEETS_API_URL: "https://script.google.com/macros/s/AKfycbxoAWQMN0Uhei-yQ835-vxxv6ItdqpBe8TIpkI2dLe4pIwQTdQJ99QVp_VJd4_V2dMJ/exec", 
             DEFAULT_CATEGORY: "全部 (All)",
             SYSTEM_ID: "__SYSTEM_CATEGORIES__"
@@ -192,7 +192,9 @@
             snippets: [],
             categories: ["公司資訊", "程式設計", "客服用語"], 
             currentCategory: CONFIG.DEFAULT_CATEGORY,
-            searchQuery: "" // 新增：搜尋關鍵字狀態
+            searchQuery: "",
+            // 2. 新增：從 localStorage 讀取我的最愛名單
+            favorites: JSON.parse(localStorage.getItem('snippet_manager_favorites') || '[]')
         };
 
         /** API 與資料服務 */
@@ -324,7 +326,6 @@
             }
         };
 
-        /** 分類設定管理員 (新增上下排序功能) */
         const settingsManager = {
             tempCategories: [],
             open() {
@@ -359,7 +360,6 @@
                     const div = document.createElement('div');
                     div.className = "flex justify-between items-center py-1.5 px-2 bg-white hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-lg group transition-colors";
                     
-                    // 控制排序按鈕的可用性
                     const isFirst = index === 0;
                     const isLast = index === this.tempCategories.length - 1;
                     const btnClass = "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 p-1 rounded transition-colors";
@@ -398,7 +398,6 @@
                 this.tempCategories.splice(index, 1);
                 this.renderList();
             },
-            // 新增：往上移
             moveUp(index) {
                 if (index > 0) {
                     const temp = this.tempCategories[index - 1];
@@ -407,7 +406,6 @@
                     this.renderList();
                 }
             },
-            // 新增：往下移
             moveDown(index) {
                 if (index < this.tempCategories.length - 1) {
                     const temp = this.tempCategories[index + 1];
@@ -426,11 +424,9 @@
                     appState.currentCategory = CONFIG.DEFAULT_CATEGORY;
                 }
                 
-                // 修改：先瞬間關閉視窗並重繪畫面，提升流暢度
                 this.close();
                 uiManager.render();
                 
-                // 在背景非同步儲存設定至 Google Sheets
                 uiManager.showStatus("正在儲存分類設定...", true);
                 await dataService.saveCategories();
                 uiManager.hideStatus();
@@ -440,7 +436,6 @@
 
         const uiManager = {
             async init() {
-                // 綁定表單提交
                 document.getElementById('snippet-form').addEventListener('submit', async (e) => {
                     e.preventDefault();
                     const snippetData = {
@@ -454,10 +449,9 @@
                     uiManager.render();
                 });
 
-                // 綁定搜尋框事件 (即時過濾)
                 document.getElementById('search-input').addEventListener('input', (e) => {
                     appState.searchQuery = e.target.value.trim().toLowerCase();
-                    this.renderSnippets(); // 僅重新渲染卡片區塊
+                    this.renderSnippets();
                 });
 
                 if(!dataService.isUsingGoogleSheets()) {
@@ -465,6 +459,18 @@
                 }
                 await dataService.fetchSnippets();
                 this.render();
+            },
+
+            // 2. 新增：處理愛心點擊功能
+            toggleFavorite(id) {
+                if (appState.favorites.includes(id)) {
+                    appState.favorites = appState.favorites.filter(favId => favId !== id);
+                } else {
+                    appState.favorites.push(id);
+                }
+                // 儲存至瀏覽器
+                localStorage.setItem('snippet_manager_favorites', JSON.stringify(appState.favorites));
+                this.renderSnippets(); // 重新渲染卡片以更新排序與圖示
             },
 
             render() {
@@ -485,7 +491,6 @@
                     btn.innerText = category;
                     btn.onclick = () => {
                         appState.currentCategory = category;
-                        // 切換分類時清空搜尋
                         appState.searchQuery = "";
                         document.getElementById('search-input').value = "";
                         this.render();
@@ -500,12 +505,10 @@
                 const emptyStateText = document.getElementById('empty-state-text');
                 container.innerHTML = '';
 
-                // 1. 根據分類過濾
                 let filtered = appState.currentCategory === CONFIG.DEFAULT_CATEGORY 
                     ? appState.snippets 
                     : appState.snippets.filter(s => s.category === appState.currentCategory);
 
-                // 2. 根據搜尋字串過濾 (同時比對標題與內容)
                 if (appState.searchQuery) {
                     filtered = filtered.filter(s => 
                         s.title.toLowerCase().includes(appState.searchQuery) || 
@@ -523,22 +526,35 @@
                 container.classList.remove('hidden');
                 emptyState.classList.add('hidden');
 
-                [...filtered].reverse().forEach(snippet => {
+                // 2. 修改：將過濾後的字串拆分為「已置頂」與「未置頂」，再合併 (置頂優先)
+                const favoriteSnippets = filtered.filter(s => appState.favorites.includes(s.id));
+                const regularSnippets = filtered.filter(s => !appState.favorites.includes(s.id));
+                const sortedSnippets = [...favoriteSnippets.reverse(), ...regularSnippets.reverse()];
+
+                sortedSnippets.forEach(snippet => {
                     const card = document.createElement('div');
-                    card.className = "snippet-card bg-white border border-slate-200 rounded-lg p-3 flex flex-col h-full group relative";
+                    const isFavorite = appState.favorites.includes(snippet.id);
+                    
+                    // 若為置頂卡片，加上微小的視覺提示 (淺橘色外框)
+                    card.className = `snippet-card bg-white border ${isFavorite ? 'border-orange-200 shadow-sm' : 'border-slate-200'} rounded-lg p-3 flex flex-col h-full group relative`;
                     
                     const safeDisplayContent = utils.escapeHTML(snippet.content);
                     const encodedContent = encodeURIComponent(snippet.content);
-                    // 將標題也編碼，傳給複製功能使用
                     const encodedTitle = encodeURIComponent(snippet.title);
                     
-                    // UI/UX 更新：複製按鈕帶入標題參數
                     card.innerHTML = `
                         <div class="flex justify-between items-start mb-1.5 gap-2">
                             <h3 class="font-bold text-slate-800 text-sm leading-snug truncate flex-grow" title="${snippet.title}">${snippet.title}</h3>
-                            <button onclick="utils.copyText(decodeURIComponent('${encodedContent}'), decodeURIComponent('${encodedTitle}'))" class="shrink-0 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded flex items-center gap-1 px-1.5 py-1 transition-colors border border-indigo-100 hover:border-indigo-600" title="複製內容">
-                                <i class="ph ph-copy text-sm"></i><span class="text-[11px] font-bold">複製</span>
-                            </button>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <!-- 愛心按鈕 -->
+                                <button onclick="uiManager.toggleFavorite('${snippet.id}')" class="text-slate-400 hover:text-red-500 rounded flex items-center justify-center transition-colors px-1 h-full" title="${isFavorite ? '取消置頂' : '置頂卡片'}">
+                                    <i class="${isFavorite ? 'ph-fill text-red-500' : 'ph hover:ph-fill'} ph-heart text-base"></i>
+                                </button>
+                                <!-- 複製按鈕 -->
+                                <button onclick="utils.copyText(decodeURIComponent('${encodedContent}'), decodeURIComponent('${encodedTitle}'))" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded flex items-center gap-1 px-1.5 py-1 transition-colors border border-indigo-100 hover:border-indigo-600" title="複製內容">
+                                    <i class="ph ph-copy text-sm"></i><span class="text-[11px] font-bold">複製</span>
+                                </button>
+                            </div>
                         </div>
                         <div class="flex items-center justify-between mb-2 min-h-[20px]">
                             <span class="text-[10px] font-medium px-1.5 py-0.5 ${appState.categories.includes(snippet.category) ? 'bg-slate-100 text-slate-500' : 'bg-orange-50 text-orange-600 border border-orange-100'} rounded truncate max-w-[65%] leading-none" title="${!appState.categories.includes(snippet.category) ? '此分類已從設定中移除' : ''}">${snippet.category}</span>
@@ -614,11 +630,13 @@
             showStatus(text, isSpinner = false, isError = false) {
                 const msg = document.getElementById('status-message');
                 msg.querySelector('#status-text').innerText = text;
-                msg.querySelector('i').className = isSpinner ? 'ph ph-spinner animate-spin text-lg' : (isError ? 'ph ph-warning-circle text-lg' : 'ph ph-info text-lg');
-                msg.className = `mb-4 p-3 rounded-lg flex items-center gap-2 text-sm ${isError ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`;
-                msg.classList.remove('hidden');
+                msg.querySelector('i').className = isSpinner ? 'ph ph-spinner animate-spin text-sm' : (isError ? 'ph ph-warning-circle text-sm' : 'ph ph-info text-sm');
+                // 1. 修改：變更 CSS class 適應 Header 的排版
+                msg.className = `ml-2 px-2 py-1 rounded-md text-xs flex items-center gap-1.5 transition-opacity ${isError ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`;
             },
-            hideStatus() { document.getElementById('status-message').classList.add('hidden'); },
+            hideStatus() { 
+                document.getElementById('status-message').classList.add('hidden'); 
+            },
 
             showToast(message, isError = false) {
                 const toast = document.getElementById('toast');
@@ -633,7 +651,6 @@
             escapeHTML(str) {
                 return str.replace(/[&<>'"]/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag] || tag));
             },
-            // 修改：複製功能現在接收 title，讓提示更聰明
             async copyText(text, title = "內容") {
                 const successMessage = `已複製：${title}`;
                 try {
