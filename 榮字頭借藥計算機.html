@@ -356,6 +356,13 @@
                             <div class="font-bold text-gray-700 mb-1">實際包藥涵蓋區間：</div>
                             <div id="coverageRangeText" class="text-medical-600 font-bold text-sm md:text-base tracking-wide"></div>
                             
+                            <!-- 短暫請假提醒 (同日請假) -->
+                            <div id="shortLeaveNotice" class="hidden mt-2 pt-2 border-t border-dashed border-gray-300 text-left bg-sky-50 p-2 rounded">
+                                <span class="text-xs text-sky-800 leading-relaxed font-bold">
+                                    <i class="fa-solid fa-circle-exclamation text-sky-600"></i> 短暫請假外出，請先向護理站確認是否需借藥。
+                                </span>
+                            </div>
+
                             <!-- 順延文字說明 -->
                             <div id="delayNotice" class="hidden mt-2 pt-2 border-t border-dashed border-gray-300 text-left bg-amber-50 p-2 rounded">
                                 <span id="delayNoticeText" class="text-xs text-amber-800 leading-relaxed"></span>
@@ -473,14 +480,14 @@
                 </div>
                 <div>
                     <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第二步：設定「請假起迄時間」</strong>
-                    <p>輸入病人離院與返回的日期及時間。輸入完成或按下 Enter 後，系統會在下方顯示「需包藥天數」及「實際包藥涵蓋區間」。可點擊結果區的「詳細計算」按鈕查看天數扣減細節。</p>
+                    <p>輸入病人離院與返回的確切日期及時間 (24小時制)。輸入完成或按下 Enter 後，系統會自動在下方顯示「需包藥天數」及「實際包藥涵蓋區間」。可點擊結果區的「詳細計算」按鈕查看天數扣減細節。</p>
                 </div>
                 <div>
                     <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第三步：選擇「送單時間」</strong>
                     <p>依據您實際送出借藥單的時間選擇：</p>
                     <ul class="list-disc list-inside mt-1 space-y-1 ml-1 text-gray-700 dark:text-gray-200">
                         <li><span class="font-medium">請假前一日</span>：常規作業，不扣除天數。</li>
-                        <li><span class="font-medium">請假當日</span>：系統會自動扣除1天 (因當日早上病房已收到當天常規藥)，週五或連假需手動改天數。</li>
+                        <li><span class="font-medium">請假當日</span>：系統會自動扣除 1 天 (因當日早上病房已收到當天份常規藥)。</li>
                         <li><span class="font-medium">假日期間</span>：需手動輸入「已包區間迄日」，系統會扣除該日期之前的天數。</li>
                     </ul>
                 </div>
@@ -858,6 +865,7 @@
             const totalDaysEl = document.getElementById('totalDays');
             const coverageDetails = document.getElementById('coverageDetails');
             const coverageRangeText = document.getElementById('coverageRangeText');
+            const shortLeaveNotice = document.getElementById('shortLeaveNotice'); // 修正綁定錯誤的 DOM 元素
             const delayNotice = document.getElementById('delayNotice');
             const delayNoticeText = document.getElementById('delayNoticeText');
             
@@ -929,13 +937,13 @@
                 let runTime = new Date(currentDay);
                 runTime.setHours(1, 0, 0, 0);
                 if (startDateTime <= runTime && runTime < endDateTime) {
-                    if (isWorkingDay(currentDay)) {
-                        let nextWorkDay = getNextWorkingDay(currentDay);
-                        let runCoverageEnd = new Date(nextWorkDay);
-                        runCoverageEnd.setHours(15, 1, 0, 0); 
-                        if (runCoverageEnd > maxCoverageEnd) {
-                            maxCoverageEnd = new Date(runCoverageEnd);
-                        }
+                    // 單純推算至隔日 15:01，將延展工作統一交給 Step 3 處理，以確保週末順延文字能正常觸發
+                    let nextDay = new Date(currentDay);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    let runCoverageEnd = new Date(nextDay);
+                    runCoverageEnd.setHours(15, 1, 0, 0); 
+                    if (runCoverageEnd > maxCoverageEnd) {
+                        maxCoverageEnd = new Date(runCoverageEnd);
                     }
                 }
                 currentDay.setDate(currentDay.getDate() + 1);
@@ -1008,6 +1016,13 @@
                 coverageRangeText.textContent = `病房已有藥物，不需再包`;
             } else {
                 coverageRangeText.textContent = `${formatStr(actualStartDate1501)} ~ ${formatStr(finalEndBoundary)}`;
+            }
+
+            // 短暫請假提醒邏輯 (離院與返回同一天)
+            if (startDateInput === endDateInput) {
+                shortLeaveNotice.classList.remove('hidden');
+            } else {
+                shortLeaveNotice.classList.add('hidden');
             }
 
             // 處理順延文字
