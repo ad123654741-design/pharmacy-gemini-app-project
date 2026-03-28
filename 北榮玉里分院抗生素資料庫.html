@@ -250,7 +250,7 @@
 
                     // 4. 建立基礎表頭資料 (包含是否為常見菌種的屬性)
                     this.baseAntibiogramHeaders = validIndices.map(i => {
-                        let isCommon = false; // 修正：預設改為非常見，有打勾才算
+                        let isCommon = false; // 預設改為非常見，有打勾才算
                         if (isNewFormat && commonBacteriaRow) {
                             const mark = commonBacteriaRow[i] ? String(commonBacteriaRow[i]).trim().toUpperCase() : '';
                             isCommon = (mark === 'V' || mark === '✓' || mark === 'Y' || mark === 'O');
@@ -269,7 +269,7 @@
                     this.baseAntibiogramData = dataRows
                         .filter(row => row && row.length > abxNameColIdx && row[abxNameColIdx] && String(row[abxNameColIdx]).trim() !== '') // 確保有抗生素名稱
                         .map((row, index) => {
-                            let isInHouse = false; // 修正：預設改為非本院，有打勾才算
+                            let isInHouse = false; // 預設改為非本院，有打勾才算
                             if (isNewFormat && inHouseColIdx !== -1) {
                                 const mark = row[inHouseColIdx] ? String(row[inHouseColIdx]).trim().toUpperCase() : '';
                                 isInHouse = (mark === 'V' || mark === '✓' || mark === 'Y' || mark === 'O');
@@ -585,11 +585,14 @@
 
         /* 新增：專屬列印與 PDF 匯出樣式 */
         @media print {
-            @page { size: landscape; margin: 8mm; }
-            html, body { height: auto !important; overflow: visible !important; background: none !important; }
-            /* 解除所有滾動限制，讓完整表格得以印出 */
-            .h-screen, .flex-1, .overflow-hidden, .overflow-auto, .overflow-y-auto, main {
-                height: auto !important; overflow: visible !important; max-height: none !important;
+            @page { size: landscape; margin: 10mm; }
+            /* 解除所有滾動與排版限制，強制轉換為區塊元素，確保表頭能每頁重複且列不被截斷 */
+            html, body, main, .h-screen, .flex-1, .overflow-hidden, .overflow-auto, .overflow-y-auto, [x-data], [x-show="activeTab === 2"], .inline-block {
+                display: block !important;
+                height: auto !important; 
+                overflow: visible !important; 
+                max-height: none !important; 
+                background: none !important;
             }
             /* 隱藏不必要的 UI */
             header, nav, .print-hide { display: none !important; }
@@ -598,8 +601,13 @@
             /* 關閉吸頂效果，避免列印分頁時重疊 */
             .sticky, .sticky-col, .sticky-col-header { position: static !important; }
             
+            /* --- 表格分頁與標題重複核心設定 --- */
+            table { font-size: 9pt !important; width: 100% !important; page-break-inside: auto !important; }
+            thead { display: table-header-group !important; }
+            tr { break-inside: avoid !important; page-break-inside: avoid !important; page-break-after: auto !important; }
+            td, th { break-inside: avoid !important; page-break-inside: avoid !important; }
+            
             /* 微調表格尺寸以盡可能塞進同一頁 */
-            table { font-size: 9pt !important; width: 100% !important; }
             .h-24 { height: 75px !important; } /* 縮減表頭高度 */
             .min-w-[24px] { min-width: 20px !important; width: 20px !important; }
             .w-6 { width: 20px !important; }
@@ -613,37 +621,41 @@
     <div x-data="antibioticApp" x-init="initData()" class="flex-1 flex flex-col h-full max-w-[98%] mx-auto w-full bg-white shadow-2xl sm:rounded-xl sm:my-4 sm:overflow-hidden relative border-t-4 border-teal-600">
 
         <header class="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
-            <div class="px-6 py-4">
-                <div class="flex flex-col md:flex-row md:items-center justify-start gap-6">
+            <div class="px-4 py-2">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div class="flex items-center space-x-3 flex-shrink-0">
-                        <div class="bg-teal-600 text-white p-2 rounded-lg shadow-lg shadow-teal-200">
-                            <i class="fa-solid fa-staff-snake text-2xl"></i>
+                        <div class="bg-teal-600 text-white p-1.5 rounded-md shadow-sm">
+                            <i class="fa-solid fa-staff-snake text-lg"></i>
                         </div>
                         <div>
-                            <h1 class="text-xl font-bold text-slate-800 tracking-tight">抗生素相容性資料庫</h1>
-                            <p class="text-xs text-slate-500 font-medium">臺北榮民總醫院玉里分院</p>
+                            <h1 class="text-lg font-bold text-slate-800 tracking-tight leading-none">抗生素相容性資料庫</h1>
+                            <p class="text-[10px] text-slate-500 font-medium mt-0.5">臺北榮民總醫院玉里分院</p>
                         </div>
                     </div>
                     
-                    <div class="relative w-full md:w-80 group">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-search text-gray-400 group-focus-within:text-teal-500 transition-colors"></i>
+                    <div class="relative w-full md:w-64 group">
+                        <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-gray-400 text-xs transition-colors group-focus-within:text-teal-500"></i>
                         </span>
-                        <input type="text" x-model="searchQuery" placeholder="輸入藥名、感染症..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder-gray-400">
-                        <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" x-cloak><i class="fa-solid fa-times-circle"></i></button>
+                        <input type="text" x-model="searchQuery" placeholder="輸入藥名、感染症..." class="w-full pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 transition-all placeholder-gray-400">
+                        <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" x-cloak><i class="fa-solid fa-times-circle text-xs"></i></button>
                     </div>
 
-                    <div class="md:ml-auto text-right text-xs text-gray-400 leading-tight mt-2 md:mt-0 flex-shrink-0">
-                        <p class="font-medium text-gray-500">製作者 : </p>
-                        <p class="mt-0.5">更新日期 : 2026/03/19</p>
-                        <p class="mt-0.5">資料來源 : </p>
-                        <p class="mt-1 text-red-400 opacity-75">資料僅供參考，實際用藥請依病人臨床狀況與最新指引調整。</p>
+                    <div class="text-right text-[10px] text-gray-400 leading-tight hidden lg:block flex-shrink-0">
+                        <div class="flex items-center justify-end gap-2 mb-0.5">
+                            <p><span class="font-medium text-gray-500">製作者 :</span> </p>
+                            <span class="text-gray-200">|</span>
+                            <p><span class="font-medium text-gray-500">資料來源 :</span> </p>
+                            <span class="text-gray-200">|</span>
+                            <p><span class="font-medium text-gray-500">更新日期 :</span> 2026/03/19</p>
+                        </div>
+                        <p class="text-red-400 opacity-80 mt-0.5">資料僅供參考，實際用藥請依病人臨床狀況與最新指引調整。</p>
                     </div>
                 </div>
 
-                <nav class="flex space-x-1 mt-6 overflow-x-auto no-scrollbar border-b border-gray-100">
+                <nav class="flex space-x-1 mt-2 overflow-x-auto no-scrollbar border-b border-gray-100">
                     <template x-for="(tab, index) in tabs" :key="index">
-                        <button @click="activeTab = index" :class="activeTab === index ? 'border-teal-500 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'" class="group whitespace-nowrap py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg flex items-center space-x-2">
+                        <button @click="activeTab = index" :class="activeTab === index ? 'border-teal-500 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'" class="group whitespace-nowrap py-1.5 px-4 border-b-2 font-medium text-xs transition-all duration-200 rounded-t-md flex items-center space-x-1.5">
                             <i :class="tab.icon"></i>
                             <span x-text="tab.name"></span>
                         </button>
@@ -670,16 +682,16 @@
 
             <!-- Tab 0: Solution -->
             <div x-show="activeTab === 0" class="h-full flex flex-col overflow-hidden bg-gray-50" x-transition:enter="transition ease-out duration-200" x-cloak>
-                <div class="px-6 py-3 bg-white border-b border-gray-200 flex flex-wrap items-center gap-4 flex-shrink-0 shadow-sm z-20">
-                    <span class="text-sm font-bold text-gray-700 mr-2"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>相容性圖例：</span>
-                    <div class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold">
-                        <i class="fa-solid fa-check-circle"></i> 相容 (Y)
+                <div class="px-4 py-1.5 bg-white border-b border-gray-200 flex flex-wrap items-center gap-3 flex-shrink-0 shadow-sm z-20">
+                    <span class="text-[11px] font-bold text-gray-700 mr-1"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>圖例：</span>
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">
+                        <i class="fa-solid fa-check-circle"></i> 相容(Y)
                     </div>
-                    <div class="flex items-center gap-1.5 px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-xs font-bold">
-                        <i class="fa-solid fa-exclamation-triangle"></i> 未測試 (?)
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-[10px] font-bold">
+                        <i class="fa-solid fa-exclamation-triangle"></i> 未測(?)
                     </div>
-                    <div class="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-bold">
-                        <i class="fa-solid fa-times-circle"></i> 不相容 (N)
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
+                        <i class="fa-solid fa-times-circle"></i> 不相容(N)
                     </div>
                 </div>
 
@@ -722,19 +734,19 @@
 
             <!-- Tab 1: 抗生素間相容性 -->
             <div x-show="activeTab === 1" class="h-full flex flex-col overflow-hidden bg-gray-50" x-transition:enter="transition ease-out duration-200" x-cloak>
-                <div class="px-6 py-3 bg-white border-b border-gray-200 flex flex-wrap items-center gap-4 flex-shrink-0 shadow-sm z-20">
-                    <span class="text-sm font-bold text-gray-700 mr-2"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>相容性圖例：</span>
-                    <div class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold">
-                        <i class="fa-solid fa-check-circle"></i> 相容 (Y)
+                <div class="px-4 py-1.5 bg-white border-b border-gray-200 flex flex-wrap items-center gap-3 flex-shrink-0 shadow-sm z-20">
+                    <span class="text-[11px] font-bold text-gray-700 mr-1"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>圖例：</span>
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">
+                        <i class="fa-solid fa-check-circle"></i> 相容(Y)
                     </div>
-                    <div class="flex items-center gap-1.5 px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-xs font-bold">
-                        <i class="fa-solid fa-exclamation-triangle"></i> 未測試 (?)
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-[10px] font-bold">
+                        <i class="fa-solid fa-exclamation-triangle"></i> 未測(?)
                     </div>
-                    <div class="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-bold">
-                        <i class="fa-solid fa-minus-circle"></i> 不建議 (-)
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-[10px] font-bold">
+                        <i class="fa-solid fa-minus-circle"></i> 不建議(-)
                     </div>
-                    <div class="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-bold">
-                        <i class="fa-solid fa-times-circle"></i> 不相容 (N)
+                    <div class="flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
+                        <i class="fa-solid fa-times-circle"></i> 不相容(N)
                     </div>
                 </div>
 
@@ -777,38 +789,38 @@
                 <h2 class="hidden print:block text-center text-2xl font-bold mb-4 mt-2 tracking-widest text-slate-800">抗生素抗菌譜</h2>
 
                 <!-- 加上 print-hide 類別，列印時隱藏這排控制按鈕 -->
-                <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-sm print-hide">
-                    <div class="flex flex-wrap gap-4 text-xs font-medium">
-                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm spectrum-blue mr-2"></span> 非常有效</div>
-                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 有效</div>
-                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#fde047] border border-[#eab308] mr-2"></span> 可能有效</div>
-                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
+                <div class="bg-white px-4 py-1.5 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 sticky top-0 z-30 shadow-sm print-hide">
+                    <div class="flex flex-wrap gap-3 text-[11px] font-medium">
+                        <div class="flex items-center"><span class="w-3 h-3 rounded shadow-sm spectrum-blue mr-1.5"></span> 非常有效</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-1.5"></span> 有效</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded shadow-sm bg-[#fde047] border border-[#eab308] mr-1.5"></span> 可能有效</div>
+                        <div class="flex items-center"><span class="w-3 h-3 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-1.5"></span> 無效</div>
                     </div>
                     
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2">
                         <!-- 篩選按鈕區塊 -->
-                        <div class="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200 shadow-inner">
-                            <label class="flex items-center gap-1.5 px-2.5 py-1.5 cursor-pointer rounded transition-all duration-200"
-                                   :class="showOnlyInHouseAbx ? 'bg-white text-teal-700 shadow shadow-teal-100 font-bold border border-teal-200' : 'text-gray-600 hover:bg-gray-200 border border-transparent'">
-                                <input type="checkbox" x-model="showOnlyInHouseAbx" class="w-3.5 h-3.5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
-                                <span class="text-xs select-none">僅顯示本院抗生素</span>
+                        <div class="flex items-center gap-1 bg-gray-50 p-0.5 rounded border border-gray-200 shadow-inner">
+                            <label class="flex items-center gap-1 px-2 py-1 cursor-pointer rounded transition-all duration-200"
+                                   :class="showOnlyInHouseAbx ? 'bg-white text-teal-700 shadow-sm font-bold border border-teal-200' : 'text-gray-600 hover:bg-gray-200 border border-transparent'">
+                                <input type="checkbox" x-model="showOnlyInHouseAbx" class="w-3 h-3 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
+                                <span class="text-[11px] select-none">僅顯示本院</span>
                             </label>
-                            <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
-                            <label class="flex items-center gap-1.5 px-2.5 py-1.5 cursor-pointer rounded transition-all duration-200"
-                                   :class="showOnlyCommonBacteria ? 'bg-white text-teal-700 shadow shadow-teal-100 font-bold border border-teal-200' : 'text-gray-600 hover:bg-gray-200 border border-transparent'">
-                                <input type="checkbox" x-model="showOnlyCommonBacteria" class="w-3.5 h-3.5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
-                                <span class="text-xs select-none">僅顯示常見菌種</span>
+                            <div class="w-px h-3 bg-gray-300 mx-0.5"></div>
+                            <label class="flex items-center gap-1 px-2 py-1 cursor-pointer rounded transition-all duration-200"
+                                   :class="showOnlyCommonBacteria ? 'bg-white text-teal-700 shadow-sm font-bold border border-teal-200' : 'text-gray-600 hover:bg-gray-200 border border-transparent'">
+                                <input type="checkbox" x-model="showOnlyCommonBacteria" class="w-3 h-3 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
+                                <span class="text-[11px] select-none">僅顯示常見</span>
                             </label>
                         </div>
 
-                        <button @click="toggleTranspose()" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center shadow-sm">
-                            <i class="fa-solid fa-retweet mr-1.5 text-gray-500"></i> 
-                            <span x-text="isTransposed ? '切換為抗生素視角' : '切換為菌種視角'"></span>
+                        <button @click="toggleTranspose()" class="text-[11px] px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center shadow-sm">
+                            <i class="fa-solid fa-retweet mr-1 text-gray-500"></i> 
+                            <span x-text="isTransposed ? '抗生素視角' : '菌種視角'"></span>
                         </button>
                         
                         <!-- 修正：將 a 標籤改為 button，避免開啟新分頁出錯，並觸發 window.print() -->
-                        <button type="button" @click="window.print()" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center shadow-sm">
-                            <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 匯出 / 列印PDF
+                        <button type="button" @click="window.print()" class="text-[11px] px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center shadow-sm">
+                            <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> 匯出PDF
                         </button>
                     </div>
                 </div>
