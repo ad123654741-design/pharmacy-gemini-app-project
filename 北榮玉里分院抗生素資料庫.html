@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抗生素相容性資料庫 | Clinical Antibiotic Database</title>
+    
+    <!-- 引入 Tailwind CSS (UI 設計) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 PapaParse (CSV 解析工具) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+
+    <!-- 引入 Google Fonts (字體優化) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- 引入 FontAwesome (圖標) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- 應用程式邏輯 -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('antibioticApp', () => ({
+                // ==========================================
+                // ★★★ 使用者設定區 ★★★
+                // ==========================================
+                
+                useMockData: false, 
+
+                // Google Sheet CSV 連結
+                sheetUrls: {
+                    dosing: "",
+                    infections: "",
+                    antibiogram: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSwzy6PqwUuqK4Mf5xhngiNE7o1rVjTnRuJrUev4Xbh8y87LdS-4_Aa3ixLNR0n8J_qatdVFbBP8jez/pub?gid=0&single=true&output=csv",
+                    pediatric: "",
+                    ivGuide: "",
+                    solution: "https://script.google.com/macros/s/AKfycbxaEb-fsbPyqR46MxW4PmTKYDcJoxIatv8OHq_RLJeYL7L-fOs86wXTX_KBbALBjXkC3A/exec" 
+                },
+
+                // ==========================================
+                // 系統變數
+                // ==========================================
+                activeTab: 0,
+                searchQuery: '',
+                isLoading: false,
+                errorMsg: null,
+                
+                modalType: null, 
+                selectedItem: null,
+                
+                
+                // 抗菌譜轉置與篩選狀態
+                isTransposed: false,
+                showOnlyInHouseAbx: false,
+                showOnlyCommonBacteria: false,
+
+                tabs: [
+                    { name: 'Solution', icon: 'fa-solid fa-flask-vial' },
+                    { name: '抗生素間相容性', icon: 'fa-solid fa-vials' },
+                    { name: '抗菌譜', icon: 'fa-solid fa-table-cells' }
+                ],
+
+                solutionData: [],
+                solutionHeaders: [],
+                ivCompatData: [],
+                ivCompatHeaders: [],
+                baseAntibiogramData: [],
+                baseAntibiogramHeaders: [],
+                pediatricData: [],
+                ivGuideData: [],
+
+                // ==========================================
+                // 初始化與資料抓取
+                // ==========================================
+                async initData() {
+                    this.isLoading = true;
+                    this.errorMsg = null;
+
+                    try {
+                        if (this.useMockData) {
+                            this.dosingData = this.mockData.dosing;
+                            this.infectionData = this.mockData.infections;
+                            this.processAntibiogram(this.mockData.antibiogram);
+                            this.pediatricData = this.mockData.pediatric;
+                            this.ivGuideData = this.mockData.ivGuide;
+                            
+                            if(this.mockData.solution && this.mockData.solution.length > 1) {
+                                this.solutionHeaders = this.mockData.solution[0].slice(1);
+                                this.solutionData = this.mockData.solution.slice(1).map(row => ({
+                                    name: row[0],
+                                    compat: this.solutionHeaders.map((h, i) => ({ fluid: h, status: row[i+1] }))
+                                }));
+                            }
+
+                            await new Promise(r => setTimeout(r, 800)); 
+                        } else {
+                            const results = await Promise.allSettled([
+                                this.fetchCSV(this.sheetUrls.dosing, 'dosing'),
+                                this.fetchCSV(this.sheetUrls.infections, 'infections'),
+                                this.fetchCSV(this.sheetUrls.antibiogram, 'antibiogram'),
+                                this.fetchCSV(this.sheetUrls.pediatric, 'pediatric'),
+                                this.fetchCSV(this.sheetUrls.ivGuide, 'ivGuide'),
+                                this.fetchMasterJSONP(this.sheetUrls.solution)
+                            ]);
+                            
+                            const failed = results.filter(r => r.status === 'rejected');
+                            if (failed.length > 0) {
+                                console.warn('部分資料載入失敗');
+                            }
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        this.errorMsg = "資料載入發生錯誤，請檢查網路或連結。";
+                        this.useMockData = true;
+                        this.initData(); 
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                fetchCSV(url, type) {
+                    return new Promise((resolve, reject) => {
+                        if (!url) { reject("URL missing"); return; }
+                        
+                        Papa.parse(url, {
+                            download: true,
+                            header: type !== 'antibiogram',
+                            skipEmptyLines: true, 
+                            complete: (results) => {
+                                try {
+                                    if (type === 'dosing') this.mapDosingData(results.data);
+                                    if (type === 'infections') this.mapInfectionData(results.data);
+                                    if (type === 'antibiogram') this.processAntibiogram(results.data);
+                                    if (type === 'pediatric') this.mapPediatricData(results.data);
+                                    if (type === 'ivGuide') this.mapIvGuideData(results.data);
+                                    resolve();
+                                } catch (err) {
+                                    console.error(`解析 ${type} 資料時發生錯誤:`, err);
+                                    reject(err);
+                                }
+                            },
+                            error: (err) => reject(err)
+                        });
+                    });
+                },
+
+                // ==========================================
+                // 資料處理邏輯
+                // ==========================================
+                
+
+                fetchMasterJSONP(url) {
+                    return new Promise((resolve, reject) => {
+                        if (!url) { reject("URL missing"); return; }
+                        const callbackName = 'jsonp_callback_' + Math.round(100000 * Math.random());
+                        
+                        const timeoutId = setTimeout(() => {
+                            delete window[callbackName];
+                            reject(new Error("Solution/Compat 資料載入逾時"));
+                        }, 15000);
+
+                        window[callbackName] = (data) => {
+                            clearTimeout(timeoutId);
+                            delete window[callbackName];
+                            
+                            if (data) {
+                                // 解析 Solution 資料
+                                if (data.solution && data.solution.headers) {
+                                    this.solutionHeaders = data.solution.headers;
+                                    this.solutionData = data.solution.data;
+                                }
+                                // 解析 抗生素間相容性 資料
+                                if (data.ivCompat && data.ivCompat.headers) {
+                                    this.ivCompatHeaders = data.ivCompat.headers;
+                                    this.ivCompatData = data.ivCompat.data;
+                                }
+                                resolve();
+                            } else {
+                                reject(new Error("資料格式不正確"));
+                            }
+                        };
+                        const script = document.createElement('script');
+                        script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + callbackName;
+                        script.onerror = () => {
+                            clearTimeout(timeoutId);
+                            delete window[callbackName];
+                            reject(new Error("JSONP 載入失敗 (Google 權限或網址異常)"));
+                        };
+                        document.body.appendChild(script);
+                    });
+                },
+
+                processAntibiogram(rawArray) {
+                    if (!rawArray || rawArray.length < 2) return;
+                    
+                    let headerRowIdx = -1;
+                    let commonBacteriaRowIdx = -1;
+                    let inHouseColIdx = -1;
+                    let abxNameColIdx = -1;
+                    let bacteriaStartIdx = -1;
+
+                    // 1. 動態尋找「本院品項」所在的標題列
+                    for (let i = 0; i < Math.min(10, rawArray.length); i++) {
+                        if (!rawArray[i]) continue;
+                        let found = false;
+                        for (let j = 0; j < Math.min(5, rawArray[i].length); j++) {
+                            if (String(rawArray[i][j]).replace(/\s+/g, '').includes('本院品項')) {
+                                headerRowIdx = i;
+                                inHouseColIdx = j;
+                                abxNameColIdx = j + 1;
+                                bacteriaStartIdx = j + 2;
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (found) break;
+                    }
+
+                    const isNewFormat = headerRowIdx !== -1;
+
+                    if (!isNewFormat) {
+                        // 若找不到「本院品項」，表示目前連結仍是舊版格式，啟動向下相容機制
+                        console.warn("找不到 '本院品項' 標題列，自動以舊版格式解析。請確認是否已更換為新的資料庫連結。");
+                        headerRowIdx = 0;
+                        inHouseColIdx = -1;
+                        abxNameColIdx = 0;
+                        bacteriaStartIdx = 1;
+                    } else {
+                        // 2. 尋找「常見菌種」所在的列
+                        for (let i = 0; i < headerRowIdx; i++) {
+                            if (!rawArray[i]) continue;
+                            for (let j = 0; j < Math.min(5, rawArray[i].length); j++) {
+                                if (String(rawArray[i][j]).replace(/\s+/g, '').includes('常見菌種')) {
+                                    commonBacteriaRowIdx = i;
+                                    break;
+                                }
+                            }
+                            if (commonBacteriaRowIdx !== -1) break;
+                        }
+                    }
+
+                    const headerRow = rawArray[headerRowIdx];
+                    const commonBacteriaRow = commonBacteriaRowIdx !== -1 ? rawArray[commonBacteriaRowIdx] : [];
+
+                    // 3. 取得有效的菌種欄位 Index
+                    const validIndices = headerRow
+                        .map((col, index) => ({ text: col, index: index }))
+                        .filter(item => item.index >= bacteriaStartIdx && item.text && String(item.text).trim() !== '')
+                        .map(item => item.index);
+
+                    // 4. 建立基礎表頭資料 (包含是否為常見菌種的屬性)
+                    this.baseAntibiogramHeaders = validIndices.map(i => {
+                        let isCommon = false; // 修正：預設改為非常見，有打勾才算
+                        if (isNewFormat && commonBacteriaRow) {
+                            const mark = commonBacteriaRow[i] ? String(commonBacteriaRow[i]).trim().toUpperCase() : '';
+                            isCommon = (mark === 'V' || mark === '✓' || mark === 'Y' || mark === 'O');
+                        } else if (!isNewFormat) {
+                            isCommon = true; // 舊版格式相容：一律顯示
+                        }
+                        return {
+                            name: String(headerRow[i]).trim(),
+                            isCommon: isCommon,
+                            originalIndex: i
+                        };
+                    });
+
+                    // 5. 建立基礎資料列 (包含是否為本院品項的屬性)
+                    const dataRows = rawArray.slice(headerRowIdx + 1);
+                    this.baseAntibiogramData = dataRows
+                        .filter(row => row && row.length > abxNameColIdx && row[abxNameColIdx] && String(row[abxNameColIdx]).trim() !== '') // 確保有抗生素名稱
+                        .map((row, index) => {
+                            let isInHouse = false; // 修正：預設改為非本院，有打勾才算
+                            if (isNewFormat && inHouseColIdx !== -1) {
+                                const mark = row[inHouseColIdx] ? String(row[inHouseColIdx]).trim().toUpperCase() : '';
+                                isInHouse = (mark === 'V' || mark === '✓' || mark === 'Y' || mark === 'O');
+                            } else if (!isNewFormat) {
+                                isInHouse = true; // 舊版格式相容：一律顯示
+                            }
+                            return {
+                                id: `abx-${index}`,
+                                name: String(row[abxNameColIdx]).trim(),
+                                isInHouse: isInHouse,
+                                spectrum: validIndices.map(i => row[i] || ''),
+                                originalIndex: index
+                            };
+                        });
+                },
+
+                // ==========================================
+                // 互動功能
+                // ==========================================
+
+                openModal(type, item) {
+                    this.modalType = type;
+                    this.selectedItem = item;
+                },
+
+                closeModal() {
+                    this.modalType = null;
+                    setTimeout(() => { this.selectedItem = null; }, 200);
+                },
+
+                toggleTranspose() {
+                    this.isTransposed = !this.isTransposed;
+                },
+
+                formatLineBreaks(text) {
+                    if (!text) return '';
+                    return text.replace(/\n/g, '<br>');
+                },
+
+                renderTable(text) {
+                    if (!text) return '<span class="text-gray-400">無資料</span>';
+                    
+                    if (text.includes('|')) {
+                        const lines = text.split('\n').filter(line => line.trim() !== '');
+                        let html = '<div class="overflow-x-auto"><table class="min-w-full text-sm border border-gray-200 rounded-lg overflow-hidden">';
+                        
+                        lines.forEach((line, index) => {
+                            const cols = line.split('|');
+                            if (index === 0) {
+                                html += '<thead class="bg-blue-100 text-slate-700 font-bold"><tr>';
+                                cols.forEach(col => {
+                                    html += `<th class="px-3 py-2 border-b border-gray-200 text-left">${col.trim()}</th>`;
+                                });
+                                html += '</tr></thead><tbody class="bg-white divide-y divide-gray-100">';
+                            } else {
+                                html += `<tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}">`;
+                                cols.forEach(col => {
+                                    html += `<td class="px-3 py-2 border-r border-gray-100 last:border-r-0 align-top">${col.trim()}</td>`;
+                                });
+                                html += '</tr>';
+                            }
+                        });
+                        
+                        html += '</tbody></table></div>';
+                        return html;
+                    }
+                    
+                    return this.formatLineBreaks(text);
+                },
+
+                getCompatBadgeClass(code) {
+                    if (!code) return 'bg-gray-50 text-gray-400 border-gray-200';
+                    const c = String(code).toUpperCase().trim(); 
+                    if (['Y', 'C', '相容', 'O', '✓', 'V'].includes(c)) return 'bg-green-100 text-green-700 border-green-300';
+                    if (['N', 'I', '不相容', 'X', '✗'].includes(c)) return 'bg-red-100 text-red-700 border-red-300';
+                    if (['?', 'U', '不確定', '△', '限制', '未測試'].includes(c)) return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+                    if (['-', '不建議'].includes(c)) return 'bg-blue-100 text-blue-700 border-blue-300';
+                    return 'bg-gray-50 text-gray-600 border-gray-200';
+                },
+
+                getCompatBadgeText(code) {
+                     if (!code) return '-';
+                     const c = String(code).toUpperCase().trim();
+                     if (['Y', 'C', '相容', 'O', '✓', 'V'].includes(c)) return '相容';
+                     if (['N', 'I', '不相容', 'X', '✗'].includes(c)) return '不相容';
+                     if (['?', 'U', '不確定', '△', '限制', '未測試'].includes(c)) return '未測試';
+                     if (['-', '不建議'].includes(c)) return '不建議';
+                     return c;
+                },
+
+                renderCompatCell(status) {
+                    if (!status || status.trim() === '') return '<span class="text-gray-300 font-bold">-</span>';
+                    let parts = status.split('/').map(s => s.trim());
+                    let html = '<div class="flex flex-col gap-1.5 w-full">';
+                    
+                    if (parts.length === 2) {
+                        html += `<div class="flex items-center justify-between text-[11px]"><span class="text-gray-500 font-medium mr-1 whitespace-nowrap">Y-site:</span> <span class="${this.getCompatBadgeClass(parts[0])} border px-1.5 py-0.5 rounded shadow-sm font-bold min-w-[40px] text-center">${this.getCompatBadgeText(parts[0])}</span></div>`;
+                        html += `<div class="flex items-center justify-between text-[11px]"><span class="text-gray-500 font-medium mr-1 whitespace-nowrap">直接混合:</span> <span class="${this.getCompatBadgeClass(parts[1])} border px-1.5 py-0.5 rounded shadow-sm font-bold min-w-[40px] text-center">${this.getCompatBadgeText(parts[1])}</span></div>`;
+                    } else {
+                        html += `<div class="flex justify-center"><span class="${this.getCompatBadgeClass(parts[0])} border px-3 py-1 rounded-full shadow-sm text-xs font-bold">${this.getCompatBadgeText(parts[0])}</span></div>`;
+                    }
+                    html += '</div>';
+                    return html;
+                },
+
+                getSpectrumColor(code) {
+                    if (!code) return 'spectrum-gray';
+                    const c = String(code).toUpperCase().trim(); 
+                    if (c === 'B' || c === 'VG' || c === '++' || c === '非常有效') return 'spectrum-blue';
+                    if (c === 'G' || c === 'V' || c === '有效' || c === '+') return 'spectrum-green';
+                    if (c === 'Y' || c === 'E' || c === '可能有效' || c === '+/-') return 'spectrum-yellow';
+                    if (c === 'R' || c === 'I' || c === '無效' || c === '-') return 'spectrum-red';
+                    return 'spectrum-gray';
+                },
+
+                getSpectrumLabel(code) {
+                     if (!code) return '無資料';
+                     const c = String(code).toUpperCase().trim();
+                     if (c === 'B' || c === 'VG' || c === '++' || c === '非常有效') return '非常有效 (Very Effective)';
+                     if (c === 'G' || c === 'V' || c === '有效' || c === '+') return '有效 (Susceptible)';
+                     if (c === 'Y' || c === 'E' || c === '可能有效' || c === '+/-') return '可能有效 (Possibly Effective)';
+                     if (c === 'R' || c === 'I' || c === '無效' || c === '-') return '無效 (Resistant)';
+                     return c;
+                },
+                
+                getFormClass(form) {
+                    if (!form) return 'bg-gray-100 text-gray-600 border-gray-200';
+                    const f = form.toUpperCase();
+                    if (f.includes('IV') || f.includes('IM') || f.includes('INJ') || f.includes('針')) {
+                        return 'bg-purple-50 text-purple-700 border-purple-200';
+                    }
+                    if (f.includes('PO') || f.includes('ORAL') || f.includes('CAP') || f.includes('TAB') || f.includes('口服')) {
+                        return 'bg-orange-50 text-orange-700 border-orange-200';
+                    }
+                    return 'bg-teal-50 text-teal-700 border-teal-200';
+                },
+
+                checkFormFilter(form) {
+                    if (this.dosageFormFilter === 'ALL') return true;
+                    if (!form) return false;
+                    const f = form.toUpperCase();
+                    if (this.dosageFormFilter === 'IV') {
+                        return f.includes('IV') || f.includes('IM') || f.includes('INJ') || f.includes('針');
+                    }
+                    if (this.dosageFormFilter === 'PO') {
+                        return f.includes('PO') || f.includes('ORAL') || f.includes('CAP') || f.includes('TAB') || f.includes('口服');
+                    }
+                    return true;
+                },
+
+                get uniqueSystems() {
+                    const systems = new Set(this.infectionData.map(i => i.system).filter(s => s));
+                    return Array.from(systems).sort();
+                },
+
+                get filteredSolutionData() {
+                     const q = this.searchQuery.toLowerCase();
+                     if (!this.searchQuery) return this.solutionData;
+                     return this.solutionData.filter(item => 
+                        item.name.toLowerCase().includes(q)
+                     );
+                },
+
+                get filteredIvCompatData() {
+                     const q = this.searchQuery.toLowerCase();
+                     if (!this.searchQuery) return this.ivCompatData;
+                     return this.ivCompatData.filter(item => 
+                        item.name.toLowerCase().includes(q)
+                     );
+                },
+
+                get filteredInfectionList() {
+                    return this.infectionData.filter(item => {
+                        const matchesSystem = this.selectedSystem === '' || item.system === this.selectedSystem;
+                        const searchLower = this.localInfectionSearch.toLowerCase();
+                        const matchesSearch = this.localInfectionSearch === '' || 
+                                              item.infectionType.toLowerCase().includes(searchLower) ||
+                                              item.pathogens.toLowerCase().includes(searchLower);
+                        return matchesSystem && matchesSearch;
+                    });
+                },
+
+                get filteredDosingData() {
+                    let data = this.dosingData;
+                    if (this.dosageFormFilter !== 'ALL') {
+                        data = data.filter(item => this.checkFormFilter(item.form));
+                    }
+                    
+                    if (!this.searchQuery) return data;
+                    const q = this.searchQuery.toLowerCase();
+                    return data.filter(item => 
+                        item.genericName.toLowerCase().includes(q) || 
+                        item.brandName.toLowerCase().includes(q)
+                    );
+                },
+
+                get filteredInfectionData() {
+                    if (!this.searchQuery) return this.infectionData;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.infectionData.filter(item => 
+                        item.infectionType.toLowerCase().includes(q) || 
+                        item.pathogens.toLowerCase().includes(q) ||
+                        item.system.toLowerCase().includes(q)
+                    );
+                },
+
+                // 動態切換表頭
+                get currentAntibiogramHeaders() {
+                    if (!this.baseAntibiogramHeaders) return [];
+                    if (!this.isTransposed) {
+                        // 正常模式：表頭為菌種
+                        return this.baseAntibiogramHeaders
+                            .filter(b => !this.showOnlyCommonBacteria || b.isCommon)
+                            .map(b => b.name);
+                    } else {
+                        // 轉置模式：表頭為抗生素名稱
+                        return this.baseAntibiogramData
+                            .filter(a => !this.showOnlyInHouseAbx || a.isInHouse)
+                            .map(a => a.name);
+                    }
+                },
+
+                // 動態切換內容列
+                get filteredAntibiogramData() {
+                    if (!this.baseAntibiogramData) return [];
+                    const q = this.searchQuery.toLowerCase();
+
+                    if (!this.isTransposed) {
+                        // 一般模式 (Rows = 抗生素)
+                        const activeCols = this.baseAntibiogramHeaders
+                            .map((b, idx) => ({ ...b, mappedIndex: idx }))
+                            .filter(b => !this.showOnlyCommonBacteria || b.isCommon);
+
+                        return this.baseAntibiogramData
+                            .filter(a => (!this.showOnlyInHouseAbx || a.isInHouse) && (!this.searchQuery || a.name.toLowerCase().includes(q)))
+                            .map(a => ({
+                                id: a.id,
+                                name: a.name,
+                                // 僅保留未被過濾掉的菌種欄位
+                                spectrum: activeCols.map(col => a.spectrum[col.mappedIndex])
+                            }));
+                    } else {
+                        // 轉置模式 (Rows = 菌種)
+                        const activeCols = this.baseAntibiogramData
+                            .map((a, idx) => ({ ...a, mappedIndex: idx }))
+                            .filter(a => !this.showOnlyInHouseAbx || a.isInHouse);
+
+                        return this.baseAntibiogramHeaders
+                            .map((b, idx) => ({ ...b, mappedIndex: idx }))
+                            .filter(b => (!this.showOnlyCommonBacteria || b.isCommon) && (!this.searchQuery || b.name.toLowerCase().includes(q)))
+                            .map(b => ({
+                                id: `bac-${b.mappedIndex}`,
+                                name: b.name,
+                                // 僅保留未被過濾掉的抗生素欄位
+                                spectrum: activeCols.map(col => col.spectrum[b.mappedIndex])
+                            }));
+                    }
+                },
+
+                get filteredPediatricData() {
+                    let data = this.pediatricData;
+                    if (this.dosageFormFilter !== 'ALL') {
+                        data = data.filter(item => this.checkFormFilter(item.form));
+                    }
+
+                    if (!this.searchQuery) return data;
+                    const q = this.searchQuery.toLowerCase();
+                    return data.filter(item => 
+                        item.genericName.toLowerCase().includes(q) || 
+                        item.brandName.toLowerCase().includes(q)
+                    );
+                },
+
+                get filteredIvGuideData() {
+                    if (!this.searchQuery) return this.ivGuideData;
+                    const q = this.searchQuery.toLowerCase();
+                    return this.ivGuideData.filter(item => 
+                        item.genericName.toLowerCase().includes(q)
+                    );
+                },
+
+            }));
+        });
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        body { 
+            font-family: 'Noto Sans TC', sans-serif; 
+            background-color: #f8fafc;
+            background-image: 
+                linear-gradient(#e2e8f0 1px, transparent 1px), 
+                linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .table-header { @apply px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-b border-gray-200 shadow-sm; }
+        .table-cell { @apply px-6 py-6 whitespace-nowrap text-sm text-gray-700 border-b border-gray-100 align-top text-left; }
+        
+        .sticky-col { @apply sticky left-0 z-10 bg-white border-r border-gray-200 shadow-md; }
+        .sticky-col-header { @apply sticky left-0 z-20 bg-teal-800 text-white border-r border-teal-900 shadow-md; }
+
+        .spectrum-blue { background-color: #60a5fa; border: 1px solid #3b82f6; }
+        .spectrum-green { background-color: #22c55e; border: 1px solid #16a34a; }
+        .spectrum-yellow { background-color: #fde047; border: 1px solid #eab308; } 
+        .spectrum-red { background-color: #ef4444; border: 1px solid #dc2626; }
+        .spectrum-gray { background-color: #f3f4f6; }
+
+        [x-cloak] { display: none !important; }
+
+        /* 新增：專屬列印與 PDF 匯出樣式 */
+        @media print {
+            @page { size: landscape; margin: 8mm; }
+            html, body { height: auto !important; overflow: visible !important; background: none !important; }
+            /* 解除所有滾動限制，讓完整表格得以印出 */
+            .h-screen, .flex-1, .overflow-hidden, .overflow-auto, .overflow-y-auto, main {
+                height: auto !important; overflow: visible !important; max-height: none !important;
+            }
+            /* 隱藏不必要的 UI */
+            header, nav, .print-hide { display: none !important; }
+            /* 強制列印出所有背景顏色 */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            /* 關閉吸頂效果，避免列印分頁時重疊 */
+            .sticky, .sticky-col, .sticky-col-header { position: static !important; }
+            
+            /* 微調表格尺寸以盡可能塞進同一頁 */
+            table { font-size: 9pt !important; width: 100% !important; }
+            .h-24 { height: 75px !important; } /* 縮減表頭高度 */
+            .min-w-[24px] { min-width: 20px !important; width: 20px !important; }
+            .w-6 { width: 20px !important; }
+            .h-6 { height: 20px !important; }
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <div x-data="antibioticApp" x-init="initData()" class="flex-1 flex flex-col h-full max-w-[98%] mx-auto w-full bg-white shadow-2xl sm:rounded-xl sm:my-4 sm:overflow-hidden relative border-t-4 border-teal-600">
+
+        <header class="bg-white border-b border-gray-200 z-20 shadow-sm flex-shrink-0">
+            <div class="px-6 py-4">
+                <div class="flex flex-col md:flex-row md:items-center justify-start gap-6">
+                    <div class="flex items-center space-x-3 flex-shrink-0">
+                        <div class="bg-teal-600 text-white p-2 rounded-lg shadow-lg shadow-teal-200">
+                            <i class="fa-solid fa-staff-snake text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-slate-800 tracking-tight">抗生素相容性資料庫</h1>
+                            <p class="text-xs text-slate-500 font-medium">臺北榮民總醫院玉里分院</p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative w-full md:w-80 group">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-search text-gray-400 group-focus-within:text-teal-500 transition-colors"></i>
+                        </span>
+                        <input type="text" x-model="searchQuery" placeholder="輸入藥名、感染症..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all placeholder-gray-400">
+                        <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" x-cloak><i class="fa-solid fa-times-circle"></i></button>
+                    </div>
+
+                    <div class="md:ml-auto text-right text-xs text-gray-400 leading-tight mt-2 md:mt-0 flex-shrink-0">
+                        <p class="font-medium text-gray-500">製作者 : </p>
+                        <p class="mt-0.5">更新日期 : 2026/03/19</p>
+                        <p class="mt-0.5">資料來源 : </p>
+                        <p class="mt-1 text-red-400 opacity-75">資料僅供參考，實際用藥請依病人臨床狀況與最新指引調整。</p>
+                    </div>
+                </div>
+
+                <nav class="flex space-x-1 mt-6 overflow-x-auto no-scrollbar border-b border-gray-100">
+                    <template x-for="(tab, index) in tabs" :key="index">
+                        <button @click="activeTab = index" :class="activeTab === index ? 'border-teal-500 text-teal-600 bg-teal-50/50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50'" class="group whitespace-nowrap py-3 px-6 border-b-2 font-medium text-sm transition-all duration-200 rounded-t-lg flex items-center space-x-2">
+                            <i :class="tab.icon"></i>
+                            <span x-text="tab.name"></span>
+                        </button>
+                    </template>
+                </nav>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-hidden relative bg-gray-50/50">
+            
+            <div x-show="isLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 z-50 backdrop-blur-sm">
+                <div class="flex flex-col items-center">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-teal-500 mb-3"></i>
+                    <p class="text-sm text-gray-500 font-medium animate-pulse">正在從資料庫同步數據...</p>
+                </div>
+            </div>
+
+            <div x-show="errorMsg" class="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 w-full max-w-md" x-cloak>
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded shadow-lg flex justify-between items-start">
+                    <p class="text-sm text-red-700 ml-3" x-text="errorMsg"></p>
+                    <button @click="errorMsg = null" class="text-red-400 hover:text-red-500"><i class="fa-solid fa-times"></i></button>
+                </div>
+            </div>
+
+            <!-- Tab 0: Solution -->
+            <div x-show="activeTab === 0" class="h-full flex flex-col overflow-hidden bg-gray-50" x-transition:enter="transition ease-out duration-200" x-cloak>
+                <div class="px-6 py-3 bg-white border-b border-gray-200 flex flex-wrap items-center gap-4 flex-shrink-0 shadow-sm z-20">
+                    <span class="text-sm font-bold text-gray-700 mr-2"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>相容性圖例：</span>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-check-circle"></i> 相容 (Y)
+                    </div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-exclamation-triangle"></i> 未測試 (?)
+                    </div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-times-circle"></i> 不相容 (N)
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-0 pb-8">
+                    <div class="overflow-x-auto h-full">
+                        <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
+                            <thead class="bg-teal-800 text-white">
+                                <tr>
+                                    <th class="table-header sticky-col-header w-[210px] min-w-[210px] pl-6 text-left shadow-sm">抗生素名稱</th>
+                                    <template x-for="header in solutionHeaders" :key="header">
+                                        <th class="table-header min-w-[140px] px-4 text-center" x-text="header"></th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                <template x-for="(row, index) in filteredSolutionData" :key="index">
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="hover:bg-teal-100 transition-colors duration-200 group">
+                                        <td class="table-cell sticky-col font-bold text-teal-800 pl-6 text-left w-[210px] min-w-[210px] shadow-sm group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200" x-text="row.name"></td>
+                                        <template x-for="item in row.compat" :key="item.fluid">
+                                            <td class="table-cell px-4 py-4 text-center align-middle group-hover:bg-teal-100 transition-colors duration-200">
+                                                <div class="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm min-w-[85px] transition-transform hover:scale-105"
+                                                     :class="getCompatBadgeClass(item.status)"
+                                                     x-text="getCompatBadgeText(item.status)">
+                                                </div>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                                <tr x-show="filteredSolutionData.length === 0">
+                                    <td :colspan="solutionHeaders.length + 1" class="text-center py-12 text-gray-400 font-medium">
+                                        <i class="fa-solid fa-flask text-3xl mb-3 text-gray-300 block"></i>
+                                        載入中或查無資料...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 1: 抗生素間相容性 -->
+            <div x-show="activeTab === 1" class="h-full flex flex-col overflow-hidden bg-gray-50" x-transition:enter="transition ease-out duration-200" x-cloak>
+                <div class="px-6 py-3 bg-white border-b border-gray-200 flex flex-wrap items-center gap-4 flex-shrink-0 shadow-sm z-20">
+                    <span class="text-sm font-bold text-gray-700 mr-2"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>相容性圖例：</span>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-check-circle"></i> 相容 (Y)
+                    </div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-exclamation-triangle"></i> 未測試 (?)
+                    </div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-minus-circle"></i> 不建議 (-)
+                    </div>
+                    <div class="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-full text-xs font-bold">
+                        <i class="fa-solid fa-times-circle"></i> 不相容 (N)
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-0 pb-8">
+                    <div class="overflow-x-auto h-full">
+                        <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
+                            <thead class="bg-teal-800 text-white">
+                                <tr>
+                                    <th class="table-header sticky-col-header w-[210px] min-w-[210px] pl-6 text-left shadow-sm">抗生素名稱</th>
+                                    <template x-for="header in ivCompatHeaders" :key="header">
+                                        <th class="table-header min-w-[140px] px-4 text-center" x-text="header"></th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 bg-white">
+                                <template x-for="(row, index) in filteredIvCompatData" :key="index">
+                                    <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="hover:bg-teal-100 transition-colors duration-200 group">
+                                        <td class="table-cell sticky-col font-bold text-teal-800 pl-6 text-left w-[210px] min-w-[210px] shadow-sm group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200" x-text="row.name"></td>
+                                        <template x-for="item in row.compat" :key="item.fluid">
+                                            <td class="table-cell px-3 py-3 text-center align-middle group-hover:bg-teal-100 transition-colors duration-200" x-html="renderCompatCell(item.status)">
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                                <tr x-show="filteredIvCompatData.length === 0">
+                                    <td :colspan="ivCompatHeaders.length + 1" class="text-center py-12 text-gray-400 font-medium">
+                                        <i class="fa-solid fa-vials text-3xl mb-3 text-gray-300 block"></i>
+                                        載入中或查無資料...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: 抗菌譜 -->
+            <div x-show="activeTab === 2" class="h-full overflow-hidden flex flex-col" x-cloak>
+                <!-- 列印時顯示的專屬標題 (平常隱藏) -->
+                <h2 class="hidden print:block text-center text-2xl font-bold mb-4 mt-2 tracking-widest text-slate-800">抗生素抗菌譜現況分析</h2>
+
+                <!-- 加上 print-hide 類別，列印時隱藏這排控制按鈕 -->
+                <div class="bg-white px-6 py-3 border-b border-gray-200 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30 shadow-sm print-hide">
+                    <div class="flex flex-wrap gap-4 text-xs font-medium">
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm spectrum-blue mr-2"></span> 非常有效</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-2"></span> 有效</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#fde047] border border-[#eab308] mr-2"></span> 可能有效</div>
+                        <div class="flex items-center"><span class="w-4 h-4 rounded shadow-sm bg-[#ef4444] border border-[#dc2626] mr-2"></span> 無效</div>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <!-- 篩選按鈕區塊 -->
+                        <div class="flex items-center gap-1 bg-gray-50 p-1 rounded-lg border border-gray-200 shadow-inner">
+                            <label class="flex items-center gap-1.5 px-2.5 py-1.5 cursor-pointer rounded transition-all duration-200"
+                                   :class="showOnlyInHouseAbx ? 'bg-white text-teal-700 shadow shadow-teal-100 font-bold border border-teal-200' : 'text-gray-600 hover:bg-gray-200 border border-transparent'">
+                                <input type="checkbox" x-model="showOnlyInHouseAbx" class="w-3.5 h-3.5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
+                                <span class="text-xs select-none">僅顯示本院抗生素</span>
+                            </label>
+                            <div class="w-px h-4 bg-gray-300 mx-0.5"></div>
+                            <label class="flex items-center gap-1.5 px-2.5 py-1.5 cursor-pointer rounded transition-all duration-200"
+                                   :class="showOnlyCommonBacteria ? 'bg-white text-teal-700 shadow shadow-teal-100 font-bold border border-teal-200' : 'text-gray-600 hover:bg-gray-200 border border-transparent'">
+                                <input type="checkbox" x-model="showOnlyCommonBacteria" class="w-3.5 h-3.5 text-teal-600 border-gray-300 rounded focus:ring-teal-500 cursor-pointer">
+                                <span class="text-xs select-none">僅顯示常見菌種</span>
+                            </label>
+                        </div>
+
+                        <button @click="toggleTranspose()" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center shadow-sm">
+                            <i class="fa-solid fa-retweet mr-1.5 text-gray-500"></i> 
+                            <span x-text="isTransposed ? '切換為抗生素視角' : '切換為菌種視角'"></span>
+                        </button>
+                        
+                        <!-- 修正：將 a 標籤改為 button，避免開啟新分頁出錯，並觸發 window.print() -->
+                        <button type="button" @click="window.print()" class="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center shadow-sm">
+                            <i class="fa-solid fa-file-pdf mr-1.5 text-red-500"></i> 匯出 / 列印PDF
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex-1 overflow-auto bg-white p-0 pb-24">
+                    <div class="inline-block min-w-full align-middle border-0 relative">
+                        <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="px-2 py-0 text-left text-xs font-bold text-gray-600 uppercase tracking-wider sticky left-0 top-0 bg-gray-100 z-50 border-r border-b border-gray-200 shadow-sm w-28 min-w-[112px] align-bottom h-24">
+                                        <div class="h-24 flex items-end justify-center pb-2 w-full" x-text="isTransposed ? '菌種' : '抗生素'"></div>
+                                    </th>
+                                    <template x-for="(col, idx) in currentAntibiogramHeaders" :key="idx">
+                                        <th class="px-0 py-0 text-center text-xs font-bold text-gray-600 tracking-wider sticky top-0 z-40 w-6 min-w-[24px] max-w-[24px] align-bottom bg-gray-100 border-b border-gray-200 h-24">
+                                            <!-- 修正：翻轉整個容器，並強制子元素貼齊起點，確保文字完美緊貼底部 -->
+                                            <div class="w-full h-24 overflow-hidden" style="transform: rotate(180deg);">
+                                                <div class="w-full h-full flex justify-center items-start pt-1.5">
+                                                    <div class="text-[10px] font-bold text-gray-600 origin-top" 
+                                                         x-text="col"
+                                                         style="writing-mode: vertical-rl; text-orientation: mixed; white-space: nowrap;"
+                                                         x-effect="
+                                                             const _triggerText = col; /* 加入變數追蹤，當文字切換時會強制觸發重新計算 */
+                                                             $el.style.fontSize = '10px'; /* 強制重置字體 */
+                                                             $el.style.transform = 'scale(1)'; /* 強制重置縮放 */
+                                                             
+                                                             if (activeTab === 2) {
+                                                                 $nextTick(() => {
+                                                                     const maxHeight = 88;
+                                                                     if ($el.scrollHeight > maxHeight) {
+                                                                         let size = 10;
+                                                                         while ($el.scrollHeight > maxHeight && size > 8) {
+                                                                             size -= 0.5;
+                                                                             $el.style.fontSize = size + 'px';
+                                                                         }
+                                                                         if ($el.scrollHeight > maxHeight) {
+                                                                             const scale = maxHeight / $el.scrollHeight;
+                                                                             $el.style.transform = `scale(${scale})`;
+                                                                         }
+                                                                     }
+                                                                 })
+                                                             }">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <template x-for="row in filteredAntibiogramData" :key="row.id">
+                                    <tr class="hover:bg-gray-50">
+                                        <!-- 修改: 加入左側亮條效果 -->
+                                        <td class="table-cell sticky-col group text-left w-28 min-w-[112px] group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200">
+                                            <div class="px-2 py-1 text-xs font-bold text-gray-800 truncate" x-text="row.name" :title="row.name"></div>
+                                        </td>
+                                        <template x-for="(status, index) in row.spectrum" :key="index">
+                                            <td class="p-0 text-center w-6 h-6 min-w-[24px] z-0 border-b border-gray-100 group-hover:bg-teal-100 transition-colors duration-150">
+                                                <div class="w-full h-full min-h-[24px] transition-transform hover:scale-110 cursor-pointer"
+                                                     :class="getSpectrumColor(status)"
+                                                     :title="getSpectrumLabel(status)">
+                                                </div>
+                                            </td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</body>
+</html>
