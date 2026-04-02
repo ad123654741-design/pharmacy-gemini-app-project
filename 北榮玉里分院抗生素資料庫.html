@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>抗生素相容性資料庫 | Clinical Antibiotic Database</title>
+    <title>抗生素臨床資料庫-測試版 | Clinical Antibiotic Database</title>
     
     <!-- 引入 Tailwind CSS (UI 設計) -->
     <!-- 修正：移除 crossorigin="anonymous" 避免 CDN 阻擋載入導致排版崩壞 -->
@@ -36,7 +36,8 @@
                     pediatric: "",
                     ivGuide: "",
                     solution: "https://script.google.com/macros/s/AKfycbxaEb-fsbPyqR46MxW4PmTKYDcJoxIatv8OHq_RLJeYL7L-fOs86wXTX_KBbALBjXkC3A/exec",
-                    bacteriaInfo: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2WBGCvm-j4VOJ8VmyNBhPf5CiL9FuA0AQovvqJxUuGZGPOTqLAZ5arITqL8Zg1vPDVR0rk_WGlzyY/pub?gid=0&single=true&output=csv" // ★ 新增：菌種詳細資料庫 CSV 連結
+                    bacteriaInfo: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2WBGCvm-j4VOJ8VmyNBhPf5CiL9FuA0AQovvqJxUuGZGPOTqLAZ5arITqL8Zg1vPDVR0rk_WGlzyY/pub?gid=0&single=true&output=csv", // ★ 新增：菌種詳細資料庫 CSV 連結
+                    antibioticInfo: "https://docs.google.com/spreadsheets/d/e/2PACX-1vT2WBGCvm-j4VOJ8VmyNBhPf5CiL9FuA0AQovvqJxUuGZGPOTqLAZ5arITqL8Zg1vPDVR0rk_WGlzyY/pub?gid=551258079&single=true&output=csv" // ★ 新增：抗生素外部連結資料庫 CSV 連結
                 },
 
                 // ==========================================
@@ -60,6 +61,9 @@
                 showBacteriaModal: false,
                 selectedBacteria: null,
                 bacteriaData: [],
+
+                // 抗生素連結資料狀態
+                antibioticData: [],
 
                 tabs: [
                     { name: '抗菌譜', icon: 'fa-solid fa-table-cells' },
@@ -108,6 +112,7 @@
                                 this.fetchCSV(this.sheetUrls.pediatric, 'pediatric'),
                                 this.fetchCSV(this.sheetUrls.ivGuide, 'ivGuide'),
                                 this.fetchCSV(this.sheetUrls.bacteriaInfo, 'bacteriaInfo'), // 新增：抓取菌種資料
+                                this.fetchCSV(this.sheetUrls.antibioticInfo, 'antibioticInfo'), // 新增：抓取抗生素連結資料
                                 this.fetchMasterJSONP(this.sheetUrls.solution)
                             ]);
                             
@@ -130,7 +135,7 @@
                         
                         Papa.parse(url, {
                             download: true,
-                            header: type !== 'antibiogram' && type !== 'bacteriaInfo', // 抗菌譜與菌種資料用陣列解析
+                            header: type !== 'antibiogram' && type !== 'bacteriaInfo' && type !== 'antibioticInfo', // 抗菌譜與外部資料庫用陣列解析
                             skipEmptyLines: true, 
                             complete: (results) => {
                                 try {
@@ -140,6 +145,7 @@
                                     if (type === 'pediatric') this.mapPediatricData(results.data);
                                     if (type === 'ivGuide') this.mapIvGuideData(results.data);
                                     if (type === 'bacteriaInfo') this.mapBacteriaData(results.data);
+                                    if (type === 'antibioticInfo') this.mapAntibioticData(results.data);
                                     resolve();
                                 } catch (err) {
                                     console.error(`解析 ${type} 資料時發生錯誤:`, err);
@@ -165,6 +171,17 @@
                             fullName: String(row[1] || '').trim(),  // 英文全名
                             chineseName: String(row[2] || '').trim(),// 中文名稱
                             description: String(row[3] || '').trim() // 說明
+                        }));
+                },
+
+                // 新增：處理抗生素外部連結資料
+                mapAntibioticData(rawArray) {
+                    if (!rawArray || rawArray.length < 2) return;
+                    this.antibioticData = rawArray.slice(1)
+                        .filter(row => row && row[0])
+                        .map(row => ({
+                            name: String(row[0]).trim(), // 抗生素名稱
+                            url: String(row[1] || '').trim() // 網頁連結
                         }));
                 },
 
@@ -334,6 +351,18 @@
                         };
                     }
                     this.showBacteriaModal = true;
+                },
+
+                // 新增：開啟抗生素指定網頁連結
+                openAntibioticLink(abxName) {
+                    const found = this.antibioticData.find(a => a.name.toLowerCase() === abxName.toLowerCase());
+                    if (found && found.url) {
+                        window.open(found.url, '_blank');
+                    } else {
+                        this.errorMsg = `尚未建立【${abxName}】的網頁連結，請確認是否已於 Google Sheet 資料庫中建檔。`;
+                        // 3秒後自動關閉錯誤提示
+                        setTimeout(() => { this.errorMsg = null; }, 3000);
+                    }
                 },
 
                 toggleTranspose() {
@@ -680,7 +709,7 @@
                             <i class="fa-solid fa-staff-snake text-lg"></i>
                         </div>
                         <div>
-                            <h1 class="text-lg font-bold text-slate-800 tracking-tight leading-none">抗生素相容性資料庫</h1>
+                            <h1 class="text-lg font-bold text-slate-800 tracking-tight leading-none">抗生素臨床資料庫-測試版</h1>
                             <p class="text-[10px] text-slate-500 font-medium mt-0.5">臺北榮民總醫院玉里分院</p>
                         </div>
                     </div>
@@ -893,9 +922,9 @@
                                             <!-- 翻轉整個容器，確保文字完美緊貼底部。改回 overflow-hidden 防止網頁版文字溢出邊界 -->
                                             <div class="w-full h-36 overflow-hidden" style="transform: rotate(180deg);">
                                                 <div class="w-full h-full flex justify-center items-start pt-1.5">
-                                                    <!-- 綁定點擊事件呼叫 openBacteriaModal -->
+                                                    <!-- 綁定點擊事件，判斷目前視角來決定開啟抗生素連結或菌種說明 -->
                                                     <div class="text-[10px] font-bold text-gray-600 origin-top hover:text-teal-600 cursor-pointer underline decoration-gray-400 decoration-dashed underline-offset-2 transition-colors" 
-                                                         @click="openBacteriaModal(col)"
+                                                         @click="isTransposed ? openAntibioticLink(col) : openBacteriaModal(col)"
                                                          x-text="col"
                                                          style="writing-mode: vertical-rl; text-orientation: mixed; white-space: nowrap;"
                                                          x-init="
@@ -920,10 +949,9 @@
                                     <tr class="hover:bg-gray-50 group">
                                         <!-- 確保左側跨平台設備都能準確黏附 -->
                                         <td class="table-cell text-left w-28 min-w-[112px] bg-white border-r border-gray-200 shadow-sm group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200" style="position: sticky; left: 0; z-index: 20;">
-                                            <!-- 當處於「轉置模式(行是菌種)」時，左側文字也支援點擊叫出 Modal -->
-                                            <div class="px-2 py-1 text-xs font-bold text-gray-800 truncate transition-colors" 
-                                                 :class="isTransposed ? 'cursor-pointer hover:text-teal-600 underline decoration-gray-400 decoration-dashed underline-offset-2' : ''"
-                                                 @click="if(isTransposed) openBacteriaModal(row.name)"
+                                            <!-- 左側文字支援點擊，判斷目前視角來決定開啟菌種說明或抗生素連結 -->
+                                            <div class="px-2 py-1 text-xs font-bold text-gray-800 truncate transition-colors cursor-pointer hover:text-teal-600 underline decoration-gray-400 decoration-dashed underline-offset-2" 
+                                                 @click="isTransposed ? openBacteriaModal(row.name) : openAntibioticLink(row.name)"
                                                  x-text="row.name" :title="row.name"></div>
                                         </td>
                                         <template x-for="(status, index) in row.spectrum" :key="index">
