@@ -65,6 +65,13 @@
                 // 抗生素連結資料狀態
                 antibioticData: [],
 
+                // 新增：快速查詢狀態
+                showQuickSearchModal: false,
+                quickSearchInputs: ['', '', '', ''],
+                quickSearchHeaders: [],
+                quickSearchResults: [],
+                quickSearchError: '',
+
                 tabs: [
                     { name: '抗菌譜', icon: 'fa-solid fa-table-cells' },
                     { name: 'Solution', icon: 'fa-solid fa-flask-vial' },
@@ -337,6 +344,51 @@
                     setTimeout(() => { this.selectedItem = null; }, 200);
                 },
 
+                // 新增：快速查詢功能
+                openQuickSearch() {
+                    this.showQuickSearchModal = true;
+                    this.quickSearchInputs = ['', '', '', ''];
+                    this.quickSearchResults = [];
+                    this.quickSearchError = '';
+                },
+
+                performQuickSearch() {
+                    this.quickSearchError = '';
+                    const queries = this.quickSearchInputs.map(q => q.trim().toLowerCase()).filter(q => q !== '');
+                    if (queries.length < 2) {
+                        this.quickSearchError = '請至少輸入兩種抗生素進行比對';
+                        return;
+                    }
+
+                    let matchedNames = [];
+                    queries.forEach(query => {
+                        const match = this.ivCompatData.find(item => item.name.toLowerCase().includes(query));
+                        if (match) {
+                            matchedNames.push(match.name);
+                        }
+                    });
+
+                    matchedNames = [...new Set(matchedNames)]; // 去重
+
+                    if (matchedNames.length < 2) {
+                        this.quickSearchError = '找到的有效抗生素少於兩種，請確認學名是否正確';
+                        return;
+                    }
+
+                    this.quickSearchHeaders = matchedNames;
+                    this.quickSearchResults = matchedNames.map(rowName => {
+                        const rowData = this.ivCompatData.find(r => r.name === rowName);
+                        const orderedCompat = matchedNames.map(headerName => {
+                            const foundCompat = rowData ? rowData.compat.find(c => c.fluid === headerName) : null;
+                            return foundCompat ? foundCompat : { fluid: headerName, status: '-' }; 
+                        });
+                        return {
+                            name: rowName,
+                            compat: orderedCompat
+                        };
+                    });
+                },
+
                 // 新增：打開菌種詳細資訊 Modal
                 openBacteriaModal(shortName) {
                     const found = this.bacteriaData.find(b => b.shortName.toLowerCase() === shortName.toLowerCase());
@@ -405,36 +457,50 @@
                     return this.formatLineBreaks(text);
                 },
 
+                /* ★ 修正：將相容性背景色調亮，並與圖例統一樣式 */
                 getCompatBadgeClass(code) {
                     if (!code) return 'bg-gray-50 text-gray-400 border-gray-200';
                     const c = String(code).toUpperCase().trim(); 
-                    if (['Y', 'C', '相容', 'O', '✓', 'V'].includes(c)) return 'bg-green-100 text-green-700 border-green-300';
-                    if (['N', 'I', '不相容', 'X', '✗'].includes(c)) return 'bg-red-100 text-red-700 border-red-300';
-                    if (['?', 'U', '不確定', '△', '限制', '未測試'].includes(c)) return 'bg-yellow-100 text-yellow-700 border-yellow-300';
-                    if (['-', '不建議'].includes(c)) return 'bg-blue-100 text-blue-700 border-blue-300';
-                    return 'bg-gray-50 text-gray-600 border-gray-200';
+                    if (['Y', 'C', '相容', 'O', '✓', 'V'].includes(c)) return 'bg-green-50 text-green-700 border-green-200';
+                    if (['N', 'I', '不相容', 'X', '✗'].includes(c)) return 'bg-red-50 text-red-700 border-red-200';
+                    if (['?', 'U', '不確定', '△', '限制', '未測試'].includes(c)) return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                    if (['-', '不建議'].includes(c)) return 'bg-blue-50 text-blue-700 border-blue-200';
+                    return 'bg-gray-50 text-gray-500 border-gray-200';
                 },
 
-                getCompatBadgeText(code) {
+                /* ★ 新增：根據相容性狀態取得對應 FontAwesome 圖示 */
+                getCompatBadgeIcon(code) {
+                     if (!code) return 'fa-solid fa-minus';
+                     const c = String(code).toUpperCase().trim();
+                     if (['Y', 'C', '相容', 'O', '✓', 'V'].includes(c)) return 'fa-solid fa-check-circle';
+                     if (['N', 'I', '不相容', 'X', '✗'].includes(c)) return 'fa-solid fa-times-circle';
+                     if (['?', 'U', '不確定', '△', '限制', '未測試'].includes(c)) return 'fa-solid fa-exclamation-triangle';
+                     if (['-', '不建議'].includes(c)) return 'fa-solid fa-minus-circle';
+                     return 'fa-solid fa-minus';
+                },
+
+                /* ★ 新增：精簡版圖例文字 */
+                getCompatBadgeShortText(code) {
                      if (!code) return '-';
                      const c = String(code).toUpperCase().trim();
-                     if (['Y', 'C', '相容', 'O', '✓', 'V'].includes(c)) return '相容';
-                     if (['N', 'I', '不相容', 'X', '✗'].includes(c)) return '不相容';
-                     if (['?', 'U', '不確定', '△', '限制', '未測試'].includes(c)) return '未測試';
-                     if (['-', '不建議'].includes(c)) return '不建議';
+                     if (['Y', 'C', '相容', 'O', '✓', 'V'].includes(c)) return '相容(Y)';
+                     if (['N', 'I', '不相容', 'X', '✗'].includes(c)) return '不相容(N)';
+                     if (['?', 'U', '不確定', '△', '限制', '未測試'].includes(c)) return '未測試(?)';
+                     if (['-', '不建議'].includes(c)) return '不建議(-)';
                      return c;
                 },
 
+                /* ★ 修正：將單一結果(如Solution頁面)改為僅顯示放大圖示，移除多餘文字 */
                 renderCompatCell(status) {
                     if (!status || status.trim() === '') return '<span class="text-gray-300 font-bold">-</span>';
                     let parts = status.split('/').map(s => s.trim());
-                    let html = '<div class="flex flex-col gap-1.5 w-full">';
+                    let html = '<div class="flex flex-col gap-1.5 w-full items-center">';
                     
                     if (parts.length === 2) {
-                        html += `<div class="flex items-center justify-between text-[11px]"><span class="text-gray-500 font-medium mr-1 whitespace-nowrap">Y-site:</span> <span class="${this.getCompatBadgeClass(parts[0])} border px-1.5 py-0.5 rounded shadow-sm font-bold min-w-[40px] text-center">${this.getCompatBadgeText(parts[0])}</span></div>`;
-                        html += `<div class="flex items-center justify-between text-[11px]"><span class="text-gray-500 font-medium mr-1 whitespace-nowrap">直接混合:</span> <span class="${this.getCompatBadgeClass(parts[1])} border px-1.5 py-0.5 rounded shadow-sm font-bold min-w-[40px] text-center">${this.getCompatBadgeText(parts[1])}</span></div>`;
+                        html += `<div class="flex items-center justify-between w-full max-w-[85px]"><span class="text-gray-500 font-medium mr-1 whitespace-nowrap text-[10px] scale-90 origin-left">Y-site:</span> <div class="${this.getCompatBadgeClass(parts[0])} border px-1.5 py-0.5 rounded shadow-sm font-bold min-w-[36px] flex justify-center items-center"><i class="${this.getCompatBadgeIcon(parts[0])}"></i></div></div>`;
+                        html += `<div class="flex items-center justify-between w-full max-w-[85px]"><span class="text-gray-500 font-medium mr-1 whitespace-nowrap text-[10px] scale-90 origin-left">混合:</span> <div class="${this.getCompatBadgeClass(parts[1])} border px-1.5 py-0.5 rounded shadow-sm font-bold min-w-[36px] flex justify-center items-center"><i class="${this.getCompatBadgeIcon(parts[1])}"></i></div></div>`;
                     } else {
-                        html += `<div class="flex justify-center"><span class="${this.getCompatBadgeClass(parts[0])} border px-3 py-1 rounded-full shadow-sm text-xs font-bold">${this.getCompatBadgeText(parts[0])}</span></div>`;
+                        html += `<div class="${this.getCompatBadgeClass(parts[0])} border w-8 h-8 rounded-md shadow-sm flex justify-center items-center transition-transform hover:scale-110"><i class="${this.getCompatBadgeIcon(parts[0])} text-lg"></i></div>`;
                     }
                     html += '</div>';
                     return html;
@@ -722,15 +788,19 @@
                         <button x-show="searchQuery.length > 0" @click="searchQuery = ''" class="absolute inset-y-0 right-0 pr-2 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer" x-cloak><i class="fa-solid fa-times-circle text-xs"></i></button>
                     </div>
 
-                    <div class="text-right text-[10px] text-gray-400 leading-tight hidden lg:block flex-shrink-0">
-                        <div class="flex items-center justify-end gap-2 mb-0.5">
-                            <p><span class="font-medium text-gray-500">製作者 :</span> </p>
-                            <span class="text-gray-200">|</span>
-                            <p><span class="font-medium text-gray-500">資料來源 :</span> </p>
-                            <span class="text-gray-200">|</span>
-                            <p><span class="font-medium text-gray-500">更新日期 :</span> 2026/03/19</p>
+                    <div class="text-right leading-tight hidden lg:block flex-shrink-0">
+                        <!-- ★ 修改：字體放大為 text-sm，文字顏色加深以凸顯這行 -->
+                        <div class="flex items-center justify-end gap-2 mb-1 text-sm text-gray-700">
+                            <p><span class="font-bold">製作者 :</span> </p>
+                            <span class="text-gray-300">|</span>
+                            <p><span class="font-bold">資料來源 :</span> </p>
+                            <span class="text-gray-300">|</span>
+                            <p><span class="font-bold">更新日期 :</span> <span class="font-medium text-gray-600">2026/03/19</span></p>
                         </div>
-                        <p class="text-red-400 opacity-80 mt-0.5">資料僅供參考，實際用藥請依病人臨床狀況與最新指引調整。</p>
+                        <!-- 維持原本較小的紅色警語 -->
+                        <p class="text-red-400 opacity-80 mt-0.5 text-[10px]">資料僅供參考，實際用藥請依病人臨床狀況與最新指引調整。</p>
+                        <!-- ★ 新增：資料來源的詳細文字 -->
+                        <p class="text-gray-500 font-medium mt-0.5 text-[10px]">資料來源 : SANFORD GUIDE ANTIMICROBIAL、Micromedex 2.0、Pubmed、藥品仿單查詢平台。</p>
                     </div>
                 </div>
 
@@ -769,7 +839,7 @@
                         <i class="fa-solid fa-check-circle"></i> 相容(Y)
                     </div>
                     <div class="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-[10px] font-bold">
-                        <i class="fa-solid fa-exclamation-triangle"></i> 未測(?)
+                        <i class="fa-solid fa-exclamation-triangle"></i> 未測試(?)
                     </div>
                     <div class="flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
                         <i class="fa-solid fa-times-circle"></i> 不相容(N)
@@ -792,11 +862,8 @@
                                     <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="hover:bg-teal-100 transition-colors duration-200 group">
                                         <td class="table-cell sticky-col font-bold text-teal-800 pl-6 text-left w-[210px] min-w-[210px] shadow-sm group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200" x-text="row.name"></td>
                                         <template x-for="item in row.compat" :key="item.fluid">
-                                            <td class="table-cell px-4 py-4 text-center align-middle group-hover:bg-teal-100 transition-colors duration-200">
-                                                <div class="inline-flex items-center justify-center px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm min-w-[85px] transition-transform hover:scale-105"
-                                                     :class="getCompatBadgeClass(item.status)"
-                                                     x-text="getCompatBadgeText(item.status)">
-                                                </div>
+                                            <!-- ★ 修改：全面改用包含圖示的精簡標籤 renderCompatCell -->
+                                            <td class="table-cell px-2 py-3 text-center align-middle group-hover:bg-teal-100 transition-colors duration-200" x-html="renderCompatCell(item.status)">
                                             </td>
                                         </template>
                                     </tr>
@@ -815,20 +882,25 @@
 
             <!-- Tab 2: 抗生素間相容性 -->
             <div id="tab-compat" x-show="activeTab === 2" class="h-full flex flex-col overflow-hidden bg-gray-50 print:hidden" x-transition:enter="transition ease-out duration-200" x-cloak>
-                <div class="px-4 py-1.5 bg-white border-b border-gray-200 flex flex-wrap items-center gap-3 flex-shrink-0 shadow-sm z-20">
-                    <span class="text-[11px] font-bold text-gray-700 mr-1"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>圖例：</span>
-                    <div class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">
-                        <i class="fa-solid fa-check-circle"></i> 相容(Y)
+                <div class="px-4 py-1.5 bg-white border-b border-gray-200 flex flex-wrap items-center justify-between gap-3 flex-shrink-0 shadow-sm z-20">
+                    <div class="flex flex-wrap items-center gap-3">
+                        <span class="text-[11px] font-bold text-gray-700 mr-1"><i class="fa-solid fa-info-circle text-teal-500 mr-1"></i>圖例：</span>
+                        <div class="flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 border border-green-200 rounded-full text-[10px] font-bold">
+                            <i class="fa-solid fa-check-circle"></i> 相容(Y)
+                        </div>
+                        <div class="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-[10px] font-bold">
+                            <i class="fa-solid fa-exclamation-triangle"></i> 未測試(?)
+                        </div>
+                        <div class="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-[10px] font-bold">
+                            <i class="fa-solid fa-minus-circle"></i> 不建議(-)
+                        </div>
+                        <div class="flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
+                            <i class="fa-solid fa-times-circle"></i> 不相容(N)
+                        </div>
                     </div>
-                    <div class="flex items-center gap-1 px-2 py-0.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-[10px] font-bold">
-                        <i class="fa-solid fa-exclamation-triangle"></i> 未測(?)
-                    </div>
-                    <div class="flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-full text-[10px] font-bold">
-                        <i class="fa-solid fa-minus-circle"></i> 不建議(-)
-                    </div>
-                    <div class="flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 border border-red-200 rounded-full text-[10px] font-bold">
-                        <i class="fa-solid fa-times-circle"></i> 不相容(N)
-                    </div>
+                    <button @click="openQuickSearch()" class="text-[11px] px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-700 rounded border border-teal-200 transition-colors flex items-center shadow-sm">
+                        <i class="fa-solid fa-bolt mr-1"></i> 快速查詢
+                    </button>
                 </div>
 
                 <div class="flex-1 overflow-y-auto p-0 pb-8">
@@ -847,7 +919,8 @@
                                     <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="hover:bg-teal-100 transition-colors duration-200 group">
                                         <td class="table-cell sticky-col font-bold text-teal-800 pl-6 text-left w-[210px] min-w-[210px] shadow-sm group-hover:bg-teal-100 group-hover:shadow-[inset_4px_0_0_0_#0d9488] transition-colors duration-200" x-text="row.name"></td>
                                         <template x-for="item in row.compat" :key="item.fluid">
-                                            <td class="table-cell px-3 py-3 text-center align-middle group-hover:bg-teal-100 transition-colors duration-200" x-html="renderCompatCell(item.status)">
+                                            <!-- ★ 修改：與 Solution 分頁統一，顯示精簡圖示結果 -->
+                                            <td class="table-cell px-2 py-3 text-center align-middle group-hover:bg-teal-100 transition-colors duration-200" x-html="renderCompatCell(item.status)">
                                             </td>
                                         </template>
                                     </tr>
@@ -871,7 +944,6 @@
 
                 <!-- 加上 print-hide 類別，列印時隱藏這排控制按鈕 -->
                 <div class="bg-white px-4 py-1.5 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 sticky top-0 z-30 shadow-sm print-hide">
-                    <!-- ★ 修正：移除 [?] Insufficient Data 的選項 -->
                     <div class="flex flex-wrap gap-3 text-[11px] font-medium">
                         <div class="flex items-center" title="Agent is a first line therapy: reliably active in vitro, clinically effective, guideline recommended."><span class="w-3 h-3 rounded shadow-sm spectrum-blue mr-1.5"></span> [++] Preferred</div>
                         <div class="flex items-center" title="Agent is a potential alternative agent but second line due to overly broad spectrum or less favorable toxicity profile."><span class="w-3 h-3 rounded shadow-sm bg-[#22c55e] border border-[#16a34a] mr-1.5"></span> [+] Alternative</div>
@@ -900,7 +972,6 @@
                             <span x-text="isTransposed ? '抗生素視角' : '菌種視角'"></span>
                         </button>
                         
-                        <!-- 修正：保留原始的網頁連結功能 -->
                         <a href="#" target="_blank" class="text-[11px] px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded border border-gray-300 transition-colors flex items-center shadow-sm">
                             <i class="fa-solid fa-file-pdf mr-1 text-red-500"></i> 匯出PDF
                         </a>
@@ -972,7 +1043,7 @@
             <!-- 菌種詳細資訊 Modal 彈出視窗 -->
             <div x-show="showBacteriaModal" class="fixed inset-0 z-[100] flex items-center justify-center print:hidden" x-cloak>
                 <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="showBacteriaModal = false" x-transition.opacity></div>
-                <!-- 修改：加大視窗最大寬度 (max-w-xl)，並在電腦版增加 padding (md:p-8) -->
+                <!-- 加大視窗最大寬度 (max-w-xl)，並在電腦版增加 padding (md:p-8) -->
                 <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-xl p-6 md:p-8 relative z-10 transform transition-all"
                      x-transition:enter="ease-out duration-300"
                      x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
@@ -981,28 +1052,28 @@
                      x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
                      x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
                     
-                    <!-- 修改：放大關閉按鈕，並配合內邊距調整位置 -->
+                    <!-- 放大關閉按鈕，並配合內邊距調整位置 -->
                     <button @click="showBacteriaModal = false" class="absolute top-4 right-4 md:top-6 md:right-6 text-gray-400 hover:text-gray-600 transition-colors">
                         <i class="fa-solid fa-xmark text-2xl"></i>
                     </button>
 
                     <template x-if="selectedBacteria">
                         <div>
-                            <!-- 修改：增加標題區塊的間距與底部留白 -->
+                            <!-- 增加標題區塊的間距與底部留白 -->
                             <div class="flex items-start gap-4 mb-6 border-b border-gray-100 pb-4">
                                 <div class="bg-teal-50 text-teal-600 p-3 rounded-xl mt-0.5">
                                     <i class="fa-solid fa-disease text-2xl"></i>
                                 </div>
                                 <div>
-                                    <!-- 修改：放大中文與英文縮寫字體 -->
+                                    <!-- 放大中文與英文縮寫字體 -->
                                     <h3 class="text-xl md:text-2xl font-bold text-slate-800 leading-tight" x-text="selectedBacteria.chineseName"></h3>
                                     <p class="text-sm md:text-base text-gray-500 font-medium font-mono mt-1.5" x-text="selectedBacteria.shortName"></p>
                                 </div>
                             </div>
                             
-                            <!-- 修改：增加區塊間距 -->
+                            <!-- 增加區塊間距 -->
                             <div class="space-y-4 md:space-y-5">
-                                <!-- 修改：增加內邊距、圓角，放大標籤與內文 -->
+                                <!-- 增加內邊距、圓角，放大標籤與內文 -->
                                 <div class="bg-gray-50 px-4 py-3.5 md:px-5 md:py-4 rounded-xl border border-gray-100">
                                     <span class="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-wider block mb-1.5 border-b border-gray-200 pb-1.5">英文全名 Full Name</span>
                                     <p class="text-base md:text-lg text-gray-700 font-medium italic mt-2" x-text="selectedBacteria.fullName"></p>
@@ -1015,6 +1086,83 @@
                             </div>
                         </div>
                     </template>
+                </div>
+            </div>
+
+            <!-- 快速查詢 Modal 彈出視窗 -->
+            <div x-show="showQuickSearchModal" class="fixed inset-0 z-[100] flex items-center justify-center print:hidden" x-cloak>
+                <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" @click="showQuickSearchModal = false" x-transition.opacity></div>
+                <div class="bg-white rounded-xl shadow-2xl w-11/12 max-w-2xl p-6 md:p-8 relative z-10 transform transition-all flex flex-col max-h-[90vh]"
+                     x-transition:enter="ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+                    
+                    <button @click="showQuickSearchModal = false" class="absolute top-4 right-4 md:top-6 md:right-6 text-gray-400 hover:text-gray-600 transition-colors z-10">
+                        <i class="fa-solid fa-xmark text-2xl"></i>
+                    </button>
+
+                    <div class="flex items-center gap-3 mb-4 border-b border-gray-100 pb-4 flex-shrink-0">
+                        <div class="bg-teal-50 text-teal-600 p-2.5 rounded-xl">
+                            <i class="fa-solid fa-bolt text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg md:text-xl font-bold text-slate-800 leading-tight">快速相容性查詢</h3>
+                            <p class="text-xs text-gray-500 font-medium mt-1">請輸入至少兩種抗生素學名進行比對</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-shrink-0 mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <template x-for="(input, index) in quickSearchInputs" :key="index">
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-pills text-gray-400 text-xs"></i>
+                                </span>
+                                <input type="text" x-model="quickSearchInputs[index]" :placeholder="'輸入抗生素 ' + (index + 1)" class="w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all placeholder-gray-400">
+                            </div>
+                        </template>
+                    </div>
+
+                    <div class="flex-shrink-0 mb-4 flex items-center justify-between">
+                        <p class="text-sm text-red-500 font-bold" x-text="quickSearchError"></p>
+                        <button @click="performQuickSearch()" class="ml-auto px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow-md shadow-teal-500/30 transition-all flex items-center text-sm">
+                            <i class="fa-solid fa-search mr-2"></i> 開始比對
+                        </button>
+                    </div>
+
+                    <!-- 查詢結果區塊 -->
+                    <div class="flex-1 overflow-auto border border-gray-200 rounded-lg bg-gray-50" x-show="quickSearchResults.length > 0">
+                        <div class="overflow-x-auto min-h-[150px] relative">
+                            <table class="min-w-full divide-y divide-gray-200 border-separate border-spacing-0">
+                                <thead class="bg-teal-800 text-white">
+                                    <tr>
+                                        <th class="table-header sticky-col-header min-w-[140px] pl-4 text-left shadow-sm">抗生素</th>
+                                        <template x-for="header in quickSearchHeaders" :key="header">
+                                            <th class="table-header min-w-[120px] px-3 text-center" x-text="header"></th>
+                                        </template>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    <template x-for="(row, index) in quickSearchResults" :key="index">
+                                        <tr :class="index % 2 === 0 ? 'bg-white' : 'bg-teal-50'" class="hover:bg-teal-100 transition-colors duration-200">
+                                            <td class="table-cell sticky-col font-bold text-teal-800 pl-4 text-left shadow-sm min-w-[140px]" x-text="row.name"></td>
+                                            <template x-for="item in row.compat" :key="item.fluid">
+                                                <td class="table-cell px-2 py-3 text-center align-middle" x-html="renderCompatCell(item.status)">
+                                                </td>
+                                            </template>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- 空狀態顯示 -->
+                    <div x-show="quickSearchResults.length === 0 && !quickSearchError" class="flex-1 flex flex-col items-center justify-center py-8 text-gray-400">
+                        <i class="fa-solid fa-vials text-4xl mb-3 text-gray-300"></i>
+                        <p class="text-sm font-medium">輸入藥物後點擊「開始比對」</p>
+                    </div>
                 </div>
             </div>
 
