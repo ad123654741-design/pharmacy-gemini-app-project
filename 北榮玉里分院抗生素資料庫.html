@@ -356,7 +356,7 @@
                     this.quickSearchError = '';
                     const queries = this.quickSearchInputs.map(q => q.trim().toLowerCase()).filter(q => q !== '');
                     if (queries.length < 2) {
-                        this.quickSearchError = '請至少輸入兩種抗生素進行比對';
+                        this.quickSearchError = '請至少選擇兩種抗生素進行比對';
                         return;
                     }
 
@@ -1110,7 +1110,7 @@
                         </div>
                         <div>
                             <h3 class="text-lg md:text-xl font-bold text-slate-800 leading-tight">快速相容性查詢</h3>
-                            <p class="text-xs text-gray-500 font-medium mt-1">請輸入至少兩種抗生素學名進行比對</p>
+                            <p class="text-xs text-gray-500 font-medium mt-1">請選擇至少兩種抗生素學名進行比對</p>
                         </div>
                     </div>
                     
@@ -1120,7 +1120,18 @@
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <i class="fa-solid fa-pills text-gray-400 text-xs"></i>
                                 </span>
-                                <input type="text" x-model="quickSearchInputs[index]" :placeholder="'輸入抗生素 ' + (index + 1)" class="w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all placeholder-gray-400">
+                                <!-- 升級為下拉式選單，選項自動抓取資料庫中的藥物名稱 -->
+                                <select x-model="quickSearchInputs[index]" class="w-full pl-8 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/30 focus:border-teal-500 transition-all text-gray-700 appearance-none cursor-pointer">
+                                    <option value="" disabled selected hidden x-text="'選擇抗生素 ' + (index + 1)"></option>
+                                    <option value="" class="text-gray-400 italic">-- 取消選擇 --</option>
+                                    <template x-for="abx in ivCompatData" :key="abx.name">
+                                        <option :value="abx.name" x-text="abx.name"></option>
+                                    </template>
+                                </select>
+                                <!-- 自訂下拉箭頭圖示 -->
+                                <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-chevron-down text-gray-400 text-xs"></i>
+                                </span>
                             </div>
                         </template>
                     </div>
@@ -1161,7 +1172,7 @@
                     <!-- 空狀態顯示 -->
                     <div x-show="quickSearchResults.length === 0 && !quickSearchError" class="flex-1 flex flex-col items-center justify-center py-8 text-gray-400">
                         <i class="fa-solid fa-vials text-4xl mb-3 text-gray-300"></i>
-                        <p class="text-sm font-medium">輸入藥物後點擊「開始比對」</p>
+                        <p class="text-sm font-medium">選擇藥物後點擊「開始比對」</p>
                     </div>
                 </div>
             </div>
