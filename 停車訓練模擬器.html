@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>專業停車訓練模擬器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            overscroll-behavior: none; 
+            background-color: #0f172a; 
+            color: #f8fafc;
+        }
+        canvas {
+            background-color: #334155; 
+            background-image: 
+                linear-gradient(#475569 1px, transparent 1px),
+                linear-gradient(90deg, #475569 1px, transparent 1px);
+            background-size: 50px 50px; 
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+        }
+        .steering-wheel {
+            transition: transform 0.1s ease-out; 
+        }
+        /* 避免觸控設備上產生長按選單與滑動行為 */
+        .touch-none {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="h-[100dvh] w-screen flex flex-col md:flex-row overflow-hidden font-sans">
+
+    <!-- 左側 / 上方：模擬器畫布區 -->
+    <div class="flex-1 p-2 md:p-4 flex flex-col items-center justify-center relative min-h-0">
+        
+        <!-- 控制選單列 -->
+        <div class="w-full max-w-4xl bg-slate-800 p-3 md:p-5 rounded-xl border border-slate-600 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 md:gap-4 shadow-xl mb-2 md:mb-4 z-10 shrink-0">
+            <div class="w-full flex justify-between items-center md:block">
+                <h1 class="text-lg md:text-xl font-bold text-blue-400">停車訓練模擬器</h1>
+                <p class="hidden md:block text-sm text-slate-300 mt-1">使用鍵盤 <kbd class="bg-slate-700 px-1 rounded">W</kbd> <kbd class="bg-slate-700 px-1 rounded">A</kbd> <kbd class="bg-slate-700 px-1 rounded">S</kbd> <kbd class="bg-slate-700 px-1 rounded">D</kbd> 或是下方按鈕觸控操作</p>
+            </div>
+            
+            <div class="flex flex-col items-start md:items-end gap-2 md:gap-3 w-full md:w-auto">
+                <div class="flex gap-1 md:gap-2 items-center w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+                    <span class="text-slate-400 font-bold mr-1 md:mr-2 whitespace-nowrap">地圖:</span>
+                    <button onclick="switchMap(1)" id="mapBtn-1" class="map-btn w-7 h-7 md:w-8 md:h-8 rounded bg-blue-600 text-white font-bold transition-colors shadow-lg shrink-0">1</button>
+                    <button onclick="switchMap(2)" id="mapBtn-2" class="map-btn w-7 h-7 md:w-8 md:h-8 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold transition-colors shadow-lg shrink-0">2</button>
+                    <button onclick="switchMap(3)" id="mapBtn-3" class="map-btn w-7 h-7 md:w-8 md:h-8 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold transition-colors shadow-lg shrink-0">3</button>
+                    <button onclick="switchMap(4)" id="mapBtn-4" class="map-btn w-7 h-7 md:w-8 md:h-8 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold transition-colors shadow-lg shrink-0">4</button>
+                    <button onclick="switchMap(5)" id="mapBtn-5" class="map-btn w-7 h-7 md:w-8 md:h-8 rounded bg-slate-700 text-slate-300 hover:bg-slate-600 font-bold transition-colors shadow-lg shrink-0">5</button>
+                </div>
+                <div class="flex gap-2 w-full justify-between md:justify-end">
+                    <button onclick="toggleAssist()" id="assistBtn" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-1 px-3 md:px-4 rounded shadow-lg transition-colors flex items-center gap-1 text-sm md:text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        輔助: 關
+                    </button>
+                    <button onclick="resetCar()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold py-1 px-3 md:px-4 rounded shadow-lg transition-colors flex items-center gap-1 text-sm md:text-base">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                        重置
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-full max-w-4xl h-auto max-h-[45vh] md:max-h-none flex-1 md:flex-none md:aspect-video rounded-xl md:rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
+            <canvas id="simCanvas" class="w-full h-full object-contain md:object-fill bg-[#334155]"></canvas>
+        </div>
+    </div>
+
+    <!-- 右側 / 下方：駕駛儀表板區 -->
+    <div class="w-full md:w-96 bg-slate-900 border-t md:border-t-0 md:border-l border-slate-800 p-2 md:p-6 flex flex-col shadow-2xl z-20 shrink-0 touch-none">
+        <h2 class="hidden md:block text-lg font-semibold text-slate-400 mb-6 uppercase tracking-widest text-center">駕駛儀表板</h2>
+        
+        <div class="flex flex-row md:flex-col justify-center items-center mb-3 md:mb-8 w-full">
+            <div class="flex justify-between bg-slate-800 rounded-lg p-1 md:p-2 border border-slate-700 relative w-full h-10 md:h-auto">
+                <button id="gear-R" class="gear-btn flex-1 py-1 md:py-2 mx-1 rounded font-bold text-slate-400 bg-slate-700 transition-colors" onclick="setGear('R')">R</button>
+                <button id="gear-D" class="gear-btn flex-1 py-1 md:py-2 mx-1 rounded font-bold text-white bg-blue-600 transition-colors active" onclick="setGear('D')">D</button>
+            </div>
+        </div>
+
+        <div class="flex flex-row md:flex-col justify-around items-end md:items-center flex-1 w-full gap-2 md:gap-0">
+            <div class="flex flex-col items-center justify-center shrink-0">
+                <div class="flex items-center justify-center gap-2 md:gap-4">
+                    <button id="btnLeft" class="touch-none w-10 h-10 md:w-16 md:h-16 bg-slate-700 border-2 border-slate-600 rounded-full flex items-center justify-center shadow-lg transition-colors">
+                        <svg class="w-6 h-6 md:w-8 md:h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    
+                    <div class="relative w-24 h-24 md:w-48 md:h-48 touch-none">
+                        <svg id="steeringWheel" class="steering-wheel w-full h-full drop-shadow-2xl" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="44" fill="none" stroke="#0f172a" stroke-width="12" />
+                            <circle cx="50" cy="50" r="44" fill="none" stroke="#1e293b" stroke-width="9" />
+                            <circle cx="50" cy="50" r="44" fill="none" stroke="#334155" stroke-width="6" />
+                            <circle cx="50" cy="50" r="41" fill="none" stroke="#000" stroke-width="0.5" stroke-dasharray="2 2" opacity="0.6" />
+                            <path d="M 15 50 L 35 48 L 40 60 L 20 62 Z" fill="#475569" />
+                            <path d="M 85 50 L 65 48 L 60 60 L 80 62 Z" fill="#475569" />
+                            <path d="M 43 60 L 57 60 L 53 85 L 47 85 Z" fill="#475569" />
+                            <path d="M 17 52 L 34 50 L 37 55 L 20 57 Z" fill="#94a3b8" />
+                            <path d="M 83 52 L 66 50 L 63 55 L 80 57 Z" fill="#94a3b8" />
+                            <path d="M 46 62 L 54 62 L 51 83 L 49 83 Z" fill="#94a3b8" />
+                            <circle cx="50" cy="50" r="18" fill="#1e293b" stroke="#0f172a" stroke-width="3" />
+                            <circle cx="50" cy="50" r="16" fill="#334155" />
+                            <circle cx="50" cy="50" r="6" fill="none" stroke="#cbd5e1" stroke-width="1.5" />
+                            <path d="M 47 47 L 53 53 M 47 53 L 53 47" stroke="#cbd5e1" stroke-width="1.5" />
+                        </svg>
+                    </div>
+
+                    <button id="btnRight" class="touch-none w-10 h-10 md:w-16 md:h-16 bg-slate-700 border-2 border-slate-600 rounded-full flex items-center justify-center shadow-lg transition-colors">
+                        <svg class="w-6 h-6 md:w-8 md:h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+                
+                <!-- 更新：加入固定寬度、高度、以及不換行設定，徹底解決排版跳動問題 -->
+                <div class="mt-2 md:mt-4 text-center bg-slate-800 border border-slate-700 rounded-full flex flex-col justify-center items-center shrink-0 w-[140px] md:w-[180px] h-[44px] md:h-[60px]">
+                    <span class="text-[9px] md:text-xs text-slate-400 leading-tight">方向盤狀態</span>
+                    <span id="angleDisplay" class="text-xs md:text-base font-mono font-bold text-blue-400 whitespace-nowrap leading-tight">置中 (0°)</span>
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-3 md:gap-6 mt-0 md:mt-8 pb-1 md:pb-0 shrink-0">
+                <button id="btnBrake" class="touch-none w-14 h-20 md:w-16 md:h-24 bg-red-900 border-2 border-red-700 rounded-md flex items-end justify-center pb-2 shadow-lg transition-colors select-none">
+                    <span class="text-red-200 font-bold text-xs md:text-sm">煞車</span>
+                </button>
+                <button id="btnGas" class="touch-none w-12 h-24 md:w-12 md:h-32 bg-slate-700 border-2 border-slate-600 rounded-md flex items-end justify-center pb-2 shadow-lg transition-colors select-none">
+                    <span class="text-slate-300 font-bold text-xs md:text-sm">油門</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================
+           區塊 1：設定參數 (Config)
+           ========================================== */
+        const canvas = document.getElementById('simCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        canvas.width = 1280;
+        canvas.height = 720;
+
+        const CONFIG = {
+            carLength: 80,          
+            carWidth: 40,           
+            wheelBase: 60,          
+            maxSteeringAngle: 0.6,  
+            maxSpeed: 2.5,          
+            acceleration: 0.03,     
+            braking: 0.1,           
+            friction: 0.02,         
+            steeringSpeed: 0.03     
+        };
+
+        const obstaclesData = {
+            1: [
+                {x: 0, y: 0, w: 400, h: 720},     
+                {x: 400, y: 0, w: 150, h: 100},   
+                {x: 400, y: 550, w: 150, h: 170}, 
+                {x: 800, y: 0, w: 480, h: 720},   
+                {x: 700, y: 0, w: 100, h: 50},    
+                {x: 410, y: 110, w: 130, h: 130}, 
+                {x: 410, y: 410, w: 130, h: 130}, 
+                {x: 710, y: 60, w: 80, h: 210},   
+                {x: 710, y: 520, w: 80, h: 210}   
+            ],
+            2: [
+                {x: 0, y: 0, w: 450, h: 720},     
+                {x: 450, y: 0, w: 150, h: 100},   
+                {x: 450, y: 550, w: 150, h: 170}, 
+                {x: 775, y: 0, w: 505, h: 720},   
+                {x: 675, y: 0, w: 100, h: 50},    
+                {x: 460, y: 110, w: 130, h: 130}, 
+                {x: 460, y: 410, w: 130, h: 130}, 
+                {x: 685, y: 60, w: 80, h: 210},   
+                {x: 685, y: 520, w: 80, h: 210}   
+            ],
+            3: [
+                {x: 0, y: 0, w: 1280, h: 350},    
+                {x: 650, y: 350, w: 630, h: 370}, 
+                {x: 0, y: 425, w: 550, h: 295},   
+            ],
+            4: [
+                {x: 0, y: 0, w: 1280, h: 150},    
+                {x: 0, y: 600, w: 1280, h: 120},  
+                {x: 0, y: 150, w: 400, h: 450},   
+                {x: 800, y: 150, w: 480, h: 450}, 
+                {x: 400, y: 150, w: 100, h: 200}, 
+                {x: 700, y: 150, w: 100, h: 200}  
+            ],
+            5: [
+                {x: 0, y: 0, w: 400, h: 720},
+                {x: 400, y: 0, w: 150, h: 50},
+                {x: 400, y: 650, w: 150, h: 70},
+                {x: 850, y: 0, w: 430, h: 720},
+                {x: 700, y: 0, w: 150, h: 50},
+                {x: 700, y: 650, w: 150, h: 70},
+                {x: 410, y: 60, w: 130, h: 130},  
+                {x: 410, y: 510, w: 130, h: 130}, 
+                {x: 710, y: 210, w: 130, h: 130}  
+            ]
+        };
+
+        /* ==========================================
+           區塊 2：狀態管理 
+           ========================================== */
+        const mapStartPositions = {
+            1: { x: 625, y: 650, heading: -Math.PI/2 },
+            2: { x: 637.5, y: 650, heading: -Math.PI/2 }, 
+            3: { x: 600, y: 650, heading: -Math.PI/2 }, 
+            4: { x: 550, y: 250, heading: -Math.PI/2 }, 
+            5: { x: 625, y: 680, heading: -Math.PI/2 }
+        };
+
+        const state = {
+            currentMap: 1,          
+            assistMode: false,      
+            isColliding: false, 
+            x: 625,                 
+            y: 650,                 
+            heading: -Math.PI/2,             
+            speed: 0,               
+            steeringAngle: 0,       
+            gear: 'D',              
+            keys: { gas: false, brake: false, left: false, right: false }
+        };
+
+        /* ==========================================
+           區塊 3：輸入監聽
+           ========================================== */
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') state.keys.gas = true;
+            if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') state.keys.brake = true;
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') state.keys.left = true;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') state.keys.right = true;
+            updatePedalVisuals();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') state.keys.gas = false;
+            if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') state.keys.brake = false;
+            if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') state.keys.left = false;
+            if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') state.keys.right = false;
+            updatePedalVisuals();
+        });
+
+        const setupControls = () => {
+            const attach = (id, key) => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                
+                const press = (e) => { 
+                    e.preventDefault(); 
+                    state.keys[key] = true; 
+                    updatePedalVisuals(); 
+                };
+                const release = (e) => { 
+                    e.preventDefault(); 
+                    state.keys[key] = false; 
+                    updatePedalVisuals(); 
+                };
+                
+                ['touchstart', 'mousedown'].forEach(evt => el.addEventListener(evt, press, {passive: false}));
+                ['touchend', 'mouseup', 'mouseleave'].forEach(evt => el.addEventListener(evt, release));
+            };
+            
+            attach('btnGas', 'gas');
+            attach('btnBrake', 'brake');
+            attach('btnLeft', 'left');
+            attach('btnRight', 'right');
+        };
+
+        setTimeout(setupControls, 100);
+
+        window.setGear = function(gear) {
+            if (state.speed > 0.5 || state.speed < -0.5) return; 
+            state.gear = gear;
+            
+            document.querySelectorAll('.gear-btn').forEach(btn => {
+                btn.classList.remove('text-white', 'bg-blue-600');
+                btn.classList.add('text-slate-400', 'bg-slate-700');
+            });
+            const activeBtn = document.getElementById(`gear-${gear}`);
+            activeBtn.classList.remove('text-slate-400', 'bg-slate-700');
+            activeBtn.classList.add('text-white', 'bg-blue-600');
+        };
+
+        function updatePedalVisuals() {
+            const btnGas = document.getElementById('btnGas');
+            const btnBrake = document.getElementById('btnBrake');
+            const btnLeft = document.getElementById('btnLeft');
+            const btnRight = document.getElementById('btnRight');
+            
+            if (state.keys.gas) btnGas.classList.replace('bg-slate-700', 'bg-slate-500');
+            else btnGas.classList.replace('bg-slate-500', 'bg-slate-700');
+
+            if (state.keys.brake) btnBrake.classList.replace('bg-red-900', 'bg-red-500');
+            else btnBrake.classList.replace('bg-red-500', 'bg-red-900');
+
+            if (btnLeft && btnRight) {
+                if (state.keys.left) btnLeft.classList.replace('bg-slate-700', 'bg-slate-500');
+                else btnLeft.classList.replace('bg-slate-500', 'bg-slate-700');
+
+                if (state.keys.right) btnRight.classList.replace('bg-slate-700', 'bg-slate-500');
+                else btnRight.classList.replace('bg-slate-500', 'bg-slate-700');
+            }
+        }
+
+        window.resetCar = function() {
+            const startPos = mapStartPositions[state.currentMap];
+            state.x = startPos.x;
+            state.y = startPos.y;
+            state.heading = startPos.heading;
+            state.speed = 0;
+            state.steeringAngle = 0;
+            state.isColliding = false;
+            
+            state.gear = 'D';
+            document.querySelectorAll('.gear-btn').forEach(btn => {
+                btn.classList.remove('text-white', 'bg-blue-600');
+                btn.classList.add('text-slate-400', 'bg-slate-700');
+            });
+            document.getElementById('gear-D').classList.add('text-white', 'bg-blue-600');
+            document.getElementById('gear-D').classList.remove('text-slate-400', 'bg-slate-700');
+        };
+
+        window.toggleAssist = function() {
+            state.assistMode = !state.assistMode;
+            const btn = document.getElementById('assistBtn');
+            if (state.assistMode) {
+                btn.textContent = '輔助: 開';
+                btn.classList.replace('bg-purple-600', 'bg-purple-500');
+            } else {
+                btn.textContent = '輔助: 關';
+                btn.classList.replace('bg-purple-500', 'bg-purple-600');
+            }
+        };
+
+        window.switchMap = function(mapId) {
+            state.currentMap = mapId;
+            document.querySelectorAll('.map-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-slate-700', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById(`mapBtn-${mapId}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('bg-slate-700', 'text-slate-300');
+                activeBtn.classList.add('bg-blue-600', 'text-white');
+            }
+            resetCar();
+        };
+
+        /* ==========================================
+           區塊 4：真物理引擎
+           ========================================== */
+        function checkCollision(carX, carY, carHeading) {
+            const mapId = state.currentMap;
+            const obstacles = obstaclesData[mapId] || [];
+            if (obstacles.length === 0) return false;
+
+            const front = CONFIG.carLength - 15; 
+            const rear = -15;                    
+            const left = -CONFIG.carWidth / 2;
+            const right = CONFIG.carWidth / 2;
+
+            const pts = [];
+            for (let i = 0; i <= 5; i++) {
+                const px = rear + (front - rear) * (i / 5);
+                pts.push({x: px, y: left});
+                pts.push({x: px, y: right});
+                pts.push({x: px, y: 0}); 
+            }
+            for (let i = 0; i <= 5; i++) {
+                const py = left + (right - left) * (i / 5);
+                pts.push({x: front, y: py});
+                pts.push({x: rear, y: py});
+            }
+
+            const cos = Math.cos(carHeading);
+            const sin = Math.sin(carHeading);
+
+            for (let pt of pts) {
+                const worldX = carX + pt.x * cos - pt.y * sin;
+                const worldY = carY + pt.x * sin + pt.y * cos;
+
+                if (worldX < 0 || worldX > canvas.width || worldY < 0 || worldY > canvas.height) return true;
+
+                for (let obs of obstacles) {
+                    if (worldX >= obs.x && worldX <= obs.x + obs.w && worldY >= obs.y && worldY <= obs.y + obs.h) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function updatePhysics() {
+            if (state.keys.left) state.steeringAngle -= CONFIG.steeringSpeed;
+            if (state.keys.right) state.steeringAngle += CONFIG.steeringSpeed;
+            state.steeringAngle = Math.max(-CONFIG.maxSteeringAngle, Math.min(CONFIG.maxSteeringAngle, state.steeringAngle));
+            
+            if (!state.keys.left && !state.keys.right && Math.abs(state.speed) > 0.1) state.steeringAngle *= 0.9; 
+
+            let targetAcceleration = 0;
+            if (state.gear === 'D' && state.keys.gas) targetAcceleration = CONFIG.acceleration;
+            if (state.gear === 'R' && state.keys.gas) targetAcceleration = -CONFIG.acceleration;
+
+            state.speed += targetAcceleration;
+
+            if (state.keys.brake) {
+                if (state.speed > 0) state.speed = Math.max(0, state.speed - CONFIG.braking);
+                if (state.speed < 0) state.speed = Math.min(0, state.speed + CONFIG.braking);
+            }
+            if (!state.keys.gas && !state.keys.brake) {
+                if (state.speed > 0) state.speed = Math.max(0, state.speed - CONFIG.friction);
+                if (state.speed < 0) state.speed = Math.min(0, state.speed + CONFIG.friction);
+            }
+
+            state.speed = Math.max(-CONFIG.maxSpeed, Math.min(CONFIG.maxSpeed, state.speed));
+
+            if (Math.abs(state.speed) > 0.01) {
+                const angularVelocity = (state.speed / CONFIG.wheelBase) * Math.tan(state.steeringAngle);
+                const nextHeading = state.heading + angularVelocity;
+                const nextX = state.x + state.speed * Math.cos(nextHeading);
+                const nextY = state.y + state.speed * Math.sin(nextHeading);
+
+                if (checkCollision(nextX, nextY, nextHeading)) {
+                    state.speed = 0; 
+                    state.isColliding = true; 
+                } else {
+                    state.heading = nextHeading;
+                    state.x = nextX;
+                    state.y = nextY;
+                    state.isColliding = false;
+                }
+            }
+        }
+
+        /* ==========================================
+           區塊 5：畫面渲染 (Render) 
+           ========================================== */
+        function drawGrass(x, y, w, h) {
+            ctx.fillStyle = '#14532d'; 
+            ctx.fillRect(x, y + 4, w, h);
+            ctx.fillStyle = '#15803d'; 
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = '#166534';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, w, h);
+        }
+
+        function drawTree(x, y, radius) {
+            ctx.save();
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath(); ctx.arc(x + 5, y + 5, radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#166534';
+            ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath(); ctx.arc(x - radius*0.2, y - radius*0.2, radius*0.7, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawBuilding(x, y, w, h) {
+            ctx.fillStyle = '#450a0a'; 
+            ctx.fillRect(x+4, y+4, w, h);
+            ctx.fillStyle = '#991b1b'; 
+            ctx.fillRect(x, y, w, h);
+            ctx.strokeStyle = '#7f1d1d';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(x+2, y+2, w-4, h-4);
+        }
+
+        function drawParkedCar(x, y, w, h, bodyColor) {
+            ctx.save();
+            ctx.translate(x + w/2, y + h/2);
+            const isVert = h > w;
+            if (!isVert) ctx.rotate(Math.PI/2);
+            
+            const cw = isVert ? w : h;
+            const ch = isVert ? h : w;
+
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath(); ctx.roundRect(-cw/2, -ch/2, cw, ch, 8); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(-cw/2 + 4, -ch/2 + 15, cw - 8, ch - 30);
+            ctx.fillStyle = bodyColor; 
+            ctx.fillRect(-cw/2 + 6, -ch/2 + 25, cw - 12, ch - 50);
+
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(-cw/2 + 5, -ch/2 + 2, 6, 4);
+            ctx.fillRect(cw/2 - 11, -ch/2 + 2, 6, 4);
+            ctx.fillStyle = '#fca5a5';
+            ctx.fillRect(-cw/2 + 5, ch/2 - 6, 6, 4);
+            ctx.fillRect(cw/2 - 11, ch/2 - 6, 6, 4);
+            ctx.restore();
+        }
+
+        function drawEnvironment() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            switch (state.currentMap) {
+                case 1: drawMap1(); break;
+                case 2: drawMap2(); break;
+                case 3: drawMap3(); break;
+                case 4: drawMap4(); break;
+                case 5: drawMap5(); break;
+                default: drawMap1();
+            }
+        }
+
+        function drawMap1() {
+            drawGrass(0, 0, 400, 720);
+            drawGrass(400, 0, 150, 100); 
+            drawGrass(400, 550, 150, 170); 
+            drawGrass(800, 0, 480, 720); 
+            drawGrass(700, 0, 100, 50); 
+
+            for(let i=0; i<8; i++) drawTree(200, 50 + i*90, 30);
+            for(let i=0; i<8; i++) drawTree(1000, 50 + i*90, 40);
+            drawTree(475, 50, 20); drawTree(475, 630, 20);
+
+            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 4;
+            
+            ctx.beginPath();
+            ctx.moveTo(550, 100); ctx.lineTo(400, 100); ctx.lineTo(400, 550); ctx.lineTo(550, 550);
+            ctx.moveTo(400, 250); ctx.lineTo(550, 250);
+            ctx.moveTo(400, 400); ctx.lineTo(550, 400);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(700, 50); ctx.lineTo(800, 50); ctx.lineTo(800, 740); ctx.lineTo(700, 740);
+            ctx.moveTo(700, 280); ctx.lineTo(800, 280);
+            ctx.moveTo(700, 510); ctx.lineTo(800, 510);
+            ctx.stroke();
+            ctx.strokeRect(700, 270, 100, 250); 
+
+            drawParkedCar(410, 110, 130, 130, '#ef4444'); 
+            drawParkedCar(410, 410, 130, 130, '#eab308'); 
+            drawParkedCar(710, 60, 80, 210, '#3b82f6');   
+            drawParkedCar(710, 520, 80, 210, '#a855f7');  
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.font = 'bold 30px sans-serif';
+            ctx.fillText('倒車入庫', 200, 340);
+            ctx.fillText('路邊停車', 880, 400);
+        }
+
+        function drawMap2() {
+            drawGrass(0, 0, 450, 720); 
+            drawGrass(450, 0, 150, 100); 
+            drawGrass(450, 550, 150, 170); 
+            drawGrass(775, 0, 505, 720); 
+            drawGrass(675, 0, 100, 50); 
+            
+            for(let i=0; i<8; i++) drawTree(225, 50 + i*90, 30);
+            for(let i=0; i<8; i++) drawTree(1025, 50 + i*90, 40);
+
+            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 4;
+            
+            ctx.beginPath();
+            ctx.moveTo(600, 100); ctx.lineTo(450, 100); ctx.lineTo(450, 550); ctx.lineTo(600, 550);
+            ctx.moveTo(450, 250); ctx.lineTo(600, 250);
+            ctx.moveTo(450, 400); ctx.lineTo(600, 400);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(675, 50); ctx.lineTo(775, 50); ctx.lineTo(775, 740); ctx.lineTo(675, 740);
+            ctx.moveTo(675, 280); ctx.lineTo(775, 280);
+            ctx.moveTo(675, 510); ctx.lineTo(775, 510);
+            ctx.stroke();
+            ctx.strokeRect(675, 270, 100, 250);
+
+            drawParkedCar(460, 110, 130, 130, '#8b5cf6');
+            drawParkedCar(460, 410, 130, 130, '#10b981'); 
+            drawParkedCar(685, 60, 80, 210, '#f97316');   
+            drawParkedCar(685, 520, 80, 210, '#64748b');  
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.font = 'bold 30px sans-serif';
+            ctx.fillText('進階：極限窄道', 850, 400);
+        }
+
+        function drawMap3() {
+            drawBuilding(0, 0, 1280, 350);    
+            drawBuilding(650, 350, 630, 370); 
+            drawBuilding(0, 425, 550, 295);   
+            
+            ctx.strokeStyle = '#fca5a5'; ctx.lineWidth = 6;
+            ctx.beginPath();
+            ctx.moveTo(0, 350); ctx.lineTo(650, 350); ctx.lineTo(650, 720); 
+            ctx.moveTo(0, 425); ctx.lineTo(550, 425); ctx.lineTo(550, 720); 
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.font = 'bold 30px sans-serif';
+            ctx.fillText('窄巷出彎 (留意左右死角)', 80, 470);
+            ctx.fillText('出發車庫', 525, 700);
+        }
+
+        function drawMap4() {
+            drawGrass(0, 0, 1280, 150); 
+            drawGrass(0, 600, 1280, 120); 
+            drawBuilding(0, 150, 400, 450); 
+            drawBuilding(800, 150, 480, 450); 
+
+            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 4;
+            
+            ctx.beginPath();
+            ctx.moveTo(400, 350); ctx.lineTo(800, 350); 
+            ctx.moveTo(500, 150); ctx.lineTo(500, 350); 
+            ctx.moveTo(600, 150); ctx.lineTo(600, 350); 
+            ctx.moveTo(700, 150); ctx.lineTo(700, 350); 
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.font = 'bold 30px sans-serif';
+            ctx.fillText('橫向平移練習區', 850, 400);
+        }
+
+        function drawMap5() {
+            drawGrass(0, 0, 400, 720); 
+            drawGrass(400, 0, 150, 50); 
+            drawGrass(400, 650, 150, 70); 
+            drawGrass(850, 0, 430, 720); 
+            drawGrass(700, 0, 150, 50); 
+            drawGrass(700, 650, 150, 70); 
+            
+            for(let i=0; i<8; i++) drawTree(200, 50 + i*90, 30);
+            for(let i=0; i<8; i++) drawTree(1065, 50 + i*90, 30);
+
+            ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(550, 50); ctx.lineTo(400, 50); ctx.lineTo(400, 650); ctx.lineTo(550, 650);
+            for(let i=1; i<4; i++) { ctx.moveTo(400, 50 + i*150); ctx.lineTo(550, 50 + i*150); }
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(700, 50); ctx.lineTo(850, 50); ctx.lineTo(850, 650); ctx.lineTo(700, 650);
+            for(let i=1; i<4; i++) { ctx.moveTo(700, 50 + i*150); ctx.lineTo(850, 50 + i*150); }
+            ctx.stroke();
+
+            drawParkedCar(410, 60, 130, 130, '#0ea5e9'); 
+            drawParkedCar(410, 510, 130, 130, '#eab308'); 
+            drawParkedCar(710, 210, 130, 130, '#ec4899'); 
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'; ctx.font = 'bold 30px sans-serif';
+            ctx.fillText('綜合停車場', 200, 100);
+        }
+
+        function drawAssist() {
+            if (!state.assistMode) return;
+            
+            ctx.save();
+            ctx.fillStyle = '#fde047'; 
+            ctx.font = 'bold 22px sans-serif';
+            ctx.strokeStyle = 'rgba(253, 224, 71, 0.8)'; 
+            ctx.lineWidth = 3;
+            ctx.setLineDash([10, 10]);
+
+            switch (state.currentMap) {
+                case 1:
+                    ctx.fillText('💡 路邊停車(右)：齊平前車 → 右打滿倒退 → 回正退入', 620, 220);
+                    ctx.strokeRect(700, 280, 100, 230); 
+                    break;
+                case 2:
+                    ctx.fillText('💡 極限窄道：非常留意前車頭會不會擦撞，適度修正', 750, 400);
+                    ctx.strokeRect(675, 280, 100, 230);
+                    break;
+                case 3:
+                    ctx.fillText('💡 往前開，駕駛座對齊轉角處牆壁，再將方向盤左打滿', 100, 300);
+                    ctx.beginPath();
+                    ctx.moveTo(600, 600); ctx.bezierCurveTo(600, 385, 450, 385, 300, 385);
+                    ctx.stroke();
+                    break;
+                case 4:
+                    ctx.fillText('💡 橫向平移：倒車退出，向右打甩車尾，回正切入新車道再退入', 200, 100);
+                    ctx.strokeRect(600, 150, 100, 200); 
+                    break;
+                case 5:
+                    ctx.fillText('💡 倒車入庫：預留旋轉半徑，注意內輪差', 880, 350);
+                    ctx.strokeRect(405, 355, 140, 140); 
+                    break;
+            }
+
+            ctx.restore();
+        }
+
+        function drawCar() {
+            ctx.save();
+            ctx.translate(state.x, state.y);
+            ctx.rotate(state.heading);
+
+            const hw = CONFIG.carWidth / 2;
+            const rearOverhang = 15; 
+            const frontOverhang = CONFIG.carLength - CONFIG.wheelBase - rearOverhang;
+
+            ctx.fillStyle = state.isColliding ? '#ef4444' : '#f8fafc'; 
+            ctx.shadowColor = 'rgba(0,0,0,0.5)';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(-rearOverhang, -hw, CONFIG.carLength, CONFIG.carWidth, 8);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(CONFIG.wheelBase * 0.4, -hw + 4, 15, CONFIG.carWidth - 8); 
+            ctx.fillRect(-5, -hw + 4, 10, CONFIG.carWidth - 8); 
+            ctx.fillRect(CONFIG.wheelBase * 0.1, -hw + 6, 12, CONFIG.carWidth - 12); 
+
+            ctx.fillStyle = '#fef08a'; 
+            ctx.fillRect(CONFIG.carLength - rearOverhang - 5, -hw + 2, 6, 8);
+            ctx.fillRect(CONFIG.carLength - rearOverhang - 5, hw - 10, 6, 8);
+
+            ctx.fillStyle = state.keys.brake ? '#ff0000' : '#fca5a5';
+            if (state.keys.brake) {
+                ctx.shadowColor = '#ff0000';
+                ctx.shadowBlur = 15;
+            }
+            ctx.fillRect(-rearOverhang - 2, -hw + 2, 6, 8);
+            ctx.fillRect(-rearOverhang - 2, hw - 10, 6, 8);
+            ctx.shadowBlur = 0;
+
+            const wheelLength = 16;
+            const wheelWidth = 6;
+            ctx.fillStyle = '#000000';
+
+            ctx.fillRect(-wheelLength/2, -hw - wheelWidth/2, wheelLength, wheelWidth);
+            ctx.fillRect(-wheelLength/2, hw - wheelWidth/2, wheelLength, wheelWidth);
+
+            ctx.save();
+            ctx.translate(CONFIG.wheelBase, -hw);
+            ctx.rotate(state.steeringAngle);
+            ctx.fillRect(-wheelLength/2, -wheelWidth/2, wheelLength, wheelWidth);
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(CONFIG.wheelBase, hw);
+            ctx.rotate(state.steeringAngle);
+            ctx.fillRect(-wheelLength/2, -wheelWidth/2, wheelLength, wheelWidth);
+            ctx.restore();
+
+            ctx.restore();
+        }
+
+        // 更新：將儀表板上的方向盤角度文字 UI 設定為固定寬高、單行不換行，解決伸縮跳動問題
+        function updateDashboard() {
+            const wheelVisualAngle = (state.steeringAngle / CONFIG.maxSteeringAngle) * 540;
+            document.getElementById('steeringWheel').style.transform = `rotate(${wheelVisualAngle}deg)`;
+
+            const angleDisplay = document.getElementById('angleDisplay');
+            if (angleDisplay) {
+                const turns = (Math.abs(wheelVisualAngle) / 360).toFixed(1); 
+                const maxText = (turns >= 1.5) ? ' (極限)' : ''; 
+
+                if (Math.abs(wheelVisualAngle) < 10) {
+                    angleDisplay.textContent = '置中 (0°)';
+                    angleDisplay.className = 'text-xs md:text-base font-mono font-bold text-blue-400 whitespace-nowrap leading-tight';
+                } else if (wheelVisualAngle > 0) {
+                    angleDisplay.textContent = `向右 ${turns} 圈${maxText}`;
+                    angleDisplay.className = 'text-xs md:text-base font-mono font-bold text-emerald-400 whitespace-nowrap leading-tight';
+                } else {
+                    angleDisplay.textContent = `向左 ${turns} 圈${maxText}`;
+                    angleDisplay.className = 'text-xs md:text-base font-mono font-bold text-amber-400 whitespace-nowrap leading-tight';
+                }
+            }
+        }
+
+        /* ==========================================
+           區塊 6：主迴圈 (Main Loop)
+           ========================================== */
+        function gameLoop() {
+            updatePhysics(); 
+            
+            drawEnvironment();
+            drawAssist(); 
+            drawCar();
+            updateDashboard();
+            
+            requestAnimationFrame(gameLoop);
+        }
+
+        requestAnimationFrame(gameLoop);
+    </script>
+</body>
+</html>
