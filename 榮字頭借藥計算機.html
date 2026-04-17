@@ -395,7 +395,7 @@
                                 <div id="machineDefaultDays" class="text-3xl font-bold text-indigo-700">-</div>
                             </div>
                             <div class="bg-white/70 p-3 rounded-lg border border-indigo-100 shadow-sm flex flex-col justify-center">
-                                <span class="text-[10px] md:text-xs text-gray-500 font-bold block mb-1">異動天數 <br><span class="opacity-80 scale-90 inline-block">(包藥末日-包藥-電腦)</span></span>
+                                <span class="text-[10px] md:text-xs text-gray-500 font-bold block mb-1">異動天數 <br><span class="opacity-80 scale-90 inline-block">(包藥末日-包藥-資料日期)</span></span>
                                 <div id="machineChangeDays" class="text-3xl font-bold text-indigo-700">-</div>
                             </div>
                         </div>
@@ -444,7 +444,7 @@
                 </div>
                 <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
                     <strong class="text-indigo-600 dark:text-indigo-400 block mb-1">異動天數</strong>
-                    <p>用於校正包藥機的日期偏移。<br>公式為：<code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-300">包藥末日 - 內定天數 - 電腦日期</code></p>
+                    <p>用於校正包藥機的日期偏移。<br>公式為：<code class="bg-gray-100 dark:bg-gray-700 px-1 py-0.5 rounded text-indigo-600 dark:text-indigo-300">包藥末日 - 內定天數 - 資料日期</code></p>
                     <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">* 註：若需包藥天數為 0，則異動天數強制設為 0。</p>
                 </div>
                 <!-- 新增電腦日期鎖控原則說明 -->
@@ -493,7 +493,7 @@
                 </div>
                 <div>
                     <strong class="text-medical-600 dark:text-medical-400 block mb-1 text-base">第四步：確認「藥包機設定」</strong>
-                    <p>系統會依據送單時間自動帶入「電腦日期」，並依循公式計算出提供給藥包機設定的「內定天數」與「異動天數」。若有特殊需求，您也可手動修改電腦日期，系統會即時驗證並重新計算異動天數。</p>
+                    <p>系統會依據送單時間自動帶入「資料日期」，並依循公式計算出提供給藥包機設定的「內定天數」與「異動天數」。若有特殊需求，您也可手動修改資料日期，系統會即時驗證並重新計算異動天數。</p>
                 </div>
             </div>
             <div class="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 text-right sticky bottom-0">
