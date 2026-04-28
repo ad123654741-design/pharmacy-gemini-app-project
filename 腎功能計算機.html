@@ -44,12 +44,6 @@
         } else {
             document.documentElement.classList.remove('dark');
         }
-
-        // 初始化字體大小
-        const savedFontSize = safeGetLocalStorage('app-font-size');
-        if (savedFontSize) {
-            document.documentElement.style.fontSize = savedFontSize + '%';
-        }
     </script>
     <style>
         /* CSS 變數：用於平滑切換背景網格顏色 */
@@ -132,9 +126,9 @@
         </defs>
     </svg>
 
-    <div class="container bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-2xl rounded-2xl p-6 md:p-10 w-full max-w-5xl border border-gray-100 dark:border-gray-800 transition-all duration-300 relative">
+    <div class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-2xl rounded-2xl p-6 md:p-10 w-full max-w-[98%] xl:max-w-[96%] 2xl:max-w-[1600px] border border-gray-100 dark:border-gray-800 transition-all duration-300 relative">
         
-        <!-- 標題與深色模式/字體縮放切換 -->
+        <!-- 標題與深色模式切換 -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 border-b-4 border-teal-200 dark:border-teal-700/50 pb-4 gap-4">
             <div>
                 <h1 class="text-3xl sm:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-emerald-600 dark:from-teal-400 dark:to-emerald-400 tracking-tight">
@@ -145,19 +139,13 @@
                 </p>
             </div>
             
-            <div class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 p-1.5 rounded-full border border-gray-100 dark:border-gray-700 shadow-sm">
-                <!-- 字體縮小 -->
-                <button onclick="changeFontSize(-10)" aria-label="縮小字體" class="w-9 h-9 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-all font-bold text-sm" title="縮小字體">A-</button>
-                <div class="w-px h-5 bg-gray-200 dark:bg-gray-700"></div>
-                <!-- 字體放大 -->
-                <button onclick="changeFontSize(10)" aria-label="放大字體" class="w-9 h-9 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none transition-all font-bold text-lg" title="放大字體">A+</button>
-                <div class="w-px h-5 bg-gray-200 dark:bg-gray-700"></div>
+            <div class="flex items-center">
                 <!-- 深淺色切換按鈕 -->
-                <button id="theme-toggle" aria-label="切換深淺色模式" class="w-9 h-9 flex items-center justify-center rounded-full bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-200 shadow-sm border border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none transition-all duration-300" title="切換深淺色模式">
-                    <!-- 太陽 Icon -->
-                    <svg id="theme-toggle-light-icon" class="hidden w-5 h-5 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
-                    <!-- 月亮 Icon -->
-                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-indigo-500 dark:text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                <button type="button" id="theme-toggle" aria-label="切換深淺色模式" class="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-slate-800 shadow-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all duration-300" title="切換深淺色模式">
+                    <!-- 太陽 Icon (深色模式時顯示) -->
+                    <svg id="theme-toggle-light-icon" class="hidden w-6 h-6 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+                    <!-- 月亮 Icon (淺色模式時顯示) -->
+                    <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5 text-slate-700 dark:text-slate-300" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
                 </button>
             </div>
         </div>
@@ -171,7 +159,7 @@
                     <svg class="w-6 h-6 mr-2 text-current"><use href="#icon-params"></use></svg>
                     參數輸入
                 </h2>
-                <button onclick="openHistoryModal()" aria-label="查看歷史紀錄" class="flex items-center text-sm font-bold text-teal-700 dark:text-teal-400 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm border border-teal-100 dark:border-gray-700 hover:bg-teal-50 dark:hover:bg-gray-700 transition-colors">
+                <button type="button" onclick="openHistoryModal()" aria-label="查看歷史紀錄" class="flex items-center text-sm font-bold text-teal-700 dark:text-teal-400 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm border border-teal-100 dark:border-gray-700 hover:bg-teal-50 dark:hover:bg-gray-700 transition-colors">
                     <svg class="w-4 h-4 mr-1.5 text-current"><use href="#icon-history"></use></svg>
                     歷史紀錄
                 </button>
@@ -249,7 +237,7 @@
                 <div class="flex flex-col lg:col-span-2 pt-1 lg:pt-0">
                     <div class="flex items-center justify-between mb-3 mt-4 lg:mt-0">
                          <h3 class="text-lg font-bold text-teal-700 dark:text-teal-400 flex items-center">計算體重指標</h3>
-                         <button class="text-teal-500 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 p-1.5 rounded-full bg-teal-100/50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-800/50 transition-all shadow-sm active:scale-95" onclick="showInfoModal('weight_guide')" aria-label="體重選擇考量" title="體重選擇考量">
+                         <button type="button" class="text-teal-500 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 p-1.5 rounded-full bg-teal-100/50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-800/50 transition-all shadow-sm active:scale-95" onclick="showInfoModal('weight_guide')" aria-label="體重選擇考量" title="體重選擇考量">
                              <svg class="w-5 h-5 text-current"><use href="#icon-info"></use></svg>
                          </button>
                     </div>
@@ -306,22 +294,22 @@
 
             <!-- 計算按鈕群組 -->
             <div class="mt-10 flex flex-wrap gap-4 justify-center">
-                <button id="calculate-btn" onclick="processCalculation(() => calculateRenalFunction('actual'))" aria-label="執行計算以實際體重" class="relative overflow-hidden px-6 py-3.5 bg-teal-600 dark:bg-teal-500 text-white font-bold rounded-xl shadow-lg hover:bg-teal-700 dark:hover:bg-teal-600 hover:shadow-teal-500/30 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-70 disabled:cursor-not-allowed">
+                <button type="button" id="calculate-btn" aria-label="執行計算以實際體重" class="relative overflow-hidden px-6 py-3.5 bg-teal-600 dark:bg-teal-500 text-white font-bold rounded-xl shadow-lg hover:bg-teal-700 dark:hover:bg-teal-600 hover:shadow-teal-500/30 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-70 disabled:cursor-not-allowed">
                     <span class="flex items-center justify-center">
                         <svg class="w-5 h-5 mr-2 text-current"><use href="#icon-calc"></use></svg>
                         執行計算 (實際體重)
                     </span>
                 </button>
                 
-                <button id="calculate-ibw-btn" onclick="processCalculation(() => recalculateWithWeight('IBW'))" aria-label="以理想體重重算" class="px-6 py-3.5 bg-blue-500 dark:bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-blue-500/30 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled>
+                <button type="button" id="calculate-ibw-btn" aria-label="以理想體重重算" class="px-6 py-3.5 bg-blue-500 dark:bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-600 dark:hover:bg-blue-700 hover:shadow-blue-500/30 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled>
                     以理想體重重算
                 </button>
 
-                <button id="calculate-abw-btn" onclick="processCalculation(() => recalculateWithWeight('ABW'))" aria-label="以調整體重重算" class="px-6 py-3.5 bg-pink-500 dark:bg-pink-600 text-white font-bold rounded-xl shadow-lg hover:bg-pink-600 dark:hover:bg-pink-700 hover:shadow-pink-500/30 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled>
+                <button type="button" id="calculate-abw-btn" aria-label="以調整體重重算" class="px-6 py-3.5 bg-pink-500 dark:bg-pink-600 text-white font-bold rounded-xl shadow-lg hover:bg-pink-600 dark:hover:bg-pink-700 hover:shadow-pink-500/30 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled>
                     以調整體重重算
                 </button>
                 
-                <button id="clear-params-btn" onclick="clearParameters()" aria-label="清除參數" class="px-6 py-3.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl shadow hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-70 disabled:cursor-not-allowed">
+                <button type="button" id="clear-params-btn" aria-label="清除參數" class="px-6 py-3.5 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl shadow hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-300 transform active:scale-95 focus:outline-none flex-grow md:flex-grow-0 disabled:opacity-70 disabled:cursor-not-allowed">
                     清除參數
                 </button>
             </div>
@@ -363,11 +351,11 @@
                     計算結果
                 </h2>
                 <div class="flex flex-wrap gap-2 w-full md:w-auto">
-                    <button id="kdigo-btn" onclick="openKdigoModal()" aria-label="開啟KDIGO分期" class="flex-1 md:flex-none flex justify-center items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold rounded-xl shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-lg transition-all duration-300 transform active:scale-95 focus:outline-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled>
+                    <button type="button" id="kdigo-btn" aria-label="開啟KDIGO分期" class="flex-1 md:flex-none flex justify-center items-center px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold rounded-xl shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-lg transition-all duration-300 transform active:scale-95 focus:outline-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled>
                         <svg class="w-4 h-4 mr-1.5 text-current"><use href="#icon-kdigo"></use></svg>
                         CKD 分期
                     </button>
-                    <button id="reply-template-btn" onclick="openReplyModal()" aria-label="開啟預設回覆" class="flex-1 md:flex-none flex justify-center items-center px-4 py-2 bg-teal-600 dark:bg-teal-500 text-white text-sm font-bold rounded-xl shadow-md hover:bg-teal-700 dark:hover:bg-teal-600 hover:shadow-lg transition-all duration-300 transform active:scale-95 focus:outline-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled title="請先點擊下方任一計算結果卡片">
+                    <button type="button" id="reply-template-btn" aria-label="開啟預設回覆" class="flex-1 md:flex-none flex justify-center items-center px-4 py-2 bg-teal-600 dark:bg-teal-500 text-white text-sm font-bold rounded-xl shadow-md hover:bg-teal-700 dark:hover:bg-teal-600 hover:shadow-lg transition-all duration-300 transform active:scale-95 focus:outline-none disabled:opacity-50 disabled:hover:translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed" disabled title="請先點擊下方任一計算結果卡片">
                         <svg class="w-4 h-4 mr-1.5 text-current"><use href="#icon-reply"></use></svg>
                         預設回覆
                     </button>
@@ -382,8 +370,8 @@
                 </div>
 
                 <!-- ClCr (Cockcroft-Gault) -->
-                <div id="card-clcr" onclick="selectResultCard('clcr', '肌酸酐清除率 ClCr', 'mL/min')" role="button" aria-label="選擇肌酸酐清除率結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-blue-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1.5 rounded-full bg-gray-50 hover:bg-blue-50 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" onclick="event.stopPropagation(); showInfoModal('clcr')">
+                <div id="card-clcr" role="button" aria-label="選擇肌酸酐清除率結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-blue-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                    <button type="button" class="info-trigger absolute top-3 right-3 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1.5 rounded-full bg-gray-50 hover:bg-blue-50 dark:bg-gray-700/50 dark:hover:bg-blue-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" data-target="clcr">
                         <svg class="w-4 h-4 text-current"><use href="#icon-arrow-right"></use></svg>
                     </button>
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors pointer-events-none">肌酸酐清除率 ClCr</p>
@@ -394,8 +382,8 @@
                 </div>
 
                 <!-- eGFR (CKD-EPI 2021) -->
-                <div id="card-ckdepi" onclick="selectResultCard('ckdepi', 'eGFR CKD-EPI 2021', 'mL/min/1.73 m²')" role="button" aria-label="選擇eGFR CKD-EPI結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-emerald-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 p-1.5 rounded-full bg-gray-50 hover:bg-emerald-50 dark:bg-gray-700/50 dark:hover:bg-emerald-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" onclick="event.stopPropagation(); showInfoModal('ckdepi')">
+                <div id="card-ckdepi" role="button" aria-label="選擇eGFR CKD-EPI結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-emerald-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                    <button type="button" class="info-trigger absolute top-3 right-3 text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 p-1.5 rounded-full bg-gray-50 hover:bg-emerald-50 dark:bg-gray-700/50 dark:hover:bg-emerald-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" data-target="ckdepi">
                         <svg class="w-4 h-4 text-current"><use href="#icon-arrow-right"></use></svg>
                     </button>
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors pointer-events-none">eGFR (CKD-EPI 2021)</p>
@@ -404,8 +392,8 @@
                 </div>
                 
                 <!-- eGFR (Taiwanese MDRD) -->
-                <div id="card-taiwanese_mdrd" onclick="selectResultCard('taiwanese_mdrd', 'eGFR Taiwanese MDRD', 'mL/min/1.73 m²')" role="button" aria-label="選擇eGFR Taiwanese MDRD結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-orange-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 p-1.5 rounded-full bg-gray-50 hover:bg-orange-50 dark:bg-gray-700/50 dark:hover:bg-orange-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" onclick="event.stopPropagation(); showInfoModal('taiwanese_mdrd')">
+                <div id="card-taiwanese_mdrd" role="button" aria-label="選擇eGFR Taiwanese MDRD結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-orange-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                    <button type="button" class="info-trigger absolute top-3 right-3 text-gray-400 hover:text-orange-600 dark:hover:text-orange-400 p-1.5 rounded-full bg-gray-50 hover:bg-orange-50 dark:bg-gray-700/50 dark:hover:bg-orange-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" data-target="taiwanese_mdrd">
                         <svg class="w-4 h-4 text-current"><use href="#icon-arrow-right"></use></svg>
                     </button>
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors pointer-events-none">eGFR (Taiwanese MDRD)</p>
@@ -414,8 +402,8 @@
                 </div>
 
                 <!-- eGFR (MDRD-4) 美國 -->
-                <div id="card-mdrd" onclick="selectResultCard('mdrd', 'eGFR MDRD-4 美國', 'mL/min/1.73 m²')" role="button" aria-label="選擇eGFR MDRD-4結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-amber-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 p-1.5 rounded-full bg-gray-50 hover:bg-amber-50 dark:bg-gray-700/50 dark:hover:bg-amber-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" onclick="event.stopPropagation(); showInfoModal('mdrd')">
+                <div id="card-mdrd" role="button" aria-label="選擇eGFR MDRD-4結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-amber-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                    <button type="button" class="info-trigger absolute top-3 right-3 text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 p-1.5 rounded-full bg-gray-50 hover:bg-amber-50 dark:bg-gray-700/50 dark:hover:bg-amber-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" data-target="mdrd">
                         <svg class="w-4 h-4 text-current"><use href="#icon-arrow-right"></use></svg>
                     </button>
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors pointer-events-none">eGFR (MDRD-4) 美國</p>
@@ -424,8 +412,8 @@
                 </div>
 
                 <!-- eGFR (Schwartz) -->
-                <div id="card-schwartz" onclick="selectResultCard('schwartz', 'eGFR Schwartz Bedside 2009', 'mL/min/1.73 m²')" role="button" aria-label="選擇eGFR Schwartz結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-purple-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 p-1.5 rounded-full bg-gray-50 hover:bg-purple-50 dark:bg-gray-700/50 dark:hover:bg-purple-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" onclick="event.stopPropagation(); showInfoModal('schwartz')">
+                <div id="card-schwartz" role="button" aria-label="選擇eGFR Schwartz結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-purple-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                    <button type="button" class="info-trigger absolute top-3 right-3 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 p-1.5 rounded-full bg-gray-50 hover:bg-purple-50 dark:bg-gray-700/50 dark:hover:bg-purple-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" data-target="schwartz">
                         <svg class="w-4 h-4 text-current"><use href="#icon-arrow-right"></use></svg>
                     </button>
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors pointer-events-none">eGFR (Schwartz Bedside 2009)</p>
@@ -434,8 +422,8 @@
                 </div>
                 
                 <!-- eGFR (CKiD U25 Creatinine) -->
-                <div id="card-ckid" onclick="selectResultCard('ckid', 'eGFR CKiD U25 Creatinine', 'mL/min/1.73 m²')" role="button" aria-label="選擇eGFR CKiD U25結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-rose-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 p-1.5 rounded-full bg-gray-50 hover:bg-rose-50 dark:bg-gray-700/50 dark:hover:bg-rose-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" onclick="event.stopPropagation(); showInfoModal('ckid')">
+                <div id="card-ckid" role="button" aria-label="選擇eGFR CKiD U25結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-rose-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                    <button type="button" class="info-trigger absolute top-3 right-3 text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 p-1.5 rounded-full bg-gray-50 hover:bg-rose-50 dark:bg-gray-700/50 dark:hover:bg-rose-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" data-target="ckid">
                         <svg class="w-4 h-4 text-current"><use href="#icon-arrow-right"></use></svg>
                     </button>
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors pointer-events-none">eGFR (CKiD U25 Creatinine)</p>
@@ -452,22 +440,22 @@
                 </div>
 
                 <!-- BMI -->
-                <div id="card-bmi" onclick="selectResultCard('bmi', '身體質量指數 BMI', 'kg/m²')" role="button" aria-label="選擇BMI結果" class="result-card cursor-pointer bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                <div id="card-bmi" role="button" aria-label="選擇BMI結果" class="result-card cursor-pointer bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors pointer-events-none">身體質量指數 BMI</p>
                     <p id="result-bmi" class="text-3xl font-extrabold text-cyan-600 dark:text-cyan-400 mt-2 pointer-events-none">-</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 pointer-events-none">kg/m²</p>
                 </div>
 
                 <!-- BSA -->
-                <div id="card-bsa" onclick="selectResultCard('bsa', '體表面積 BSA', 'm²')" role="button" aria-label="選擇BSA結果" class="result-card cursor-pointer bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                <div id="card-bsa" role="button" aria-label="選擇BSA結果" class="result-card cursor-pointer bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors pointer-events-none">體表面積 BSA</p>
                     <p id="result-bsa" class="text-3xl font-extrabold text-cyan-600 dark:text-cyan-400 mt-2 pointer-events-none">-</p>
                     <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 pointer-events-none">m² (Mosteller)</p>
                 </div>
                 
                 <!-- BMR -->
-                <div id="card-bmr" onclick="selectResultCard('bmr', '基礎代謝率 BMR', 'kcal/天')" role="button" aria-label="選擇BMR結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-fuchsia-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
-                    <button class="absolute top-3 right-3 text-gray-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-400 p-1.5 rounded-full bg-gray-50 hover:bg-fuchsia-50 dark:bg-gray-700/50 dark:hover:bg-fuchsia-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" onclick="event.stopPropagation(); showInfoModal('bmr')">
+                <div id="card-bmr" role="button" aria-label="選擇BMR結果" class="result-card cursor-pointer relative bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm hover:shadow-md border border-l-4 border-l-fuchsia-500 dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 group">
+                    <button type="button" class="info-trigger absolute top-3 right-3 text-gray-400 hover:text-fuchsia-600 dark:hover:text-fuchsia-400 p-1.5 rounded-full bg-gray-50 hover:bg-fuchsia-50 dark:bg-gray-700/50 dark:hover:bg-fuchsia-900/30 transition-colors active:scale-95" aria-label="查看公式資訊" data-target="bmr">
                         <svg class="w-4 h-4 text-current"><use href="#icon-arrow-right"></use></svg>
                     </button>
                     <p class="text-sm font-semibold text-gray-500 dark:text-gray-400 group-hover:text-fuchsia-600 dark:group-hover:text-fuchsia-400 transition-colors pointer-events-none">基礎代謝率 BMR</p>
@@ -492,14 +480,14 @@
     </div>
 
     <!-- 彈出視窗 (Modal) -->
-    <div id="info-modal" class="modal-overlay" onclick="closeInfoModal()" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div id="info-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content w-[95%] md:w-3/4 max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 overflow-y-auto max-h-[85vh] border border-gray-100 dark:border-gray-700" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-gray-700 pb-4">
                 <h3 id="modal-title" class="text-2xl font-bold text-teal-700 dark:text-teal-400 flex items-center">
                     <svg class="w-6 h-6 mr-2 text-current"><use href="#icon-arrow-right"></use></svg>
                     公式資訊
                 </h3>
-                <button class="text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" aria-label="關閉視窗" onclick="closeInfoModal()">
+                <button type="button" class="modal-close text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" aria-label="關閉視窗" data-modal="info-modal">
                     <svg class="w-6 h-6 text-current"><use href="#icon-close"></use></svg>
                 </button>
             </div>
@@ -510,21 +498,21 @@
     </div>
 
     <!-- 預設回覆視窗 (Modal) -->
-    <div id="reply-modal" class="modal-overlay" onclick="closeReplyModal()" role="dialog" aria-modal="true">
+    <div id="reply-modal" class="modal-overlay" role="dialog" aria-modal="true">
         <div class="modal-content w-[95%] md:w-3/4 max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100 dark:border-gray-700" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-4">
                 <h3 class="text-xl font-bold text-teal-700 dark:text-teal-400 flex items-center">
                     <svg class="w-6 h-6 mr-2 text-current"><use href="#icon-reply"></use></svg>
                     預設回覆範本
                 </h3>
-                <button class="text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" aria-label="關閉視窗" onclick="closeReplyModal()">
+                <button type="button" class="modal-close text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus:outline-none" aria-label="關閉視窗" data-modal="reply-modal">
                     <svg class="w-6 h-6 text-current"><use href="#icon-close"></use></svg>
                 </button>
             </div>
             <div class="mb-5">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 gap-2">
                     <p class="text-sm text-gray-500 dark:text-gray-400">您可以直接複製下方文案，並在結尾留白處補充您的專業建議：</p>
-                    <button onclick="toggleTemplateSettings()" aria-label="範本設定" class="text-xs text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-bold bg-teal-50 dark:bg-gray-700 px-3 py-1.5 rounded-lg border border-teal-200 dark:border-gray-600 shadow-sm transition">⚙️ 範本設定</button>
+                    <button type="button" id="toggle-settings-btn" aria-label="範本設定" class="text-xs text-teal-700 dark:text-teal-400 hover:text-teal-800 dark:hover:text-teal-300 font-bold bg-teal-50 dark:bg-gray-700 px-3 py-1.5 rounded-lg border border-teal-200 dark:border-gray-600 shadow-sm transition">⚙️ 範本設定</button>
                 </div>
                 
                 <!-- 範本設定區塊 -->
@@ -539,15 +527,15 @@
                     </p>
                     <textarea id="custom-template-input" aria-label="編輯範本內容" class="w-full h-40 mb-3 p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 resize-none leading-relaxed"></textarea>
                     <div class="flex justify-end gap-3">
-                        <button onclick="resetTemplateSettings()" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-lg shadow font-semibold transition">還原預設</button>
-                        <button onclick="saveTemplateSettings()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-lg shadow font-semibold transition">儲存並套用</button>
+                        <button type="button" id="reset-template-btn" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1.5 rounded-lg shadow font-semibold transition">還原預設</button>
+                        <button type="button" id="save-template-btn" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-1.5 rounded-lg shadow font-semibold transition">儲存並套用</button>
                     </div>
                 </div>
 
                 <textarea id="reply-textarea" aria-label="預設回覆內容" class="w-full h-32 p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-colors resize-none leading-relaxed"></textarea>
             </div>
             <div class="flex justify-end">
-                <button onclick="copyReplyText()" aria-label="複製文案" class="flex items-center px-6 py-3 bg-teal-600 dark:bg-teal-500 text-white font-bold rounded-xl shadow hover:bg-teal-700 dark:hover:bg-teal-600 transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/50">
+                <button type="button" id="copy-reply-btn" aria-label="複製文案" class="flex items-center px-6 py-3 bg-teal-600 dark:bg-teal-500 text-white font-bold rounded-xl shadow hover:bg-teal-700 dark:hover:bg-teal-600 transition-all duration-300 active:scale-95 focus:outline-none focus:ring-2 focus:ring-teal-500/50">
                     <svg class="w-5 h-5 mr-2 text-current"><use href="#icon-copy"></use></svg>
                     複製文案
                 </button>
@@ -556,14 +544,14 @@
     </div>
 
     <!-- 歷史紀錄視窗 (Modal) -->
-    <div id="history-modal" class="modal-overlay" onclick="closeHistoryModal()" role="dialog" aria-modal="true">
+    <div id="history-modal" class="modal-overlay" role="dialog" aria-modal="true">
         <div class="modal-content w-[95%] sm:w-[350px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-5 border border-gray-100 dark:border-gray-700" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-teal-600 dark:text-teal-400 text-current"><use href="#icon-history"></use></svg>
                     最近 5 筆紀錄
                 </h3>
-                <button class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="關閉視窗" onclick="closeHistoryModal()">
+                <button type="button" class="modal-close text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="關閉視窗" data-modal="history-modal">
                     <svg class="w-5 h-5 text-current"><use href="#icon-close"></use></svg>
                 </button>
             </div>
@@ -574,14 +562,14 @@
     </div>
 
     <!-- KDIGO 分期視窗 (Modal) -->
-    <div id="kdigo-modal" class="modal-overlay" onclick="closeKdigoModal()" role="dialog" aria-modal="true">
+    <div id="kdigo-modal" class="modal-overlay" role="dialog" aria-modal="true">
         <div class="modal-content w-[95%] md:w-[600px] bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100 dark:border-gray-700" onclick="event.stopPropagation()">
             <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
                 <h3 class="text-xl font-bold text-indigo-700 dark:text-indigo-400 flex items-center">
                     <svg class="w-6 h-6 mr-2 text-current"><use href="#icon-kdigo"></use></svg>
                     KDIGO 慢性腎臟病分期
                 </h3>
-                <button class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="關閉視窗" onclick="closeKdigoModal()">
+                <button type="button" class="modal-close text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition" aria-label="關閉視窗" data-modal="kdigo-modal">
                     <svg class="w-6 h-6 text-current"><use href="#icon-close"></use></svg>
                 </button>
             </div>
@@ -647,81 +635,76 @@
 
     <!-- 行動裝置浮動操作面板 (Sticky FAB) -->
     <div id="mobile-fab" class="fixed bottom-6 right-6 flex flex-col gap-3 z-40 transition-all duration-300 translate-y-32 opacity-0 pointer-events-none sm:hidden">
-        <button onclick="clearParameters(); window.scrollTo({top:0, behavior:'smooth'});" aria-label="清除參數" class="w-12 h-12 bg-rose-500 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-rose-600 active:scale-90 transition-transform focus:outline-none focus:ring-4 focus:ring-rose-500/50" title="清除參數">
+        <button type="button" id="fab-clear" aria-label="清除參數" class="w-12 h-12 bg-rose-500 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-rose-600 active:scale-90 transition-transform focus:outline-none focus:ring-4 focus:ring-rose-500/50" title="清除參數">
             <svg class="w-5 h-5 text-current"><use href="#icon-clear"></use></svg>
         </button>
-        <button onclick="window.scrollTo({top:0, behavior:'smooth'})" aria-label="回到頂端" class="w-12 h-12 bg-teal-600 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-teal-700 active:scale-90 transition-transform focus:outline-none focus:ring-4 focus:ring-teal-500/50" title="回到頂端">
+        <button type="button" id="fab-top" aria-label="回到頂端" class="w-12 h-12 bg-teal-600 text-white rounded-full shadow-xl flex items-center justify-center hover:bg-teal-700 active:scale-90 transition-transform focus:outline-none focus:ring-4 focus:ring-teal-500/50" title="回到頂端">
             <svg class="w-6 h-6 text-current"><use href="#icon-up"></use></svg>
         </button>
     </div>
 
+    <!-- 優化後的核心邏輯 -->
     <script>
-        // === 字體大小縮放邏輯 ===
-        let currentFontSize = parseInt(safeGetLocalStorage('app-font-size')) || 100;
-        function changeFontSize(step) {
-            currentFontSize += step;
-            if (currentFontSize < 80) currentFontSize = 80;
-            if (currentFontSize > 130) currentFontSize = 130;
-            document.documentElement.style.fontSize = currentFontSize + '%';
-            safeSetLocalStorage('app-font-size', currentFontSize);
-        }
+        // 集中管理 DOM 節點快取 (DOM Element Cache)
+        const Els = {
+            age: document.getElementById('age'),
+            height: document.getElementById('height'),
+            actualWeight: document.getElementById('actual-weight'),
+            scr: document.getElementById('scr'),
+            idealWeightInput: document.getElementById('ideal-weight'),
+            adjustedWeightInput: document.getElementById('adjusted-weight'),
+            errorMsg: document.getElementById('error-message'),
+            resultsSec: document.getElementById('results-section'),
+            skeletonSec: document.getElementById('results-skeleton'),
+            
+            // Buttons
+            btnActual: document.getElementById('calculate-btn'),
+            btnIbw: document.getElementById('calculate-ibw-btn'),
+            btnAbw: document.getElementById('calculate-abw-btn'),
+            btnClear: document.getElementById('clear-params-btn'),
+            btnKdigo: document.getElementById('kdigo-btn'),
+            btnReply: document.getElementById('reply-template-btn'),
+            fabClear: document.getElementById('fab-clear'),
+            fabTop: document.getElementById('fab-top'),
+            
+            // Result fields
+            resBmi: document.getElementById('result-bmi'),
+            resBsa: document.getElementById('result-bsa'),
+            resBmr: document.getElementById('result-bmr'),
+            resClcr: document.getElementById('result-clcr'),
+            resMdrd: document.getElementById('result-mdrd'),
+            resTwMdrd: document.getElementById('result-taiwan-mdrd'),
+            resCkdepi: document.getElementById('result-ckdepi'),
+            resSchwartz: document.getElementById('result-schwartz'),
+            resCkid: document.getElementById('result-ckid'),
+            
+            // Cards & Modals
+            cards: document.querySelectorAll('.result-card'),
+            kdigoRows: document.querySelectorAll('.kdigo-row')
+        };
 
-        // === 深色模式切換邏輯 ===
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        const darkIcon = document.getElementById('theme-toggle-dark-icon');
-        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        // 狀態集中管理 (Centralized State Management)
+        const AppState = {
+            isCalculated: false,
+            currentClCrWeightUsage: 'actual',
+            calculatedIBW: null,
+            calculatedAdjBW: null,
+            ibwDisplay: '',
+            adjbwDisplay: '',
+            weightLabel: '',
+            scrLabel: '',
+            currentResults: {
+                bmi: '-', bsa: '-', bmr: '-', clcr: '-', mdrd: '-', 
+                taiwanese_mdrd: '-', ckdepi: '-', schwartz: '-', ckid: '-'
+            },
+            selectedResultId: null,
+            selectedResultName: '',
+            selectedResultUnit: '',
+            DEFAULT_IDEAL_BMI: 22.0,
+            DEFAULT_REPLY_TEMPLATE: `親愛的醫師您好，\n\n依據個案之腎功能計算結果 ([指標名稱])，數值為 [數值] [單位]，建議可依照個案之現狀[處置建議]：\n\n[請在此處輸入您的建議...]\n\n以上建議供參，藥劑科敬上`,
+            history: JSON.parse(safeGetLocalStorage('renalCalcHistory') || '[]')
+        };
 
-        // 初始化圖示
-        if (document.documentElement.classList.contains('dark')) {
-            lightIcon.classList.remove('hidden');
-        } else {
-            darkIcon.classList.remove('hidden');
-        }
-
-        themeToggleBtn.addEventListener('click', function() {
-            // 切換圖示
-            darkIcon.classList.toggle('hidden');
-            lightIcon.classList.toggle('hidden');
-
-            // 切換主題並儲存
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                safeSetLocalStorage('color-theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                safeSetLocalStorage('color-theme', 'dark');
-            }
-        });
-
-        // === 獲取 DOM 元素 ===
-        const ageInput = document.getElementById('age');
-        const heightInput = document.getElementById('height');
-        const actualWeightInput = document.getElementById('actual-weight');
-        const scrInput = document.getElementById('scr');
-        const idealWeightInput = document.getElementById('ideal-weight');
-        const adjustedWeightInput = document.getElementById('adjusted-weight');
-        const errorMessage = document.getElementById('error-message');
-        const resultsSection = document.getElementById('results-section');
-        const skeletonSection = document.getElementById('results-skeleton');
-        const infoModal = document.getElementById('info-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalBody = document.getElementById('modal-body');
-
-        const btnActual = document.getElementById('calculate-btn');
-        const calculateIBWBtn = document.getElementById('calculate-ibw-btn');
-        const calculateABWBtn = document.getElementById('calculate-abw-btn');
-        const calcBtns = [btnActual, calculateIBWBtn, calculateABWBtn, document.getElementById('clear-params-btn')];
-        
-        let calculatedIBW = null;
-        let calculatedAdjBW = null;
-        let currentClCrWeightUsage = 'actual'; 
-        let isCalculated = false; 
-        const DEFAULT_IDEAL_BMI = 22.0;
-        
-        // 預設回覆範本文本
-        const DEFAULT_REPLY_TEMPLATE = `親愛的醫師您好，\n\n依據個案之腎功能計算結果 ([指標名稱])，數值為 [數值] [單位]，建議可依照個案之現狀[處置建議]：\n\n[請在此處輸入您的建議...]\n\n以上建議供參，藥劑科敬上`;
-
-        // === 公式資訊內容 ===
         const formulaDetails = {
             'weight_guide': {
                 title: '體重選擇考量與計算公式',
@@ -765,7 +748,7 @@
                     <h4 class="font-bold text-lg text-teal-700 dark:text-teal-400 mt-6">理想體重 (IBW) - BMI 反推法</h4>
                     <p class="text-sm text-gray-600 dark:text-gray-400">單位: 公斤 (kg)</p>
                     <p class="text-center p-3 bg-gray-100 dark:bg-gray-900 rounded-xl overflow-x-auto text-sm font-mono leading-relaxed border border-gray-200 dark:border-gray-700 shadow-inner mt-2 text-gray-800 dark:text-gray-300">
-                        IBW (kg) = 理想 BMI (預設 ${DEFAULT_IDEAL_BMI}) * (身高 (m))²
+                        IBW (kg) = 理想 BMI (預設 ${AppState.DEFAULT_IDEAL_BMI}) * (身高 (m))²
                     </p>
                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">適用對象: 尤其適用於因老化或疾病導致身高縮短的<strong>老年人</strong>，以及身高 &lt;152.4cm 的個體。</p>
                     
@@ -940,22 +923,123 @@
             },
         };
 
-        function showInfoModal(formulaId) {
-            const detail = formulaDetails[formulaId];
-            if (detail) {
-                modalTitle.innerHTML = detail.title;
-                modalBody.innerHTML = detail.content;
-                infoModal.classList.add('active');
+        // UI 事件綁定與控制
+        function bindEvents() {
+            // Modals
+            document.querySelectorAll('.info-trigger').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const targetId = btn.getAttribute('data-target');
+                    const detail = formulaDetails[targetId];
+                    if (detail) {
+                        const infoModal = document.getElementById('info-modal');
+                        const modalTitle = document.getElementById('modal-title');
+                        const modalBody = document.getElementById('modal-body');
+                        if(modalTitle) modalTitle.innerHTML = `<svg class="w-6 h-6 mr-2 text-current"><use href="#icon-arrow-right"></use></svg>${detail.title}`;
+                        if(modalBody) modalBody.innerHTML = detail.content;
+                        if(infoModal) infoModal.classList.add('active');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const targetModal = document.getElementById(btn.getAttribute('data-modal'));
+                    if (targetModal) targetModal.classList.remove('active');
+                });
+            });
+
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', () => overlay.classList.remove('active'));
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+                }
+            });
+
+            // 結果卡片選取
+            if(Els.cards) {
+                Els.cards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        selectResultCard(card);
+                    });
+                });
+            }
+
+            // 鍵盤與輸入框事件 (防抖)
+            const inputs = document.querySelectorAll('#input-section input[type="number"]');
+            inputs.forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault(); 
+                        processCalculation(() => calculateRenalFunction('actual'), true);
+                        saveToHistoryNow(); 
+                    }
+                });
+                input.addEventListener('input', handleInputDebounce);
+            });
+
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if(AppState.isCalculated) handleInputDebounce();
+                });
+            });
+
+            // FAB 滾動顯示
+            window.addEventListener('scroll', () => {
+                const fab = document.getElementById('mobile-fab');
+                if (!fab) return;
+                if (window.scrollY > 300) {
+                    fab.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
+                } else {
+                    fab.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
+                }
+            });
+
+            // === 修復所有按鈕的功能綁定 ===
+            if(Els.btnActual) {
+                Els.btnActual.addEventListener('click', () => {
+                    processCalculation(() => calculateRenalFunction('actual'), true);
+                    clearTimeout(historySaveTimer);
+                    saveToHistoryNow();
+                });
+            }
+            if(Els.btnIbw) {
+                Els.btnIbw.addEventListener('click', () => recalculateWithWeight('IBW'));
+            }
+            if(Els.btnAbw) {
+                Els.btnAbw.addEventListener('click', () => recalculateWithWeight('ABW'));
+            }
+            if(Els.btnClear) {
+                Els.btnClear.addEventListener('click', () => {
+                    clearParameters(); 
+                    window.scrollTo({top:0, behavior:'smooth'});
+                });
+            }
+            if(Els.btnKdigo) {
+                Els.btnKdigo.addEventListener('click', openKdigoModal);
+            }
+            if(Els.btnReply) {
+                Els.btnReply.addEventListener('click', openReplyModal);
+            }
+            if(Els.fabClear) {
+                Els.fabClear.addEventListener('click', () => {
+                    clearParameters(); 
+                    window.scrollTo({top:0, behavior:'smooth'});
+                });
+            }
+            if(Els.fabTop) {
+                Els.fabTop.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
             }
         }
 
-        function closeInfoModal() {
-            infoModal.classList.remove('active');
-        }
-
+        // === 核心驗證邏輯 ===
         function validateInputs(showError = true) {
             let isValid = true;
             const checkField = (inputElement, errorElementId, errorMsg) => {
+                if (!inputElement) return;
                 const val = parseFloat(inputElement.value);
                 const errorEl = document.getElementById(errorElementId);
                 if (isNaN(val) || val <= 0) {
@@ -973,101 +1057,141 @@
                 }
             };
             
-            checkField(ageInput, 'error-age', '請輸入有效年齡');
-            checkField(heightInput, 'error-height', '請輸入有效身高');
-            checkField(actualWeightInput, 'error-actual-weight', '請輸入有效體重');
-            checkField(scrInput, 'error-scr', '請輸入有效數值');
+            checkField(Els.age, 'error-age', '請輸入有效年齡');
+            checkField(Els.height, 'error-height', '請輸入有效身高');
+            checkField(Els.actualWeight, 'error-actual-weight', '請輸入有效體重');
+            checkField(Els.scr, 'error-scr', '請輸入有效數值');
 
-            if (!isValid && showError) {
-                resultsSection.classList.add('hidden');
+            if (!isValid && showError && Els.resultsSec) {
+                Els.resultsSec.classList.add('hidden');
             }
             return isValid;
         }
 
         // === 按鈕外觀與狀態管理 ===
         function setButtonsState(disabled) {
-            calcBtns.forEach(btn => {
+            [Els.btnActual, Els.btnIbw, Els.btnAbw, Els.btnClear].forEach(btn => {
                 if(btn) btn.disabled = disabled;
             });
         }
 
         function updateActiveButtonUI(activeType) {
-            // 重置所有按鈕外觀
-            [btnActual, calculateIBWBtn, calculateABWBtn].forEach(btn => {
+            [Els.btnActual, Els.btnIbw, Els.btnAbw].forEach(btn => {
                 if (!btn) return;
                 btn.classList.remove('ring-4', 'ring-offset-2', 'dark:ring-offset-gray-900', 'scale-105');
                 btn.classList.add('opacity-90');
             });
 
-            // 標示目前啟用的按鈕
-            if (activeType === 'actual' && btnActual) {
-                btnActual.classList.add('ring-4', 'ring-offset-2', 'dark:ring-offset-gray-900', 'scale-105');
-                btnActual.classList.remove('opacity-90');
-            } else if (activeType === 'IBW' && calculateIBWBtn) {
-                calculateIBWBtn.classList.add('ring-4', 'ring-offset-2', 'dark:ring-offset-gray-900', 'scale-105');
-                calculateIBWBtn.classList.remove('opacity-90');
-            } else if (activeType === 'ABW' && calculateABWBtn) {
-                calculateABWBtn.classList.add('ring-4', 'ring-offset-2', 'dark:ring-offset-gray-900', 'scale-105');
-                calculateABWBtn.classList.remove('opacity-90');
+            let activeBtn = null;
+            if (activeType === 'actual') activeBtn = Els.btnActual;
+            else if (activeType === 'IBW') activeBtn = Els.btnIbw;
+            else if (activeType === 'ABW') activeBtn = Els.btnAbw;
+
+            if (activeBtn) {
+                activeBtn.classList.add('ring-4', 'ring-offset-2', 'dark:ring-offset-gray-900', 'scale-105');
+                activeBtn.classList.remove('opacity-90');
             }
         }
 
-        // === 動態閃爍回饋 ===
         function flashClcrCard() {
             const card = document.getElementById('card-clcr');
             if (card) {
                 card.classList.remove('animate-flash');
-                void card.offsetWidth; // 觸發重繪 Reflow
+                void card.offsetWidth; // 觸發重繪 (Reflow)
                 card.classList.add('animate-flash');
             }
         }
 
-        // 骨架屏過渡載入包裝函數 (加入 showSkeleton 參數避免不必要的閃爍)
+        // === 分離計算與渲染：批次 DOM 更新 (Batch DOM Update) ===
+        function updateDOMWithResults() {
+            if(!Els.resBmi) return;
+
+            Els.resBmi.textContent = AppState.currentResults.bmi;
+            Els.resBsa.textContent = AppState.currentResults.bsa;
+            Els.resBmr.textContent = AppState.currentResults.bmr;
+            
+            Els.resClcr.innerHTML = `
+                <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">${AppState.currentResults.clcr}</span>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 leading-relaxed">
+                    mL/min (Cockcroft-Gault)<br>
+                    體重: ${AppState.weightLabel} | Scr: ${AppState.scrLabel} 
+                </p>
+            `;
+            
+            Els.resMdrd.textContent = AppState.currentResults.mdrd;
+            Els.resTwMdrd.textContent = AppState.currentResults.taiwanese_mdrd;
+            Els.resCkdepi.textContent = AppState.currentResults.ckdepi;
+            Els.resSchwartz.textContent = AppState.currentResults.schwartz;
+            
+            if (AppState.currentResults.ckid !== '-') {
+                Els.resCkid.textContent = AppState.currentResults.ckid;
+            } else {
+                Els.resCkid.innerHTML = '<span class="text-xl">N/A</span>';
+            }
+            
+            if(Els.idealWeightInput) Els.idealWeightInput.value = AppState.ibwDisplay;
+            if(Els.adjustedWeightInput) Els.adjustedWeightInput.value = AppState.adjbwDisplay;
+            
+            if(Els.btnIbw) Els.btnIbw.disabled = false;
+            if(Els.btnAbw) Els.btnAbw.disabled = (AppState.calculatedAdjBW === null);
+            if(Els.btnKdigo) Els.btnKdigo.disabled = false;
+        }
+
+        // === 骨架屏與渲染流控制 ===
         function processCalculation(callback, showSkeleton = true) {
             if (!validateInputs(showSkeleton)) return;
             
             clearSelection(); 
             
-            if (showSkeleton) {
-                resultsSection.classList.add('hidden');
-                resultsSection.classList.remove('animate-fade-in-up');
-                skeletonSection.classList.remove('hidden');
+            if (showSkeleton && Els.resultsSec && Els.skeletonSec) {
+                Els.resultsSec.classList.add('hidden');
+                Els.resultsSec.classList.remove('animate-fade-in-up');
+                Els.skeletonSec.classList.remove('hidden');
                 
                 setButtonsState(true);
 
                 setTimeout(() => {
-                    skeletonSection.classList.add('hidden');
+                    Els.skeletonSec.classList.add('hidden');
                     callback(); 
                     
-                    resultsSection.classList.remove('hidden');
-                    resultsSection.classList.add('animate-fade-in-up');
+                    Els.resultsSec.classList.remove('hidden');
+                    Els.resultsSec.classList.add('animate-fade-in-up');
                     
                     setButtonsState(false);
-                    if(calculatedAdjBW === null && calculateABWBtn) calculateABWBtn.disabled = true;
+                    if(AppState.calculatedAdjBW === null && Els.btnAbw) Els.btnAbw.disabled = true;
                     
                 }, 500);
             } else {
-                // 不顯示骨架屏，直接更新數值 (用於 Debounce 即時計算與改變單一設定)
                 callback();
                 setButtonsState(false);
-                if(calculatedAdjBW === null && calculateABWBtn) calculateABWBtn.disabled = true;
+                if(AppState.calculatedAdjBW === null && Els.btnAbw) Els.btnAbw.disabled = true;
+                
+                // 確保即時動態計算時，結果區塊也能正常顯示
+                if (Els.resultsSec && Els.resultsSec.classList.contains('hidden')) {
+                    Els.resultsSec.classList.remove('hidden');
+                    Els.resultsSec.classList.add('animate-fade-in-up');
+                }
             }
         }
 
-        // 實時動態計算 (Debounce)
+        // === 智慧防抖 (Smart Debounce & Dirty Check) ===
         let debounceTimer;
+        let lastInputSignature = '';
+
         function handleInputDebounce() {
-            const age = parseFloat(ageInput.value);
-            const height = parseFloat(heightInput.value);
-            const weight = parseFloat(actualWeightInput.value);
-            const scr = parseFloat(scrInput.value);
+            if(!Els.age || !Els.height || !Els.actualWeight || !Els.scr) return;
             
-            if (age > 0 && height > 0 && weight > 0 && scr > 0) {
+            const sig = `${Els.age.value}-${Els.height.value}-${Els.actualWeight.value}-${Els.scr.value}`;
+            if (sig === lastInputSignature) return; // 數值髒檢查，防止無效觸發
+
+            const a = parseFloat(Els.age.value), h = parseFloat(Els.height.value), w = parseFloat(Els.actualWeight.value), s = parseFloat(Els.scr.value);
+            if (a > 0 && h > 0 && w > 0 && s > 0) {
+                lastInputSignature = sig;
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     if (validateInputs(false)) {
                         // 輸入改變時，背景即時計算不顯示骨架屏
-                        processCalculation(() => calculateRenalFunction(currentClCrWeightUsage), false);
+                        processCalculation(() => calculateRenalFunction(AppState.currentClCrWeightUsage), false);
                         debouncedSaveToHistory();
                     }
                 }, 800); 
@@ -1075,80 +1199,36 @@
         }
 
         function handleOptionChange() {
-            if (validateInputs(false) && isCalculated) {
+            if (validateInputs(false) && AppState.isCalculated) {
                 // 選項改變時，背景即時計算不顯示骨架屏，並高亮受影響的卡片
                 processCalculation(() => {
-                    calculateRenalFunction(currentClCrWeightUsage);
+                    calculateRenalFunction(AppState.currentClCrWeightUsage);
                     flashClcrCard();
                 }, false);
             }
         }
 
-        function clearParameters() {
-            ageInput.value = ''; heightInput.value = '';
-            actualWeightInput.value = ''; scrInput.value = '';
-            idealWeightInput.value = ''; adjustedWeightInput.value = '';
-            
-            resultsSection.classList.add('hidden');
-            resultsSection.classList.remove('animate-fade-in-up');
-            skeletonSection.classList.add('hidden');
-            
-            [ageInput, heightInput, actualWeightInput, scrInput].forEach(el => {
-                if(el) el.classList.remove('border-rose-500', 'dark:border-rose-500', 'ring-2', 'ring-rose-200', 'dark:ring-rose-900');
-            });
-            ['error-age', 'error-height', 'error-actual-weight', 'error-scr'].forEach(id => {
-                const el = document.getElementById(id);
-                if(el) el.classList.add('hidden');
-            });
-
-            calculatedIBW = null; calculatedAdjBW = null;
-            currentClCrWeightUsage = 'actual'; isCalculated = false;
-
-            clearSelection();
-            updateActiveButtonUI(''); // 移除按鈕高亮
-            
-            const kdigoBtn = document.getElementById('kdigo-btn');
-            if (kdigoBtn) kdigoBtn.disabled = true;
-
-            if(calculateIBWBtn) calculateIBWBtn.disabled = true;
-            if(calculateABWBtn) calculateABWBtn.disabled = true;
-
-            const radioScr = document.querySelector('input[name="scr-source"][value="actual"]');
-            if (radioScr) radioScr.checked = true;
-            const radioIbw = document.querySelector('input[name="ibw-method"][value="devine"]');
-            if (radioIbw) radioIbw.checked = true;
-            
-            const adjbwNote = document.getElementById('adjbw-note');
-            if (adjbwNote) {
-                adjbwNote.innerHTML = '註:調整體重 (AdjBW) 僅在實際體重超過理想體重 (IBW) 時才會計算顯示。';
-                adjbwNote.className = 'text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium';
-            }
-            ageInput.focus();
-        }
-
+        // === 數學核心計算 ===
         function calculateRenalFunction(weightUsage = 'actual') {
-            currentClCrWeightUsage = weightUsage;
-            isCalculated = true; 
+            AppState.currentClCrWeightUsage = weightUsage;
+            AppState.isCalculated = true; 
             updateActiveButtonUI(weightUsage);
 
-            const age = parseFloat(ageInput.value); 
-            const heightCm = parseFloat(heightInput.value); 
-            const actualWeightKg = parseFloat(actualWeightInput.value); 
-            const actualScr = parseFloat(scrInput.value); 
+            const age = parseFloat(Els.age.value); 
+            const heightCm = parseFloat(Els.height.value); 
+            const actualWeightKg = parseFloat(Els.actualWeight.value); 
+            const actualScr = parseFloat(Els.scr.value); 
             const isMale = document.getElementById('male').checked;
 
-            // 1. 身體組成指標計算
+            // 1. BMI, BSA, IBW, BMR 運算
             const heightM = heightCm / 100; 
             const bmi = actualWeightKg / (heightM * heightM);
-            document.getElementById('result-bmi').textContent = bmi.toFixed(2);
-
             const bsa = Math.sqrt((heightCm * actualWeightKg) / 3600);
-            document.getElementById('result-bsa').textContent = bsa.toFixed(2);
 
             const heightInches = heightCm / 2.54;
-            const selectedIbwMethod = document.querySelector('input[name="ibw-method"]:checked').value;
-            let ibw;
-            let ibwMethodLabel;
+            const checkedIbw = document.querySelector('input[name="ibw-method"]:checked');
+            const selectedIbwMethod = checkedIbw ? checkedIbw.value : 'devine';
+            let ibw, ibwMethodLabel;
             const inchesOver5Feet = heightInches - 60;
             
             if (selectedIbwMethod === 'devine') {
@@ -1161,94 +1241,80 @@
                 ibw = isMale ? 56.2 + 1.41 * inchesOver5Feet : 53.1 + 1.36 * inchesOver5Feet;
                 ibwMethodLabel = 'Miller';
             } else { 
-                ibw = DEFAULT_IDEAL_BMI * (heightM * heightM);
+                ibw = AppState.DEFAULT_IDEAL_BMI * (heightM * heightM);
                 ibwMethodLabel = `BMI反推`;
             }
 
             const heightFormulaNote = document.getElementById('height-formula-note');
-            if (heightCm < 152.4) {
-                heightFormulaNote.classList.add('text-rose-500', 'dark:text-rose-400', 'font-bold');
-            } else {
-                heightFormulaNote.classList.remove('text-rose-500', 'dark:text-rose-400', 'font-bold');
+            if (heightFormulaNote) {
+                if (heightCm < 152.4) {
+                    heightFormulaNote.classList.add('text-rose-500', 'dark:text-rose-400', 'font-bold');
+                } else {
+                    heightFormulaNote.classList.remove('text-rose-500', 'dark:text-rose-400', 'font-bold');
+                }
             }
-            
+
+            AppState.calculatedIBW = ibw;
+            AppState.ibwDisplay = `${ibw.toFixed(2)} kg (${ibwMethodLabel})`;
+
             const adjbwNote = document.getElementById('adjbw-note');
-            if (actualWeightKg > (1.2 * ibw)) {
-                adjbwNote.innerHTML = '目前ABW > 120% IBW，請視狀況考慮以AdjBW估算ClCr。';
-                adjbwNote.className = 'text-xs text-rose-500 dark:text-rose-400 mt-2 font-bold';
-            } else {
-                adjbwNote.innerHTML = '註:調整體重 (AdjBW) 僅在實際體重超過理想體重 (IBW) 時才會計算顯示。';
-                adjbwNote.className = 'text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium';
-            }
-
-            calculatedIBW = ibw;
-            idealWeightInput.value = `${ibw.toFixed(2)} kg (${ibwMethodLabel})`; 
-
             if (actualWeightKg > ibw) {
-                calculatedAdjBW = ibw + 0.4 * (actualWeightKg - ibw);
-                adjustedWeightInput.value = calculatedAdjBW.toFixed(2);
-                if(calculateABWBtn) calculateABWBtn.disabled = false; 
+                AppState.calculatedAdjBW = ibw + 0.4 * (actualWeightKg - ibw);
+                AppState.adjbwDisplay = AppState.calculatedAdjBW.toFixed(2);
+                if (adjbwNote && actualWeightKg > (1.2 * ibw)) {
+                    adjbwNote.innerHTML = '目前ABW > 120% IBW，請視狀況考慮以AdjBW估算ClCr。';
+                    adjbwNote.className = 'text-xs text-rose-500 dark:text-rose-400 mt-2 font-bold';
+                } else if(adjbwNote) {
+                    adjbwNote.innerHTML = '註:調整體重 (AdjBW) 僅在實際體重超過理想體重 (IBW) 時才會計算顯示。';
+                    adjbwNote.className = 'text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium';
+                }
             } else {
-                calculatedAdjBW = null; 
-                adjustedWeightInput.value = 'N/A (非肥胖)';
-                if(calculateABWBtn) calculateABWBtn.disabled = true; 
+                AppState.calculatedAdjBW = null; 
+                AppState.adjbwDisplay = 'N/A (非肥胖)';
+                if (adjbwNote) {
+                    adjbwNote.innerHTML = '註:調整體重 (AdjBW) 僅在實際體重超過理想體重 (IBW) 時才會計算顯示。';
+                    adjbwNote.className = 'text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium';
+                }
             }
-            if(calculateIBWBtn) calculateIBWBtn.disabled = false;
-            
+
             let bmr = isMale 
                 ? (10 * actualWeightKg) + (6.25 * heightCm) - (5 * age) + 5
                 : (10 * actualWeightKg) + (6.25 * heightCm) - (5 * age) - 161;
-            document.getElementById('result-bmr').textContent = Math.round(bmr).toLocaleString('en-US'); 
 
-            // 2. 腎功能指標計算
+            // 2. 決定 ClCr 使用參數
             let weightToUse = actualWeightKg;
-            let weightLabel = '實際體重';
+            AppState.weightLabel = '實際體重';
 
             if (weightUsage === 'IBW') {
-                weightToUse = calculatedIBW;
-                weightLabel = `理想體重 (${ibwMethodLabel})`;
+                weightToUse = AppState.calculatedIBW;
+                AppState.weightLabel = `理想體重 (${ibwMethodLabel})`;
             } else if (weightUsage === 'ABW') {
-                weightToUse = calculatedAdjBW !== null ? calculatedAdjBW : actualWeightKg; 
-                weightLabel = calculatedAdjBW !== null ? '調整體重 (AdjBW)' : '實際體重';
+                weightToUse = AppState.calculatedAdjBW !== null ? AppState.calculatedAdjBW : actualWeightKg; 
+                AppState.weightLabel = AppState.calculatedAdjBW !== null ? '調整體重 (AdjBW)' : '實際體重';
             }
             
-            const selectedScrSource = document.querySelector('input[name="scr-source"]:checked').value;
+            const checkedScr = document.querySelector('input[name="scr-source"]:checked');
+            const selectedScrSource = checkedScr ? checkedScr.value : 'actual';
             let scrToUse = actualScr;
-            let scrLabel = actualScr.toFixed(2);
+            AppState.scrLabel = actualScr.toFixed(2);
             
-            if (selectedScrSource === '0.8') {
-                scrToUse = 0.8; scrLabel = '0.80 (強制)';
-            } else if (selectedScrSource === '1.0') {
-                scrToUse = 1.0; scrLabel = '1.00 (強制)';
-            }
+            if (selectedScrSource === '0.8') { scrToUse = 0.8; AppState.scrLabel = '0.80 (強制)'; }
+            else if (selectedScrSource === '1.0') { scrToUse = 1.0; AppState.scrLabel = '1.00 (強制)'; }
 
+            // 3. eGFR 公式
             let clcr = ((140 - age) * weightToUse) / (72 * scrToUse);
             if (!isMale) clcr *= 0.85;
-            
-            document.getElementById('result-clcr').innerHTML = `
-                <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">${clcr.toFixed(2)}</span>
-                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1 leading-relaxed">
-                    mL/min (Cockcroft-Gault)<br>
-                    體重: ${weightLabel} | Scr: ${scrLabel} 
-                </p>
-            `;
 
             let mdrd_base = 175 * Math.pow(actualScr, -1.154) * Math.pow(age, -0.203);
             if (!isMale) mdrd_base *= 0.742; 
-            
-            document.getElementById('result-mdrd').textContent = mdrd_base.toFixed(2);
-            document.getElementById('result-taiwan-mdrd').textContent = (mdrd_base * 0.945).toFixed(2);
 
             let kappa = isMale ? 0.9 : 0.7;
             let alpha = isMale ? -0.302 : -0.241;
             let femaleMultiplier = isMale ? 1.0 : 1.012;
-            
             const ratio = actualScr / kappa;
             const ckdepi = 142 * Math.pow(Math.min(ratio, 1), alpha) * Math.pow(Math.max(ratio, 1), -1.200) * Math.pow(0.9938, age) * femaleMultiplier;
-            document.getElementById('result-ckdepi').textContent = ckdepi.toFixed(2);
 
             const schwartz = (0.413 * heightCm) / actualScr;
-            document.getElementById('result-schwartz').textContent = schwartz.toFixed(2);
             
             let k_ckid = null;
             if (age >= 1 && age <= 25) {
@@ -1262,38 +1328,34 @@
                     else k_ckid = 41.4;
                 }
             }
+            const ckid_val = k_ckid !== null ? (k_ckid * (heightM / actualScr)).toFixed(2) : '-';
 
-            if (k_ckid !== null) {
-                document.getElementById('result-ckid').textContent = (k_ckid * (heightM / actualScr)).toFixed(2);
-                currentResults['ckid'] = (k_ckid * (heightM / actualScr)).toFixed(2);
-            } else {
-                document.getElementById('result-ckid').innerHTML = '<span class="text-xl">N/A</span>';
-                currentResults['ckid'] = '-';
-            }
-            
-            currentResults['bmi'] = document.getElementById('result-bmi').textContent;
-            currentResults['bsa'] = document.getElementById('result-bsa').textContent;
-            currentResults['bmr'] = document.getElementById('result-bmr').textContent;
-            currentResults['clcr'] = clcr.toFixed(2);
-            currentResults['mdrd'] = document.getElementById('result-mdrd').textContent;
-            currentResults['taiwanese_mdrd'] = document.getElementById('result-taiwan-mdrd').textContent;
-            currentResults['ckdepi'] = document.getElementById('result-ckdepi').textContent;
-            currentResults['schwartz'] = document.getElementById('result-schwartz').textContent;
+            // 4. 寫入狀態字典
+            AppState.currentResults = {
+                bmi: bmi.toFixed(2),
+                bsa: bsa.toFixed(2),
+                bmr: Math.round(bmr).toLocaleString('en-US'),
+                clcr: clcr.toFixed(2),
+                mdrd: mdrd_base.toFixed(2),
+                taiwanese_mdrd: (mdrd_base * 0.945).toFixed(2),
+                ckdepi: ckdepi.toFixed(2),
+                schwartz: schwartz.toFixed(2),
+                ckid: ckid_val
+            };
 
-            const kdigoBtn = document.getElementById('kdigo-btn');
-            if (kdigoBtn) kdigoBtn.disabled = false;
+            // 5. 批次更新畫面 DOM
+            updateDOMWithResults();
         }
 
         function recalculateWithWeight(type) {
-            if (!isCalculated) calculateRenalFunction('actual'); 
-
-            if (type === 'IBW' && calculatedIBW !== null) {
+            if (!AppState.isCalculated) calculateRenalFunction('actual'); 
+            if (type === 'IBW' && AppState.calculatedIBW !== null) {
                 processCalculation(() => {
                     calculateRenalFunction('IBW');
                     flashClcrCard();
                 }, false);
             } else if (type === 'ABW') {
-                if (calculatedAdjBW === null) {
+                if (AppState.calculatedAdjBW === null) {
                     processCalculation(() => calculateRenalFunction('actual'), false);
                 } else {
                     processCalculation(() => {
@@ -1304,86 +1366,91 @@
             }
         }
 
-        // 綁定鍵盤與動態事件
-        const inputs = document.querySelectorAll('#input-section input[type="number"]');
-        inputs.forEach(input => {
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    // 按 Enter 時有視覺骨架屏，並主動儲存歷史紀錄
-                    processCalculation(() => calculateRenalFunction('actual'), true);
-                    saveToHistoryNow(); 
-                }
-            });
-            input.addEventListener('input', handleInputDebounce);
-        });
-
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                if(isCalculated) handleInputDebounce();
-            });
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (infoModal && infoModal.classList.contains('active')) closeInfoModal();
-                const replyModal = document.getElementById('reply-modal');
-                if (replyModal && replyModal.classList.contains('active')) closeReplyModal();
-                const historyModal = document.getElementById('history-modal');
-                if (historyModal && historyModal.classList.contains('active')) closeHistoryModal();
-                const kdigoModal = document.getElementById('kdigo-modal');
-                if (kdigoModal && kdigoModal.classList.contains('active')) closeKdigoModal();
+        function clearParameters() {
+            if(Els.age) Els.age.value = '';
+            if(Els.height) Els.height.value = '';
+            if(Els.actualWeight) Els.actualWeight.value = '';
+            if(Els.scr) Els.scr.value = '';
+            if(Els.idealWeightInput) Els.idealWeightInput.value = '';
+            if(Els.adjustedWeightInput) Els.adjustedWeightInput.value = '';
+            
+            if(Els.resultsSec) {
+                Els.resultsSec.classList.add('hidden');
+                Els.resultsSec.classList.remove('animate-fade-in-up');
             }
-        });
+            if(Els.skeletonSec) Els.skeletonSec.classList.add('hidden');
+            
+            [Els.age, Els.height, Els.actualWeight, Els.scr].forEach(el => {
+                if(el) el.classList.remove('border-rose-500', 'dark:border-rose-500', 'ring-2', 'ring-rose-200', 'dark:ring-rose-900');
+            });
+            ['error-age', 'error-height', 'error-actual-weight', 'error-scr'].forEach(id => {
+                const el = document.getElementById(id);
+                if(el) el.classList.add('hidden');
+            });
 
-        // === 歷史紀錄 Debounce 與例外管理 ===
-        let calcHistory = JSON.parse(safeGetLocalStorage('renalCalcHistory') || '[]');
+            AppState.calculatedIBW = null; AppState.calculatedAdjBW = null;
+            AppState.currentClCrWeightUsage = 'actual'; AppState.isCalculated = false;
+
+            clearSelection();
+            updateActiveButtonUI(''); 
+            
+            if (Els.btnKdigo) Els.btnKdigo.disabled = true;
+            if(Els.btnIbw) Els.btnIbw.disabled = true;
+            if(Els.btnAbw) Els.btnAbw.disabled = true;
+
+            const radioScr = document.querySelector('input[name="scr-source"][value="actual"]');
+            if (radioScr) radioScr.checked = true;
+            const radioIbw = document.querySelector('input[name="ibw-method"][value="devine"]');
+            if (radioIbw) radioIbw.checked = true;
+            
+            const adjbwNote = document.getElementById('adjbw-note');
+            if (adjbwNote) {
+                adjbwNote.innerHTML = '註:調整體重 (AdjBW) 僅在實際體重超過理想體重 (IBW) 時才會計算顯示。';
+                adjbwNote.className = 'text-xs text-gray-500 dark:text-gray-400 mt-2 font-medium';
+            }
+            if(Els.age) Els.age.focus();
+        }
+
+        // === 歷史紀錄邏輯 ===
         let historySaveTimer;
 
         function debouncedSaveToHistory() {
             clearTimeout(historySaveTimer);
             historySaveTimer = setTimeout(() => {
                 saveToHistoryNow();
-            }, 2000); // 防抖 2 秒後儲存
+            }, 2000); 
         }
 
         function saveToHistoryNow() {
+            if(!Els.age || !Els.height || !Els.actualWeight || !Els.scr) return;
+
+            const maleChecked = document.getElementById('male') ? document.getElementById('male').checked : true;
             const data = {
                 time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                sex: document.getElementById('male').checked ? '男' : '女',
-                age: ageInput.value,
-                height: heightInput.value,
-                weight: actualWeightInput.value,
-                scr: scrInput.value
+                sex: maleChecked ? '男' : '女',
+                age: Els.age.value,
+                height: Els.height.value,
+                weight: Els.actualWeight.value,
+                scr: Els.scr.value
             };
 
-            if(calcHistory.length > 0) {
-                const last = calcHistory[0];
+            if(AppState.history.length > 0) {
+                const last = AppState.history[0];
                 if(last.age === data.age && last.height === data.height && last.weight === data.weight && last.scr === data.scr && last.sex === data.sex) return;
             }
-            calcHistory.unshift(data);
-            if(calcHistory.length > 5) calcHistory.pop();
-            safeSetLocalStorage('renalCalcHistory', JSON.stringify(calcHistory));
-        }
-
-        // 修改原本按鈕點擊觸發的行為，確保點按鈕時立即儲存
-        const actualCalcBtn = document.getElementById('calculate-btn');
-        if(actualCalcBtn) {
-            actualCalcBtn.onclick = () => {
-                processCalculation(() => calculateRenalFunction('actual'), true);
-                clearTimeout(historySaveTimer);
-                saveToHistoryNow();
-            };
+            AppState.history.unshift(data);
+            if(AppState.history.length > 5) AppState.history.pop();
+            safeSetLocalStorage('renalCalcHistory', JSON.stringify(AppState.history));
         }
 
         function renderHistoryUI() {
             const container = document.getElementById('history-list');
             if(!container) return;
-            if(calcHistory.length === 0) {
+            if(AppState.history.length === 0) {
                 container.innerHTML = '<p class="text-gray-500 text-center py-6 text-sm">尚無歷史紀錄</p>';
                 return;
             }
-            container.innerHTML = calcHistory.map((item, index) => `
+            container.innerHTML = AppState.history.map((item, index) => `
                 <div class="p-3 border border-gray-200 dark:border-gray-700 rounded-xl mb-2 hover:bg-teal-50 dark:hover:bg-gray-700 cursor-pointer transition-colors flex justify-between items-center group" onclick="loadHistory(${index})">
                     <div>
                         <div class="text-xs text-gray-400 dark:text-gray-500 mb-1 font-mono">${item.time}</div>
@@ -1395,16 +1462,17 @@
         }
 
         function loadHistory(index) {
-            const item = calcHistory[index];
+            const item = AppState.history[index];
             const maleRadio = document.getElementById('male');
             const femaleRadio = document.getElementById('female');
             if(item.sex === '男' && maleRadio) maleRadio.checked = true;
             if(item.sex === '女' && femaleRadio) femaleRadio.checked = true;
             
-            ageInput.value = item.age;
-            heightInput.value = item.height;
-            actualWeightInput.value = item.weight;
-            scrInput.value = item.scr;
+            if(Els.age) Els.age.value = item.age;
+            if(Els.height) Els.height.value = item.height;
+            if(Els.actualWeight) Els.actualWeight.value = item.weight;
+            if(Els.scr) Els.scr.value = item.scr;
+            
             closeHistoryModal();
             processCalculation(() => calculateRenalFunction('actual'), true);
         }
@@ -1421,8 +1489,8 @@
 
         // === KDIGO 邏輯 ===
         function openKdigoModal() {
-            const eGFR = parseFloat(currentResults['ckdepi']);
-            document.querySelectorAll('.kdigo-row').forEach(r => r.classList.remove('ring-4', 'ring-blue-500', 'dark:ring-blue-400', 'scale-[1.02]', 'z-10', 'bg-blue-50', 'dark:bg-gray-700'));
+            const eGFR = parseFloat(AppState.currentResults['ckdepi']);
+            if(Els.kdigoRows) Els.kdigoRows.forEach(r => r.classList.remove('ring-4', 'ring-blue-500', 'dark:ring-blue-400', 'scale-[1.02]', 'z-10', 'bg-blue-50', 'dark:bg-gray-700'));
             
             if (!isNaN(eGFR)) {
                 let rowId = '';
@@ -1444,65 +1512,46 @@
             if(kdigoModal) kdigoModal.classList.remove('active');
         }
 
-        // === 浮動面板 (FAB) 邏輯 ===
-        window.addEventListener('scroll', () => {
-            const fab = document.getElementById('mobile-fab');
-            if (!fab) return;
-            if (window.scrollY > 300) {
-                fab.classList.remove('translate-y-32', 'opacity-0', 'pointer-events-none');
-            } else {
-                fab.classList.add('translate-y-32', 'opacity-0', 'pointer-events-none');
-            }
-        });
+        // === 預設回覆邏輯 ===
+        function selectResultCard(cardEl) {
+            // 從元素中提取 ID 與屬性
+            const id = cardEl.id.replace('card-', '');
+            const rawName = cardEl.querySelector('p.text-sm')?.textContent || '';
+            const rawUnit = cardEl.querySelector('.text-xs')?.textContent.split('(')[0].trim() || '';
 
-        // === 預設回覆相關邏輯 ===
-        let selectedResultId = null;
-        let selectedResultName = '';
-        let selectedResultUnit = '';
-        let currentResults = {};
+            if(Els.cards) Els.cards.forEach(c => c.classList.remove('ring-4', 'ring-teal-500', 'ring-offset-2', 'dark:ring-offset-gray-900'));
 
-        function selectResultCard(id, name, unit) {
-            document.querySelectorAll('.result-card').forEach(card => {
-                card.classList.remove('ring-4', 'ring-teal-500', 'ring-offset-2', 'dark:ring-offset-gray-900');
-            });
+            AppState.selectedResultId = id;
+            AppState.selectedResultName = rawName;
+            AppState.selectedResultUnit = rawUnit;
 
-            selectedResultId = id;
-            selectedResultName = name;
-            selectedResultUnit = unit;
+            cardEl.classList.add('ring-4', 'ring-teal-500', 'ring-offset-2', 'dark:ring-offset-gray-900');
 
-            const card = document.getElementById(`card-${id}`);
-            if(card) {
-                card.classList.add('ring-4', 'ring-teal-500', 'ring-offset-2', 'dark:ring-offset-gray-900');
-            }
-
-            const replyBtn = document.getElementById('reply-template-btn');
-            if(replyBtn) replyBtn.disabled = false;
+            if(Els.btnReply) Els.btnReply.disabled = false;
         }
 
         function clearSelection() {
-            selectedResultId = null;
-            document.querySelectorAll('.result-card').forEach(card => {
-                card.classList.remove('ring-4', 'ring-teal-500', 'ring-offset-2', 'dark:ring-offset-gray-900');
-            });
-            const replyBtn = document.getElementById('reply-template-btn');
-            if(replyBtn) replyBtn.disabled = true;
+            AppState.selectedResultId = null;
+            if(Els.cards) Els.cards.forEach(c => c.classList.remove('ring-4', 'ring-teal-500', 'ring-offset-2', 'dark:ring-offset-gray-900'));
+            if(Els.btnReply) Els.btnReply.disabled = true;
         }
 
         function openReplyModal() {
-            if (!selectedResultId) return;
-            const val = currentResults[selectedResultId];
+            if (!AppState.selectedResultId) return;
+            const val = AppState.currentResults[AppState.selectedResultId];
             if (!val || val === 'NaN' || val === '-' || val.includes('N/A')) {
                 alert('請先確保該項目計算成功，再產生回覆。');
                 return;
             }
 
             let adviceContext = "調整藥物劑量";
-            if(selectedResultId === 'bmi' || selectedResultId === 'bsa' || selectedResultId === 'bmr') {
+            if(AppState.selectedResultId === 'bmi' || AppState.selectedResultId === 'bsa' || AppState.selectedResultId === 'bmr') {
                 adviceContext = "進行相關營養或體重管理規劃";
             }
 
             let savedTemplate = safeGetLocalStorage('reply-template');
             if (!savedTemplate) {
+                // 兼容舊資料格式
                 const oldPrefix = safeGetLocalStorage('reply-prefix') || '';
                 const oldSuffix = safeGetLocalStorage('reply-suffix') || '';
                 if (oldPrefix || oldSuffix) {
@@ -1511,17 +1560,19 @@
                     localStorage.removeItem('reply-suffix');
                     safeSetLocalStorage('reply-template', savedTemplate);
                 } else {
-                    savedTemplate = DEFAULT_REPLY_TEMPLATE;
+                    savedTemplate = AppState.DEFAULT_REPLY_TEMPLATE;
                 }
             }
 
             const finalText = savedTemplate
-                .replace(/\[指標名稱\]/g, selectedResultName)
+                .replace(/\[指標名稱\]/g, AppState.selectedResultName)
                 .replace(/\[數值\]/g, val)
-                .replace(/\[單位\]/g, selectedResultUnit)
+                .replace(/\[單位\]/g, AppState.selectedResultUnit)
                 .replace(/\[處置建議\]/g, adviceContext);
             
-            document.getElementById('reply-textarea').value = finalText;
+            const replyTextArea = document.getElementById('reply-textarea');
+            if(replyTextArea) replyTextArea.value = finalText;
+            
             const replyModal = document.getElementById('reply-modal');
             if(replyModal) replyModal.classList.add('active');
             
@@ -1539,18 +1590,21 @@
             if(panel) {
                 panel.classList.toggle('hidden');
                 if(!panel.classList.contains('hidden')) {
-                    document.getElementById('custom-template-input').value = safeGetLocalStorage('reply-template') || DEFAULT_REPLY_TEMPLATE;
+                    const customInput = document.getElementById('custom-template-input');
+                    if (customInput) customInput.value = safeGetLocalStorage('reply-template') || AppState.DEFAULT_REPLY_TEMPLATE;
                 }
             }
         }
         
         function saveTemplateSettings() {
-            safeSetLocalStorage('reply-template', document.getElementById('custom-template-input').value);
+            const customInput = document.getElementById('custom-template-input');
+            if (customInput) safeSetLocalStorage('reply-template', customInput.value);
             openReplyModal(); 
         }
 
         function resetTemplateSettings() {
-            document.getElementById('custom-template-input').value = DEFAULT_REPLY_TEMPLATE;
+            const customInput = document.getElementById('custom-template-input');
+            if (customInput) customInput.value = AppState.DEFAULT_REPLY_TEMPLATE;
         }
 
         function copyReplyText() {
@@ -1559,7 +1613,7 @@
                 textarea.select();
                 document.execCommand('copy');
                 
-                const btn = event.currentTarget;
+                const btn = document.getElementById('copy-reply-btn') || event.currentTarget;
                 const originalContent = btn.innerHTML;
                 btn.innerHTML = `<svg class="w-5 h-5 mr-2 text-current"><use href="#icon-check"></use></svg>複製成功！`;
                 btn.classList.replace('bg-teal-600', 'bg-emerald-600');
@@ -1572,6 +1626,45 @@
                 }, 2000);
             }
         }
+
+        // 初始化執行綁定
+        document.addEventListener('DOMContentLoaded', () => {
+            // === 深色模式切換邏輯 (移至 DOMContentLoaded 以確保綁定生效) ===
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const darkIcon = document.getElementById('theme-toggle-dark-icon');
+            const lightIcon = document.getElementById('theme-toggle-light-icon');
+
+            if (themeToggleBtn && darkIcon && lightIcon) {
+                if (document.documentElement.classList.contains('dark')) {
+                    lightIcon.classList.remove('hidden');
+                } else {
+                    darkIcon.classList.remove('hidden');
+                }
+
+                themeToggleBtn.addEventListener('click', function() {
+                    darkIcon.classList.toggle('hidden');
+                    lightIcon.classList.toggle('hidden');
+
+                    if (document.documentElement.classList.contains('dark')) {
+                        document.documentElement.classList.remove('dark');
+                        safeSetLocalStorage('color-theme', 'light');
+                    } else {
+                        document.documentElement.classList.add('dark');
+                        safeSetLocalStorage('color-theme', 'dark');
+                    }
+                });
+            }
+
+            // 因為部分按鈕在腳本執行時可能還未完成渲染，統一在 DOMContentLoaded 綁定事件
+            bindEvents();
+            
+            // 綁定按鈕事件 (取代原本寫死在 HTML 上的 onclick，避免記憶體洩漏與找不到函式)
+            document.getElementById('toggle-settings-btn')?.addEventListener('click', toggleTemplateSettings);
+            document.getElementById('reset-template-btn')?.addEventListener('click', resetTemplateSettings);
+            document.getElementById('save-template-btn')?.addEventListener('click', saveTemplateSettings);
+            document.getElementById('copy-reply-btn')?.addEventListener('click', copyReplyText);
+        });
+
     </script>
 </body>
 </html>
