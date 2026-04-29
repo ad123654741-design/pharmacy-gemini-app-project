@@ -1,230 +1,397 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>鴉片類止痛藥物等效劑量轉換器</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
         }
-        .container {
-            display: flex;
-            gap: 1.5rem;
-        }
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
+    </script>
+    <script>
+        // 初始化深色模式腳本
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
             }
         }
-        /* Style for special drugs in the select dropdown */
-        .red-text {
-            color: red;
+        initTheme();
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
         }
-        /* Custom styles for tables */
+
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 閃爍紅框防呆動畫 */
+        @keyframes flashRed {
+            0%, 100% { border-color: inherit; box-shadow: inherit; }
+            50% { border-color: #ef4444; box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2); }
+        }
+        .flash-red {
+            animation: flashRed 0.5s ease-in-out;
+        }
+
+        /* 自定義捲軸 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+
         .conversion-table {
-            border-collapse: collapse;
             width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
         }
         .conversion-table th, .conversion-table td {
-            padding: 0.5rem;
+            border: 1px solid #e2e8f0;
+            padding: 4px 8px;
             text-align: center;
-            border: 1px solid #d1d5db; /* gray-300 */
+        }
+        .dark .conversion-table th, .dark .conversion-table td {
+            border-color: #334155;
         }
         .conversion-table th {
-            background-color: #e5e7eb; /* gray-200 */
-            font-weight: 600;
+            background-color: #f1f5f9;
+            font-weight: bold;
+        }
+        .dark .conversion-table th {
+            background-color: #1e293b;
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 min-h-screen p-4 sm:p-8">
 
-    <div class="container bg-white rounded-2xl shadow-2xl p-6 w-full max-w-4xl mx-auto">
-        <!-- 左側：功能區 -->
-        <div class="flex-1 space-y-6">
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold text-gray-800">鴉片類止痛藥物<br>等效劑量轉換器</h1>
-                <p class="text-gray-500 mt-2 text-xs">製作者：蝦仁藥師 2025年9月</p>
-                <p class="text-gray-500 mt-2">本工具僅供教育與資訊參考。任何醫療行為，請務必諮詢專業醫療人員。</p>
-            </div>
-
-            <!-- 輸入區塊 -->
-            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700">選擇原始藥物與劑量</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="drugType" class="block text-sm font-medium text-gray-700">藥物名稱與劑型</label>
-                        <select id="drugType" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2">
-                            <option value="oralMorphine">Morphine (Oral)</option>
-                            <option value="ivMorphine">Morphine (IV)</option>
-                            <option value="transdermalFentanyl">Fentanyl (Transdermal Patch)</option>
-                            <option value="ivFentanyl">Fentanyl (IV)</option>
-                            <option value="oralOxycodone">Oxycodone (Oral)</option>
-                            <option value="ivOxycodone">Oxycodone (IV)</option>
-                            <option value="oralHydrocodone">Hydrocodone (Oral)</option>
-                            <option value="oralHydromorphone">Hydromorphone (Oral)</option>
-                            <option value="ivHydromorphone">Hydromorphone (IV)</option>
-                            <option value="oralCodeine">Codeine (Oral)</option>
-                            <option value="oralMeperidine">Meperidine (Oral)</option>
-                            <option value="ivMeperidine">Meperidine (IV)</option>
-                            <option value="oralTramadol" class="red-text">Tramadol (Oral)</option>
-                            <option value="ivBuprenorphine">Buprenorphine (IV)</option>
-                            <option value="oralNalbuphine">Nalbuphine (IV)</option>
-                            <option value="oralMethadone" class="red-text">Methadone (Oral)</option>
-                        </select>
+    <!-- 主容器 -->
+    <div class="w-full max-w-6xl mx-auto flex flex-col gap-8">
+        
+        <div class="flex flex-col lg:flex-row gap-8 items-start">
+            <!-- 左側：計算功能區 -->
+            <div class="flex-1 w-full space-y-8">
+                <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="space-y-2">
+                        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-800 dark:text-white leading-tight">
+                            鴉片類止痛藥物<br><span class="text-blue-600 dark:text-blue-400">等效劑量轉換器</span>
+                        </h1>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 italic">本工具僅供教育與資訊參考。任何醫療行為請諮詢專業醫療人員。</p>
                     </div>
-                    <div>
-                        <label for="doseInput" class="block text-sm font-medium text-gray-700">劑量</label>
-                        <input type="number" id="doseInput" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2" placeholder="請輸入劑量" min="0">
-                    </div>
-                </div>
-            </div>
+                    
+                    <!-- 按鈕群組：移至標題右側 -->
+                    <div class="flex items-center gap-3">
+                        <!-- 多重藥物計算機按鈕 -->
+                        <button id="calculatorBtn" class="p-3 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300" title="多重藥物加總計算與救援劑量">
+                            <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        </button>
 
-            <!-- 結果區塊 -->
-            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700">等效劑量換算</h2>
-                <div id="resultsContainer" class="space-y-4">
-                    <!-- 結果將在此處動態生成 -->
-                </div>
-            </div>
-        </div>
-
-        <!-- 右側：說明欄 -->
-        <div class="flex-1 bg-gray-50 p-6 rounded-2xl border border-gray-200 self-start">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">相關說明</h2>
-            <div class="space-y-4">
-                <div>
-                    <h3 class="font-bold text-gray-800">關於嗎啡類藥物等效劑量</h3>
-                    <p class="text-sm text-gray-600 mt-2">
-                        鴉片類藥物的等效劑量換算，主要是為了評估不同藥物在鎮痛效果上的相對強度。本工具使用的換算因子是基於臨床上普遍接受的參考值，但這些數值僅為指引，並非絕對。
-                    </p>
-                </div>
-                <div>
-                    <h3 class="font-bold text-gray-800">Tramadol (口服) 轉換注意事項</h3>
-                    <div class="text-sm p-4 rounded-md border border-gray-400 bg-gray-100 text-gray-800 mt-2">
-                        <p class="font-bold">口服 Tramadol 與 口服 Morphine轉換</p>
-                        <p class="mt-2 text-sm text-gray-800">
-                            Morphine 30 mg 轉換為 120 mg Tramadol (1:4)。
-                        </p>
-                        <p class="mt-2 text-sm text-gray-800">
-                            從Tramadol 轉換成 Morphine 為 5:1 ~ 10:1。
-                        </p>
+                        <button id="themeToggle" class="p-3 rounded-2xl bg-white dark:bg-slate-900 shadow-sm border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all duration-300">
+                            <svg id="sunIcon" class="hidden w-6 h-6 text-amber-500" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"></path></svg>
+                            <svg id="moonIcon" class="hidden w-6 h-6 text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                        </button>
                     </div>
-                </div>
-                
-                <!-- 新增 Fentanyl 穿皮貼片轉換注意事項 區塊 -->
-                <div>
-                    <h3 class="font-bold text-gray-800">Fentanyl穿皮貼片轉換注意事項</h3>
-                    <div class="text-sm p-4 rounded-md border border-gray-400 bg-gray-100 text-gray-800 mt-2">
-                        <p class="font-bold mb-3">每日嗎啡口服劑量轉換Fentanyl穿皮貼片建議劑量</p>
-                        <table class="conversion-table text-xs sm:text-sm">
-                            <thead>
-                                <tr>
-                                    <th>24小時嗎啡口服劑量<br>(mg/day)</th>
-                                    <th>Fentanyl穿皮貼片劑量<br>(μg/h)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>30-44 </td><td>12</td></tr>
-                                <tr><td>45-134 </td><td>25</td></tr>
-                                <tr><td>&lt;135 </td><td>25</td></tr>
-                                <tr><td>135-224</td><td>50</td></tr>
-                                <tr><td>225-314</td><td>75</td></tr>
-                                <tr><td>315-404</td><td>100</td></tr>
-                                <tr><td>405-494</td><td>125</td></tr>
-                                <tr><td>495-584</td><td>150</td></tr>
-                                <tr><td>585-674</td><td>175</td></tr>
-                                <tr><td>675-764</td><td>200</td></tr>
-                                <tr><td>765-854</td><td>225</td></tr>
-                                <tr><td>855-944</td><td>250</td></tr>
-                                <tr><td>945-1034</td><td>275</td></tr>
-                                <tr><td>1035-1124</td><td>300</td></tr>
-                            </tbody>
-                        </table>
-                        <p class="text-xs text-gray-600 mt-2">
-                            *此為建議起始劑量，應根據病患反應調整。
-                        </p>
-                    </div>
-                </div>
-                <!-- 結束 Fentanyl 穿皮貼片轉換注意事項 區塊 -->
+                </header>
 
-                <div>
-                    <h3 class="font-bold text-gray-800">美沙冬 (Methadone) 特別注意事項</h3>
-                    <div class="text-sm p-4 rounded-md border border-red-200 bg-red-50 text-red-800 mt-2">
-                        <p class="font-bold">重要警語：美沙冬的換算複雜且非線性，具顯著個體差異，轉換時務必格外謹慎。</p>
-                        <p class="mt-2 text-gray-700 font-bold">美沙冬等效比率（口服美沙冬 : 口服嗎啡）</p>
-                        <p class="text-xs text-gray-500 mb-2">(基於每日口服嗎啡等效總劑量 OMEDD)</p>
-                        <div class="w-full text-xs sm:text-sm">
-                            <div class="grid grid-cols-2 bg-red-100 font-semibold p-2 rounded-t-lg">
-                                <span>OMEDD 範圍</span>
-                                <span>美沙冬 : 嗎啡比率</span>
-                            </div>
-                            <div class="grid grid-cols-2 p-2 border-b border-red-200">
-                                <span>&lt;= 30 mg</span>
-                                <span>1:2</span>
-                            </div>
-                            <div class="grid grid-cols-2 p-2 border-b border-red-200">
-                                <span>31-99 mg</span>
-                                <span>1:4</span>
-                            </div>
-                            <div class="grid grid-cols-2 p-2 border-b border-red-200">
-                                <span>100-299 mg</span>
-                                <span>1:8</span>
-                            </div>
-                            <div class="grid grid-cols-2 p-2 border-b border-red-200">
-                                <span>300-499 mg</span>
-                                <span>1:12</span>
-                            </div>
-                            <div class="grid grid-cols-2 p-2 border-b border-red-200">
-                                <span>500-999 mg</span>
-                                <span>1:15</span>
-                            </div>
-                            <div class="grid grid-cols-2 p-2 border-b border-red-200">
-                                <span>1000-1200 mg</span>
-                                <span>1:20</span>
-                            </div>
-                            <div class="grid grid-cols-2 p-2 rounded-b-lg">
-                                <span>> 1200 mg</span>
-                                <span>> 1:20</span>
-                            </div>
+                <!-- 輸入卡片 -->
+                <section class="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-8 transition-all duration-300 hover:shadow-2xl">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                        <span class="w-2 h-6 bg-blue-500 rounded-full"></span>
+                        選擇原始藥物與劑量
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label for="drugType" class="block text-sm font-semibold text-slate-600 dark:text-slate-400 ml-1">藥物名稱與劑型</label>
+                            <select id="drugType" class="w-full rounded-2xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 shadow-sm focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all p-3 text-slate-800 dark:text-slate-100 cursor-pointer outline-none">
+                                <option value="oralMorphine">Morphine (Oral)</option>
+                                <option value="ivMorphine">Morphine (IV)</option>
+                                <option value="transdermalFentanyl">Fentanyl (Transdermal Patch)</option>
+                                <option value="ivFentanyl">Fentanyl (IV)</option>
+                                <option value="oralOxycodone">Oxycodone (Oral)</option>
+                                <option value="ivOxycodone">Oxycodone (IV)</option>
+                                <option value="oralHydrocodone">Hydrocodone (Oral)</option>
+                                <option value="oralHydromorphone">Hydromorphone (Oral)</option>
+                                <option value="ivHydromorphone">Hydromorphone (IV)</option>
+                                <option value="oralCodeine">Codeine (Oral)</option>
+                                <option value="oralMeperidine">Meperidine (Oral)</option>
+                                <option value="ivMeperidine">Meperidine (IV)</option>
+                                <option value="oralTramadol" class="text-red-500 font-bold">Tramadol (Oral)</option>
+                                <option value="ivBuprenorphine">Buprenorphine (IV)</option>
+                                <option value="oralNalbuphine">Nalbuphine (IV)</option>
+                                <option value="oralMethadone" class="text-red-500 font-bold">Methadone (Oral)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label for="doseInput" class="block text-sm font-semibold text-slate-600 dark:text-slate-400 ml-1">劑量數值</label>
+                            <input type="number" id="doseInput" class="w-full rounded-2xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 shadow-sm focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all p-3 text-slate-800 dark:text-slate-100 placeholder:text-slate-400 outline-none" placeholder="輸入數值..." min="0">
                         </div>
                     </div>
+                </section>
+
+                <!-- 結果卡片 -->
+                <section class="bg-white dark:bg-slate-900 rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-8 min-h-[300px]">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                        <span class="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                        等效劑量換算
+                    </h2>
+                    <div id="resultsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="col-span-full py-12 text-center text-slate-400 italic">
+                            請在上方輸入劑量以開始計算...
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 右側：資訊說明欄 -->
+            <aside class="lg:w-[400px] w-full">
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200 dark:border-slate-800 sticky top-8 shadow-sm">
+                    <h2 class="text-2xl font-bold mb-6 text-slate-800 dark:text-white">相關說明</h2>
+                    <div class="space-y-6">
+                        
+                        <div class="space-y-2">
+                            <h3 class="font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2 text-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                關於嗎啡類藥物等效劑量
+                            </h3>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                鴉片類藥物的等效劑量換算，主要是為了評估不同藥物在鎮痛效果上的相對強度。本工具使用的換算因子是基於臨床上普遍接受的參考值，但這些數值僅為指引，並非絕對。
+                            </p>
+                        </div>
+
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl space-y-2 border border-blue-100 dark:border-blue-800/30">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm">Tramadol (口服) 轉換注意事項</h3>
+                            <div class="text-xs space-y-1 text-slate-700 dark:text-slate-400">
+                                <p class="font-semibold text-blue-700 dark:text-blue-300">口服 Tramadol 與 口服 Morphine 轉換</p>
+                                <p>Morphine 30 mg 轉換為 120 mg Tramadol (1:4)。</p>
+                                <p>從 Tramadol 轉換成 Morphine 為 5:1 ~ 10:1。</p>
+                            </div>
+                        </div>
+
+                        <!-- Fentanyl 表格還原 -->
+                        <div class="space-y-3">
+                            <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm">Fentanyl 穿皮貼片轉換注意事項</h3>
+                            <p class="text-[10px] font-semibold text-slate-500">每日嗎啡口服劑量轉換建議表</p>
+                            <table class="conversion-table">
+                                <thead>
+                                    <tr>
+                                        <th>嗎啡 (mg/day)</th>
+                                        <th>Fentanyl (μg/h)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>30-44</td><td>12</td></tr>
+                                    <tr><td>45-134</td><td>25</td></tr>
+                                    <tr><td>135-224</td><td>50</td></tr>
+                                    <tr><td>225-314</td><td>75</td></tr>
+                                    <tr><td>315-404</td><td>100</td></tr>
+                                    <tr><td>405-494</td><td>125</td></tr>
+                                    <tr><td>495-584</td><td>150</td></tr>
+                                    <tr><td>585-674</td><td>175</td></tr>
+                                    <tr><td>675-764</td><td>200</td></tr>
+                                    <tr><td>765-854</td><td>225</td></tr>
+                                    <tr><td>855-944</td><td>250</td></tr>
+                                    <tr><td>945-1034</td><td>275</td></tr>
+                                    <tr><td>1035-1124</td><td>300</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- 美沙冬表格還原 -->
+                        <div class="bg-red-50 dark:bg-red-900/10 p-4 rounded-2xl space-y-3 border border-red-100 dark:border-red-900/30">
+                            <h3 class="font-bold text-red-600 dark:text-red-400 text-sm">美沙冬 (Methadone) 注意事項</h3>
+                            <p class="text-[10px] font-bold text-red-800 dark:text-red-300 italic">警告：美沙冬換算複雜，具非線性特性。</p>
+                            <table class="conversion-table">
+                                <thead>
+                                    <tr>
+                                        <th>OMEDD 範圍</th>
+                                        <th>比率</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>&lt;= 30 mg</td><td>1:2</td></tr>
+                                    <tr><td>31-99 mg</td><td>1:4</td></tr>
+                                    <tr><td>100-299 mg</td><td>1:8</td></tr>
+                                    <tr><td>300-499 mg</td><td>1:12</td></tr>
+                                    <tr><td>500-999 mg</td><td>1:15</td></tr>
+                                    <tr><td>1000-1200 mg</td><td>1:20</td></tr>
+                                    <tr><td>> 1200 mg</td><td>> 1:20</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
                 </div>
-                <!-- 新增的區塊 -->
-                <div>
-                    <h3 class="font-bold text-gray-800">藥師小提醒</h3>
-                    <ul class="list-disc list-inside text-sm text-gray-600 mt-2 space-y-2">
-                        <li>計算前請留意藥品的劑型 。</li>
-                        <li>嗎啡類藥物在轉換時，可考慮將新藥物劑量減少25%至50%，並根據臨床判斷個別化調整，以確保安全與療效。</li>
-                        <li>藥物轉換時需注意最大極量與副作用相關風險。</li>
+            </aside>
+        </div>
+
+        <!-- 置底區塊：藥師小提醒與參考資料 -->
+        <footer class="w-full mt-8 border-t border-slate-200 dark:border-slate-800 pt-8 pb-12">
+            <div class="flex flex-col gap-8 px-4">
+                <div class="space-y-4">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 text-sm">
+                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                        藥師小提醒
+                    </h3>
+                    <ul class="text-[11px] space-y-2 text-slate-600 dark:text-slate-400 leading-relaxed">
+                        <li>• 計算前請留意藥品的劑型。</li>
+                        <li>• 嗎啡類藥物在轉換時，建議先減少計算後等效劑量的 25% 至 50%，再根據病人臨床反應個別化調整。</li>
+                        <li>• 藥物轉換時需注意最大極量與副作用相關風險。</li>
                     </ul>
                 </div>
-                <div>
-                    <h3 class="font-bold text-gray-800">參考資料來源</h3>
-                    <ul class="text-xs text-gray-600 mt-2 space-y-1">
+                <div class="space-y-4">
+                    <h3 class="font-bold text-slate-800 dark:text-slate-200 text-sm">參考資料來源</h3>
+                    <ul class="text-[10px] leading-relaxed text-slate-500 dark:text-slate-500 space-y-2">
                         <li>1. Micromedex(Opioid Dose Conversion and Equianalgesic Doses)</li>
                         <li>2. Opioid Equivalent Dosing</li>
                         <li>3. [臨床藥學] 共筆專用表 鴉片類止痛藥品劑量轉換表</li>
                         <li>4. Conversion Ratios for Opioid Switching in the Treatment of Cancer Pain: A Systematic Review. Mercadante S, Caraceni A. Palliative Medicine. 2011;25(5):504-15. doi:10.1177/0269216311406577.</li>
                         <li>5. CDC Clinical Practice Guideline for Prescribing Opioids for Pain - United States, 2022. Dowell D, Ragan KR, Jones CM, Baldwin GT, Chou R. MMWR. Recommendations and Reports : Morbidity and Mortality Weekly Report. Recommendations and Reports. 2022;71(3):1-95. doi:10.15585/mmwr.rr7103a1.</li>
-                        <li>6. Comparing the Subjective, Psychomotor and Physiological Effects of Intravenous Buprenorphine and Morphine in Healthy Volunteers.
-Zacny JP, Conley K, Galinkin J.The Journal of Pharmacology and Experimental Therapeutics. 1997;282(3):1187-97.</li>
+                        <li>6. Comparing the Subjective, Psychomotor and Physiological Effects of Intravenous Buprenorphine and Morphine in Healthy Volunteers. Zacny JP, Conley K, Galinkin J.The Journal of Pharmacology and Experimental Therapeutics. 1997;282(3):1187-97.</li>
                     </ul>
+                </div>
+            </div>
+            <div class="text-center mt-12 text-[10px] text-slate-400">
+                製作者：蝦仁藥師 2025年9月
+            </div>
+        </footer>
+    </div>
+
+    <!-- 多重藥物加總與救援劑量 Modal -->
+    <div id="calculatorModal" class="fixed inset-0 z-[100] hidden bg-slate-900/50 backdrop-blur-sm transition-opacity duration-300 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <span class="w-2 h-5 bg-emerald-500 rounded-full"></span>多重藥物加總計算 (OMEDD) - 每日總劑量計算
+                </h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+                <!-- 提示區塊 -->
+                <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30 rounded-xl p-3 text-xs sm:text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p>特別提示：請務必輸入各項藥品的<span class="font-bold">「每日總劑量 (日劑量)」</span>進行加總計算，系統將以此為基準來換算突發性疼痛的救援劑量。</p>
+                </div>
+
+                <div id="drugListContainer" class="space-y-4">
+                    <!-- 動態加入的藥物列 -->
+                </div>
+                
+                <button id="addDrugRowBtn" class="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400 font-semibold hover:border-blue-400 hover:text-blue-500 dark:hover:border-blue-500 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    新增使用中藥品
+                </button>
+
+                <div class="bg-blue-50 dark:bg-blue-900/10 rounded-2xl p-5 border border-blue-100 dark:border-blue-900/30 mt-6">
+                    <div class="flex justify-between items-end border-b border-blue-200 dark:border-blue-800 pb-3 mb-3">
+                        <div class="text-slate-700 dark:text-slate-300 font-semibold">總口服嗎啡毫克當量 (Total OMEDD)</div>
+                        <div class="text-3xl font-black text-blue-600 dark:text-blue-400" id="totalOmeddValue">0</div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <div class="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center gap-1">
+                            <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            突發性疼痛 (Breakthrough Pain) 救援劑量建議
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">每日總量的 10%</div>
+                                <div class="font-bold text-slate-800 dark:text-white mt-1" id="rescue10">0 <span class="text-[10px] font-normal">mg</span></div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">每日總量的 15%</div>
+                                <div class="font-bold text-slate-800 dark:text-white mt-1" id="rescue15">0 <span class="text-[10px] font-normal">mg</span></div>
+                            </div>
+                            <div class="bg-white dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-center">
+                                <div class="text-[10px] text-slate-500 dark:text-slate-400">每日總量的 1/6</div>
+                                <div class="font-bold text-slate-800 dark:text-white mt-1" id="rescue16">0 <span class="text-[10px] font-normal">mg</span></div>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-slate-400 italic mt-2 text-right">* 以上為相當於口服嗎啡 (Oral Morphine) 的參考數值</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- 底部回到頂端快捷鍵 -->
+    <button id="scrollToTop" class="fixed bottom-6 right-6 hidden p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 z-50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+    </button>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const drugTypeSelect = document.getElementById('drugType');
             const doseInput = document.getElementById('doseInput');
             const resultsContainer = document.getElementById('resultsContainer');
+            const themeToggle = document.getElementById('themeToggle');
+            const sunIcon = document.getElementById('sunIcon');
+            const moonIcon = document.getElementById('moonIcon');
+            const scrollToTopBtn = document.getElementById('scrollToTop');
 
-            // Define conversion factors relative to Oral Morphine (1).
-            // NOTE: The Methadone factor is a special case and is handled separately.
+            // --- Modal 相關元素 ---
+            const calculatorBtn = document.getElementById('calculatorBtn');
+            const calculatorModal = document.getElementById('calculatorModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const modalContent = document.getElementById('modalContent');
+            const drugListContainer = document.getElementById('drugListContainer');
+            const addDrugRowBtn = document.getElementById('addDrugRowBtn');
+            const totalOmeddValue = document.getElementById('totalOmeddValue');
+
+            // --- 深色模式切換邏輯 ---
+            function updateIcons() {
+                if (document.documentElement.classList.contains('dark')) {
+                    sunIcon.classList.remove('hidden');
+                    moonIcon.classList.add('hidden');
+                } else {
+                    sunIcon.classList.add('hidden');
+                    moonIcon.classList.remove('hidden');
+                }
+            }
+            updateIcons();
+
+            themeToggle.addEventListener('click', () => {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateIcons();
+            });
+
+            // --- 回到頂端按鈕邏輯 ---
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollToTopBtn.classList.remove('hidden');
+                } else {
+                    scrollToTopBtn.classList.add('hidden');
+                }
+            });
+
+            scrollToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // --- 藥物轉換資料 ---
             const drugs = {
                 oralMorphine: { name: 'Morphine (Oral)', factor: 1, unit: 'mg' },
                 ivMorphine: { name: 'Morphine (IV)', factor: 3, unit: 'mg' },
@@ -244,115 +411,205 @@ Zacny JP, Conley K, Galinkin J.The Journal of Pharmacology and Experimental Ther
                 oralMethadone: { name: 'Methadone (Oral)', isSpecial: true, unit: 'mg' }
             };
 
-            // Main calculation function
+            const drugOptionsHTML = Object.entries(drugs).map(([k, v]) => `<option value="${k}">${v.name}</option>`).join('');
+
+            // --- 共用計算邏輯 ---
+            function calculateOMEDD(drugKey, dose) {
+                if (drugKey === 'oralMethadone') {
+                    let ratio = 20;
+                    if (dose < 20) ratio = 5;
+                    else if (dose <= 30) ratio = 8;
+                    else if (dose <= 40) ratio = 12;
+                    else if (dose <= 60) ratio = 15;
+                    return dose * ratio;
+                }
+                return dose * drugs[drugKey].factor;
+            }
+
+            function getMethadoneTargetRatio(omedd) {
+                if (omedd <= 30) return 2;
+                if (omedd <= 99) return 4;
+                if (omedd <= 299) return 8;
+                if (omedd <= 499) return 12;
+                if (omedd <= 999) return 15;
+                if (omedd <= 1200) return 20;
+                return 25;
+            }
+
+            function applyNegativeInputValidation(inputElement, callback) {
+                inputElement.addEventListener('input', function() {
+                    if (this.value < 0) {
+                        this.value = '';
+                        this.classList.remove('flash-red');
+                        void this.offsetWidth; // 觸發重繪以重啟動畫
+                        this.classList.add('flash-red');
+                    }
+                    if (callback) callback();
+                });
+            }
+
+            // --- DOM 重複利用初始化 ---
+            const resultCardsMap = {};
+            let emptyStateMsg = null;
+            let tramadolMsg = null;
+
+            function initDOM() {
+                resultsContainer.innerHTML = '';
+                
+                emptyStateMsg = document.createElement('div');
+                emptyStateMsg.className = 'col-span-full py-12 text-center text-slate-400 italic';
+                emptyStateMsg.textContent = '請在上方輸入劑量以開始計算...';
+                resultsContainer.appendChild(emptyStateMsg);
+
+                tramadolMsg = document.createElement('div');
+                tramadolMsg.className = 'col-span-full text-center text-red-500 font-bold p-6 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-2xl hidden fade-in';
+                tramadolMsg.textContent = 'Tramadol 劑量轉換公式較特殊，請參閱右側相關說明進行評估。';
+                resultsContainer.appendChild(tramadolMsg);
+
+                for (const key in drugs) {
+                    const drug = drugs[key];
+                    const isRed = drug.name.includes('Methadone') || drug.name.includes('Tramadol');
+                    
+                    const card = document.createElement('div');
+                    card.className = `flex flex-col justify-between p-5 rounded-2xl transition-all duration-300 border hover:shadow-lg hidden fade-in ${
+                        isRed ? 'bg-red-50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30' : 'bg-white dark:bg-slate-800 shadow-sm border-slate-100 dark:border-slate-700'
+                    }`;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <div class="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">${drug.name}</div>
+                            <div class="text-[10px] font-bold tracking-widest text-slate-400 mt-1">${drug.unit.toLowerCase()}</div>
+                        </div>
+                        <div class="result-value text-3xl font-black mt-3 ${isRed ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}">0</div>
+                    `;
+                    
+                    resultsContainer.appendChild(card);
+                    resultCardsMap[key] = { card: card, valueEl: card.querySelector('.result-value') };
+                }
+            }
+            initDOM();
+
+            // --- 主畫面計算引擎 ---
             function calculateEquivalents() {
                 const selectedDrugKey = drugTypeSelect.value;
                 const sourceDose = parseFloat(doseInput.value);
 
-                resultsContainer.innerHTML = '';
+                // 先隱藏所有結果 DOM
+                for (const key in resultCardsMap) resultCardsMap[key].card.classList.add('hidden');
+                emptyStateMsg.classList.add('hidden');
+                tramadolMsg.classList.add('hidden');
+
                 if (isNaN(sourceDose) || sourceDose <= 0) {
+                    emptyStateMsg.classList.remove('hidden');
                     return;
                 }
 
-                // Special handling for Tramadol (Oral) as the source drug
                 if (selectedDrugKey === 'oralTramadol') {
-                    const tramadolMessage = document.createElement('div');
-                    tramadolMessage.className = 'text-center text-red-500 font-bold p-4 bg-gray-200 rounded-md';
-                    tramadolMessage.textContent = '請參閱相關說明';
-                    resultsContainer.appendChild(tramadolMessage);
+                    tramadolMsg.classList.remove('hidden');
                     return;
                 }
 
-                const sourceDrug = drugs[selectedDrugKey];
-                let oralMorphineEquivalent;
+                let oralMorphineEquivalent = calculateOMEDD(selectedDrugKey, sourceDose);
 
-                // Handle the special Methadone calculation if it's the source drug
-                if (selectedDrugKey === 'oralMethadone') {
-                    // Determine Methadone to Morphine conversion ratio based on the sliding scale
-                    let methadoneRatio;
-                    if (sourceDose < 20) {
-                        methadoneRatio = 5;
-                    } else if (sourceDose <= 30) {
-                        methadoneRatio = 8;
-                    } else if (sourceDose <= 40) {
-                        methadoneRatio = 12;
-                    } else if (sourceDose <= 60) {
-                        methadoneRatio = 15;
-                    } else {
-                        methadoneRatio = 20;
-                    }
-                    oralMorphineEquivalent = sourceDose * methadoneRatio;
-                } else {
-                    oralMorphineEquivalent = sourceDose * sourceDrug.factor;
-                }
-
-                // Iterate through all drugs to calculate the equivalent dose
-                for (const targetDrugKey in drugs) {
-                    const targetDrug = drugs[targetDrugKey];
-                    if (targetDrugKey === selectedDrugKey) {
-                        continue;
-                    }
-
+                for (const targetKey in drugs) {
+                    if (targetKey === selectedDrugKey) continue;
+                    
                     let convertedDose;
-                    let isSpecialTarget = false;
-
-                    // Handle the special Methadone calculation if it's the target drug
-                    if (targetDrugKey === 'oralMethadone') {
-                        isSpecialTarget = true;
-                        let methadoneRatio;
-                        if (oralMorphineEquivalent <= 30) {
-                            methadoneRatio = 2;
-                        } else if (oralMorphineEquivalent <= 99) {
-                            methadoneRatio = 4;
-                        } else if (oralMorphineEquivalent <= 299) {
-                            methadoneRatio = 8;
-                        } else if (oralMorphineEquivalent <= 499) {
-                            methadoneRatio = 12;
-                        } else if (oralMorphineEquivalent <= 999) {
-                            methadoneRatio = 15;
-                        } else if (oralMorphineEquivalent <= 1200) {
-                            methadoneRatio = 20;
-                        } else {
-                            methadoneRatio = 25; 
-                        }
-                        convertedDose = oralMorphineEquivalent / methadoneRatio;
-                    } 
-                    // Handle the specific case of converting TO Tramadol (Oral)
-                    else if (targetDrugKey === 'oralTramadol') {
-                        isSpecialTarget = true;
-                        // Use the specified factor for conversion TO Tramadol
+                    if (targetKey === 'oralMethadone') {
+                        convertedDose = oralMorphineEquivalent / getMethadoneTargetRatio(oralMorphineEquivalent);
+                    } else if (targetKey === 'oralTramadol') {
                         convertedDose = oralMorphineEquivalent / 0.25; 
-                    }
-                    // For all other standard drugs
-                    else {
-                        convertedDose = oralMorphineEquivalent / targetDrug.factor;
-                    }
-                    
-                    // Custom formatting logic:
-                    let formattedDose;
-                    if (Number.isInteger(convertedDose)) {
-                        formattedDose = convertedDose.toFixed(0);
                     } else {
-                        // Keep at most 2 decimal places, but remove trailing zeros
-                        formattedDose = parseFloat(convertedDose.toFixed(2));
+                        convertedDose = oralMorphineEquivalent / drugs[targetKey].factor;
                     }
                     
-                    const resultElement = document.createElement('div');
-                    resultElement.className = 'flex justify-between items-center bg-gray-100 rounded-md p-3';
-                    resultElement.innerHTML = `
-                        <p class="text-sm font-medium text-gray-700">${targetDrug.name} <span class="text-xs text-gray-500">(${targetDrug.unit})</span></p>
-                        <p class="text-lg font-bold ${targetDrug.name.includes('Methadone') ? 'text-red-600' : 'text-blue-600'}">${formattedDose}</p>
-                    `;
-                    resultsContainer.appendChild(resultElement);
+                    const formattedValue = parseFloat(convertedDose.toFixed(2));
+                    
+                    // 只更新文字並顯示
+                    resultCardsMap[targetKey].valueEl.textContent = formattedValue;
+                    resultCardsMap[targetKey].card.classList.remove('hidden');
                 }
             }
 
-            // Listen for changes in the select and input fields
             drugTypeSelect.addEventListener('change', calculateEquivalents);
-            doseInput.addEventListener('input', calculateEquivalents);
+            applyNegativeInputValidation(doseInput, calculateEquivalents);
 
-            // Run calculation on page load
-            calculateEquivalents();
+
+            // --- Modal 加總器邏輯 ---
+            function openModal() {
+                calculatorModal.classList.remove('hidden');
+                // Allow browser to render display:block before adding opacity
+                requestAnimationFrame(() => {
+                    calculatorModal.classList.remove('opacity-0');
+                    modalContent.classList.remove('scale-95');
+                });
+                if (drugListContainer.children.length === 0) addDrugRow();
+            }
+
+            function closeModal() {
+                calculatorModal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    calculatorModal.classList.add('hidden');
+                }, 300);
+            }
+
+            function addDrugRow() {
+                const row = document.createElement('div');
+                row.className = 'flex gap-3 items-start animate-fade-in';
+                row.innerHTML = `
+                    <div class="flex-1 space-y-1">
+                        <select class="modal-drug-select w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-sm text-slate-800 dark:text-slate-100 outline-none cursor-pointer focus:ring-2 focus:ring-blue-500/20">
+                            ${drugOptionsHTML}
+                        </select>
+                    </div>
+                    <div class="w-24 space-y-1">
+                        <input type="number" class="modal-dose-input w-full rounded-xl border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2.5 text-sm text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-blue-500/20 placeholder:text-slate-400" placeholder="日劑量" min="0">
+                    </div>
+                    <button class="remove-row-btn p-2.5 mt-0.5 text-slate-400 hover:text-red-500 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors" title="移除此藥品">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                `;
+                drugListContainer.appendChild(row);
+                
+                const input = row.querySelector('.modal-dose-input');
+                const select = row.querySelector('.modal-drug-select');
+                const removeBtn = row.querySelector('.remove-row-btn');
+
+                applyNegativeInputValidation(input, updateModalCalculation);
+                select.addEventListener('change', updateModalCalculation);
+                removeBtn.addEventListener('click', () => {
+                    row.remove();
+                    updateModalCalculation();
+                });
+            }
+
+            function updateModalCalculation() {
+                let totalOmedd = 0;
+                const rows = drugListContainer.querySelectorAll('.flex.gap-3');
+                rows.forEach(row => {
+                    const drugKey = row.querySelector('.modal-drug-select').value;
+                    const dose = parseFloat(row.querySelector('.modal-dose-input').value);
+                    if (!isNaN(dose) && dose > 0) {
+                        totalOmedd += calculateOMEDD(drugKey, dose);
+                    }
+                });
+                
+                totalOmeddValue.textContent = parseFloat(totalOmedd.toFixed(2));
+                
+                document.getElementById('rescue10').innerHTML = `${parseFloat((totalOmedd * 0.10).toFixed(2))} <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">mg</span>`;
+                document.getElementById('rescue15').innerHTML = `${parseFloat((totalOmedd * 0.15).toFixed(2))} <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">mg</span>`;
+                document.getElementById('rescue16').innerHTML = `${parseFloat((totalOmedd / 6).toFixed(2))} <span class="text-[10px] font-normal text-slate-500 dark:text-slate-400">mg</span>`;
+            }
+
+            calculatorBtn.addEventListener('click', openModal);
+            closeModalBtn.addEventListener('click', closeModal);
+            addDrugRowBtn.addEventListener('click', addDrugRow);
+            
+            // 點擊 Modal 外部也可關閉
+            calculatorModal.addEventListener('click', (e) => {
+                if (e.target === calculatorModal) closeModal();
+            });
         });
     </script>
 </body>
