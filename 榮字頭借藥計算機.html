@@ -704,17 +704,17 @@
             // 更新 UI 顯示與設定
             if (submitType === 'before') {
                 labelDisplay.textContent = '請假前一日';
-                compHint.textContent = '(預設為請假離院前一日)';
-                compHint.className = 'text-xs text-indigo-600 font-normal';
+                compHint.textContent = '(預設為請假離院前一日，若電腦日期大於資料日期，則輸入電腦日期。)';
+                compHint.className = 'text-xs text-red-500 font-bold';
                 if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01，<span class="text-red-500 font-bold">星期五或連假需注意設定!</span>)';
             } else if (submitType === 'today') {
                 labelDisplay.textContent = '請假當日';
-                compHint.textContent = '(預設為請假當日)';
-                compHint.className = 'text-xs text-indigo-600 font-normal';
+                compHint.textContent = '(預設為請假當日，若電腦日期大於資料日期，則輸入電腦日期。)';
+                compHint.className = 'text-xs text-red-500 font-bold';
                 if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01，<span class="text-red-500 font-bold">星期五或連假需注意設定!</span>)';
             } else if (submitType === 'holiday') {
                 labelDisplay.textContent = '假日期間';
-                compHint.textContent = '(請手動輸入電腦日期後計算)';
+                compHint.textContent = '(請手動輸入資料日期後計算，若電腦日期大於資料日期，則輸入電腦日期。)';
                 compHint.className = 'text-xs text-red-500 font-bold';
                 if(packedEndDateHint) packedEndDateHint.innerHTML = '(病房已有藥物至此日15:01，<span class="text-red-500 font-bold">請手動輸入</span>)';
             }
