@@ -237,7 +237,7 @@
                 <div class="flex flex-col lg:col-span-2 pt-1 lg:pt-0">
                     <div class="flex items-center justify-between mb-3 mt-4 lg:mt-0">
                          <h3 class="text-lg font-bold text-teal-700 dark:text-teal-400 flex items-center">計算體重指標</h3>
-                         <button type="button" class="text-teal-500 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 p-1.5 rounded-full bg-teal-100/50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-800/50 transition-all shadow-sm active:scale-95" onclick="showInfoModal('weight_guide')" aria-label="體重選擇考量" title="體重選擇考量">
+                         <button type="button" class="info-trigger text-teal-500 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300 p-1.5 rounded-full bg-teal-100/50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-800/50 transition-all shadow-sm active:scale-95" data-target="weight_guide" aria-label="體重選擇考量" title="體重選擇考量">
                              <svg class="w-5 h-5 text-current"><use href="#icon-info"></use></svg>
                          </button>
                     </div>
@@ -1181,7 +1181,8 @@
         function handleInputDebounce() {
             if(!Els.age || !Els.height || !Els.actualWeight || !Els.scr) return;
             
-            const sig = `${Els.age.value}-${Els.height.value}-${Els.actualWeight.value}-${Els.scr.value}`;
+            const sex = document.getElementById('male').checked ? 'male' : 'female';
+            const sig = `${Els.age.value}-${Els.height.value}-${Els.actualWeight.value}-${Els.scr.value}-${sex}`;
             if (sig === lastInputSignature) return; // 數值髒檢查，防止無效觸發
 
             const a = parseFloat(Els.age.value), h = parseFloat(Els.height.value), w = parseFloat(Els.actualWeight.value), s = parseFloat(Els.scr.value);
@@ -1629,7 +1630,15 @@
 
         // 初始化執行綁定
         document.addEventListener('DOMContentLoaded', () => {
-            // === 深色模式切換邏輯 (移至 DOMContentLoaded 以確保綁定生效) ===
+            bindEvents();
+            
+            // 綁定按鈕事件 (取代原本寫死在 HTML 上的 onclick，避免記憶體洩漏與找不到函式)
+            document.getElementById('toggle-settings-btn')?.addEventListener('click', toggleTemplateSettings);
+            document.getElementById('reset-template-btn')?.addEventListener('click', resetTemplateSettings);
+            document.getElementById('save-template-btn')?.addEventListener('click', saveTemplateSettings);
+            document.getElementById('copy-reply-btn')?.addEventListener('click', copyReplyText);
+
+            // 確保深淺色切換事件有綁定到
             const themeToggleBtn = document.getElementById('theme-toggle');
             const darkIcon = document.getElementById('theme-toggle-dark-icon');
             const lightIcon = document.getElementById('theme-toggle-light-icon');
@@ -1654,15 +1663,6 @@
                     }
                 });
             }
-
-            // 因為部分按鈕在腳本執行時可能還未完成渲染，統一在 DOMContentLoaded 綁定事件
-            bindEvents();
-            
-            // 綁定按鈕事件 (取代原本寫死在 HTML 上的 onclick，避免記憶體洩漏與找不到函式)
-            document.getElementById('toggle-settings-btn')?.addEventListener('click', toggleTemplateSettings);
-            document.getElementById('reset-template-btn')?.addEventListener('click', resetTemplateSettings);
-            document.getElementById('save-template-btn')?.addEventListener('click', saveTemplateSettings);
-            document.getElementById('copy-reply-btn')?.addEventListener('click', copyReplyText);
         });
 
     </script>
