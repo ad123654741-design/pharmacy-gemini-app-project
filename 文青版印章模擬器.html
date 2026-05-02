@@ -8,290 +8,419 @@
     <!-- 載入 Lucide Icons -->
     <script type="module" src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* 引入思源宋體與 Inter */
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;500;700&family=Inter:wght@300;400&display=swap');
+        /* 修正 1：引入 Google Fonts 中文開源字體，確保字體切換能正確渲染 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@500;700&family=Noto+Serif+TC:wght@500;700&display=swap');
 
         :root {
-            --bg-paper: #f9f8f4;
-            --text-ink: #2c2c2c;
-            --accent-red: #a83f39;
-            --border-color: #e6e2d8;
+            --primary-color: #4f46e5; /* Indigo 600 */
+            --primary-hover: #4338ca; /* Indigo 700 */
+            --bg-color: #f3f4f6; /* Gray 100 */
+            --card-bg: #ffffff;
+            --text-main: #111827; /* Gray 900 */
+            --text-muted: #6b7280; /* Gray 500 */
+            --border-color: #e5e7eb; /* Gray 200 */
         }
 
         body {
-            font-family: 'Noto Serif TC', serif;
-            background-color: var(--bg-paper);
-            color: var(--text-ink);
-            background-image: radial-gradient(#e0ded8 1px, transparent 1px);
-            background-size: 24px 24px;
-        }
-
-        .font-sans {
             font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* 自定義滑桿樣式 */
+        /* 現代感滑桿 */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
+            height: 6px;
+            border-radius: 999px;
+            background-color: #e5e7eb;
+            outline: none;
+            transition: all 0.2s ease;
         }
-        
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 16px;
-            width: 16px;
+            height: 20px;
+            width: 20px;
             border-radius: 50%;
-            background: var(--accent-red);
+            background: var(--primary-color);
             cursor: pointer;
-            margin-top: -6px;
-            box-shadow: 0 0 0 2px var(--bg-paper);
+            margin-top: -7px;
+            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.4);
+            transition: transform 0.1s;
+        }
+        input[type=range]:active::-webkit-slider-thumb {
+            transform: scale(1.1);
         }
 
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%;
-            height: 4px;
-            cursor: pointer;
-            background: #dcd9d0;
-            border-radius: 2px;
-        }
-
-        input[type=range]:focus::-webkit-slider-thumb {
-            box-shadow: 0 0 0 4px rgba(168, 63, 57, 0.2);
-        }
-
-        /* 顏色選擇器樣式 */
+        /* 顏色選擇器 */
         input[type="color"] {
             -webkit-appearance: none;
             border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
             overflow: hidden;
             padding: 0;
             cursor: pointer;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        input[type="color"]:hover {
+            transform: scale(1.05);
         }
         input[type="color"]::-webkit-color-swatch-wrapper {
             padding: 0;
         }
         input[type="color"]::-webkit-color-swatch {
             border: none;
+            border-radius: 8px;
         }
 
         /* 卡片與容器 */
-        .card {
-            background-color: #ffffff;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 4px 20px -4px rgba(0, 0, 0, 0.05);
+        .modern-card {
+            background-color: var(--card-bg);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            border-radius: 1.5rem; /* rounded-2xl */
         }
 
-        /* 預覽區紙張質感 */
         #stampOutputContainer {
-            background-color: #fdfdfc;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            background-color: #fafafa;
+            background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+            background-size: 20px 20px;
             min-height: 400px;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
         #stampOutputImage {
             max-width: 90%;
             max-height: 90%;
-            /* 讓圖片混合模式更自然 */
-            mix-blend-mode: multiply; 
+            mix-blend-mode: multiply;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
         }
 
-        .btn-primary {
-            background-color: var(--text-ink);
-            color: #fff;
-            transition: all 0.3s ease;
+        /* 動畫 */
+        .fade-in {
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
         }
-        .btn-primary:hover {
-            background-color: #000;
-            transform: translateY(-1px);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 骨架屏/Loading */
+        .skeleton-pulse {
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        /* Feature 4: Mobile UX - 摺疊控制面板 */
+        .mobile-panel-collapsed {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            margin-top: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-width: 0;
+        }
+        @media (min-width: 1024px) {
+            .mobile-panel-collapsed {
+                max-height: none;
+                opacity: 1;
+                overflow: visible;
+                padding-top: 1.5rem;
+                padding-bottom: 1.5rem;
+                border-width: 1px;
+            }
+            #mobilePanelToggleBtn { display: none; }
         }
         
-        .btn-outline {
-            border: 1px solid var(--text-ink);
-            color: var(--text-ink);
-            background: transparent;
-            transition: all 0.3s ease;
+        /* Feature 1: Toggle Switch 樣式 */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #6366f1; /* indigo-500 */
         }
-        .btn-outline:hover {
-            background-color: var(--text-ink);
-            color: #fff;
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #6366f1;
         }
         
-        .section-title {
-            position: relative;
-            display: inline-block;
-            margin-bottom: 1.5rem;
-            font-weight: 700;
-            letter-spacing: 0.1em;
-            color: #5a5a5a;
-        }
-        .section-title::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -6px;
-            width: 40px;
-            height: 1px;
-            background-color: var(--accent-red);
+        .file-input-container input[type=file] {
+            display: none;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col p-6 md:p-12">
+<body class="min-h-screen flex flex-col p-6 md:p-10">
 
     <div class="max-w-6xl mx-auto w-full">
         <!-- 標題區 -->
-        <header class="text-center mb-12">
-            <div class="inline-flex items-center justify-center border border-gray-300 rounded-full px-4 py-1 mb-4 bg-white/50 backdrop-blur-sm">
-                <span class="text-xs text-gray-500 font-sans tracking-widest uppercase">Stamp Generator</span>
-            </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 tracking-wider mb-3">
+        <header class="mb-10 text-center fade-in">
+            <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
                 印章模擬器
             </h1>
-            <p class="text-gray-500 font-light tracking-wide text-sm md:text-base mb-3">
-                將您的影像，轉化成不同色彩與印記。
+            <p class="text-gray-500 text-sm md:text-base mb-2">
+                上傳圖片，產生模擬印章效果。
             </p>
-            <p class="text-xs text-[#a83f39] font-sans tracking-widest opacity-70">
+            <p class="text-xs text-indigo-500 font-medium">
                 製作者: 蝦仁藥師 2025.09
             </p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
 
             <!-- 左側：控制面板 -->
-            <div class="lg:col-span-4 space-y-8">
+            <div class="lg:col-span-4 space-y-4 fade-in" style="animation-delay: 0.1s;">
                 
-                <div class="card rounded-lg p-8 relative overflow-hidden">
-                    <div class="absolute top-0 left-0 w-1 h-full bg-[#a83f39]"></div>
-                    <h2 class="section-title text-lg">製印工坊</h2>
+                <!-- Feature 4: 行動版面板切換按鈕 -->
+                <button id="mobilePanelToggleBtn" onclick="toggleMobilePanel()" class="w-full flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-gray-200 text-gray-800 font-semibold transition-colors hover:bg-gray-50 active:scale-[0.98]">
+                    <span class="flex items-center"><i data-lucide="settings-2" class="w-5 h-5 mr-2 text-indigo-600"></i> 開啟 / 收合控制項</span>
+                    <i data-lucide="chevron-down" id="mobilePanelIcon" class="w-5 h-5 transition-transform duration-300"></i>
+                </button>
+
+                <div id="controlPanel" class="modern-card p-6 md:p-8 relative overflow-hidden transition-all duration-300 ease-in-out">
                     
-                    <!-- 1. 圖片上傳 -->
-                    <div class="mb-8 group">
-                        <label class="block text-sm text-gray-500 mb-3 tracking-wide">
-                            01. 選擇圖樣
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i data-lucide="sliders-horizontal" class="w-5 h-5 mr-2 text-indigo-600"></i>
+                            設定與調整
+                        </h2>
+                        <!-- Feature 3: 參數重置按鈕 -->
+                        <button onclick="resetControls()" class="text-xs font-medium text-gray-500 hover:text-indigo-600 flex items-center bg-gray-100 hover:bg-indigo-50 px-2 py-1.5 rounded transition-colors">
+                            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 mr-1"></i>重置
+                        </button>
+                    </div>
+                    
+                    <!-- 預設風格 (Feature 5) -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">✨ 預設風格模組</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button onclick="applyPreset('modern-red')" class="text-xs py-2 px-1 border border-red-200 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors font-medium">清晰現代紅章</button>
+                            <button onclick="applyPreset('modern')" class="text-xs py-2 px-1 border border-gray-300 rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition-colors font-medium">清晰現代黑章</button>
+                            <button onclick="applyPreset('ink')" class="text-xs py-2 px-1 border border-blue-200 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors font-medium">暈染水墨藍</button>
+                        </div>
+                    </div>
+
+                    <!-- 1. 來源模式 (圖片 / 純文字) (Feature 2) -->
+                    <div class="mb-6 group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            1. 來源模式 (圖片 / 文字)
                         </label>
-                        <div class="file-input-container">
+                        <!-- 模式頁籤 -->
+                        <div class="flex bg-gray-100 p-1 rounded-lg mb-3">
+                            <button id="tabImageBtn" onclick="setMode('image')" class="flex-1 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all">圖片上傳</button>
+                            <button id="tabTextBtn" onclick="setMode('text')" class="flex-1 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all">純文字產生</button>
+                        </div>
+
+                        <!-- 圖片上傳區塊 -->
+                        <div id="imageUploadSection" class="file-input-container block">
                             <input type="file" id="imageInput" accept="image/png, image/jpeg" 
                                    onchange="handleImageUpload(event)"
                                    class="hidden">
-                            <button onclick="document.getElementById('imageInput').click()" 
-                                    class="w-full h-32 border border-dashed border-gray-400 rounded-lg 
-                                           flex flex-col items-center justify-center text-gray-400
-                                           hover:border-gray-600 hover:text-gray-600 hover:bg-gray-50
-                                           transition duration-300 ease-in-out group-hover:shadow-inner">
-                                <i data-lucide="image-plus" class="w-8 h-8 mb-2 opacity-60"></i>
-                                <span class="text-xs tracking-wider">點擊上傳 PNG / JPG</span>
+                            <button id="dropZoneBtn" onclick="document.getElementById('imageInput').click()" 
+                                    class="w-full h-28 border-2 border-dashed border-gray-300 rounded-xl 
+                                           flex flex-col items-center justify-center text-gray-500 bg-gray-50
+                                           hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50
+                                           transition-all duration-200 ease-in-out cursor-pointer active:scale-[0.98]">
+                                <i data-lucide="image-up" class="w-7 h-7 mb-2 text-gray-400 group-hover:text-indigo-500 transition-colors"></i>
+                                <span class="text-sm font-medium">點擊或拖曳圖片至此</span>
                             </button>
+                        </div>
+
+                        <!-- 純文字輸入區塊 -->
+                        <div id="textInputSection" class="hidden space-y-3">
+                            <textarea id="textContent" oninput="updateBaseCanvas()" rows="2" placeholder="輸入多行文字..." class="w-full text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border bg-white outline-none resize-none">模擬&#10;印章</textarea>
+                            <div class="flex space-x-2">
+                                <select id="textLayout" onchange="updateBaseCanvas()" class="w-1/2 text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-white outline-none cursor-pointer">
+                                    <option value="horizontal">橫書 (左至右)</option>
+                                    <option value="vertical">直書 (右至左)</option>
+                                </select>
+                                <!-- 修正 1：指定精確的字體家族 (font-family) 字串 -->
+                                <select id="textFont" onchange="updateBaseCanvas()" class="w-1/2 text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-white outline-none cursor-pointer">
+                                    <option value="'Noto Sans TC', sans-serif" selected>現代黑體</option>
+                                    <option value="'Noto Serif TC', serif">傳統宋體</option>
+                                    <option value="'DFKai-sb', 'BiauKai', 'Kaiti', serif">標準楷體</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 外框與文字排版 -->
+                    <div class="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100">
+                        <label class="block text-sm font-medium text-gray-700 mb-3 flex items-center">
+                            <i data-lucide="layout-template" class="w-4 h-4 mr-1 text-gray-500"></i>
+                            印章外框設定
+                        </label>
+                        <div class="space-y-3">
+                            <div>
+                                <!-- 修正 2：新增長方形外框與觸發事件 -->
+                                <select id="borderShape" onchange="toggleAspectRatio(); updateBaseCanvas();" class="w-full text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border bg-white cursor-pointer outline-none">
+                                    <option value="none">無外框</option>
+                                    <option value="square">標準方框</option>
+                                    <option value="circle">標準圓框</option>
+                                    <option value="rect-v">長方形 (直)</option>
+                                    <option value="rect-h">長方形 (橫)</option>
+                                </select>
+                            </div>
+                            <!-- 修正 2：長方形比例選擇子選單 -->
+                            <div id="aspectRatioDivV" class="hidden flex items-center justify-between">
+                                <span class="text-xs text-gray-500 font-medium">比例選擇：</span>
+                                <select id="aspectRatioV" onchange="updateBaseCanvas()" class="w-2/3 text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-white cursor-pointer outline-none">
+                                    <option value="0.5">1 : 2</option>
+                                    <option value="0.666667">2 : 3</option>
+                                    <option value="0.75">3 : 4</option>
+                                </select>
+                            </div>
+                            <div id="aspectRatioDivH" class="hidden flex items-center justify-between">
+                                <span class="text-xs text-gray-500 font-medium">比例選擇：</span>
+                                <select id="aspectRatioH" onchange="updateBaseCanvas()" class="w-2/3 text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2 border bg-white cursor-pointer outline-none">
+                                    <option value="2">2 : 1</option>
+                                    <option value="1.5">3 : 2</option>
+                                    <option value="1.333333">4 : 3</option>
+                                </select>
+                            </div>
+
+                            <div id="additionalTextDiv">
+                                <span class="text-xs text-gray-500 font-medium">附加環繞文字 (僅圖片模式)</span>
+                                <input type="text" id="stampText" oninput="updateBaseCanvas()" placeholder="輸入印章文字..." class="w-full mt-1 text-sm border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-2.5 border bg-white outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feature 1: 自動白底去背開關 -->
+                    <div class="mb-6 flex items-center justify-between bg-indigo-50/50 p-3 rounded-xl border border-indigo-100">
+                        <div>
+                            <span class="text-sm font-semibold text-indigo-800">自動去除白底</span>
+                            <p class="text-xs text-indigo-600 mt-0.5">直接將亮色背景轉為透明</p>
+                        </div>
+                        <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                            <input type="checkbox" id="removeWhiteBg" onchange="requestProcessImage(false, false)" checked class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 z-10 transition-transform duration-200 ease-in-out"/>
+                            <label for="removeWhiteBg" class="toggle-label block overflow-hidden h-5 rounded-full bg-gray-300 cursor-pointer transition-colors duration-200"></label>
                         </div>
                     </div>
 
                     <!-- 2. 墨水顏色 -->
-                    <div class="mb-8">
-                        <label class="block text-sm text-gray-500 mb-3 tracking-wide">
-                            02. 調配墨色
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            2. 印章顏色
                         </label>
-                        <div class="flex items-center justify-between border-b border-gray-200 pb-2">
+                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
                             <div class="flex items-center space-x-3">
-                                <div class="relative">
-                                    <input type="color" id="inkColor" value="#a83f39" 
-                                           oninput="processImage()"
-                                           class="cursor-pointer transition-transform hover:scale-110">
-                                </div>
-                                <span class="font-sans text-xs text-gray-400 uppercase tracking-widest">Ink Color</span>
+                                <input type="color" id="inkColor" value="#e63946" 
+                                       oninput="requestProcessImage(false, false); document.getElementById('colorHexDisplay').textContent = this.value.toUpperCase();">
+                                <span class="text-sm text-gray-500 font-medium">選擇色彩</span>
                             </div>
-                            <span id="colorHexDisplay" class="font-sans text-xs font-medium text-gray-600">#A83F39</span>
+                            <span id="colorHexDisplay" class="font-mono text-xs font-semibold text-gray-700 bg-white px-2 py-1 rounded shadow-sm">#E63946</span>
                         </div>
                     </div>
 
                     <!-- 3. 閾值 -->
-                    <div class="mb-8">
-                        <div class="flex justify-between items-end mb-3">
-                            <label class="text-sm text-gray-500 tracking-wide">03. 刻印力度</label>
-                            <span id="thresholdValue" class="font-sans text-xs text-gray-400">128</span>
+                    <div class="mb-6">
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="text-sm font-medium text-gray-700">3. 墨水密度 (閾值)</label>
+                            <span id="thresholdValue" class="font-mono text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">180</span>
                         </div>
-                        <input type="range" id="thresholdSlider" min="0" max="255" value="128" 
-                               oninput="updateThresholdDisplay(); processImage();">
-                        <div class="flex justify-between mt-2">
-                            <span class="text-[10px] text-gray-400">輕柔</span>
-                            <span class="text-[10px] text-gray-400">深刻</span>
+                        <input type="range" id="thresholdSlider" min="0" max="255" value="180" 
+                               oninput="updateThresholdDisplay(); requestProcessImage(false, true);" 
+                               onchange="requestProcessImage(false, false);" class="mt-2">
+                        <div class="flex justify-between mt-1 text-xs text-gray-400 font-medium">
+                            <span>少</span>
+                            <span>多</span>
                         </div>
                     </div>
 
                     <!-- 4. 模糊 -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="text-sm font-medium text-gray-700">4. 邊緣模糊度</label>
+                            <span id="blurValue" class="font-mono text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">0.5</span>
+                        </div>
+                        <input type="range" id="blurSlider" min="0" max="5" value="0.5" step="0.5"
+                               oninput="updateBlurDisplay(); requestProcessImage(true, true);"
+                               onchange="requestProcessImage(true, false);" class="mt-2">
+                         <div class="flex justify-between mt-1 text-xs text-gray-400 font-medium">
+                            <span>清晰</span>
+                            <span>暈染</span>
+                        </div>
+                    </div>
+
+                    <!-- 5. 舊化紋理 -->
                     <div class="mb-8">
-                        <div class="flex justify-between items-end mb-3">
-                            <label class="text-sm text-gray-500 tracking-wide">04. 紙張滲透</label>
-                            <span id="blurValue" class="font-sans text-xs text-gray-400">0.0</span>
-                        </div>
-                        <input type="range" id="blurSlider" min="0" max="5" value="1.0" step="0.5"
-                               oninput="updateBlurDisplay(); processImage();">
-                         <div class="flex justify-between mt-2">
-                            <span class="text-[10px] text-gray-400">銳利</span>
-                            <span class="text-[10px] text-gray-400">陳舊暈染</span>
-                        </div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            5. 斑駁與舊化紋理
+                        </label>
+                        <select id="textureStyle" onchange="requestProcessImage(false, false)" class="w-full text-sm border-gray-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 border bg-gray-50 cursor-pointer font-medium text-gray-700 outline-none">
+                            <option value="none">無紋理 (清晰)</option>
+                            <option value="grunge">橡皮章磨損 (Grunge)</option>
+                            <option value="fiber">紙張纖維 (Fiber)</option>
+                        </select>
                     </div>
 
                     <!-- 下載按鈕 -->
                     <button id="downloadButton" onclick="downloadStamp()" disabled
-                            class="w-full btn-primary py-4 px-6 rounded text-sm tracking-[0.2em] font-medium 
-                                   disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 group">
-                        <span>收藏印記</span>
-                        <i data-lucide="arrow-down" class="w-4 h-4 transition-transform group-hover:translate-y-1"></i>
+                            class="w-full bg-indigo-600 text-white py-3.5 px-6 rounded-xl text-sm font-semibold tracking-wide
+                                   hover:bg-indigo-700 hover:shadow-lg hover:-translate-y-0.5
+                                   active:scale-[0.98] active:translate-y-0
+                                   transition-all duration-200 ease-out
+                                   disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none
+                                   flex items-center justify-center gap-2 group">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>下載印章圖片</span>
                     </button>
                     
-                    <p id="messageBox" class="text-center text-xs text-[#a83f39] mt-4 opacity-0 transition-opacity">
+                    <p id="messageBox" class="text-center text-sm font-medium text-red-500 mt-4 opacity-0 transition-opacity duration-300">
                         <!-- JS 控制顯示 -->
                     </p>
                 </div>
-                
-                <div class="text-center">
-                    <p class="text-[10px] text-gray-400 font-sans tracking-widest">
-                        DESIGNED FOR MEMORIES
-                    </p>
-                </div>
-
             </div>
 
             <!-- 右側：預覽區 -->
-            <div class="lg:col-span-8">
-                <div class="relative">
-                    <!-- 裝飾元素：角落標記 -->
-                    <div class="absolute -top-2 -left-2 w-4 h-4 border-t border-l border-gray-300"></div>
-                    <div class="absolute -top-2 -right-2 w-4 h-4 border-t border-r border-gray-300"></div>
-                    <div class="absolute -bottom-2 -left-2 w-4 h-4 border-b border-l border-gray-300"></div>
-                    <div class="absolute -bottom-2 -right-2 w-4 h-4 border-b border-r border-gray-300"></div>
-
-                    <div id="stampOutputContainer" class="shadow-2xl rounded-sm">
+            <div class="lg:col-span-8 fade-in" style="animation-delay: 0.2s;">
+                <div class="modern-card p-2 md:p-3">
+                    <div id="stampOutputContainer" class="relative group">
                         <canvas id="imageCanvas" class="hidden"></canvas>
                         
                         <!-- 預設佔位符 -->
-                        <div id="placeholderText" class="text-center p-12 transition-opacity duration-500">
-                             <i data-lucide="stamp" class="w-12 h-12 text-gray-200 mx-auto mb-4"></i>
-                             <p class="text-gray-400 text-sm tracking-widest font-light">
-                                 請於最上方工坊上傳影像<br>預覽將於此處顯現
+                        <div id="placeholderText" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 transition-opacity duration-300 z-10">
+                             <div class="bg-white p-4 rounded-full shadow-sm mb-4 border border-gray-100">
+                                <i data-lucide="image" class="w-8 h-8 text-gray-300"></i>
+                             </div>
+                             <p class="text-gray-500 font-medium text-sm">
+                                 請上傳圖片以預覽效果
                              </p>
+                        </div>
+
+                        <!-- Loading 狀態 (骨架屏特效) -->
+                        <div id="loadingIndicator" class="absolute inset-0 bg-gray-50/80 backdrop-blur-sm z-20 flex flex-col justify-center items-center opacity-0 pointer-events-none transition-opacity duration-300">
+                            <div class="flex space-x-2 mb-3">
+                                <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                                <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
+                                <div class="w-2.5 h-2.5 bg-indigo-500 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+                            </div>
+                            <span class="text-sm font-medium text-indigo-600">處理中...</span>
                         </div>
 
                         <img id="stampOutputImage" 
                              src="" 
-                             alt="印章模擬效果" 
-                             class="opacity-0 transition-opacity duration-700 hidden">
+                             alt="印章模擬預覽" 
+                             class="opacity-0 transition-opacity duration-500 hidden z-10 relative">
+                        
+                        <!-- 原圖比對按鈕 (Feature 4) -->
+                        <button id="compareBtn" class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-md text-gray-700 px-4 py-2 rounded-xl text-xs font-bold shadow-md border border-gray-200 hidden z-30 hover:bg-gray-50 active:scale-95 transition-all flex items-center select-none cursor-pointer">
+                            <i data-lucide="eye" class="w-4 h-4 mr-1.5 text-indigo-500"></i> 按住看原圖
+                        </button>
                     </div>
-                </div>
-                
-                <div id="loadingIndicator" class="flex justify-center items-center mt-6 opacity-0 transition-opacity">
-                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce mx-1"></div>
-                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce mx-1" style="animation-delay: 0.1s"></div>
-                    <div class="w-1 h-1 bg-gray-400 rounded-full animate-bounce mx-1" style="animation-delay: 0.2s"></div>
                 </div>
             </div>
 
@@ -320,6 +449,25 @@
         const ctx = imageCanvas.getContext('2d', { willReadFrequently: true });
         let originalImage = null;
 
+        // --- 新增全域變數 (效能與功能相關) ---
+        let currentMode = 'image';       // Feature 2: 'image' or 'text'
+        let fullResBaseImageData = null; // 快取原始資料 (高解析)
+        let previewBaseImageData = null; // Feature 5: 快取預覽資料 (低解析)
+        let cachedBlurredDataFull = null; // Feature 6: 局部重繪 (快取模糊後資料)
+        let cachedBlurredDataPreview = null; 
+        
+        let originalDataUrl = null;      
+        let stampedDataUrl = null;       
+        
+        // Feature 7: 預先生成小塊雜訊紋理 (256x256) 進行平鋪，節省 Math.random 時間
+        const NOISE_SIZE = 256;
+        const noiseTexture = new Uint8Array(NOISE_SIZE * NOISE_SIZE);
+        for(let i=0; i<noiseTexture.length; i++) noiseTexture[i] = Math.floor(Math.random() * 256);
+        
+        let renderRequested = false;    // Feature 8: RequestAnimationFrame 狀態
+        let pendingBlur = true;         // 追蹤是否需要重新模糊 (局部重繪用)
+        let pendingPreview = false;     // 追蹤是否使用預覽解析度 (滑桿拖曳時)
+
         // --- 工具函數 ---
 
         function hexToRgb(hex) {
@@ -330,43 +478,345 @@
             return [r, g, b];
         }
 
+        // Feature 6: 替換為 O(W*H) 的 Separable Box Blur (滑動視窗)
         function applyBoxBlur(imageData, radius) {
             if (radius <= 0) return imageData;
-            const data = imageData.data;
             const width = imageData.width;
             const height = imageData.height;
-            const newData = new Uint8ClampedArray(data.length);
+            const src = imageData.data;
+            const tmp = new Float32Array(width * height * 4);
+            const out = new Uint8ClampedArray(width * height * 4);
             const r = Math.floor(radius);
 
+            // 水平掃描 (Horizontal Pass)
             for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    let sumR = 0, sumG = 0, sumB = 0, sumA = 0;
-                    let count = 0;
-                    for (let dy = -r; dy <= r; dy++) {
-                        for (let dx = -r; dx <= r; dx++) {
-                            const nx = x + dx;
-                            const ny = y + dy;
-                            if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
-                                const index = (ny * width + nx) * 4;
-                                sumR += data[index];
-                                sumG += data[index + 1];
-                                sumB += data[index + 2];
-                                sumA += data[index + 3];
-                                count++;
-                            }
-                        }
+                let rSum = 0, gSum = 0, bSum = 0, aSum = 0, winSize = 0;
+                for (let dx = -r; dx <= r; dx++) {
+                    if (dx >= 0 && dx < width) {
+                        let idx = (y * width + dx) * 4;
+                        rSum += src[idx]; gSum += src[idx+1]; bSum += src[idx+2]; aSum += src[idx+3];
+                        winSize++;
                     }
-                    const outputIndex = (y * width + x) * 4;
-                    newData[outputIndex] = sumR / count;
-                    newData[outputIndex + 1] = sumG / count;
-                    newData[outputIndex + 2] = sumB / count;
-                    newData[outputIndex + 3] = sumA / count;
+                }
+                for (let x = 0; x < width; x++) {
+                    let idx = (y * width + x) * 4;
+                    tmp[idx] = rSum / winSize; tmp[idx+1] = gSum / winSize; tmp[idx+2] = bSum / winSize; tmp[idx+3] = aSum / winSize;
+                    
+                    let leftX = x - r;
+                    let rightX = x + r + 1;
+                    if (leftX >= 0) {
+                        let lIdx = (y * width + leftX) * 4;
+                        rSum -= src[lIdx]; gSum -= src[lIdx+1]; bSum -= src[lIdx+2]; aSum -= src[lIdx+3];
+                        winSize--;
+                    }
+                    if (rightX < width) {
+                        let rIdx = (y * width + rightX) * 4;
+                        rSum += src[rIdx]; gSum += src[rIdx+1]; bSum += src[rIdx+2]; aSum += src[rIdx+3];
+                        winSize++;
+                    }
                 }
             }
-            return new ImageData(newData, width, height);
+
+            // 垂直掃描 (Vertical Pass)
+            for (let x = 0; x < width; x++) {
+                let rSum = 0, gSum = 0, bSum = 0, aSum = 0, winSize = 0;
+                for (let dy = -r; dy <= r; dy++) {
+                    if (dy >= 0 && dy < height) {
+                        let idx = (dy * width + x) * 4;
+                        rSum += tmp[idx]; gSum += tmp[idx+1]; bSum += tmp[idx+2]; aSum += tmp[idx+3];
+                        winSize++;
+                    }
+                }
+                for (let y = 0; y < height; y++) {
+                    let idx = (y * width + x) * 4;
+                    out[idx] = rSum / winSize; out[idx+1] = gSum / winSize; out[idx+2] = bSum / winSize; out[idx+3] = aSum / winSize;
+                    
+                    let topY = y - r;
+                    let botY = y + r + 1;
+                    if (topY >= 0) {
+                        let tIdx = (topY * width + x) * 4;
+                        rSum -= tmp[tIdx]; gSum -= tmp[tIdx+1]; bSum -= tmp[tIdx+2]; aSum -= tmp[tIdx+3];
+                        winSize--;
+                    }
+                    if (botY < height) {
+                        let bIdx = (botY * width + x) * 4;
+                        rSum += tmp[bIdx]; gSum += tmp[bIdx+1]; bSum += tmp[bIdx+2]; aSum += tmp[bIdx+3];
+                        winSize++;
+                    }
+                }
+            }
+            return new ImageData(out, width, height);
+        }
+
+        // Feature 4: Mobile Panel Toggle
+        function toggleMobilePanel() {
+            const panel = document.getElementById('controlPanel');
+            const icon = document.getElementById('mobilePanelIcon');
+            panel.classList.toggle('mobile-panel-collapsed');
+            if(panel.classList.contains('mobile-panel-collapsed')) {
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        // 修正 2：切換顯示長方形比例選單
+        function toggleAspectRatio() {
+            const shape = document.getElementById('borderShape').value;
+            document.getElementById('aspectRatioDivV').classList.toggle('hidden', shape !== 'rect-v');
+            document.getElementById('aspectRatioDivH').classList.toggle('hidden', shape !== 'rect-h');
+        }
+
+        // Feature 2: 切換文字與圖片模式
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('tabImageBtn').className = mode === 'image' ? 'flex-1 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all';
+            document.getElementById('tabTextBtn').className = mode === 'text' ? 'flex-1 py-1.5 text-sm font-medium rounded-md bg-white shadow-sm text-indigo-600 transition-all' : 'flex-1 py-1.5 text-sm font-medium rounded-md text-gray-500 hover:text-gray-700 transition-all';
+            
+            document.getElementById('imageUploadSection').style.display = mode === 'image' ? 'block' : 'none';
+            document.getElementById('textInputSection').style.display = mode === 'text' ? 'block' : 'none';
+            document.getElementById('additionalTextDiv').style.display = mode === 'image' ? 'block' : 'none';
+            
+            if (mode === 'text') updateBaseCanvas();
+            else if (originalImage) updateBaseCanvas();
+        }
+
+        // Feature 3: 一鍵重置按鈕
+        function resetControls() {
+            inkColorInput.value = '#e63946';
+            thresholdSlider.value = 180;
+            blurSlider.value = 0.5;
+            document.getElementById('textureStyle').value = 'none';
+            document.getElementById('borderShape').value = 'none';
+            document.getElementById('stampText').value = '';
+            document.getElementById('removeWhiteBg').checked = true;
+            
+            if (currentMode === 'text') {
+                document.getElementById('textContent').value = '模擬\n印章';
+                document.getElementById('textLayout').value = 'horizontal';
+                document.getElementById('textFont').value = "'Noto Sans TC', sans-serif";
+                document.getElementById('borderShape').value = 'square';
+            }
+            
+            updateThresholdDisplay();
+            updateBlurDisplay();
+            document.getElementById('colorHexDisplay').textContent = inkColorInput.value.toUpperCase();
+            
+            updateBaseCanvas();
+        }
+
+        // Feature 5: 預設風格套用
+        function applyPreset(style) {
+            if(style === 'modern-red') {
+                inkColorInput.value = '#e63946';
+                thresholdSlider.value = 180;
+                blurSlider.value = 0.5;
+                document.getElementById('textureStyle').value = 'none';
+            } else if (style === 'modern') {
+                inkColorInput.value = '#1a1a1a';
+                thresholdSlider.value = 180;
+                blurSlider.value = 0.5;
+                document.getElementById('textureStyle').value = 'none';
+            } else if (style === 'ink') {
+                inkColorInput.value = '#3b5998';
+                thresholdSlider.value = 110;
+                blurSlider.value = 2.5;
+                document.getElementById('textureStyle').value = 'fiber';
+            }
+            updateThresholdDisplay();
+            updateBlurDisplay();
+            document.getElementById('colorHexDisplay').textContent = inkColorInput.value.toUpperCase();
+            requestProcessImage(true, false);
         }
 
         // --- 處理邏輯 ---
+
+        // Feature 2 整合: 更新基礎畫布 (繪製外框、文字排版與快取)
+        function updateBaseCanvas() {
+            if (currentMode === 'image' && !originalImage) return;
+            
+            const shape = document.getElementById('borderShape').value;
+            let cWidth, cHeight, padding = 0, bottomPadding = 0;
+
+            // 決定畫布尺寸 (修正 2：計算長方形比例尺寸)
+            if (currentMode === 'image') {
+                let size = Math.max(originalImage.width, originalImage.height);
+                cWidth = size;
+                cHeight = size;
+
+                if (shape === 'none') {
+                    cWidth = originalImage.width;
+                    cHeight = originalImage.height;
+                } else if (shape === 'rect-v') {
+                    let ratio = parseFloat(document.getElementById('aspectRatioV').value);
+                    cWidth = size * ratio;
+                    cHeight = size;
+                } else if (shape === 'rect-h') {
+                    let ratio = parseFloat(document.getElementById('aspectRatioH').value);
+                    cWidth = size;
+                    cHeight = size / ratio;
+                }
+
+                padding = (shape !== 'none') ? Math.max(cWidth, cHeight) * 0.1 : 0;
+                const extraText = document.getElementById('stampText').value;
+                bottomPadding = (extraText && (shape === 'square' || shape.startsWith('rect'))) ? Math.max(cWidth, cHeight) * 0.2 : padding;
+                cHeight += ((shape === 'square' || shape.startsWith('rect')) ? bottomPadding - padding : 0);
+            } else {
+                // 純文字模式預設解析度
+                let baseSize = 800;
+                cWidth = baseSize;
+                cHeight = baseSize;
+                
+                if (shape === 'rect-v') {
+                    let ratio = parseFloat(document.getElementById('aspectRatioV').value);
+                    cWidth = baseSize * ratio;
+                    cHeight = baseSize;
+                } else if (shape === 'rect-h') {
+                    let ratio = parseFloat(document.getElementById('aspectRatioH').value);
+                    cWidth = baseSize;
+                    cHeight = baseSize / ratio;
+                }
+                padding = (shape !== 'none') ? Math.max(cWidth, cHeight) * 0.075 : 40;
+            }
+
+            imageCanvas.width = cWidth;
+            imageCanvas.height = cHeight;
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
+
+            // 為了讓外框與文字能與底圖「連同處理運算」，我們使用微透深灰色而非純黑
+            // 這樣在套用雜訊與閾值時，邊緣會產生更自然的毛邊與斑駁感
+            const drawColor = "rgba(20, 20, 20, 0.9)";
+
+            // 內容繪製
+            if (currentMode === 'image') {
+                let imgW = originalImage.width, imgH = originalImage.height;
+                let scale = Math.min((cWidth - padding*2) / imgW, (cHeight - padding*2) / imgH);
+                let dw = imgW * scale, dh = imgH * scale;
+                let dx = (cWidth - dw) / 2, dy = (cHeight - dh) / 2;
+                if(document.getElementById('stampText').value && (shape === 'square' || shape.startsWith('rect'))) dy -= (bottomPadding - padding)/2;
+                ctx.drawImage(originalImage, dx, dy, dw, dh);
+            } else {
+                // Feature 2: 多行純文字排版渲染 (精準置中不超出畫布)
+                const text = document.getElementById('textContent').value || ' ';
+                const lines = text.split('\n');
+                const layout = document.getElementById('textLayout').value;
+                const fontType = document.getElementById('textFont').value;
+                
+                ctx.fillStyle = drawColor;
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                
+                let maxLines = lines.length;
+                let maxLen = Math.max(...lines.map(l => l.length));
+                
+                // 依據外框形狀計算可用安全區域 (Safe Area)
+                let availableW = cWidth - padding * 2.5;
+                let availableH = cHeight - padding * 2.5;
+                if (shape === 'circle') {
+                    // 圓形內接正方形範圍 (r * sqrt(2))
+                    availableW = (cWidth - padding * 1.5) * 0.707;
+                    availableH = (cHeight - padding * 1.5) * 0.707;
+                }
+
+                // 精準計算字體大小，避免超出安全區域
+                let fontSizeX, fontSizeY, fontSize;
+                if (layout === 'horizontal') {
+                    fontSizeX = availableW / Math.max(maxLen, 1);
+                    fontSizeY = availableH / (maxLines * 1.2);
+                    fontSize = Math.min(fontSizeX, fontSizeY);
+                } else {
+                    fontSizeX = availableW / (maxLines * 1.2);
+                    fontSizeY = availableH / Math.max(maxLen, 1);
+                    fontSize = Math.min(fontSizeX, fontSizeY);
+                }
+                
+                ctx.font = `bold ${fontSize}px ${fontType}`;
+                
+                if (layout === 'horizontal') {
+                    let totalH = maxLines * fontSize * 1.2;
+                    let startY = cHeight / 2 - totalH / 2 + fontSize * 0.6; // 修正垂直置中基準
+                    lines.forEach((line, i) => {
+                        ctx.fillText(line, cWidth / 2, startY + i * fontSize * 1.2);
+                    });
+                } else {
+                    // 直書排版 (右至左)
+                    let totalW = maxLines * fontSize * 1.2;
+                    let startX = cWidth / 2 + totalW / 2 - fontSize * 0.6;
+                    let totalH = maxLen * fontSize * 1.05;
+                    let startY = cHeight / 2 - totalH / 2 + fontSize * 0.5;
+                    
+                    lines.forEach((line, i) => {
+                        for(let j=0; j<line.length; j++) {
+                            ctx.fillText(line[j], startX - i * fontSize * 1.2, startY + j * fontSize * 1.05);
+                        }
+                    });
+                }
+            }
+
+            // 繪製外框
+            if (shape !== 'none') {
+                ctx.lineWidth = Math.max(cWidth, cHeight) * 0.02;
+                ctx.strokeStyle = drawColor;
+                if (shape === 'square' || shape.startsWith('rect')) {
+                    ctx.strokeRect(padding*0.5, padding*0.5, cWidth - padding, imageCanvas.height - padding);
+                } else if (shape === 'circle') {
+                    ctx.beginPath();
+                    ctx.arc(cWidth/2, cHeight/2, (cWidth - padding*0.8)/2, 0, 2 * Math.PI);
+                    ctx.stroke();
+                }
+            }
+
+            // 附加環繞文字 (僅圖片模式)
+            if (currentMode === 'image') {
+                const text = document.getElementById('stampText').value;
+                if (text) {
+                    ctx.fillStyle = drawColor;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    let size = Math.max(cWidth, cHeight);
+                    if (shape === 'square' || shape.startsWith('rect')) {
+                        ctx.font = `bold ${size * 0.12}px sans-serif`;
+                        ctx.fillText(text, cWidth/2, imageCanvas.height - padding);
+                    } else if (shape === 'circle') {
+                        ctx.font = `bold ${size * 0.1}px sans-serif`;
+                        ctx.fillText(text, cWidth/2, cHeight - padding*1.6);
+                    } else {
+                        ctx.font = `bold ${size * 0.1}px sans-serif`;
+                        ctx.fillText(text, cWidth/2, imageCanvas.height - padding*0.5);
+                    }
+                }
+            }
+
+            // 儲存無效果原圖與ImageData快取
+            originalDataUrl = imageCanvas.toDataURL('image/png');
+            fullResBaseImageData = ctx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+            
+            // Feature 5: 產生預覽用低解析度快取 (拖曳滑桿時使用以保證效能)
+            const maxPreviewDim = 800;
+            let pScale = 1;
+            if(cWidth > maxPreviewDim || cHeight > maxPreviewDim) {
+                pScale = Math.min(maxPreviewDim/cWidth, maxPreviewDim/cHeight);
+            }
+            let pCanvas = document.createElement('canvas');
+            pCanvas.width = Math.max(1, Math.floor(cWidth * pScale));
+            pCanvas.height = Math.max(1, Math.floor(imageCanvas.height * pScale));
+            let pCtx = pCanvas.getContext('2d');
+            pCtx.drawImage(imageCanvas, 0, 0, pCanvas.width, pCanvas.height);
+            previewBaseImageData = pCtx.getImageData(0, 0, pCanvas.width, pCanvas.height);
+
+            // 清空模糊快取強制重繪
+            cachedBlurredDataFull = null;
+            cachedBlurredDataPreview = null;
+            
+            placeholderText.style.display = 'none';
+            stampOutputImage.classList.remove('hidden');
+            stampOutputImage.classList.remove('opacity-0');
+            document.getElementById('compareBtn').classList.remove('hidden');
+            
+            // Initial render request with full resolution
+            requestProcessImage(true, false);
+        }
 
         function handleImageUpload(event) {
             const file = event.target.files[0];
@@ -380,21 +830,16 @@
                 const img = new Image();
                 img.onload = () => {
                     originalImage = img;
-                    imageCanvas.width = img.width;
-                    imageCanvas.height = img.height;
-                    ctx.drawImage(img, 0, 0); 
                     
-                    // UI 切換：隱藏佔位符，顯示圖片
                     placeholderText.style.display = 'none';
                     stampOutputImage.classList.remove('hidden');
                     
-                    // 短暫延遲讓 UI 過渡更順暢
                     setTimeout(() => {
-                        processImage();
+                        updateBaseCanvas();
                         stampOutputImage.classList.remove('opacity-0');
                         downloadButton.disabled = false;
                         loadingIndicator.classList.add('opacity-0');
-                    }, 100);
+                    }, 50);
                 };
                 img.onerror = () => {
                     loadingIndicator.classList.add('opacity-0');
@@ -408,7 +853,6 @@
 
         function updateThresholdDisplay() {
             thresholdValueDisplay.textContent = thresholdSlider.value;
-            colorHexDisplay.textContent = inkColorInput.value.toUpperCase();
         }
 
         function updateBlurDisplay() {
@@ -420,82 +864,176 @@
             messageBox.style.opacity = '1';
         }
 
-        function processImage() {
-            if (!originalImage) {
-                showMessage('請先選擇圖樣。');
-                downloadButton.disabled = true;
-                return;
-            }
+        // Feature 8 & 6 & 5 整合：RequestAnimationFrame 節流控制 + 預覽解析度切換
+        function requestProcessImage(needsBlur = true, isPreview = false) {
+            if (currentMode === 'image' && !originalImage && !fullResBaseImageData) return;
+            if (currentMode === 'text' && !fullResBaseImageData) return;
+            
+            if (needsBlur) pendingBlur = true;
+            if (isPreview) pendingPreview = true;
+            else pendingPreview = false; // onchange 放開時確保高解析度渲染
 
-            ctx.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
-            ctx.drawImage(originalImage, 0, 0);
-            let imageData = ctx.getImageData(0, 0, imageCanvas.width, imageCanvas.height);
+            if (renderRequested) return;
+            renderRequested = true;
+            
+            requestAnimationFrame(() => {
+                processImageCore(pendingBlur, pendingPreview);
+                pendingBlur = false;
+                renderRequested = false;
+            });
+        }
 
-            const blurRadius = parseFloat(blurSlider.value);
-            if (blurRadius > 0) {
-                imageData = applyBoxBlur(imageData, blurRadius);
+        // Feature 7, 6, 5, 1 整合：核心影像處理
+        function processImageCore(doBlur, usePreview) {
+            const baseDataObj = usePreview ? previewBaseImageData : fullResBaseImageData;
+            if(!baseDataObj) return;
+
+            let sourceImageData;
+            // 模糊半徑根據是否為縮小的預覽圖進行等比調整
+            const blurRadius = parseFloat(blurSlider.value) * (usePreview ? (baseDataObj.width/fullResBaseImageData.width) : 1);
+            
+            // Feature 6: 局部重繪 (Partial Rendering)
+            if (doBlur || (usePreview && !cachedBlurredDataPreview) || (!usePreview && !cachedBlurredDataFull)) {
+                let rawData = new ImageData(new Uint8ClampedArray(baseDataObj.data), baseDataObj.width, baseDataObj.height);
+                sourceImageData = blurRadius > 0 ? applyBoxBlur(rawData, blurRadius) : rawData;
+                if(usePreview) cachedBlurredDataPreview = sourceImageData;
+                else cachedBlurredDataFull = sourceImageData;
+            } else {
+                // 如果只改顏色/閾值/紋理，直接讀取已模糊的快取陣列，省下 O(W*H) 時間
+                const cached = usePreview ? cachedBlurredDataPreview : cachedBlurredDataFull;
+                sourceImageData = new ImageData(new Uint8ClampedArray(cached.data), cached.width, cached.height);
             }
             
             const threshold = parseInt(thresholdSlider.value, 10);
             const inkRgb = hexToRgb(inkColorInput.value);
-            const data = imageData.data;
-            const inkR = inkRgb[0];
-            const inkG = inkRgb[1];
-            const inkB = inkRgb[2];
-
+            const textureStyle = document.getElementById('textureStyle').value;
+            const removeWhiteBg = document.getElementById('removeWhiteBg').checked;
+            
+            const data = sourceImageData.data;
+            const rawBaseData = baseDataObj.data; // Feature 1 參照原圖判斷白底
+            
+            const inkR = inkRgb[0], inkG = inkRgb[1], inkB = inkRgb[2];
             const maxNoiseOffset = (255 - threshold) / 5;
+            const width = sourceImageData.width;
 
             for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                const alpha = data[i + 3];
+                // Feature 1: 自動白底去背 (檢查未模糊前的原始像素是否為亮色)
+                if (removeWhiteBg) {
+                    if (rawBaseData[i] > 240 && rawBaseData[i+1] > 240 && rawBaseData[i+2] > 240) {
+                        data[i+3] = 0; // 強制設為完全透明
+                        continue;
+                    }
+                }
 
+                const r = data[i], g = data[i + 1], b = data[i + 2], alpha = data[i + 3];
                 const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                const noise = (Math.random() - 0.5) * maxNoiseOffset * 2; 
-                const dynamicLuminance = luminance + noise; 
+                let dynamicLuminance = luminance;
+                
+                // Feature 7: 預生成雜訊平鋪 (Tiling)，完全移除 Math.random 消耗
+                let pixelIdx = i / 4;
+                let x = pixelIdx % width;
+                let y = Math.floor(pixelIdx / width);
+                let noiseVal = noiseTexture[(y % NOISE_SIZE) * NOISE_SIZE + (x % NOISE_SIZE)];
+                
+                // 基礎雜訊 (-1 到 +1 scale)
+                dynamicLuminance += ((noiseVal / 255) - 0.5) * maxNoiseOffset * 2; 
 
+                // 紋理疊加運算 (Grunge/Fiber)
+                if (textureStyle === 'grunge') {
+                    if (noiseVal > 180) dynamicLuminance += 100;
+                } else if (textureStyle === 'fiber') {
+                    if (x % 8 === 0 || y % 12 === 0) {
+                        if (noiseVal > 120) dynamicLuminance += 60;
+                    }
+                }
+
+                // 套用閾值與顏色
                 if (dynamicLuminance < threshold && alpha > 0) {
-                    data[i] = inkR;
-                    data[i + 1] = inkG;
-                    data[i + 2] = inkB;
-                    data[i + 3] = 255; 
+                    data[i] = inkR; data[i + 1] = inkG; data[i + 2] = inkB; data[i + 3] = 255; 
                 } else {
-                    data[i] = data[i + 1] = data[i + 2] = 0;
-                    data[i + 3] = 0; 
+                    data[i] = data[i + 1] = data[i + 2] = 0; data[i + 3] = 0; 
                 }
             }
 
-            ctx.putImageData(imageData, 0, 0);
-            const newStampDataUrl = imageCanvas.toDataURL('image/png');
-            stampOutputImage.src = newStampDataUrl;
+            // 將結果輸出為 DataURL
+            if(usePreview) {
+                // 預覽狀態下，在背景 Canvas 更新，不污染主 Canvas 的高解析度尺寸
+                let tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = sourceImageData.width; tmpCanvas.height = sourceImageData.height;
+                tmpCanvas.getContext('2d').putImageData(sourceImageData, 0, 0);
+                stampedDataUrl = tmpCanvas.toDataURL('image/png');
+            } else {
+                ctx.putImageData(sourceImageData, 0, 0);
+                stampedDataUrl = imageCanvas.toDataURL('image/png');
+            }
             
-            // 保持樣式控制
+            stampOutputImage.src = stampedDataUrl;
             stampOutputImage.style.maxWidth = '90%';
             stampOutputImage.style.maxHeight = '90%';
-            
             downloadButton.disabled = false;
         }
 
         function downloadStamp() {
-            if (!originalImage) {
+            if (currentMode === 'image' && !originalImage) {
                 showMessage('尚未生成印章。');
                 return;
             }
-            processImage();
-            const dataURL = imageCanvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            link.href = dataURL;
-            link.download = `stamp_art_${Date.now()}.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // 確保下載前已渲染出高解析度版本
+            requestProcessImage(false, false); 
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = stampedDataUrl;
+                link.download = `stamp_art_${Date.now()}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }, 100);
         }
         
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             updateThresholdDisplay();
             updateBlurDisplay();
+
+            // 確保網頁字體載入完成後重新渲染一次，避免字體未套用 (修正 1)
+            document.fonts.ready.then(() => {
+                if (currentMode === 'text') updateBaseCanvas();
+            });
+
+            // 預設關閉手機控制面板
+            if (window.innerWidth < 1024) {
+                document.getElementById('controlPanel').classList.add('mobile-panel-collapsed');
+            }
+
+            // Feature 3: 拖曳上傳 (Drag & Drop) 事件綁定
+            const dropZoneBtn = document.getElementById('dropZoneBtn');
+            dropZoneBtn.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZoneBtn.classList.add('border-indigo-400', 'bg-indigo-50');
+            });
+            dropZoneBtn.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dropZoneBtn.classList.remove('border-indigo-400', 'bg-indigo-50');
+            });
+            dropZoneBtn.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZoneBtn.classList.remove('border-indigo-400', 'bg-indigo-50');
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    document.getElementById('imageInput').files = e.dataTransfer.files;
+                    handleImageUpload({target: {files: e.dataTransfer.files}});
+                }
+            });
+
+            // Feature 4: 原圖比對按鈕事件綁定
+            const compareBtn = document.getElementById('compareBtn');
+            const showOriginal = (e) => { e.preventDefault(); if(originalDataUrl) stampOutputImage.src = originalDataUrl; };
+            const showStamped = (e) => { e.preventDefault(); if(stampedDataUrl) stampOutputImage.src = stampedDataUrl; };
+            
+            compareBtn.addEventListener('mousedown', showOriginal);
+            compareBtn.addEventListener('mouseup', showStamped);
+            compareBtn.addEventListener('mouseleave', showStamped);
+            compareBtn.addEventListener('touchstart', showOriginal, {passive: false});
+            compareBtn.addEventListener('touchend', showStamped, {passive: false});
         });
 
     </script>
