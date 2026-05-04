@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>防災包效期與庫存管理系統</title>
+  
+  <!-- === 載入 React 與 Tailwind 等核心套件 === -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+
+  <!-- === 自訂樣式與動畫 === -->
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #e2e8f0; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
+    
+    /* 深淺色主題適配 (Light Mode Override) */
+    body.light-mode { background-color: #f3f4f6; color: #1e293b; }
+    
+    /* 區塊背景與邊框 */
+    body.light-mode .bg-slate-900, body.light-mode .bg-slate-950 { background-color: #ffffff !important; border-color: #e5e7eb !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    body.light-mode .bg-slate-800, body.light-mode .bg-slate-700 { background-color: #ffffff !important; border-color: #e5e7eb !important; color: #1e293b !important; }
+    body.light-mode .border-slate-600, body.light-mode .border-slate-700, body.light-mode .border-slate-800 { border-color: #e5e7eb !important; }
+    
+    /* 卡片異常狀態底色 (淺色模式淡化) */
+    body.light-mode .bg-rose-900\/40 { background-color: #fff1f2 !important; }
+    body.light-mode .bg-yellow-900\/40 { background-color: #fefce8 !important; }
+
+    /* 文字顏色自動適配 */
+    body.light-mode .text-slate-200 { color: #1f2937 !important; }
+    body.light-mode .text-slate-300 { color: #4b5563 !important; }
+    body.light-mode .text-slate-400 { color: #6b7280 !important; }
+    
+    /* 避免 hover 變成白底白字 */
+    body.light-mode .hover\:text-white:hover { color: #111827 !important; }
+    body.light-mode .hover\:bg-slate-700:hover, body.light-mode .hover\:bg-slate-600:hover { background-color: #f3f4f6 !important; border-color: #d1d5db !important; }
+
+    /* 重點色彩調整 (橘色、紫色、藍色、綠色) */
+    body.light-mode .text-amber-500, body.light-mode .text-amber-600 { color: #c2410c !important; } /* 橘色加深以利白底閱讀 */
+    body.light-mode .bg-amber-600 { background-color: #f97316 !important; border-color: #ea580c !important; color: #ffffff !important; }
+    body.light-mode .bg-purple-600 { background-color: #8b5cf6 !important; border-color: #7c3aed !important; color: #ffffff !important; } /* 紫色調亮柔和 */
+    body.light-mode .text-blue-400 { color: #2563eb !important; }
+    body.light-mode .text-emerald-400 { color: #059669 !important; }
+    body.light-mode .text-rose-400, body.light-mode .text-rose-500 { color: #e11d48 !important; }
+
+    /* 狀態標籤與按鈕的純白字體保護 */
+    body.light-mode .bg-blue-600, body.light-mode .bg-emerald-600, body.light-mode .bg-rose-600 { color: #ffffff !important; }
+    
+    /* 數量標籤調整 (右上角角標) */
+    body.light-mode .bg-slate-900.text-emerald-400 { color: #059669 !important; background-color: #ecfdf5 !important; border-color: #a7f3d0 !important; } 
+    body.light-mode .bg-slate-900.text-rose-400 { color: #e11d48 !important; background-color: #fff1f2 !important; border-color: #fecdd3 !important; }
+
+    /* 修正白字反轉問題 (排除已經被保護的背景) */
+    body.light-mode .text-white:not(.bg-blue-600):not(.bg-emerald-600):not(.bg-rose-600):not(.bg-amber-600):not(.bg-purple-600) { color: #1f2937 !important; }
+
+    /* 頂層控制列 */
+    body.light-mode header.bg-slate-800 { background-color: #ffffff !important; border-bottom-color: #e5e7eb !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    body.light-mode .bg-black\/40 { background-color: #f3f4f6 !important; border-color: #e5e7eb !important; }
+
+    /* 表格專用 */
+    body.light-mode th { background-color: #f9fafb !important; color: #111827 !important; border-bottom-color: #d1d5db !important; }
+    body.light-mode tr.hover\:bg-slate-800\/50:hover { background-color: #f3f4f6 !important; }
+    body.light-mode tr { border-color: #e5e7eb !important; }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    body:not(.light-mode) ::-webkit-scrollbar-thumb { background: #475569; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    
+    @keyframes segment-load {
+      0% { width: 0%; opacity: 0.5; }
+      10% { width: 5%; opacity: 1; }
+      70% { width: 80%; opacity: 1; }
+      100% { width: 100%; opacity: 1; }
+    }
+    
+    /* 載入動畫 */
+    @keyframes gentle-float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.2; transform: scale(0.9); }
+      50% { opacity: 0.5; transform: scale(1.1); }
+    }
+
+    .loading-bar-box {
+      width: 280px;
+      height: 32px; 
+      border: 2px solid #64748b;
+      padding: 3px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loading-bar-fill {
+      height: 100%;
+      background-image: repeating-linear-gradient(90deg, #f59e0b 0px, #f59e0b 8px, transparent 8px, transparent 12px);
+      width: 0;
+      animation: segment-load 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+      border-radius: 2px;
+    }
+
+    /* 自動完成選單樣式 */
+    .autocomplete-items {
+      position: absolute;
+      border: 1px solid #d4d4d4;
+      border-bottom: none;
+      border-top: none;
+      z-index: 99;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 150px;
+      overflow-y: auto;
+      background-color: white;
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .autocomplete-item {
+      padding: 10px;
+      cursor: pointer;
+      background-color: #fff;
+      border-bottom: 1px solid #d4d4d4;
+      color: #1f2937;
+      font-size: 0.875rem;
+    }
+    .autocomplete-item:hover { background-color: #e9e9e9; }
+    .pie-legend-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    
+    /* 列印樣式 */
+    @media print {
+        @page { margin: 1cm; }
+        body { font-family: system-ui, sans-serif; padding-bottom: 50px; background-color: white; color: black; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .no-print { display: none !important; }
+        .page-footer { position: fixed; bottom: 0; left: 0; right: 0; height: 40px; border-top: 1px solid #ccc; padding-top: 5px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; background: white; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    
+    // === 預設防災物資字典 (供自動完成使用) ===
+    const DEFAULT_SUPPLIES = [
+        "礦泉水 (瓶)", "營養口糧", "罐頭食品", "泡麵", "保暖毯", 
+        "手電筒", "備用電池 (AA)", "備用電池 (AAA)", "行動電源", 
+        "急救箱 (綜合)", "OK繃", "優碘/消毒水", "紗布/繃帶", "常備藥品 (感冒/腸胃)",
+        "哨子", "防身刀具/工具組", "打火機/防風火柴", "輕便雨衣", 
+        "工作手套", "口罩", "衛生紙/濕紙巾", "個人證件影本", "備用現金"
+    ];
+
+    // === 圖示庫 (Icons) ===
+    const Icons = {
+      Backpack: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10"></path><path d="M8 10V8a4 4 0 0 1 8 0v2"></path><path d="M9 22v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"></path><path d="M5 18H4"></path><path d="M20 18h-1"></path><path d="M12 10v5"></path></svg>,
+      Grid: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>,
+      List: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>,
+      Settings: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.39a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>,
+      PlusCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 12h8"></path><path d="M12 8v8"></path></svg>,
+      XCircle: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>,
+      Save: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>,
+      Trash2: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" x2="10" y1="11" y2="17"></line><line x1="14" x2="14" y1="11" y2="17"></line></svg>,
+      AlertTriangle: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>,
+      Edit: () => <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>,
+      Copy: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>,
+      Calendar: () => <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>,
+      ChevronDown: () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>,
+      Download: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>,
+      Mail: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"></rect><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path></svg>,
+      Send: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>,
+      Bell: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>,
+      BellOff: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13.73 21a2 2 0 0 1-3.46 0"></path><path d="M18.63 13A17.89 17.89 0 0 1 18 8"></path><path d="M6.26 6.26A5.86 5.86 0 0 0 6 8c0 7-3 9-3 9h14"></path><path d="M18 8a6 6 0 0 0-9.33-5"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>,
+      Check: () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
+      Lock: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>,
+      Upload: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+      Clipboard: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>,
+      ClipboardCheck: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>,
+      Tool: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
+      Box: () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>,
+      
+      // 簡單的星星圖案
+      Star: ({ className }) => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+      )
+    };
+
+    // === 共用元件：系統訊息 Modal ===
+    const SystemModal = ({ config, onClose }) => {
+      if (!config) return null;
+      return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className={`px-5 py-3 border-b flex justify-between items-center ${config.type === 'error' ? 'bg-rose-100 border-rose-200 text-rose-700' : 'bg-slate-100 border-slate-200 text-slate-700'}`}>
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                {config.type === 'error' ? <Icons.AlertTriangle /> : (config.icon || <Icons.Backpack className="w-5 h-5" />)} 
+                {config.title}
+              </h3>
+              <button onClick={onClose}><Icons.XCircle className="w-5 h-5 opacity-50 hover:opacity-100" /></button>
+            </div>
+            <div className="p-5 text-gray-700 whitespace-pre-wrap leading-relaxed">
+              {config.customBody ? config.customBody : config.message}
+            </div>
+            <div className="p-4 bg-gray-50 border-t flex gap-3 justify-end">
+              {config.onConfirm ? (
+                <>
+                  <button onClick={onClose} className="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 font-bold hover:bg-gray-100">取消</button>
+                  <button onClick={() => { config.onConfirm(); onClose(); }} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 shadow-sm">確認執行</button>
+                </>
+              ) : (
+                <button onClick={onClose} className="w-full px-4 py-2 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-700">關閉</button>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // === 共用元件：自動完成輸入框 (已加入防抖) ===
+    const AutoCompleteInput = ({ value, onChange, options = [], placeholder }) => {
+      const [suggestions, setSuggestions] = useState([]);
+      const [showSuggestions, setShowSuggestions] = useState(false);
+      const inputRef = useRef(null);
+      const timeoutRef = useRef(null);
+
+      useEffect(() => {
+        const handleClickOutside = (event) => {
+          if (inputRef.current && !inputRef.current.contains(event.target)) {
+            setShowSuggestions(false);
+          }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+      }, []);
+
+      const handleChange = (e) => {
+        const val = e.target.value;
+        onChange(e);
+        
+        // 防抖 Debounce
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
+          if (val.length > 0) {
+            const filtered = options.filter((item) => item.toUpperCase().indexOf(val.toUpperCase()) > -1);
+            setSuggestions(filtered);
+            setShowSuggestions(true);
+          } else {
+            setSuggestions(options);
+            setShowSuggestions(true);
+          }
+        }, 300);
+      };
+
+      const handleSuggestionClick = (suggestion) => {
+        onChange({ target: { value: suggestion } });
+        setSuggestions([]);
+        setShowSuggestions(false);
+      };
+
+      return (
+        <div className="relative" ref={inputRef}>
+          <input
+            type="text"
+            placeholder={placeholder}
+            value={value}
+            onChange={handleChange}
+            onFocus={(e) => handleChange(e)}
+            className="w-full p-2.5 border border-gray-300 rounded text-gray-900 font-bold focus:ring-2 focus:ring-blue-500 outline-none"
+          />
+          {showSuggestions && suggestions.length > 0 && (
+            <ul className="autocomplete-items">
+              {suggestions.map((suggestion, index) => (
+                <li key={index} onClick={() => handleSuggestionClick(suggestion)} className="autocomplete-item">
+                  {suggestion}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      );
+    };
+
+    // === 共用元件：智慧效期輸入框 ===
+    const SmartExpiryInput = ({ value, onChange }) => {
+      const [y, setY] = useState('');
+      const [m, setM] = useState('');
+      const [d, setD] = useState('');
+      const refY = useRef(null);
+      const refM = useRef(null);
+      const refD = useRef(null);
+
+      useEffect(() => {
+        if (!value) { setY(''); setM(''); setD(''); return; }
+        const parts = value.split('-');
+        setY(parts[0] || ''); setM(parts[1] || ''); setD(parts[2] || '');
+      }, [value]);
+
+      const triggerChange = (newY, newM, newD) => {
+        let finalStr = `${newY}`;
+        if (newM) finalStr += `-${newM}`;
+        if (newD) finalStr += `-${newD}`;
+        onChange(finalStr);
+      };
+
+      const handleYearChange = (e) => {
+        const val = e.target.value.slice(0, 4);
+        setY(val); triggerChange(val, m, d);
+        if (val.length === 4) refM.current.focus();
+      };
+      
+      const handleMonthChange = (e) => {
+        let val = e.target.value.slice(0, 2);
+        if (val.length === 2 && parseInt(val) > 12) val = '12';
+        setM(val); triggerChange(y, val, d);
+        if (val.length === 2) refD.current.focus();
+      };
+      
+      const handleDayChange = (e) => {
+        let val = e.target.value.slice(0, 2);
+        if (val.length === 2 && parseInt(val) > 31) val = '31';
+        setD(val); triggerChange(y, m, val);
+      };
+
+      const handleKeyDown = (e, currentVal, prevRef) => {
+        if (e.key === 'Backspace' && currentVal === '' && prevRef) {
+          e.preventDefault(); 
+          prevRef.current.focus();
+        }
+      };
+
+      return (
+        <div className="flex items-center gap-1">
+          <div className="relative group">
+            <input ref={refY} type="text" inputMode="numeric" pattern="[0-9]*" placeholder="YYYY" value={y} onChange={handleYearChange} className="w-14 h-9 text-center font-bold text-gray-900 bg-white border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all" />
+            <span className="absolute -top-3 left-1 text-[9px] text-gray-400 bg-white px-1">年</span>
+          </div>
+          <div><span className="text-gray-400 font-bold">-</span></div>
+          <div className="relative group">
+            <input ref={refM} type="text" inputMode="numeric" pattern="[0-9]*" placeholder="MM" value={m} onChange={handleMonthChange} onKeyDown={(e)=>handleKeyDown(e,m,refY)} className="w-10 h-9 text-center font-bold text-gray-900 bg-white border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all" />
+            <span className="absolute -top-3 left-1 text-[9px] text-gray-400 bg-white px-1">月</span>
+          </div>
+          <div><span className="text-gray-400 font-bold">-</span></div>
+          <div className="relative group">
+            <input ref={refD} type="text" inputMode="numeric" pattern="[0-9]*" placeholder="DD" value={d} onChange={handleDayChange} onKeyDown={(e)=>handleKeyDown(e,d,refM)} className="w-10 h-9 text-center font-bold text-gray-900 bg-white border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 outline-none shadow-sm transition-all placeholder-gray-300" />
+            <span className="absolute -top-3 left-1 text-[9px] text-gray-400 bg-white px-1">日</span>
+          </div>
+        </div>
+      );
+    };
+    
+    // === 主應用程式 ===
+    const App = () => {
+      const [mode, setMode] = useState('card'); // 'card', 'list'
+      const DEFAULT_GS_URL = "https://script.google.com/macros/s/AKfycbzH-ZekWQkntwrYfPzPm_XRGF3P3EgQ0Rlpt5U69-OX-ZMLc6uIgCadCC1XRmJvJ0s5/exec"; // Google Apps Script 網址
+      
+      const [gsUrl, setGsUrl] = useState(() => localStorage.getItem('gobag_gs_url') || DEFAULT_GS_URL);
+      const [syncStatus, setSyncStatus] = useState('idle'); 
+      const [mailConfig, setMailConfig] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('gobag_mail_config')) || { email: '', apiUrl: '' }; } 
+        catch (e) { return { email: '', apiUrl: '' }; }
+      });
+      
+      // 優化：核心權限與環境狀態
+      const [authRole, setAuthRole] = useState(() => localStorage.getItem('gobag_auth_role') || 'viewer'); // 權限分級 (admin/viewer)
+      const [theme, setTheme] = useState(() => localStorage.getItem('gobag_theme') || 'dark'); // 深淺色模式
+      const [visibleCount, setVisibleCount] = useState(20); // 卡片模式分頁數量限制
+
+      // 虛擬滾動 (Virtual Scrolling) 狀態 - 專供清單模式使用
+      const [listScroll, setListScroll] = useState({ top: 0, height: window.innerHeight });
+
+      // 監聽並套用深淺色模式
+      useEffect(() => {
+          if (theme === 'light') document.body.classList.add('light-mode');
+          else document.body.classList.remove('light-mode');
+          localStorage.setItem('gobag_theme', theme);
+      }, [theme]);
+
+      const [showMailModal, setShowMailModal] = useState(false);
+      const [isMailTesting, setIsMailTesting] = useState(false);
+      const [supplyList, setSupplyList] = useState(DEFAULT_SUPPLIES);
+      const [showPasscodeModal, setShowPasscodeModal] = useState(false);
+      const [passcodeInput, setPasscodeInput] = useState('');
+      const [modalConfig, setModalConfig] = useState(null);
+      const [isLoading, setIsLoading] = useState(true);
+      const [reportMode, setReportMode] = useState('current');
+      
+      const [clipboard, setClipboard] = useState(null); 
+      const [pasteMode, setPasteMode] = useState(false);
+      
+      // 排序狀態 (List Mode 專用)
+      const [sortConfig, setSortConfig] = useState({ key: 'bagName', direction: 'asc' });
+      
+      // 口袋層級篩選 State
+      const [activeCompartment, setActiveCompartment] = useState('全部');
+
+      // 資料結構轉換：bags -> items
+      const [bags, setBags] = useState(() => {
+        const saved = localStorage.getItem('gobag_data_cache');
+        return saved ? JSON.parse(saved) : [{ id: '1', name: '家庭防災包 (主)', items: [] }];
+      });
+      const [activeBagId, setActiveBagId] = useState(bags[0]?.id || '1');
+      
+      const [selectedItem, setSelectedItem] = useState(null);
+      const [editForm, setEditForm] = useState(null);
+      const [bagMenuOpen, setBagMenuOpen] = useState(false);
+      const [bagEditForm, setBagEditForm] = useState({ name: '' });
+      const [isDeleteConfirming, setIsDeleteConfirming] = useState(false);
+      const [isBagSelectorOpen, setIsBagSelectorOpen] = useState(false);
+      const [showAdvancedMenu, setShowAdvancedMenu] = useState(false);
+      
+      const fileInputRef = useRef(null);
+
+      const activeBag = bags.find(b => String(b.id) === String(activeBagId)) || bags[0] || { id: '1', name: '預設防災包', items: [] };
+
+      // 切換包包時，重置篩選層級
+      useEffect(() => { setActiveCompartment('全部'); }, [activeBagId]);
+
+      // 提取當前防災包擁有的口袋清單
+      const existingCompartments = Array.from(new Set(activeBag.items.map(i => i.compartment || '主空間')));
+      const filterCompartments = ['全部', ...existingCompartments];
+
+      // === 資料同步邏輯 (支援增量更新 Incremental Sync 架構) ===
+      const fetchFromSheet = async (url = gsUrl) => {
+        if (!url) { setIsLoading(false); return; }
+        setSyncStatus('syncing');
+        try {
+          const res = await fetch(url);
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setBags(data);
+            localStorage.setItem('gobag_data_cache', JSON.stringify(data));
+            if (!data.find(b => String(b.id) === String(activeBagId))) {
+              setActiveBagId(data[0].id);
+            }
+            setSyncStatus('success');
+          } else {
+            setSyncStatus('success');
+          }
+          fetch(url + "?action=getSupplies").then(r => r.json()).then(list => { if(Array.isArray(list)) setSupplyList(list); }).catch(e => console.warn(e));
+        } catch (e) {
+          console.error("Load failed", e);
+          setSyncStatus('error');
+        } finally {
+          setTimeout(() => setSyncStatus('idle'), 2000);
+          setTimeout(() => setIsLoading(false), 1500);
+        }
+      };
+
+      // 加入 patchInfo 參數以發送增量更新片段
+      const saveToSheet = async (newData, patchInfo = null) => {
+        setBags(newData);
+        localStorage.setItem('gobag_data_cache', JSON.stringify(newData));
+        if (!gsUrl) return;
+        setSyncStatus('syncing');
+        try {
+          const payload = patchInfo 
+            ? { action: 'patch', patch: patchInfo, timestamp: Date.now() }
+            : { action: 'full_sync', data: newData, timestamp: Date.now() };
+
+          await fetch(gsUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' } });
+          setSyncStatus('success');
+        } catch (e) {
+          console.error("Save failed", e);
+          setSyncStatus('error');
+        } finally {
+          setTimeout(() => setSyncStatus('idle'), 2000);
+        }
+      };
+
+      useEffect(() => { if (gsUrl) fetchFromSheet(); else setIsLoading(false); }, []);
+
+      // === 管理員權限驗證 (RBAC) ===
+      const handleAdminAccess = () => { setPasscodeInput(''); setShowPasscodeModal(true); };
+      const verifyPasscode = () => {
+        if (passcodeInput === '789') { 
+            setAuthRole('admin'); 
+            localStorage.setItem('gobag_auth_role', 'admin');
+            setShowPasscodeModal(false); 
+            setSelectedItem(null); 
+            setModalConfig({ title: "登入成功", message: "您已切換為「管理員模式」，可進行增刪改操作。", type: 'success' });
+        } 
+        else { setModalConfig({ title: "錯誤", message: "通行碼錯誤", type: 'error' }); }
+      };
+      const handleLogout = () => {
+        setAuthRole('viewer');
+        localStorage.setItem('gobag_auth_role', 'viewer');
+        setModalConfig({ title: "已登出", message: "已切換回「檢視者模式」，僅能查看與盤點。", type: 'info' });
+      };
+
+      // === 拖曳排序功能 (Drag & Drop) ===
+      const handleDragStart = (e, item) => {
+          if (authRole !== 'admin') return; 
+          e.dataTransfer.setData('text/plain', item.id);
+          e.dataTransfer.effectAllowed = "move";
+      };
+      const handleDrop = (e, targetItem) => {
+          if (authRole !== 'admin') return;
+          e.preventDefault();
+          const sourceId = e.dataTransfer.getData('text/plain');
+          if (sourceId === targetItem.id) return;
+          
+          const newItems = [...activeBag.items];
+          const srcIdx = newItems.findIndex(i => i.id === sourceId);
+          const tgtIdx = newItems.findIndex(i => i.id === targetItem.id);
+          if (srcIdx === -1 || tgtIdx === -1) return;
+          
+          // 陣列項目對調
+          const [movedItem] = newItems.splice(srcIdx, 1);
+          newItems.splice(tgtIdx, 0, movedItem);
+          
+          const newData = bags.map(b => String(b.id) === String(activeBagId) ? { ...b, items: newItems } : b);
+          saveToSheet(newData, { type: 'reorder_items', bagId: activeBagId, items: newItems });
+      };
+      const handleDragOver = (e) => { e.preventDefault(); };
+
+      // 支援將物品拖曳至「口袋/夾層」標籤上移動位置
+      const handleCompartmentDrop = (e, targetComp) => {
+          if (authRole !== 'admin') return;
+          e.preventDefault();
+          const sourceId = e.dataTransfer.getData('text/plain');
+          const finalComp = targetComp === '全部' ? '主空間' : targetComp;
+          
+          const newItems = activeBag.items.map(i => i.id === sourceId ? { ...i, compartment: finalComp } : i);
+          const newData = bags.map(b => String(b.id) === String(activeBagId) ? { ...b, items: newItems } : b);
+          saveToSheet(newData, { type: 'move_compartment', bagId: activeBagId, itemId: sourceId, compartment: finalComp });
+      };
+
+      // === 效期狀態計算 (新增 isNoExpiry 判斷) ===
+      const getStatus = (expiry, isNoExpiry) => {
+        if (isNoExpiry) return { type: 'no_expiry', bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-white', label: '無期限' };
+
+        const strExpiry = String(expiry || '').trim();
+        if (!strExpiry) return { type: 'empty', bg: 'bg-slate-700', border: 'border-slate-600', text: 'text-slate-400', label: '未設定' };
+        
+        const parts = strExpiry.split('-');
+        if (parts.length < 2) return { type: 'empty', bg: 'bg-slate-700', border: 'border-slate-600', text: 'text-slate-400', label: '未設定' };
+        
+        const expY = parseInt(parts[0], 10);
+        const expM = parseInt(parts[1], 10);
+        const expD = parts[2] ? parseInt(parts[2], 10) : null;
+        if (isNaN(expY) || isNaN(expM)) return { type: 'empty', bg: 'bg-slate-700', border: 'border-slate-600', text: 'text-slate-400', label: '未設定' };
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        let isExpired = false;
+        if (expD !== null && !isNaN(expD)) {
+            const expiryDate = new Date(expY, expM - 1, expD);
+            if (expiryDate < today) isExpired = true;
+        } else {
+            const currentMonthDiff = (expY - today.getFullYear()) * 12 + (expM - (today.getMonth() + 1));
+            if (currentMonthDiff < 0) isExpired = true;
+        }
+        if (isExpired) return { type: 'expired', bg: 'bg-rose-600', border: 'border-rose-600', text: 'text-white', label: '過期' };
+        
+        const diffMonths = (expY - today.getFullYear()) * 12 + (expM - (today.getMonth() + 1));
+        if (diffMonths < 6) return { type: 'warning', bg: 'bg-amber-500', border: 'border-amber-500', text: 'text-white', label: '近效期' };
+        return { type: 'ok', bg: 'bg-emerald-600', border: 'border-emerald-600', text: 'text-white', label: '正常' };
+      };
+
+      const getItemOverallStatus = (batches) => {
+        if (!batches || batches.length === 0) return 'border-slate-600 bg-slate-800';
+        let worstPriority = 0; 
+        let resultClass = 'border-slate-600 bg-slate-800';
+        batches.forEach(b => {
+          const s = getStatus(b.expiry, b.isNoExpiry);
+          let p = 0;
+          if (s.type === 'expired') p = 3; else if (s.type === 'warning') p = 2; else if (s.type === 'ok' || s.type === 'no_expiry') p = 1;
+          if (p > worstPriority) {
+            worstPriority = p;
+            if (s.type === 'expired') resultClass = 'border-rose-500 bg-rose-900/40';
+            else if (s.type === 'warning') resultClass = 'border-yellow-500 bg-yellow-900/40';
+            else if (s.type === 'ok' || s.type === 'no_expiry') resultClass = 'border-emerald-500 bg-slate-700';
+          }
+        });
+        return resultClass;
+      };
+
+      const getSortedBatches = (batches) => {
+        if (!batches) return [];
+        return [...batches].sort((a, b) => {
+          if (a.isNoExpiry && !b.isNoExpiry) return 1;
+          if (!a.isNoExpiry && b.isNoExpiry) return -1;
+          const dateA = a.expiry || '9999-99-99';
+          const dateB = b.expiry || '9999-99-99';
+          if (dateA < dateB) return -1; if (dateA > dateB) return 1; return 0;
+        });
+      };
+      
+      const getTotalQty = (batches) => batches ? batches.reduce((acc, b) => acc + (parseInt(b.qty)||0), 0) : 0;
+
+      // === 取得單一防災包的整體效期狀態 (供上方切換選單標色使用) ===
+      const getBagOverallStatus = (bag) => { 
+        if (!bag.items) return 'ok';
+        let hasExpired = false; let hasWarning = false;
+        for (const item of bag.items) { 
+          if (item.batches) { 
+            for (const batch of item.batches) { 
+              const s = getStatus(batch.expiry, batch.isNoExpiry); 
+              if (s.type === 'expired') hasExpired = true; 
+              else if (s.type === 'warning') hasWarning = true; 
+            } 
+          } 
+        }
+        if (hasExpired) return 'expired'; 
+        if (hasWarning) return 'warning'; 
+        return 'ok';
+      };
+
+      // === 扁平化列表資料與排序 (用於清單與匯出) ===
+      const getFlattenedData = () => {
+        let flatData = [];
+        const targetBags = reportMode === 'current' ? [activeBag] : bags;
+
+        targetBags.forEach(bag => {
+          if (!bag.items || bag.items.length === 0) return;
+          bag.items.forEach(item => {
+            const requiredQty = item.requiredQty || 0;
+            const totalQty = getTotalQty(item.batches);
+            const compartment = item.compartment || '主空間';
+
+            if (!item.batches || item.batches.length === 0) {
+               flatData.push({
+                 bagId: bag.id, bagName: bag.name,
+                 itemId: item.id, itemName: item.name,
+                 compartment: compartment, isCritical: item.isCritical,
+                 requiredQty, totalQty, batchQty: 0,
+                 expiry: '-', isNoExpiry: false,
+                 statusObj: { type: 'empty', bg: 'bg-slate-800', text: 'text-slate-500', border: 'border-slate-700', label: '無庫存' }
+               });
+               return;
+            }
+
+            item.batches.forEach(batch => {
+               const s = getStatus(batch.expiry, batch.isNoExpiry);
+               flatData.push({
+                 bagId: bag.id, bagName: bag.name,
+                 itemId: item.id, itemName: item.name,
+                 compartment: compartment, isCritical: item.isCritical,
+                 requiredQty, totalQty, batchQty: batch.qty,
+                 expiry: batch.expiry, isNoExpiry: batch.isNoExpiry,
+                 statusObj: s
+               });
+            });
+          });
+        });
+
+        if (reportMode === 'all_abnormal') {
+           flatData = flatData.filter(d => d.statusObj.type === 'expired' || d.statusObj.type === 'warning');
+        }
+
+        flatData.sort((a, b) => {
+           let aVal = a[sortConfig.key];
+           let bVal = b[sortConfig.key];
+
+           if (sortConfig.key === 'expiry') {
+              aVal = a.isNoExpiry ? '9999-99-99' : (a.expiry || '9999-99-99');
+              bVal = b.isNoExpiry ? '9999-99-99' : (b.expiry || '9999-99-99');
+           }
+
+           if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+           if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+           return 0;
+        });
+
+        return flatData;
+      };
+
+      const displayData = getFlattenedData();
+
+      // === 虛擬滾動 (Virtual Scrolling) 計算 ===
+      const ROW_HEIGHT = 48; // 預估表格單列高度(px)
+      const OVERSCAN = 10;   // 畫面外上下緩衝渲染列數 (避免滾動出現白屏)
+      const startIndex = Math.max(0, Math.floor(listScroll.top / ROW_HEIGHT) - OVERSCAN);
+      const endIndex = Math.min(displayData.length, Math.ceil((listScroll.top + listScroll.height) / ROW_HEIGHT) + OVERSCAN);
+      const visibleData = displayData.slice(startIndex, endIndex);
+      
+      // 計算虛擬填充高度，以撐開滾動條
+      const paddingTop = startIndex * ROW_HEIGHT;
+      const paddingBottom = Math.max(0, (displayData.length - endIndex) * ROW_HEIGHT);
+
+      const requestSort = (key) => {
+        let direction = 'asc';
+        if (sortConfig.key === key && sortConfig.direction === 'asc') direction = 'desc';
+        setSortConfig({ key, direction });
+      };
+
+      const sortIndicator = (key) => {
+        if (sortConfig.key !== key) return <span className="text-slate-600 ml-1 text-[10px]">↕</span>;
+        return sortConfig.direction === 'asc' ? <span className="text-amber-400 ml-1 text-[10px]">▲</span> : <span className="text-amber-400 ml-1 text-[10px]">▼</span>;
+      };
+
+      // === 匯出報表 PDF ===
+      const handleExportReport = () => {
+        let titleSuffix = reportMode === 'current' ? activeBag.name : (reportMode === 'all_abnormal' ? '全部異常清單' : '全部資料清單');
+
+        let htmlContent = `<html><head><title>${titleSuffix} - 庫存清單</title><style>
+          @media print { 
+            @page { margin: 1cm; size: auto; } 
+            body { font-family: system-ui, sans-serif; margin: 0; padding: 0; background: white; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;}
+            .page-header { position: fixed; top: 0; width: 100%; text-align: center; background: white; z-index: 1000; padding-bottom: 10px; }
+            .page-footer { position: fixed; bottom: 0; width: 100%; height: 50px; background: white; border-top: 1px solid #ccc; padding-top: 5px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; z-index: 1000; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; page-break-inside: auto; }
+            tr { break-inside: avoid; page-break-inside: avoid; }
+            td, th { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; line-height: 1.4; font-size: 11px; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .expired { color: #be123c; font-weight: bold; }
+            .warning { color: #a16207; font-weight: bold; }
+            .text-right { text-align: right; }
+            .text-center { text-align: center; }
+            .total-col { background-color: #f8fafc; font-weight: bold; }
+            .footer-space { height: 50px; border: none !important; } 
+            .footer-space td { border: none !important; }
+            .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; }
+            .badge-critical { background: #e11d48; color: white; margin-left: 4px; }
+            .badge-tag { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+          }
+          body { font-family: system-ui, sans-serif; padding: 20px; }
+          h1 { text-align: center; margin-bottom: 20px; }
+          table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: middle; line-height: 1.6; }
+          th { background-color: #f3f4f6; font-weight: bold; }
+          .expired { color: #be123c; font-weight: bold; }
+          .warning { color: #a16207; font-weight: bold; }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .total-col { background-color: #f8fafc; font-weight: bold; }
+          .badge { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; display: inline-block; }
+          .badge-critical { background: #e11d48; color: white; margin-left: 4px; }
+          .badge-tag { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+        </style></head><body>
+          
+          <h1>${titleSuffix} - 庫存清單</h1>
+          
+          <table>
+            <thead>
+              <tr>
+                <th width="15%">儲存位置 (一層)</th>
+                <th width="15%">口袋標籤 (二層)</th>
+                <th width="20%">物資名稱</th>
+                <th width="8%" class="text-right">應備</th>
+                <th width="8%" class="text-right total-col">現有</th>
+                <th width="8%" class="text-right">批次數量</th>
+                <th width="15%">效期</th>
+                <th width="10%" class="text-center">狀態</th>
+              </tr>
+            </thead>
+            <tbody>`;
+        
+        if (displayData.length === 0) {
+            htmlContent += `<tr><td colspan="8" class="text-center" style="padding: 20px;">無資料</td></tr>`;
+        } else {
+            displayData.forEach(item => {
+                const isQtyMismatch = item.totalQty !== item.requiredQty;
+                const totalStyle = isQtyMismatch ? 'color: #e11d48;' : 'color: #059669;';
+                const statusClass = item.statusObj.type === 'expired' ? 'expired' : (item.statusObj.type === 'warning' ? 'warning' : '');
+                const expiryText = item.isNoExpiry ? '無期限' : (item.expiry || '未設定');
+                
+                htmlContent += `<tr>
+                  <td>${item.bagName}</td>
+                  <td><span class="badge badge-tag">${item.compartment}</span></td>
+                  <td>${item.itemName} ${item.isCritical ? '<span class="badge badge-critical">重要</span>' : ''}</td>
+                  <td class="text-right">${item.requiredQty}</td>
+                  <td class="text-right total-col" style="${totalStyle}">${item.totalQty}</td>
+                  <td class="text-right">${item.batchQty}</td>
+                  <td class="${statusClass}">${expiryText}</td>
+                  <td class="text-center ${statusClass}">${item.statusObj.label}</td>
+                </tr>`;
+            });
+        }
+        
+        htmlContent += `</tbody>
+            <tfoot>
+              <tr class="footer-space">
+                <td colspan="8" style="border: none;">&nbsp;</td>
+              </tr>
+            </tfoot>
+          </table>
+          
+          <div class="page-footer">
+            <span>列印時間: ${new Date().toLocaleString()} | ${titleSuffix}</span>
+            <div style="display:flex; gap:20px;">
+              <span>經辦人簽章: _______________</span>
+              <span>核對日期: _______________</span>
+            </div>
+          </div>
+        </body></html>`;
+        
+        const printWindow = window.open('', '_blank'); 
+        if (!printWindow) { alert('請允許彈出式視窗以匯出報表'); return; } 
+        printWindow.document.write(htmlContent); 
+        printWindow.document.close(); 
+        printWindow.focus(); 
+        setTimeout(() => { printWindow.print(); }, 500);
+      };
+
+      // === 備份與還原 ===
+      const handleExportJSON = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(bags));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", "gobag_backup_" + new Date().toISOString().slice(0,10) + ".json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        setShowAdvancedMenu(false);
+      };
+
+      const handleImportJSON = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = JSON.parse(e.target.result);
+                if (Array.isArray(json) && json.length > 0 && json[0].items) {
+                    if(confirm("確定要還原此備份檔嗎？目前的資料將被覆蓋。")) {
+                        localStorage.setItem('gobag_data_cache', JSON.stringify(json));
+                        setBags(json);
+                        if (gsUrl) {
+                           const payload = { action: 'patch', data: json, timestamp: Date.now() };
+                           fetch(gsUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' } });
+                        }
+                        alert("還原成功！");
+                        window.location.reload();
+                    }
+                } else {
+                    alert("無效的備份檔案格式：請確認檔案是否正確。");
+                }
+            } catch (err) { alert("檔案讀取失敗：" + err.message); }
+        };
+        reader.readAsText(file);
+        event.target.value = null; 
+        setShowAdvancedMenu(false);
+      };
+
+      // === 複製貼上邏輯 ===
+      const handleCopyBatch = (batch) => { setClipboard({ expiry: batch.expiry, isNoExpiry: batch.isNoExpiry, qty: batch.qty, ignoreAlert: false }); setPasteMode(true); };
+      const handlePasteBatch = (targetItem) => {
+        if (!clipboard) return;
+        const newBatch = { id: Date.now(), expiry: clipboard.expiry, isNoExpiry: clipboard.isNoExpiry, qty: clipboard.qty, ignoreAlert: false };
+        const updatedItems = activeBag.items.map(i => i.id === targetItem.id ? { ...i, batches: [newBatch, ...(i.batches || [])] } : i);
+        const newData = bags.map(b => String(b.id) === String(activeBagId) ? { ...b, items: updatedItems } : b);
+        saveToSheet(newData);
+        
+        const div = document.createElement('div');
+        div.textContent = `已貼上效期 ${clipboard.isNoExpiry ? '無期限' : clipboard.expiry}`;
+        div.className = "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 text-white px-4 py-2 rounded-lg z-50 animate-bounce";
+        document.body.appendChild(div);
+        setTimeout(() => div.remove(), 1000);
+      };
+      
+      // === 郵件處理邏輯 ===
+      const saveMailConfig = () => {
+        localStorage.setItem('gobag_mail_config', JSON.stringify(mailConfig));
+        setModalConfig({ title: "設定", message: "設定已儲存" });
+      };
+
+      const sendMail = async (type = 'test', items = []) => {
+        if (!mailConfig.apiUrl || !mailConfig.email) {
+          setModalConfig({ title: "設定錯誤", message: "請先完成郵件設定 (URL 與 Email)", type: 'error' });
+          return;
+        }
+        
+        setIsMailTesting(true);
+        try {
+          const response = await fetch(mailConfig.apiUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: type,
+              to: mailConfig.email,
+              items: items
+            })
+          });
+          
+          setModalConfig({ 
+             title: type === 'test' ? "測試發送" : "警報發送", 
+             message: type === 'test' ? "測試請求已發送！\n請檢查您的信箱 (若未收到請檢查垃圾郵件)。" : "警報清單已發送！",
+             type: 'success'
+          });
+        } catch (error) {
+          console.error("Mail Error:", error);
+          setModalConfig({ title: "發送失敗", message: "請檢查 URL 是否正確或網路連線", type: 'error' });
+        } finally {
+          setIsMailTesting(false);
+        }
+      };
+
+      const checkAndSendAlert = () => {
+        try {
+          if (!bags || !Array.isArray(bags)) return;
+          let alertItems = [];
+          
+          bags.forEach(bag => {
+            if (!bag || !bag.items || !Array.isArray(bag.items)) return;
+            bag.items.forEach(item => {
+               if (!item || !item.batches || !Array.isArray(item.batches)) return;
+               item.batches.forEach(batch => {
+                 if (!batch || batch.ignoreAlert || batch.isNoExpiry) return;
+
+                 const s = getStatus(batch.expiry, batch.isNoExpiry);
+                 if (s.type === 'warning' || s.type === 'expired') {
+                   alertItems.push({
+                     bagName: bag.name || '未命名位置',
+                     name: item.name || '未命名物資',
+                     expiry: batch.expiry || '未知效期',
+                     qty: batch.qty || 0,
+                     status: s.label
+                   });
+                 }
+               });
+            });
+          });
+
+          if (alertItems.length > 0) {
+            setModalConfig({
+              title: "掃描完成",
+              message: `共發現 ${alertItems.length} 項異常物資 (過期或近效期)。\n是否立即發送清單至 ${mailConfig.email}？`,
+              type: 'info',
+              onConfirm: () => sendMail('alert', alertItems)
+            });
+          } else {
+            setModalConfig({ title: "掃描完成", message: "目前所有物資效期皆正常，無需發送警報。", type: 'info' });
+          }
+        } catch (e) {
+          console.error("Check Alert Error:", e);
+          setModalConfig({ title: "發生錯誤", message: "檢查過程發生錯誤：" + e.message, type: 'error' });
+        }
+      };
+
+      // === 物資/防災包管理操作 ===
+      const addBag = () => { const newId = Date.now().toString(); const newBag = { id: newId, name: `新儲藏位置 ${bags.length + 1}`, items: [] }; const newData = [...bags, newBag]; saveToSheet(newData); setActiveBagId(newId); setIsBagSelectorOpen(false); };
+      const duplicateBagStructure = () => { const newId = Date.now().toString(); const newItems = activeBag.items.map(i => ({ ...i, id: `i-${newId}-${Math.random().toString(36).substr(2, 9)}`, batches: [] })); const newBag = { id: newId, name: `${activeBag.name} (複製)`, items: newItems }; const newData = [...bags, newBag]; saveToSheet(newData); setActiveBagId(newId); setBagMenuOpen(false); };
+      const executeDeleteBag = () => { const targetBagId = activeBag.id; if (bags.length <= 1) return; const newData = bags.filter(b => String(b.id) !== String(targetBagId)); saveToSheet(newData); if (newData.length > 0) { setActiveBagId(newData[0].id); } setIsDeleteConfirming(false); setBagMenuOpen(false); };
+      const renameActiveBag = () => { if (!bagEditForm.name.trim()) return; const targetId = String(activeBag.id); const newData = bags.map(b => String(b.id) === targetId ? { ...b, name: bagEditForm.name } : b); saveToSheet(newData); setBagMenuOpen(false); };
+      const openBagMenu = () => { setBagEditForm({ name: activeBag.name }); setIsDeleteConfirming(false); setBagMenuOpen(true); };
+      
+      const addNewItem = () => {
+        const newItem = { id: `i-${Date.now()}`, name: '新物資', compartment: '主空間', isCritical: false, requiredQty: 1, batches: [] };
+        const updatedItems = [...activeBag.items, newItem];
+        const newData = bags.map(b => String(b.id) === String(activeBagId) ? { ...b, items: updatedItems } : b);
+        saveToSheet(newData, { type: 'add_item', bagId: activeBagId, item: newItem });
+        setSelectedItem(newItem);
+        setEditForm({ ...newItem });
+      };
+
+      const openEditModal = (item) => { setSelectedItem(item); const sortedBatches = item.batches ? [...item.batches].sort((a, b) => { const dateA = a.expiry || '9999'; const dateB = b.expiry || '9999'; if (dateA < dateB) return -1; if (dateA > dateB) return 1; return 0; }) : []; setEditForm({ ...item, batches: sortedBatches.map(b => ({...b})) }); };
+      
+      const saveForm = () => { 
+        const updatedItems = activeBag.items.map(i => i.id === selectedItem.id ? { ...i, ...editForm } : i); 
+        const newData = bags.map(b => String(b.id) === String(activeBagId) ? { ...b, items: updatedItems } : b); 
+        saveToSheet(newData, { type: 'update_item', bagId: activeBagId, item: editForm }); 
+        setSelectedItem(null); 
+      };
+      
+      const deleteCurrentItem = () => { 
+        const updatedItems = activeBag.items.filter(i => i.id !== selectedItem.id); 
+        const newData = bags.map(b => String(b.id) === String(activeBagId) ? { ...b, items: updatedItems } : b); 
+        saveToSheet(newData, { type: 'delete_item', bagId: activeBagId, itemId: selectedItem.id }); 
+        setSelectedItem(null); 
+      };
+      
+      const addBatch = () => setEditForm(prev => ({...prev, batches: [{id: Date.now(), expiry: '', isNoExpiry: false, qty: 1}, ...(prev.batches||[])]}));
+      const removeBatch = (id) => setEditForm(prev => ({...prev, batches: prev.batches.filter(b => b.id !== id)}));
+      const updateBatch = (id, field, val) => setEditForm(prev => ({...prev, batches: prev.batches.map(b => b.id === id ? {...b, [field]: val} : b)}));
+      const toggleBatchMute = (batchId) => { setEditForm(prev => ({ ...prev, batches: prev.batches.map(b => b.id === batchId ? { ...b, ignoreAlert: !b.ignoreAlert } : b) })); };
+
+      // === 載入畫面 ===
+      if (isLoading) {
+        return (
+          <div className="h-screen w-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col items-center justify-center z-50 relative overflow-hidden">
+              <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-amber-600/20 rounded-full blur-3xl animate-pulse"></div>
+              <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+              <div className="mb-8 relative flex justify-center"> 
+                  <div className="absolute inset-0 bg-amber-500 blur-2xl opacity-20"></div>
+                  <Icons.Star className="w-32 h-32 text-amber-500 animate-[pulse-glow_4s_ease-in-out_infinite]" />
+              </div>
+              <h2 className="text-xl md:text-2xl font-bold text-white mb-4 tracking-wider relative z-10 text-center flex flex-col md:flex-row items-center justify-center gap-2 md:gap-0">
+                <span>防災包庫存管理系統</span>
+              </h2>
+              <div className="loading-bar-box relative z-10"><div className="loading-bar-fill"></div></div>
+              <p className="text-slate-400 text-sm mt-4 relative z-10">系統載入中，請稍候...</p>
+          </div>
+        )
+      }
+
+      return (
+        <div className="min-h-screen h-[100dvh] w-full flex flex-col overflow-hidden">
+          {/* === 系統 Header === */}
+          <header className="bg-slate-800 border-b border-slate-700 p-0 flex justify-between items-stretch shrink-0 h-12 z-30 relative">
+            <div className="flex-1 flex overflow-hidden px-2 gap-2 items-center">
+              <div className="flex items-center text-amber-500 font-bold px-3 select-none mr-2 shrink-0">
+                <Icons.Backpack /> 
+                <span className="ml-2 text-sm md:text-lg hidden md:inline">防災物資管理系統</span>
+                <span className="ml-2 text-sm md:hidden">防災管理</span>
+                {syncStatus === 'syncing' && <span className="ml-2 text-[10px] text-yellow-400 animate-pulse">● 同步中</span>}
+                {syncStatus === 'success' && <span className="ml-2 text-[10px] text-emerald-400">● 已儲存</span>}
+                {syncStatus === 'error' && <span className="ml-2 text-[10px] text-rose-400">● 失敗</span>}
+              </div>
+              
+              {clipboard && (
+                  <button onClick={() => setPasteMode(!pasteMode)} className={`ml-2 px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-all hidden md:flex ${pasteMode ? 'bg-yellow-500 text-slate-900 animate-pulse' : 'bg-slate-700 text-slate-400'}`}>
+                    {pasteMode ? <Icons.ClipboardCheck /> : <Icons.Clipboard />}{pasteMode ? '貼上模式' : '複製待命'}
+                  </button>
+              )}
+
+              <button onClick={() => setIsBagSelectorOpen(!isBagSelectorOpen)} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold text-sm md:text-base transition-colors border border-slate-600 ml-auto md:ml-0 truncate max-w-[150px] md:max-w-none">
+                <span className="truncate">{activeBag.name}</span><Icons.ChevronDown />
+              </button>
+
+              <button onClick={openBagMenu} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors ml-1" title="編輯位置"><Icons.Edit /></button>
+            </div>
+            
+            <div className="flex items-center px-2 md:px-4 bg-slate-900 border-l border-slate-800 shadow-[-10px_0_10px_rgba(0,0,0,0.5)] z-20 gap-1 md:gap-2 shrink-0">
+               {authRole === 'admin' && (
+                   <div className="relative mr-1 md:mr-2 border-r border-slate-700 pr-1 md:pr-2">
+                     <button onClick={() => setShowAdvancedMenu(!showAdvancedMenu)} className="px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600" title="進階設定"><Icons.Tool /> <span className="hidden md:inline">進階設定</span></button>
+                     {showAdvancedMenu && (
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+                             <button onClick={() => { setShowMailModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Mail /> 郵件通知設定</button>
+                             <button onClick={handleExportJSON} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Download /> 資料備份 (匯出)</button>
+                             <button onClick={() => fileInputRef.current.click()} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 flex items-center gap-2"><Icons.Upload /> 資料還原 (匯入)</button>
+                        </div>
+                     )}
+                     {showAdvancedMenu && <div className="fixed inset-0 z-40" onClick={() => setShowAdvancedMenu(false)}></div>}
+                   </div>
+               )}
+               
+               <div className="flex bg-black/40 rounded p-0.5 border border-slate-700 gap-0.5">
+                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition text-slate-400 hover:text-white" title="切換深淺色主題">
+                    {theme === 'dark' ? '☀️' : '🌙'}
+                </button>
+                <button onClick={()=>{setMode('card');setSelectedItem(null);}} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='card'?'bg-blue-600 text-white':'text-slate-400 hover:text-white'}`} title="卡片檢視"><Icons.Grid /> <span className="hidden md:inline">卡片</span></button>
+                <button onClick={()=>{setMode('list');setSelectedItem(null);}} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='list'?'bg-purple-600 text-white':'text-slate-400 hover:text-white'}`} title="清單"><Icons.List /> <span className="hidden md:inline">清單</span></button>
+                <button onClick={authRole === 'admin' ? handleLogout : handleAdminAccess} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${authRole==='admin'?'bg-amber-600 text-white':'text-slate-400 hover:text-white'}`} title="權限設定"><Icons.Settings /> <span className="hidden md:inline">{authRole === 'admin' ? '管理員登出' : '管理員登入'}</span></button>
+              </div>
+            </div>
+
+            <input type="file" accept=".json" ref={fileInputRef} style={{display: 'none'}} onChange={handleImportJSON} />
+
+            {/* 防災包選擇器 */}
+            {isBagSelectorOpen && (
+              <div className="absolute top-full left-0 w-full bg-slate-800/95 backdrop-blur-md border-b border-slate-600 shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="max-w-6xl mx-auto">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-slate-300 text-sm font-bold uppercase tracking-wider">切換儲藏位置</h3>
+                    <button onClick={() => setIsBagSelectorOpen(false)} className="text-slate-400 hover:text-white"><Icons.XCircle /></button>
+                  </div>
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+                    {bags.map(bag => {
+                      const status = getBagOverallStatus(bag);
+                      let baseClasses = "p-3 rounded-lg text-center font-bold text-sm transition-all truncate relative overflow-visible flex flex-col items-center gap-2";
+                      let colorClasses = "";
+                      const isActive = String(activeBagId) === String(bag.id);
+                      if (status === 'expired') { colorClasses = isActive ? "bg-blue-600 text-white border-2 border-rose-600 shadow-[0_0_15px_rgba(225,29,72,0.6)] z-10" : "bg-slate-700 text-slate-300 hover:text-white border-2 border-rose-600"; } 
+                      else if (status === 'warning') { colorClasses = isActive ? "bg-blue-600 text-white border-2 border-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.6)] z-10" : "bg-slate-700 text-slate-300 hover:text-white border-2 border-amber-500"; } 
+                      else { colorClasses = isActive ? "bg-blue-600 border border-blue-500 text-white shadow-lg" : "bg-slate-700 border border-slate-600 text-slate-300 hover:bg-slate-600 hover:text-white"; }
+                      return ( 
+                          <button key={bag.id} onClick={() => { setActiveBagId(bag.id); setIsBagSelectorOpen(false); }} className={`${baseClasses} ${colorClasses}`} title={bag.name}>
+                              <Icons.Box />
+                              <span className="w-full truncate">{bag.name}</span>
+                          </button>
+                      );
+                    })}
+                    <button onClick={addBag} className="p-3 rounded-lg border-2 border-dashed border-slate-500 text-slate-400 hover:text-white hover:border-slate-300 hover:bg-slate-700/50 flex flex-col items-center justify-center gap-2 font-bold text-sm transition-all"><Icons.PlusCircle /> <span>新增位置</span></button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {isBagSelectorOpen && ( <div className="fixed inset-0 top-[48px] z-40" onClick={() => setIsBagSelectorOpen(false)}></div> )}
+          </header>
+
+          {/* === 系統工作區 === */}
+          <div className="flex-1 overflow-auto bg-slate-950 p-4 pb-24 md:pb-4 custom-scrollbar">
+            
+            {/* 口袋/位置 標籤過濾器 (卡片模式顯示) */}
+            {mode === 'card' && activeBag.items.length > 0 && (
+              <div className="flex overflow-x-auto gap-2 mb-4 pb-2 no-scrollbar">
+                  {filterCompartments.map(comp => (
+                      <button key={comp} onClick={() => setActiveCompartment(comp)} 
+                              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                              onDrop={(e) => handleCompartmentDrop(e, comp)}
+                              className={`px-4 py-1.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border-2 
+                              ${activeCompartment === comp 
+                                  ? 'bg-blue-600 text-white border-blue-500 shadow-md' 
+                                  : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white hover:bg-slate-700'}`}>
+                          {comp}
+                      </button>
+                  ))}
+              </div>
+            )}
+
+            {mode === 'list' ? (
+              /* --- 清單模式 --- */
+              <div className="w-full min-h-full min-w-[800px] flex flex-col bg-slate-900 rounded-lg border-2 border-slate-800 shadow-2xl overflow-hidden relative">
+                <div className="bg-slate-800 border-b border-slate-700 p-3 flex justify-between items-center gap-2">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                        <span className="text-slate-300 font-bold text-sm hidden md:inline">檢視範圍:</span>
+                        <div className="flex bg-slate-700 rounded-lg p-1 gap-1">
+                            <button onClick={() => setReportMode('current')} className={`px-3 py-1 text-xs font-bold rounded transition-colors ${reportMode === 'current' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}>當前位置</button>
+                            <button onClick={() => setReportMode('all_data')} className={`px-3 py-1 text-xs font-bold rounded transition-colors ${reportMode === 'all_data' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}>全部資料</button>
+                            <button onClick={() => setReportMode('all_abnormal')} className={`px-3 py-1 text-xs font-bold rounded transition-colors flex items-center gap-1 ${reportMode === 'all_abnormal' ? 'bg-rose-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}><Icons.AlertTriangle /> 全部異常</button>
+                        </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                      <button onClick={handleExportReport} className="flex items-center gap-2 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded shadow-lg transition-colors border border-emerald-500">
+                          <Icons.Download /> <span className="hidden md:inline">匯出PDF報表</span>
+                      </button>
+                  </div>
+                </div>
+
+                <div className="overflow-auto flex-1 pb-16 md:pb-0" onScroll={(e) => setListScroll({ top: e.target.scrollTop, height: e.target.clientHeight })}> 
+                  <table className="w-full text-left text-sm text-slate-400 relative">
+                    <thead className="text-xs uppercase text-slate-200 sticky top-0 z-20 shadow-md select-none bg-slate-800">
+                      <tr>
+                        <th onClick={() => requestSort('bagName')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[15%]">儲存位置 {sortIndicator('bagName')}</th>
+                        <th onClick={() => requestSort('compartment')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[12%]">口袋標籤 {sortIndicator('compartment')}</th>
+                        <th onClick={() => requestSort('itemName')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[20%]">物資名稱 {sortIndicator('itemName')}</th>
+                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right w-[8%]">應備</th>
+                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right text-emerald-400 w-[8%]">現有</th>
+                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right w-[8%]">批次數量</th>
+                        <th onClick={() => requestSort('expiry')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[15%]">效期 (YYYY-MM-DD) {sortIndicator('expiry')}</th>
+                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-center w-[14%]">狀態</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {displayData.length === 0 ? (
+                        <tr><td colSpan="8" className="px-4 py-10 text-center text-slate-500 font-bold"><Icons.Check /> 無資料</td></tr>
+                      ) : (
+                        <>
+                          {/* 虛擬滾動：頂部填充高度 */}
+                          {paddingTop > 0 && <tr><td colSpan="8" style={{ height: paddingTop, padding: 0 }}></td></tr>}
+                          
+                          {/* 虛擬滾動：僅渲染可見範圍與緩衝區的節點 */}
+                          {visibleData.map((item, idx) => {
+                            const isQtyMismatch = item.totalQty !== item.requiredQty;
+                            const totalStyle = isQtyMismatch ? 'text-rose-400' : 'text-emerald-400';
+                            
+                            return (
+                              <tr key={`${item.bagId}-${item.itemId}-${idx}`} className="hover:bg-slate-800/50 transition-colors border-t border-slate-700 h-[48px]">
+                                <td className="px-4 py-2 font-bold text-blue-400">{item.bagName}</td>
+                                <td className="px-4 py-2"><span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded font-bold border border-slate-600">{item.compartment}</span></td>
+                                <td className="px-4 py-2 font-medium text-white">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <span>{item.itemName}</span>
+                                    {item.isCritical && <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-bold">重要</span>}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-2 font-mono text-right text-white font-bold">{item.requiredQty}</td>
+                                <td className={`px-4 py-2 font-mono text-right font-bold ${totalStyle}`}>{item.totalQty}</td>
+                                <td className="px-4 py-2 font-mono text-right font-bold text-slate-300">{item.batchQty}</td>
+                                <td className="px-4 py-2 font-mono text-slate-300">{item.isNoExpiry ? '無期限' : (item.expiry || '未設定')}</td>
+                                <td className="px-4 py-2 text-center"><span className={`inline-flex px-2 py-1 rounded-full text-[10px] font-bold border-2 ${item.statusObj.bg} ${item.statusObj.text} ${item.statusObj.border}`}>{item.statusObj.label}</span></td>
+                              </tr>
+                            );
+                          })}
+                          
+                          {/* 虛擬滾動：底部填充高度 */}
+                          {paddingBottom > 0 && <tr><td colSpan="8" style={{ height: paddingBottom, padding: 0 }}></td></tr>}
+                        </>
+                      )}
+                    </tbody>
+                  </table>
+                  
+                  {reportMode === 'current' && activeBag.items.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-600">
+                      <Icons.Backpack />
+                      <p className="mt-2 text-sm">此位置尚無物資</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+               /* --- 卡片模式 (取代原有的網格模式) --- */
+              <div className="w-full flex flex-col gap-4">
+                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                  {activeBag.items
+                    .filter(item => activeCompartment === '全部' || (item.compartment || '主空間') === activeCompartment)
+                    .slice(0, visibleCount)
+                    .map(item => {
+                    const borderClass = getItemOverallStatus(item.batches);
+                    const totalQty = getTotalQty(item.batches);
+                    const requiredQty = item.requiredQty || 0;
+                    const isQtyMatch = totalQty === parseInt(requiredQty);
+                    const qtyColorClass = isQtyMatch ? 'text-emerald-400' : 'text-rose-400';
+                    const sortedBatches = getSortedBatches(item.batches);
+                    
+                    return (
+                      <div key={item.id} 
+                           draggable={authRole === 'admin'}
+                           onDragStart={(e) => handleDragStart(e, item)}
+                           onDrop={(e) => handleDrop(e, item)}
+                           onDragOver={handleDragOver}
+                           onClick={()=>{ if(authRole !== 'admin') { return; } if(pasteMode && clipboard) { handlePasteBatch(item); } else { openEditModal(item); } }}
+                           className={`relative flex flex-col bg-slate-800 rounded-lg p-3 ${authRole === 'admin' ? 'cursor-pointer hover:scale-[1.02] hover:shadow-lg' : 'cursor-default'} transition-all border-2 ${borderClass} ${pasteMode ? 'hover:bg-yellow-900/30 hover:border-yellow-500' : ''}`}
+                      >
+                        <div className="absolute top-0 right-0 flex flex-col items-end z-10">
+                           <div className={`bg-slate-900 ${qtyColorClass} text-xs px-2 py-1 rounded-bl-lg font-mono font-bold border-l border-b border-slate-600 shadow-md`}>
+                             {totalQty}/{requiredQty}
+                           </div>
+                           {item.isCritical && <div className="bg-rose-600 text-white text-[10px] px-1.5 py-0.5 rounded-bl font-bold shadow-sm">重要</div>}
+                        </div>
+                        
+                        <div className="text-slate-200 font-bold leading-tight break-words mb-3 pr-8 text-sm">{item.name}</div>
+                        
+                        <div className="flex-1 flex flex-col gap-1.5 mt-auto">
+                          {sortedBatches.length === 0 && <div className="text-xs text-slate-500 italic">無庫存資料</div>}
+                          {sortedBatches.map((batch) => {
+                            const s = getStatus(batch.expiry, batch.isNoExpiry);
+                            return (
+                              <div key={batch.id} className={`flex justify-between items-center text-[10px] px-1.5 py-0.5 rounded ${s.bg} ${s.text} bg-opacity-90`}>
+                                <span className="font-mono tracking-tighter truncate">{batch.isNoExpiry ? '無期限' : batch.expiry}</span>
+                                <span className="font-bold ml-1">x{batch.qty}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* 新增物資按鈕 (僅管理模式可見) */}
+                  {authRole === 'admin' && (
+                     <div onClick={addNewItem} className="flex flex-col items-center justify-center bg-slate-800/50 rounded-lg p-4 cursor-pointer transition-all border-2 border-dashed border-slate-600 hover:border-blue-400 hover:bg-slate-800 text-slate-400 hover:text-blue-400 min-h-[120px]">
+                         <Icons.PlusCircle />
+                         <span className="text-sm font-bold mt-2">新增物資</span>
+                     </div>
+                  )}
+                </div>
+                
+                {/* 卡片分頁載入按鈕 */}
+                {activeBag.items.filter(item => activeCompartment === '全部' || (item.compartment || '主空間') === activeCompartment).length > visibleCount && (
+                     <div className="flex justify-center mt-4">
+                         <button onClick={() => setVisibleCount(v => v + 20)} className="px-4 py-2 bg-slate-800 border border-slate-600 rounded-lg text-slate-300 font-bold hover:bg-slate-700 transition">
+                             載入更多...
+                         </button>
+                     </div>
+                )}
+
+                {activeBag.items.length === 0 && authRole !== 'admin' && (
+                    <div className="flex flex-col items-center justify-center py-20 text-slate-600 w-full bg-slate-900 rounded-lg border border-slate-800">
+                      <Icons.Backpack />
+                      <p className="mt-2 text-sm">此位置尚無物資，請切換至「管理設定」以新增</p>
+                    </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* === 各式 Modal 元件 === */}
+          <SystemModal config={modalConfig} onClose={() => setModalConfig(null)} />
+          
+          {/* 郵件通知設定 Modal */}
+          {showMailModal && (
+             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+               <div className="bg-white w-full max-w-md rounded-xl shadow-2xl overflow-hidden flex flex-col">
+                  <div className="px-5 py-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                    <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2"><Icons.Mail /> 郵件通知設定</h3>
+                    <button onClick={() => setShowMailModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.XCircle /></button>
+                  </div>
+                  <div className="p-6 space-y-4 text-gray-800">
+                     <p className="text-sm text-gray-500"><span className="text-rose-600 font-bold">注意：</span>此設定僅供手動測試使用。若要設定<span className="font-bold">每日自動檢查</span>，請務必在 Google Apps Script 程式碼中設定觸發條件。</p>
+                     <div><label className="text-xs font-bold text-gray-500 uppercase block mb-1">收件人 Email</label><input type="email" value={mailConfig.email} onChange={e => setMailConfig({...mailConfig, email: e.target.value})} placeholder="example@hospital.org.tw" className="w-full p-2.5 border border-gray-300 rounded text-gray-900 font-bold focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+                     <div><label className="text-xs font-bold text-gray-500 uppercase block mb-1">Google Script 發信程式 URL</label><textarea value={mailConfig.apiUrl} onChange={e => setMailConfig({...mailConfig, apiUrl: e.target.value})} placeholder="請貼上您部署的 Google Apps Script 網址 (https://script.google.com/...)" className="w-full p-2.5 border border-gray-300 rounded text-xs font-mono text-gray-600 h-20 focus:ring-2 focus:ring-blue-500 outline-none resize-none" /></div>
+                     <div className="flex gap-2 pt-2">
+                       <button onClick={() => sendMail('test')} disabled={isMailTesting || !mailConfig.email || !mailConfig.apiUrl} className={`flex-1 py-2 rounded-lg font-bold border flex items-center justify-center gap-2 ${isMailTesting ? 'bg-gray-100 text-gray-400' : 'border-slate-300 text-slate-700 hover:bg-slate-50'}`}>{isMailTesting ? '發送中...' : <><Icons.Send /> 測試發信</>}</button>
+                       <button onClick={saveMailConfig} className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center gap-2"><Icons.Save /> 儲存設定</button>
+                     </div>
+                     <hr className="border-gray-200" />
+                     <button onClick={checkAndSendAlert} className="w-full py-3 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700 flex items-center justify-center gap-2 shadow-sm"><Icons.AlertTriangle /> 立即檢查並發送異常報告</button>
+                  </div>
+               </div>
+             </div>
+          )}
+
+          {/* 通行碼 Modal */}
+          {showPasscodeModal && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden p-6 text-center">
+                <div className="mx-auto w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4"><Icons.Lock /></div>
+                <h3 className="text-lg font-bold text-gray-800 mb-2">管理員登入</h3>
+                <p className="text-sm text-gray-500 mb-4">請輸入通行碼以取得系統修改權限</p>
+                <input type="password" pattern="[0-9]*" inputMode="numeric" autoFocus className="w-full p-3 border border-gray-300 rounded-lg text-center text-2xl font-bold tracking-widest mb-4 focus:ring-2 focus:ring-blue-500 outline-none" value={passcodeInput} onChange={(e) => setPasscodeInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && verifyPasscode()}/>
+                <div className="flex gap-2"><button onClick={() => setShowPasscodeModal(false)} className="flex-1 py-2 border border-gray-300 rounded-lg font-bold text-gray-600 hover:bg-gray-100">取消</button><button onClick={verifyPasscode} className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700">確認</button></div>
+              </div>
+            </div>
+          )}
+          
+          {/* 位置(防災包)選單 Modal */}
+          {bagMenuOpen && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-sm rounded-xl shadow-xl overflow-hidden">
+                <div className="px-4 py-3 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="font-bold text-gray-800 flex items-center gap-2"><Icons.Settings /> 儲藏位置設定</h3>
+                  <button onClick={() => setBagMenuOpen(false)} className="text-gray-400 hover:text-gray-600"><Icons.XCircle /></button>
+                </div>
+                {isDeleteConfirming ? (
+                  <div className="p-6 text-center space-y-4">
+                    <div className="mx-auto w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center text-rose-600"><Icons.AlertTriangle className="w-6 h-6" /></div>
+                    <div><h4 className="text-lg font-bold text-gray-900">確定刪除此位置？</h4><p className="text-sm text-gray-500 mt-1">「{activeBag.name}」將被永久刪除，且無法復原。</p></div>
+                    <div className="flex gap-3 pt-2"><button onClick={() => setIsDeleteConfirming(false)} className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg font-bold hover:bg-gray-100">取消</button><button onClick={executeDeleteBag} className="flex-1 py-2 bg-rose-600 text-white rounded-lg font-bold hover:bg-rose-700">確認刪除</button></div>
+                  </div>
+                ) : (
+                  <div className="p-4 space-y-4 text-gray-800">
+                    <div><label className="text-xs font-bold text-gray-500 uppercase block mb-1">位置名稱 (如: 隨身防災包、車上備用)</label><input type="text" value={bagEditForm.name} onChange={e => setBagEditForm({...bagEditForm, name: e.target.value})} className="w-full p-2 border rounded text-gray-900 font-bold focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+                    <hr className="border-gray-100"/>
+                    <div className="space-y-2">
+                      <button onClick={renameActiveBag} className="w-full py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 flex items-center justify-center gap-2"><Icons.Save /> 儲存名稱</button>
+                      <button onClick={duplicateBagStructure} className="w-full py-2 bg-emerald-600 text-white rounded font-bold hover:bg-emerald-700 flex items-center justify-center gap-2"><Icons.Copy /> 複製結構</button>
+                      <button onClick={() => setIsDeleteConfirming(true)} disabled={bags.length <= 1} className={`w-full py-2 border rounded font-bold flex items-center justify-center gap-2 ${bags.length <= 1 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-rose-200 text-rose-600 hover:bg-rose-50'}`}><Icons.Trash2 /> 刪除</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 物資編輯 Modal */}
+          {selectedItem && editForm && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div className="px-5 py-4 bg-gray-100 border-b border-gray-200 flex justify-between items-center">
+                   <h3 className="font-bold text-xl text-gray-800 flex items-center gap-2">{editForm.name || '未命名'}{editForm.isCritical && <span className="text-xs bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full border border-rose-200">重要物資</span>}</h3>
+                   <button onClick={() => setSelectedItem(null)} className="p-1.5 hover:bg-gray-200 rounded-full text-gray-500"><Icons.XCircle /></button>
+                </div>
+                <div className="p-6 overflow-y-auto bg-gray-50 space-y-6 flex-1 text-gray-800">
+                  {authRole === 'admin' && ( 
+                    <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm space-y-4"> 
+                        <div className="flex justify-between items-center"><label className="text-xs font-bold text-gray-500 uppercase">基本設定</label></div> 
+                        <div className="flex flex-col sm:flex-row gap-4"> 
+                            <div className="flex-1"> 
+                                <label className="text-xs font-bold text-gray-500 uppercase block mb-1">物資名稱</label> 
+                                <AutoCompleteInput placeholder="輸入或選擇物資" value={editForm.name} onChange={e => setEditForm({...editForm, name: e.target.value})} options={supplyList} /> 
+                            </div> 
+                            <div className="flex-1"> 
+                                <label className="text-xs font-bold text-gray-500 uppercase block mb-1">存放位置/口袋</label> 
+                                <AutoCompleteInput placeholder="如: 主口袋、外側" value={editForm.compartment ?? ''} onChange={e => setEditForm({...editForm, compartment: e.target.value})} options={existingCompartments} /> 
+                            </div> 
+                            <div className="w-full sm:w-24"> 
+                                <label className="text-xs font-bold text-gray-500 uppercase block mb-1">應備數量</label> 
+                                <input type="number" placeholder="1" value={editForm.requiredQty || 0} onChange={e => setEditForm({...editForm, requiredQty: parseInt(e.target.value) || 0})} className="w-full p-2.5 border border-gray-300 rounded text-gray-900 font-bold focus:ring-2 focus:ring-blue-500 outline-none text-center" /> 
+                            </div> 
+                        </div> 
+                        <label className="flex items-center gap-2 cursor-pointer select-none mt-2"> 
+                            <input type="checkbox" checked={editForm.isCritical} onChange={e => setEditForm({...editForm, isCritical: e.target.checked})} className="w-4 h-4 text-rose-600 rounded focus:ring-rose-500" /> 
+                            <span className="text-sm font-medium text-gray-700">標記為重要維生物資 (Critical)</span> 
+                        </label> 
+                    </div> 
+                  )}
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-end">
+                      <label className="text-sm font-bold text-gray-700 flex items-center gap-2"><Icons.List /> 庫存效期清單</label>
+                      <button onClick={addBatch} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-full font-bold hover:bg-blue-700 flex items-center gap-1 shadow-sm transition-colors"><Icons.PlusCircle /> 新增庫存</button>
+                    </div>
+                    {(!editForm.batches || editForm.batches.length === 0) ? (
+                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg text-gray-400 text-sm bg-white"><Icons.Calendar /> 點擊上方按鈕新增第一筆庫存</div>
+                    ) : (
+                      editForm.batches.map((b) => {
+                        const s = getStatus(b.expiry, b.isNoExpiry);
+                        return (
+                          <div key={b.id} className={`group relative flex flex-wrap md:flex-nowrap items-center gap-3 p-3 rounded-lg border-2 shadow-sm transition-colors bg-white ${s.border}`}>
+                            <div className="flex flex-col gap-1">
+                                <div className={`flex-none ${b.isNoExpiry ? 'opacity-30 pointer-events-none' : ''}`}>
+                                  <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase">效期 (Year-Month-Day)</label>
+                                  <SmartExpiryInput value={b.expiry} onChange={val => updateBatch(b.id, 'expiry', val)} />
+                                </div>
+                                <label className="flex items-center gap-1 cursor-pointer mt-1 text-gray-600 w-max">
+                                  <input type="checkbox" checked={b.isNoExpiry || false} onChange={e => updateBatch(b.id, 'isNoExpiry', e.target.checked)} className="w-3.5 h-3.5 rounded" />
+                                  <span className="text-[11px] font-bold">沒有期限限制</span>
+                                </label>
+                            </div>
+                            
+                            <div className="w-20 flex-none ml-auto md:ml-0 mt-auto">
+                               <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase">數量</label>
+                               <input type="number" value={b.qty} onChange={e => updateBatch(b.id, 'qty', e.target.value)} className="w-full h-9 text-center bg-gray-50 border border-gray-300 rounded font-bold text-gray-800 focus:ring-2 focus:ring-blue-500 outline-none" />
+                            </div>
+                            <div className="mt-auto">
+                              <div className={`px-2 py-1 rounded-full text-[10px] font-bold border-2 tracking-wide ${s.bg} ${s.text} ${s.border} bg-opacity-100 shadow-sm justify-center min-w-[3rem] text-center`}>{s.label}</div>
+                            </div>
+                            <div className="mt-auto pl-2 flex items-center gap-1">
+                                <button onClick={() => handleCopyBatch(b)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors" title="複製此效期設定"><Icons.Copy /></button>
+                                <button onClick={() => toggleBatchMute(b.id)} className={`p-2 rounded-full transition-colors ${b.ignoreAlert ? 'text-slate-400 bg-slate-100' : 'text-blue-400 hover:bg-blue-50'}`} title={b.ignoreAlert ? "開啟通知" : "關閉通知"}>
+                                    {b.ignoreAlert ? <Icons.BellOff /> : <Icons.Bell />}
+                                </button>
+                                <button onClick={() => removeBatch(b.id)} className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-full transition-colors" title="刪除此筆"><Icons.Trash2 /></button>
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+                <div className="p-5 bg-white border-t border-gray-200 flex gap-3">
+                  {authRole === 'admin' && <button onClick={deleteCurrentItem} className="px-5 py-2.5 border border-rose-200 text-rose-600 rounded-lg font-bold hover:bg-rose-50 transition-colors"><Icons.Trash2 /></button>}
+                  <button onClick={saveForm} className="flex-1 py-2.5 bg-slate-900 text-white font-bold rounded-lg shadow-lg hover:bg-slate-800 flex justify-center items-center gap-2 transition-transform active:scale-[0.98]"><Icons.Save /> {authRole === 'admin' ? '儲存物資設定' : '確認更新'}</button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
