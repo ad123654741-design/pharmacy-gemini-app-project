@@ -6,48 +6,100 @@
     <title>常用字串管理員 Snippet Manager</title>
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <!-- 引入 Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- 引入 Google Fonts: Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Noto Sans TC', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         .snippet-card { transition: all 0.15s ease-out; }
         .snippet-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08); border-color: #c7d2fe; }
+        
+        /* 深色模式基礎設定 */
+        .dark body { background-color: #0f172a; color: #f8fafc; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* 平滑過渡動畫 (View Transitions API) */
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.3s; }
+        
+        /* 拖曳狀態樣式 */
+        .drag-over { border: 2px dashed #6366f1 !important; opacity: 0.6; }
+        .dark .drag-over { border-color: #818cf8 !important; }
     </style>
 </head>
-<body class="text-slate-800 antialiased min-h-screen flex flex-col relative">
+<body class="text-slate-800 dark:text-slate-200 antialiased min-h-screen flex flex-col relative bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
+
+    <!-- 新增：登入畫面 (Req 1) -->
+    <div id="login-overlay" class="fixed inset-0 bg-slate-900/90 z-[100] flex items-center justify-center p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-sm p-6 text-center transform transition-transform" id="login-box">
+            <div class="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="ph-fill ph-lock-key text-3xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800 dark:text-white mb-2">請輸入密碼</h2>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">您需要授權才能存取常用字串管理員</p>
+            <form onsubmit="authManager.login(event)" class="flex flex-col gap-3">
+                <input type="password" id="login-password" placeholder="輸入密碼..." required class="w-full px-4 py-2 text-center text-lg border border-slate-200 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:bg-slate-700 dark:text-white tracking-widest">
+                <p id="login-error" class="text-xs text-red-500 hidden">密碼錯誤，請重試。</p>
+                <button type="submit" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors">登入</button>
+            </form>
+        </div>
+    </div>
 
     <!-- ========================================== -->
     <!-- 區塊 1: 頂部導覽列 (Header) -->
     <!-- ========================================== -->
-    <header class="bg-white shadow-sm sticky top-0 z-30">
+    <header class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-30 transition-colors duration-300">
         <div class="max-w-[1440px] mx-auto px-4 h-14 flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <i class="ph-fill ph-cards text-2xl text-indigo-600"></i>
-                <h1 class="text-lg font-bold text-slate-900 tracking-tight hidden sm:block">Snippet Manager</h1>
-                <!-- 1. 修改：將狀態提示列移至標題後方，縮小並適應 Header 高度 -->
+                <i class="ph-fill ph-cards text-2xl text-indigo-600 dark:text-indigo-400"></i>
+                <h1 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight hidden sm:block">Snippet Manager</h1>
                 <div id="status-message" class="hidden ml-2 px-2 py-1 rounded-md text-xs flex items-center gap-1.5 transition-opacity">
                     <i class="ph ph-spinner animate-spin text-sm"></i>
                     <span id="status-text">載入中...</span>
                 </div>
             </div>
             <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+                <!-- 批次模式開關 -->
+                <button onclick="batchManager.toggleMode()" id="batch-mode-btn" class="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 p-1.5 rounded-md transition-colors shrink-0" title="批次選取模式">
+                    <i class="ph ph-check-square-offset text-xl"></i>
+                </button>
+                
                 <!-- 搜尋框 -->
                 <div class="relative w-full max-w-[200px] sm:max-w-[250px]">
-                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="search-input" placeholder="搜尋字串..." class="w-full pl-9 pr-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-slate-50 focus:bg-white">
+                    <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500"></i>
+                    <input type="text" id="search-input" placeholder="搜尋字串..." class="w-full pl-9 pr-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-slate-50 dark:bg-slate-700 dark:text-white focus:bg-white dark:focus:bg-slate-800">
                 </div>
                 
-                <!-- 設定按鈕 -->
-                <button onclick="settingsManager.open()" class="text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 p-1.5 rounded-md transition-colors shrink-0" title="分類設定">
-                    <i class="ph-fill ph-gear text-xl"></i>
-                </button>
+                <!-- 修改：設定下拉選單 (Req 4) -->
+                <div class="relative inline-block text-left" id="settings-dropdown-container">
+                    <button onclick="uiManager.toggleDropdown('settings-dropdown')" class="text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 p-1.5 rounded-md transition-colors shrink-0" title="設定與說明">
+                        <i class="ph-fill ph-gear text-xl pointer-events-none"></i>
+                    </button>
+                    <div id="settings-dropdown" class="origin-top-right absolute right-0 mt-2 w-36 rounded-md shadow-lg bg-white dark:bg-slate-800 ring-1 ring-black ring-opacity-5 divide-y divide-slate-100 dark:divide-slate-700 hidden opacity-0 transition-all z-50 transform scale-95 border border-slate-100 dark:border-slate-600">
+                        <div class="py-1">
+                            <button onclick="settingsManager.open(); uiManager.closeDropdown('settings-dropdown')" class="group flex items-center w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                                <i class="ph ph-sliders-horizontal mr-2 text-slate-400 group-hover:text-indigo-500"></i>
+                                系統設定
+                            </button>
+                            <button onclick="helpManager.open(); uiManager.closeDropdown('settings-dropdown')" class="group flex items-center w-full px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700">
+                                <i class="ph ph-info mr-2 text-slate-400 group-hover:text-indigo-500"></i>
+                                變數說明
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 新增按鈕 -->
                 <button onclick="uiManager.openModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1.5 transition-colors shadow-sm shrink-0">
                     <i class="ph ph-plus-circle text-base"></i>
@@ -62,25 +114,49 @@
     <!-- ========================================== -->
     <main class="flex-grow max-w-[1440px] mx-auto px-4 py-6 w-full flex flex-col md:flex-row gap-6">
         <!-- 左側分類導覽 -->
-        <aside class="w-full md:w-36 shrink-0">
-            <h2 class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 px-2 flex justify-between items-center">
-                <span>分類 Categories</span>
-            </h2>
-            <nav id="category-nav" class="flex md:flex-col gap-0.5 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
-                <!-- 動態生成 -->
-            </nav>
+        <aside class="w-full md:w-36 shrink-0 flex flex-col">
+            <div class="flex-grow">
+                <h2 class="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2 px-2 flex justify-between items-center">
+                    <span>分類 Categories</span>
+                </h2>
+                <nav id="category-nav" class="flex md:flex-col gap-0.5 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
+                    <!-- 動態生成 -->
+                </nav>
+            </div>
+            
+            <!-- 新增：製作者資訊 (Req 2) -->
+            <div class="mt-8 px-2 text-[10px] text-slate-400 dark:text-slate-500 opacity-60 hidden md:block">
+                <p>製作者 : 其仁</p>
+                <p>版本日期 : 2026/05</p>
+            </div>
         </aside>
 
         <!-- 右側卡片網格 -->
-        <section class="flex-grow overflow-hidden">
-            <!-- 已移除此處原本的狀態提示 -->
-            <div id="snippets-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+        <section class="flex-grow overflow-hidden relative">
+            <!-- 批次操作工具列 -->
+            <div id="batch-toolbar" class="hidden absolute top-0 left-0 right-0 bg-indigo-50 dark:bg-indigo-900/40 border border-indigo-200 dark:border-indigo-700 rounded-lg p-2 mb-3 flex justify-between items-center z-10 shadow-sm transition-all backdrop-blur-sm">
+                <span class="text-sm font-medium text-indigo-700 dark:text-indigo-300 ml-2">已選取 <span id="batch-count">0</span> 項目</span>
+                <div class="flex gap-2">
+                    <select id="batch-move-select" class="text-xs border border-indigo-200 dark:border-indigo-600 rounded px-2 py-1 bg-white dark:bg-slate-800 dark:text-white outline-none">
+                        <option value="">-- 移動至分類 --</option>
+                    </select>
+                    <button onclick="batchManager.moveSelected()" class="bg-indigo-600 text-white px-3 py-1.5 rounded-md text-xs hover:bg-indigo-700 transition-colors">批次移動</button>
+                    <button onclick="dialogManager.openConfirm(() => batchManager.deleteSelected())" class="bg-red-600 text-white px-3 py-1.5 rounded-md text-xs hover:bg-red-700 transition-colors">刪除所選</button>
+                </div>
+            </div>
+
+            <div id="snippets-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 transition-all pt-1">
                 <!-- 動態生成 -->
             </div>
             
-            <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400">
-                <i class="ph ph-empty text-5xl mb-3 text-slate-300"></i>
-                <p id="empty-state-text" class="text-base font-medium text-slate-500">此分類目前沒有字串</p>
+            <!-- 無限捲動觸發點 -->
+            <div id="scroll-trigger" class="h-10 mt-4 w-full flex items-center justify-center opacity-0 transition-opacity">
+                <i class="ph ph-spinner animate-spin text-slate-400 dark:text-slate-500 text-xl"></i>
+            </div>
+            
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-500">
+                <i class="ph ph-empty text-5xl mb-3 text-slate-300 dark:text-slate-600"></i>
+                <p id="empty-state-text" class="text-base font-medium text-slate-500 dark:text-slate-400">此分類目前沒有字串</p>
             </div>
         </section>
     </main>
@@ -88,11 +164,11 @@
     <!-- ========================================== -->
     <!-- 區塊 3: 編輯/新增 字串 (Modal) -->
     <!-- ========================================== -->
-    <div id="snippet-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform" id="modal-content">
-            <div class="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-base font-bold text-slate-800" id="modal-title">新增字串</h3>
-                <button onclick="uiManager.closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-md hover:bg-slate-200">
+    <div id="snippet-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform" id="modal-content">
+            <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="text-base font-bold text-slate-800 dark:text-white" id="modal-title">新增字串</h3>
+                <button onclick="uiManager.closeModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="ph ph-x text-lg"></i>
                 </button>
             </div>
@@ -100,21 +176,24 @@
                 <form id="snippet-form" class="space-y-3">
                     <input type="hidden" id="form-id">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">分類 (Category)</label>
-                        <select id="form-category" required class="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all bg-white cursor-pointer">
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">分類 (Category)</label>
+                        <select id="form-category" required class="w-full px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition-all bg-white dark:bg-slate-700 dark:text-white cursor-pointer">
                             <!-- 動態選項 -->
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">標題 (Title)</label>
-                        <input type="text" id="form-title" required placeholder="例如：公司統編" class="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all">
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">標題 (Title)</label>
+                        <input type="text" id="form-title" required placeholder="例如：公司統編" class="w-full px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition-all dark:bg-slate-700 dark:text-white">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">內容 (Content)</label>
-                        <textarea id="form-content" required rows="4" placeholder="請輸入要複製的文字內容..." class="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none"></textarea>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 flex justify-between">
+                            <span>內容 (Content)</span>
+                            <span class="text-[10px] font-normal text-slate-400">支援變數: {{date}}, {{clipboard}}</span>
+                        </label>
+                        <textarea id="form-content" required rows="4" placeholder="請輸入要複製的文字內容..." class="w-full px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none dark:bg-slate-700 dark:text-white"></textarea>
                     </div>
                     <div class="pt-3 flex gap-2">
-                        <button type="button" onclick="uiManager.closeModal()" class="flex-1 px-3 py-1.5 text-sm border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 font-medium">取消</button>
+                        <button type="button" onclick="uiManager.closeModal()" class="flex-1 px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 font-medium">取消</button>
                         <button type="submit" class="flex-1 px-3 py-1.5 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium flex justify-center items-center gap-1.5">
                             <i class="ph ph-floppy-disk"></i> 儲存
                         </button>
@@ -127,24 +206,40 @@
     <!-- ========================================== -->
     <!-- 區塊 4: 分類設定管理 (Settings Modal) -->
     <!-- ========================================== -->
-    <div id="settings-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform" id="settings-content">
-            <div class="px-5 py-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2"><i class="ph-fill ph-gear"></i> 管理分類標籤</h3>
-                <button onclick="settingsManager.close()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-md hover:bg-slate-200">
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm overflow-hidden transform scale-95 transition-transform" id="settings-content">
+            <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-gear"></i> 系統設定</h3>
+                <button onclick="settingsManager.close()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
                     <i class="ph ph-x text-lg"></i>
                 </button>
             </div>
-            <div class="p-5 flex flex-col h-[60vh] max-h-[450px]">
-                <div class="flex gap-2 mb-4">
-                    <input type="text" id="new-category-input" placeholder="輸入新分類名稱..." class="flex-grow px-3 py-1.5 text-sm border border-slate-200 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none">
-                    <button onclick="settingsManager.addCategory()" class="bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">新增</button>
+            <div class="p-5 flex flex-col h-[65vh] max-h-[500px]">
+                
+                <!-- 系統功能區 (深色模式、匯出匯入) -->
+                <div class="flex flex-wrap gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-700">
+                    <button onclick="darkModeManager.toggle()" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                        <i id="dark-mode-icon" class="ph ph-moon"></i> <span id="dark-mode-text">深色模式</span>
+                    </button>
+                    <button onclick="ioManager.exportData()" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800 rounded-md hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors" title="匯出為 JSON">
+                        <i class="ph ph-export"></i> <span>匯出資料</span>
+                    </button>
+                    <button onclick="document.getElementById('import-file').click()" class="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-sm bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors" title="從 JSON 匯入">
+                        <i class="ph ph-import"></i> <span>匯入資料</span>
+                    </button>
+                    <input type="file" id="import-file" accept=".json" class="hidden" onchange="ioManager.importData(event)">
+                </div>
+
+                <div class="text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">管理分類標籤 (支援拖曳排序)</div>
+                <div class="flex gap-2 mb-3">
+                    <input type="text" id="new-category-input" placeholder="輸入新分類名稱..." class="flex-grow px-3 py-1.5 text-sm border border-slate-200 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 outline-none dark:bg-slate-700 dark:text-white">
+                    <button onclick="settingsManager.addCategory()" class="bg-slate-800 dark:bg-slate-600 hover:bg-slate-900 dark:hover:bg-slate-500 text-white px-3 py-1.5 rounded-md text-sm font-medium whitespace-nowrap">新增</button>
                 </div>
                 <!-- 分類列表 (含排序與刪除) -->
-                <div class="flex-grow overflow-y-auto pr-2 space-y-1" id="settings-category-list">
+                <div class="flex-grow overflow-y-auto pr-2 space-y-1 scrollbar-hide" id="settings-category-list">
                     <!-- 動態生成 -->
                 </div>
-                <div class="pt-4 mt-2 border-t border-slate-100">
+                <div class="pt-4 mt-2 border-t border-slate-100 dark:border-slate-700">
                     <button onclick="settingsManager.save()" class="w-full px-3 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-medium flex justify-center items-center gap-1.5">
                         <i class="ph ph-check-circle"></i> 儲存設定
                     </button>
@@ -156,27 +251,67 @@
     <!-- ========================================== -->
     <!-- 區塊 5: 自訂刪除確認 (Confirm Modal) -->
     <!-- ========================================== -->
-    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-xl w-full max-w-[320px] overflow-hidden transform scale-95 transition-transform" id="confirm-content">
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-900/80 backdrop-blur-sm z-[60] hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-[320px] overflow-hidden transform scale-95 transition-transform" id="confirm-content">
             <div class="p-5 text-center">
-                <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i class="ph-fill ph-warning text-2xl"></i>
                 </div>
-                <h3 class="text-base font-bold text-slate-800 mb-1">確定要刪除嗎？</h3>
-                <p class="text-xs text-slate-500 mb-5">此動作無法復原，請確認是否繼續。</p>
+                <h3 class="text-base font-bold text-slate-800 dark:text-white mb-1">確定要執行嗎？</h3>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">此動作無法復原，請確認是否繼續。</p>
                 <div class="flex gap-2">
-                    <button onclick="dialogManager.cancelConfirm()" class="flex-1 px-3 py-2 text-sm border border-slate-200 text-slate-600 rounded-md hover:bg-slate-50 font-medium transition-colors">取消</button>
-                    <button id="confirm-btn-yes" class="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition-colors">確認刪除</button>
+                    <button onclick="dialogManager.cancelConfirm()" class="flex-1 px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 font-medium transition-colors">取消</button>
+                    <button id="confirm-btn-yes" class="flex-1 px-3 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 font-medium transition-colors">確認</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- 區塊 6: 吐司提示 -->
-    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 bg-slate-800/90 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2.5 transition-all duration-300 z-[70] pointer-events-none max-w-[90vw] whitespace-nowrap">
+    <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 translate-y-20 opacity-0 bg-slate-800/90 dark:bg-slate-700/90 backdrop-blur-sm text-white px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2.5 transition-all duration-300 z-[70] pointer-events-none max-w-[90vw] whitespace-nowrap">
         <i class="ph-fill ph-check-circle text-green-400 text-lg shrink-0"></i>
         <span id="toast-message" class="text-sm font-medium truncate">已處理！</span>
     </div>
+
+    <!-- 新增：變數說明 (Help Modal) (Req 4) -->
+    <div id="help-modal" class="fixed inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform" id="help-content">
+            <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2"><i class="ph-fill ph-info"></i> 動態變數說明</h3>
+                <button onclick="helpManager.close()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            <div class="p-5 overflow-y-auto max-h-[70vh]">
+                <p class="text-sm text-slate-600 dark:text-slate-400 mb-4 leading-relaxed">
+                    在新增或編輯字串的內容時，您可以輸入特定的「變數標籤」。當您點擊複製該字串時，系統會自動將變數替換為當下真實的資料，成為更強大的生產力工具。
+                </p>
+                <div class="space-y-3">
+                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div class="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-1">{{date}}</div>
+                        <div class="text-xs text-slate-700 dark:text-slate-300">自動替換為今日日期 (例如：2026/5/5)。</div>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <div class="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 mb-1">{{clipboard}}</div>
+                        <div class="text-xs text-slate-700 dark:text-slate-300">自動帶入您當下剪貼簿中複製的文字 (需瀏覽器允許權限)。</div>
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+                    <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-2">常用情境範例：</h4>
+                    <pre class="text-xs bg-slate-800 text-slate-200 p-3 rounded-md font-mono whitespace-pre-wrap leading-relaxed">您好，這裡是客戶服務部。
+您的案件已於 {{date}} 處理完畢。
+案件編號：{{clipboard}}
+
+感謝您的耐心等候！</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增：回到頂端 (FAB) (Req 3) -->
+    <button id="fab-back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="fixed bottom-6 right-6 bg-indigo-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-700 hover:scale-110 hover:shadow-2xl transition-all duration-300 z-40 opacity-0 translate-y-10 pointer-events-none group" title="回到頂端">
+        <i class="ph ph-caret-up text-2xl group-hover:-translate-y-1 transition-transform"></i>
+    </button>
 
     <!-- ========================================== -->
     <!-- JavaScript 核心邏輯 -->
@@ -185,7 +320,8 @@
         const CONFIG = {
             GOOGLE_SHEETS_API_URL: "https://script.google.com/macros/s/AKfycbxoAWQMN0Uhei-yQ835-vxxv6ItdqpBe8TIpkI2dLe4pIwQTdQJ99QVp_VJd4_V2dMJ/exec", 
             DEFAULT_CATEGORY: "全部 (All)",
-            SYSTEM_ID: "__SYSTEM_CATEGORIES__"
+            SYSTEM_ID: "__SYSTEM_CATEGORIES__",
+            PASSWORD: "789" // Req 1
         };
 
         let appState = {
@@ -193,8 +329,215 @@
             categories: ["公司資訊", "程式設計", "客服用語"], 
             currentCategory: CONFIG.DEFAULT_CATEGORY,
             searchQuery: "",
-            // 2. 新增：從 localStorage 讀取我的最愛名單
-            favorites: JSON.parse(localStorage.getItem('snippet_manager_favorites') || '[]')
+            favorites: JSON.parse(localStorage.getItem('snippet_manager_favorites') || '[]'),
+            // 新增功能狀態
+            isBatchMode: false,
+            selectedIds: [],
+            pageSize: 20,
+            currentPage: 1,
+            observer: null,
+            isAuthenticated: false // Req 1
+        };
+
+        // 新增：登入管理員 (Req 1)
+        const authManager = {
+            init() {
+                const isAuth = sessionStorage.getItem('snippet_auth') === 'true';
+                if (isAuth) {
+                    appState.isAuthenticated = true;
+                    const overlay = document.getElementById('login-overlay');
+                    if(overlay) overlay.classList.add('hidden');
+                } else {
+                    document.body.style.overflow = 'hidden'; // 鎖定滾動
+                }
+            },
+            login(e) {
+                e.preventDefault();
+                const pwd = document.getElementById('login-password').value;
+                if (pwd === CONFIG.PASSWORD) {
+                    sessionStorage.setItem('snippet_auth', 'true');
+                    appState.isAuthenticated = true;
+                    
+                    const overlay = document.getElementById('login-overlay');
+                    const box = document.getElementById('login-box');
+                    if(box) box.classList.add('scale-95');
+                    if(overlay) overlay.classList.add('opacity-0');
+                    
+                    setTimeout(() => {
+                        if(overlay) overlay.classList.add('hidden');
+                        document.body.style.overflow = '';
+                    }, 300);
+                } else {
+                    const err = document.getElementById('login-error');
+                    if(err) err.classList.remove('hidden');
+                    setTimeout(() => { if(err) err.classList.add('hidden'); }, 3000);
+                }
+            }
+        };
+
+        // 新增：變數說明管理員 (Req 4)
+        const helpManager = {
+            open() {
+                const modal = document.getElementById('help-modal');
+                const content = document.getElementById('help-content');
+                if(!modal || !content) return;
+                modal.classList.remove('hidden');
+                void modal.offsetWidth; 
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+                content.classList.add('scale-100');
+            },
+            close() {
+                const modal = document.getElementById('help-modal');
+                const content = document.getElementById('help-content');
+                if(!modal || !content) return;
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 200);
+            }
+        };
+
+        // 深色模式管理員
+        const darkModeManager = {
+            init() {
+                const isDark = localStorage.getItem('snippet_theme') === 'dark' || 
+                    (!('snippet_theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                this.apply(isDark);
+            },
+            toggle() {
+                const isDark = !document.documentElement.classList.contains('dark');
+                this.apply(isDark);
+                localStorage.setItem('snippet_theme', isDark ? 'dark' : 'light');
+            },
+            apply(isDark) {
+                if (isDark) {
+                    document.documentElement.classList.add('dark');
+                    document.getElementById('dark-mode-icon')?.classList.replace('ph-moon', 'ph-sun');
+                    if(document.getElementById('dark-mode-text')) document.getElementById('dark-mode-text').innerText = '亮色模式';
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    document.getElementById('dark-mode-icon')?.classList.replace('ph-sun', 'ph-moon');
+                    if(document.getElementById('dark-mode-text')) document.getElementById('dark-mode-text').innerText = '深色模式';
+                }
+            }
+        };
+
+        // 資料匯出與匯入管理員
+        const ioManager = {
+            exportData() {
+                const exportObj = {
+                    categories: appState.categories,
+                    snippets: appState.snippets,
+                    favorites: appState.favorites,
+                    exportDate: new Date().toISOString()
+                };
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj, null, 2));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", `SnippetManager_Backup_${new Date().toISOString().split('T')[0]}.json`);
+                dlAnchorElem.click();
+                uiManager.showToast("已成功匯出資料");
+            },
+            importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if(imported.categories && imported.snippets) {
+                            appState.categories = imported.categories;
+                            appState.snippets = imported.snippets;
+                            appState.favorites = imported.favorites || [];
+                            localStorage.setItem('snippet_manager_favorites', JSON.stringify(appState.favorites));
+                            
+                            // 保存至後端/LocalStorage
+                            await dataService.saveCategories();
+                            for(const s of appState.snippets) {
+                                await dataService.saveSnippet(s, false, true); // 靜默儲存
+                            }
+                            
+                            settingsManager.close();
+                            uiManager.renderWithTransition();
+                            uiManager.showToast("資料匯入成功！");
+                        } else {
+                            throw new Error("格式不符");
+                        }
+                    } catch (error) {
+                        uiManager.showToast("匯入失敗：檔案格式錯誤", true);
+                    }
+                    event.target.value = ""; // 重設 input
+                };
+                reader.readAsText(file);
+            }
+        };
+
+        // 批次操作管理員
+        const batchManager = {
+            toggleMode() {
+                appState.isBatchMode = !appState.isBatchMode;
+                appState.selectedIds = [];
+                const btn = document.getElementById('batch-mode-btn');
+                const toolbar = document.getElementById('batch-toolbar');
+                const container = document.getElementById('snippets-container');
+                
+                if(appState.isBatchMode) {
+                    if(btn) btn.classList.add('bg-indigo-100', 'dark:bg-indigo-900', 'text-indigo-700', 'dark:text-indigo-300');
+                    if(toolbar) toolbar.classList.remove('hidden');
+                    if(container) container.classList.add('pt-12'); // 預留工具列空間
+                    this.updateSelectOptions();
+                } else {
+                    if(btn) btn.classList.remove('bg-indigo-100', 'dark:bg-indigo-900', 'text-indigo-700', 'dark:text-indigo-300');
+                    if(toolbar) toolbar.classList.add('hidden');
+                    if(container) container.classList.remove('pt-12');
+                }
+                uiManager.renderWithTransition();
+            },
+            toggleSelect(id) {
+                const idx = appState.selectedIds.indexOf(id);
+                if (idx > -1) appState.selectedIds.splice(idx, 1);
+                else appState.selectedIds.push(id);
+                const countEl = document.getElementById('batch-count');
+                if (countEl) countEl.innerText = appState.selectedIds.length;
+            },
+            updateSelectOptions() {
+                const select = document.getElementById('batch-move-select');
+                if (!select) return;
+                select.innerHTML = '<option value="">-- 移動至分類 --</option>';
+                appState.categories.forEach(cat => {
+                    select.innerHTML += `<option value="${cat}">${cat}</option>`;
+                });
+            },
+            async deleteSelected() {
+                if (appState.selectedIds.length === 0) return uiManager.showToast("未選取任何項目", true);
+                uiManager.showStatus("批次刪除中...", true);
+                for(const id of appState.selectedIds) {
+                    await dataService.deleteSnippet(id, true); // 靜默刪除
+                }
+                appState.selectedIds = [];
+                this.toggleMode(); // 關閉模式並重新渲染
+                uiManager.hideStatus();
+                uiManager.showToast("批次刪除完成！");
+            },
+            async moveSelected() {
+                if (appState.selectedIds.length === 0) return uiManager.showToast("未選取任何項目", true);
+                const targetCat = document.getElementById('batch-move-select')?.value;
+                if (!targetCat) return uiManager.showToast("請選擇目標分類", true);
+                
+                uiManager.showStatus("批次移動中...", true);
+                for(const id of appState.selectedIds) {
+                    const snippet = appState.snippets.find(s => s.id === id);
+                    if(snippet) {
+                        snippet.category = targetCat;
+                        await dataService.saveSnippet(snippet, false, true); // 靜默儲存
+                    }
+                }
+                appState.selectedIds = [];
+                this.toggleMode(); // 關閉模式並重新渲染
+                uiManager.hideStatus();
+                uiManager.showToast("批次移動完成！");
+            }
         };
 
         /** API 與資料服務 */
@@ -228,40 +571,39 @@
                 appState.snippets = rawData.filter(s => s.id !== CONFIG.SYSTEM_ID);
             },
 
-            async saveSnippet(snippetData, isSystem = false) {
+            async saveSnippet(snippetData, isSystem = false, silent = false) {
                 if (this.isUsingGoogleSheets()) {
                     try {
-                        if(!isSystem) uiManager.showStatus("儲存中...", true);
+                        if(!isSystem && !silent) uiManager.showStatus("儲存中...", true);
                         const response = await fetch(CONFIG.GOOGLE_SHEETS_API_URL, {
                             method: "POST",
                             body: JSON.stringify({ action: "save", data: snippetData })
                         });
                         const result = await response.json();
-                        if(result.status === 'success' && !isSystem) await this.fetchSnippets();
+                        if(result.status === 'success' && !isSystem && !silent) await this.fetchSnippets();
                     } catch (error) {
                         uiManager.showToast("儲存失敗", true);
                     }
                 } else {
                     const rawData = [
-                        ...appState.snippets, 
+                        ...appState.snippets.filter(s => s.id !== snippetData.id), // 確保移除舊的
                         { id: CONFIG.SYSTEM_ID, category: "SYSTEM", title: "SYS", content: JSON.stringify(appState.categories) }
                     ];
                     
                     if (!isSystem) {
-                        if (snippetData.id) {
-                            const index = rawData.findIndex(s => s.id === snippetData.id);
-                            if(index > -1) rawData[index] = snippetData;
-                        } else {
-                            snippetData.id = Date.now().toString();
-                            rawData.push(snippetData);
-                        }
+                        if (!snippetData.id) snippetData.id = Date.now().toString();
+                        rawData.push(snippetData);
+                        // 更新前端狀態
+                        const existingIdx = appState.snippets.findIndex(s => s.id === snippetData.id);
+                        if(existingIdx > -1) appState.snippets[existingIdx] = snippetData;
+                        else appState.snippets.push(snippetData);
                     } else {
                         const idx = rawData.findIndex(s => s.id === CONFIG.SYSTEM_ID);
                         if(idx > -1) rawData[idx] = snippetData;
                     }
 
                     localStorage.setItem('snippet_manager_data', JSON.stringify(rawData));
-                    this.processRawData(rawData);
+                    if(!silent) this.processRawData(rawData);
                 }
             },
 
@@ -275,15 +617,15 @@
                 await this.saveSnippet(sysSnippet, true);
             },
 
-            async deleteSnippet(id) {
+            async deleteSnippet(id, silent = false) {
                 if (this.isUsingGoogleSheets()) {
                     try {
-                        uiManager.showStatus("刪除中...", true);
+                        if(!silent) uiManager.showStatus("刪除中...", true);
                         await fetch(CONFIG.GOOGLE_SHEETS_API_URL, {
                             method: "POST",
                             body: JSON.stringify({ action: "delete", id: id })
                         });
-                        await this.fetchSnippets();
+                        if(!silent) await this.fetchSnippets();
                     } catch (error) {
                         uiManager.showToast("刪除失敗", true);
                     }
@@ -292,10 +634,14 @@
                     let parsed = rawData ? JSON.parse(rawData) : [];
                     parsed = parsed.filter(s => s.id !== id);
                     localStorage.setItem('snippet_manager_data', JSON.stringify(parsed));
-                    this.processRawData(parsed);
+                    
+                    appState.snippets = appState.snippets.filter(s => s.id !== id);
                 }
-                uiManager.render();
-                uiManager.showToast("已刪除！");
+                
+                if(!silent) {
+                    uiManager.renderWithTransition();
+                    uiManager.showToast("已刪除！");
+                }
             }
         };
 
@@ -305,6 +651,7 @@
                 this.confirmCallback = onConfirm;
                 const modal = document.getElementById('confirm-modal');
                 const content = document.getElementById('confirm-content');
+                if(!modal || !content) return;
                 document.getElementById('confirm-btn-yes').onclick = () => {
                     if (this.confirmCallback) this.confirmCallback();
                     this.cancelConfirm();
@@ -318,6 +665,7 @@
             cancelConfirm() {
                 const modal = document.getElementById('confirm-modal');
                 const content = document.getElementById('confirm-content');
+                if(!modal || !content) return;
                 modal.classList.add('opacity-0');
                 content.classList.remove('scale-100');
                 content.classList.add('scale-95');
@@ -326,15 +674,19 @@
             }
         };
 
+        // 分類設定支援拖曳排序
         const settingsManager = {
             tempCategories: [],
+            draggedIdx: null,
             open() {
                 this.tempCategories = [...appState.categories];
                 this.renderList();
-                document.getElementById('new-category-input').value = "";
+                const input = document.getElementById('new-category-input');
+                if(input) input.value = "";
                 
                 const modal = document.getElementById('settings-modal');
                 const content = document.getElementById('settings-content');
+                if(!modal || !content) return;
                 modal.classList.remove('hidden');
                 void modal.offsetWidth; 
                 modal.classList.remove('opacity-0');
@@ -344,6 +696,7 @@
             close() {
                 const modal = document.getElementById('settings-modal');
                 const content = document.getElementById('settings-content');
+                if(!modal || !content) return;
                 modal.classList.add('opacity-0');
                 content.classList.remove('scale-100');
                 content.classList.add('scale-95');
@@ -351,6 +704,7 @@
             },
             renderList() {
                 const container = document.getElementById('settings-category-list');
+                if(!container) return;
                 container.innerHTML = '';
                 if(this.tempCategories.length === 0) {
                     container.innerHTML = '<p class="text-xs text-slate-400 text-center py-4">目前沒有自訂分類，請在上方新增</p>';
@@ -358,24 +712,37 @@
                 }
                 this.tempCategories.forEach((cat, index) => {
                     const div = document.createElement('div');
-                    div.className = "flex justify-between items-center py-1.5 px-2 bg-white hover:bg-slate-50 border border-transparent hover:border-slate-100 rounded-lg group transition-colors";
+                    div.className = "flex justify-between items-center py-1.5 px-2 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 border border-transparent hover:border-slate-200 dark:hover:border-slate-500 rounded-lg group transition-colors cursor-move";
+                    div.draggable = true;
                     
-                    const isFirst = index === 0;
-                    const isLast = index === this.tempCategories.length - 1;
-                    const btnClass = "text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 p-1 rounded transition-colors";
-                    const disabledClass = "text-slate-200 cursor-not-allowed pointer-events-none";
+                    div.addEventListener('dragstart', (e) => {
+                        this.draggedIdx = index;
+                        e.dataTransfer.effectAllowed = 'move';
+                        setTimeout(() => div.classList.add('opacity-50'), 0);
+                    });
+                    div.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        if (index !== this.draggedIdx) div.classList.add('drag-over');
+                    });
+                    div.addEventListener('dragleave', () => div.classList.remove('drag-over'));
+                    div.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        div.classList.remove('drag-over');
+                        if (this.draggedIdx !== null && this.draggedIdx !== index) {
+                            const movedItem = this.tempCategories.splice(this.draggedIdx, 1)[0];
+                            this.tempCategories.splice(index, 0, movedItem);
+                            this.renderList();
+                        }
+                    });
+                    div.addEventListener('dragend', () => {
+                        this.draggedIdx = null;
+                        div.classList.remove('opacity-50');
+                    });
 
                     div.innerHTML = `
-                        <span class="text-sm text-slate-700 font-medium">${utils.escapeHTML(cat)}</span>
+                        <span class="text-sm text-slate-700 dark:text-slate-200 font-medium flex items-center gap-2"><i class="ph ph-dots-six-vertical text-slate-400"></i> ${utils.escapeHTML(cat)}</span>
                         <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="settingsManager.moveUp(${index})" class="${btnClass} ${isFirst ? disabledClass : ''}" title="往上移">
-                                <i class="ph ph-caret-up text-base"></i>
-                            </button>
-                            <button onclick="settingsManager.moveDown(${index})" class="${btnClass} ${isLast ? disabledClass : ''}" title="往下移">
-                                <i class="ph ph-caret-down text-base"></i>
-                            </button>
-                            <div class="w-px h-4 bg-slate-200 mx-1"></div>
-                            <button onclick="settingsManager.removeCategory(${index})" class="text-slate-400 hover:text-red-500 hover:bg-red-50 p-1 rounded transition-colors" title="刪除分類">
+                            <button onclick="settingsManager.removeCategory(${index})" class="text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 p-1 rounded transition-colors" title="刪除分類">
                                 <i class="ph ph-trash text-base"></i>
                             </button>
                         </div>
@@ -385,6 +752,7 @@
             },
             addCategory() {
                 const input = document.getElementById('new-category-input');
+                if(!input) return;
                 const val = input.value.trim();
                 if (val && !this.tempCategories.includes(val)) {
                     this.tempCategories.push(val);
@@ -398,22 +766,6 @@
                 this.tempCategories.splice(index, 1);
                 this.renderList();
             },
-            moveUp(index) {
-                if (index > 0) {
-                    const temp = this.tempCategories[index - 1];
-                    this.tempCategories[index - 1] = this.tempCategories[index];
-                    this.tempCategories[index] = temp;
-                    this.renderList();
-                }
-            },
-            moveDown(index) {
-                if (index < this.tempCategories.length - 1) {
-                    const temp = this.tempCategories[index + 1];
-                    this.tempCategories[index + 1] = this.tempCategories[index];
-                    this.tempCategories[index] = temp;
-                    this.renderList();
-                }
-            },
             async save() {
                 if(this.tempCategories.length === 0) {
                     uiManager.showToast("至少需要一個分類！", true);
@@ -425,7 +777,7 @@
                 }
                 
                 this.close();
-                uiManager.render();
+                uiManager.renderWithTransition();
                 
                 uiManager.showStatus("正在儲存分類設定...", true);
                 await dataService.saveCategories();
@@ -436,23 +788,39 @@
 
         const uiManager = {
             async init() {
-                document.getElementById('snippet-form').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const snippetData = {
-                        id: document.getElementById('form-id').value,
-                        category: document.getElementById('form-category').value.trim(),
-                        title: document.getElementById('form-title').value.trim(),
-                        content: document.getElementById('form-content').value.trim()
-                    };
-                    uiManager.closeModal();
-                    await dataService.saveSnippet(snippetData);
-                    uiManager.render();
-                });
+                authManager.init(); // 初始化認證
+                darkModeManager.init();
+                this.setupIntersectionObserver();
 
-                document.getElementById('search-input').addEventListener('input', (e) => {
-                    appState.searchQuery = e.target.value.trim().toLowerCase();
-                    this.renderSnippets();
-                });
+                const form = document.getElementById('snippet-form');
+                if(form) {
+                    form.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        const snippetData = {
+                            id: document.getElementById('form-id')?.value,
+                            category: document.getElementById('form-category')?.value.trim(),
+                            title: document.getElementById('form-title')?.value.trim(),
+                            content: document.getElementById('form-content')?.value.trim()
+                        };
+                        uiManager.closeModal();
+                        await dataService.saveSnippet(snippetData);
+                        uiManager.renderWithTransition();
+                    });
+                }
+
+                // 加入 Debounce 防抖，優化搜尋效能
+                let searchTimeout;
+                const searchInput = document.getElementById('search-input');
+                if(searchInput) {
+                    searchInput.addEventListener('input', (e) => {
+                        clearTimeout(searchTimeout);
+                        searchTimeout = setTimeout(() => {
+                            appState.searchQuery = e.target.value.trim().toLowerCase();
+                            appState.currentPage = 1; // 搜尋時重置頁碼
+                            this.renderSnippetsWithTransition();
+                        }, 300);
+                    });
+                }
 
                 if(!dataService.isUsingGoogleSheets()) {
                     setTimeout(() => this.showToast("目前為 LocalStorage 預覽模式"), 500);
@@ -461,25 +829,85 @@
                 this.render();
             },
 
-            // 2. 新增：處理愛心點擊功能
+            // 下拉選單開關邏輯 (Req 4)
+            toggleDropdown(id) {
+                const dropdown = document.getElementById(id);
+                if(!dropdown) return;
+                if(dropdown.classList.contains('hidden')) {
+                    dropdown.classList.remove('hidden');
+                    void dropdown.offsetWidth;
+                    dropdown.classList.remove('opacity-0', 'scale-95');
+                    dropdown.classList.add('opacity-100', 'scale-100');
+                } else {
+                    this.closeDropdown(id);
+                }
+            },
+            closeDropdown(id) {
+                const dropdown = document.getElementById(id);
+                if(!dropdown) return;
+                dropdown.classList.remove('opacity-100', 'scale-100');
+                dropdown.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => dropdown.classList.add('hidden'), 200);
+            },
+
+            // 觀察無限捲動
+            setupIntersectionObserver() {
+                appState.observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        const trigger = document.getElementById('scroll-trigger');
+                        if(!trigger) return;
+                        
+                        const totalFiltered = this.getFilteredSnippets().length;
+                        if (appState.currentPage * appState.pageSize < totalFiltered) {
+                            trigger.classList.remove('opacity-0');
+                            setTimeout(() => {
+                                appState.currentPage++;
+                                this.renderSnippets(true); // true 表示是追加渲染
+                            }, 400); // 模擬載入延遲
+                        } else {
+                            trigger.classList.add('opacity-0');
+                        }
+                    }
+                }, { rootMargin: "100px" });
+                
+                const trigger = document.getElementById('scroll-trigger');
+                if(trigger) appState.observer.observe(trigger);
+            },
+
             toggleFavorite(id) {
                 if (appState.favorites.includes(id)) {
                     appState.favorites = appState.favorites.filter(favId => favId !== id);
                 } else {
                     appState.favorites.push(id);
                 }
-                // 儲存至瀏覽器
                 localStorage.setItem('snippet_manager_favorites', JSON.stringify(appState.favorites));
-                this.renderSnippets(); // 重新渲染卡片以更新排序與圖示
+                this.renderSnippetsWithTransition(); 
+            },
+
+            renderWithTransition() {
+                if(document.startViewTransition) {
+                    document.startViewTransition(() => this.render());
+                } else {
+                    this.render();
+                }
+            },
+            renderSnippetsWithTransition() {
+                if(document.startViewTransition) {
+                    document.startViewTransition(() => this.renderSnippets());
+                } else {
+                    this.renderSnippets();
+                }
             },
 
             render() {
                 this.renderSidebarNav();
+                appState.currentPage = 1; 
                 this.renderSnippets();
             },
 
             renderSidebarNav() {
                 const nav = document.getElementById('category-nav');
+                if(!nav) return;
                 nav.innerHTML = '';
                 
                 const allNavs = [CONFIG.DEFAULT_CATEGORY, ...appState.categories];
@@ -487,24 +915,21 @@
                 allNavs.forEach(category => {
                     const isActive = category === appState.currentCategory;
                     const btn = document.createElement('button');
-                    btn.className = `text-left px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap w-full flex justify-between items-center ${isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100'}`;
+                    // 適配深色模式
+                    btn.className = `text-left px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap w-full flex justify-between items-center ${isActive ? 'bg-indigo-50 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'}`;
                     btn.innerText = category;
                     btn.onclick = () => {
                         appState.currentCategory = category;
                         appState.searchQuery = "";
-                        document.getElementById('search-input').value = "";
-                        this.render();
+                        const searchInput = document.getElementById('search-input');
+                        if(searchInput) searchInput.value = "";
+                        this.renderWithTransition();
                     };
                     nav.appendChild(btn);
                 });
             },
 
-            renderSnippets() {
-                const container = document.getElementById('snippets-container');
-                const emptyState = document.getElementById('empty-state');
-                const emptyStateText = document.getElementById('empty-state-text');
-                container.innerHTML = '';
-
+            getFilteredSnippets() {
                 let filtered = appState.currentCategory === CONFIG.DEFAULT_CATEGORY 
                     ? appState.snippets 
                     : appState.snippets.filter(s => s.category === appState.currentCategory);
@@ -515,60 +940,128 @@
                         s.content.toLowerCase().includes(appState.searchQuery)
                     );
                 }
+                // 置頂排序
+                const favoriteSnippets = filtered.filter(s => appState.favorites.includes(s.id));
+                const regularSnippets = filtered.filter(s => !appState.favorites.includes(s.id));
+                return [...favoriteSnippets.reverse(), ...regularSnippets.reverse()];
+            },
 
-                if (filtered.length === 0) {
+            renderSnippets(append = false) {
+                const container = document.getElementById('snippets-container');
+                const emptyState = document.getElementById('empty-state');
+                const emptyStateText = document.getElementById('empty-state-text');
+                const scrollTrigger = document.getElementById('scroll-trigger');
+                
+                // 增加 null 防護，避免找不到 DOM
+                if(!container) return;
+                if(!append) container.innerHTML = '';
+
+                const sortedSnippets = this.getFilteredSnippets();
+
+                if (sortedSnippets.length === 0) {
                     container.classList.add('hidden');
-                    emptyStateText.innerText = appState.searchQuery ? "找不到符合的搜尋結果" : "此分類目前沒有字串";
-                    emptyState.classList.remove('hidden');
+                    if (scrollTrigger) scrollTrigger.classList.add('hidden');
+                    if (emptyStateText) emptyStateText.innerText = appState.searchQuery ? "找不到符合的搜尋結果" : "此分類目前沒有字串";
+                    if (emptyState) emptyState.classList.remove('hidden');
                     return;
                 }
 
                 container.classList.remove('hidden');
-                emptyState.classList.add('hidden');
+                if (emptyState) emptyState.classList.add('hidden');
+                if (scrollTrigger) scrollTrigger.classList.remove('hidden');
 
-                // 2. 修改：將過濾後的字串拆分為「已置頂」與「未置頂」，再合併 (置頂優先)
-                const favoriteSnippets = filtered.filter(s => appState.favorites.includes(s.id));
-                const regularSnippets = filtered.filter(s => !appState.favorites.includes(s.id));
-                const sortedSnippets = [...favoriteSnippets.reverse(), ...regularSnippets.reverse()];
+                const startIndex = append ? (appState.currentPage - 1) * appState.pageSize : 0;
+                const endIndex = appState.currentPage * appState.pageSize;
+                const pagedSnippets = sortedSnippets.slice(startIndex, endIndex);
 
-                sortedSnippets.forEach(snippet => {
+                if (scrollTrigger) {
+                    if (endIndex >= sortedSnippets.length) scrollTrigger.classList.add('opacity-0');
+                    else scrollTrigger.classList.remove('opacity-0');
+                }
+
+                let dragSourceId = null;
+
+                pagedSnippets.forEach(snippet => {
                     const card = document.createElement('div');
                     const isFavorite = appState.favorites.includes(snippet.id);
+                    const isSelected = appState.selectedIds.includes(snippet.id);
                     
-                    // 若為置頂卡片，加上微小的視覺提示 (淺橘色外框)
-                    card.className = `snippet-card bg-white border ${isFavorite ? 'border-orange-200 shadow-sm' : 'border-slate-200'} rounded-lg p-3 flex flex-col h-full group relative`;
+                    card.className = `snippet-card bg-white dark:bg-slate-800 border ${isFavorite ? 'border-orange-200 dark:border-orange-900 shadow-sm' : 'border-slate-200 dark:border-slate-700'} ${isSelected ? 'ring-2 ring-indigo-500' : ''} rounded-lg p-3 flex flex-col h-full group relative cursor-pointer`;
+                    
+                    if(appState.isBatchMode) {
+                        card.onclick = (e) => {
+                            if(e.target.tagName !== 'BUTTON' && e.target.tagName !== 'I') {
+                                batchManager.toggleSelect(snippet.id);
+                                this.renderSnippets(); 
+                            }
+                        };
+                    } else {
+                        card.draggable = true;
+                        card.addEventListener('dragstart', (e) => {
+                            dragSourceId = snippet.id;
+                            e.dataTransfer.effectAllowed = 'move';
+                            setTimeout(() => card.classList.add('opacity-50'), 0);
+                        });
+                        card.addEventListener('dragover', (e) => {
+                            e.preventDefault();
+                            if (dragSourceId !== snippet.id) card.classList.add('drag-over');
+                        });
+                        card.addEventListener('dragleave', () => card.classList.remove('drag-over'));
+                        card.addEventListener('drop', (e) => {
+                            e.preventDefault();
+                            card.classList.remove('drag-over');
+                            if (dragSourceId && dragSourceId !== snippet.id) {
+                                const arr = appState.snippets;
+                                const idx1 = arr.findIndex(s => s.id === dragSourceId);
+                                const idx2 = arr.findIndex(s => s.id === snippet.id);
+                                if(idx1 > -1 && idx2 > -1) {
+                                    const temp = arr[idx1];
+                                    arr.splice(idx1, 1);
+                                    arr.splice(idx2, 0, temp);
+                                    localStorage.setItem('snippet_manager_data', JSON.stringify(arr));
+                                    this.renderSnippetsWithTransition();
+                                }
+                            }
+                        });
+                        card.addEventListener('dragend', () => card.classList.remove('opacity-50'));
+                    }
                     
                     const safeDisplayContent = utils.escapeHTML(snippet.content);
                     const encodedContent = encodeURIComponent(snippet.content);
                     const encodedTitle = encodeURIComponent(snippet.title);
                     
+                    const headerTools = appState.isBatchMode 
+                        ? `<input type="checkbox" ${isSelected ? 'checked' : ''} class="w-4 h-4 text-indigo-600 rounded border-slate-300 pointer-events-none mt-0.5">`
+                        : `
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="uiManager.toggleFavorite('${snippet.id}')" class="text-slate-400 dark:text-slate-500 hover:text-red-500 rounded flex items-center justify-center transition-colors px-1 h-full" title="${isFavorite ? '取消置頂' : '置頂卡片'}">
+                                <i class="${isFavorite ? 'ph-fill text-red-500' : 'ph hover:ph-fill'} ph-heart text-base"></i>
+                            </button>
+                            <button onclick="utils.copyText(decodeURIComponent('${encodedContent}'), decodeURIComponent('${encodedTitle}'))" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-600 dark:hover:bg-indigo-700 hover:text-white rounded flex items-center gap-1 px-1.5 py-1 transition-colors border border-indigo-100 dark:border-indigo-800" title="複製內容">
+                                <i class="ph ph-copy text-sm"></i><span class="text-[11px] font-bold">複製</span>
+                            </button>
+                        </div>
+                        `;
+
                     card.innerHTML = `
                         <div class="flex justify-between items-start mb-1.5 gap-2">
-                            <h3 class="font-bold text-slate-800 text-sm leading-snug truncate flex-grow" title="${snippet.title}">${snippet.title}</h3>
-                            <div class="flex items-center gap-1 shrink-0">
-                                <!-- 愛心按鈕 -->
-                                <button onclick="uiManager.toggleFavorite('${snippet.id}')" class="text-slate-400 hover:text-red-500 rounded flex items-center justify-center transition-colors px-1 h-full" title="${isFavorite ? '取消置頂' : '置頂卡片'}">
-                                    <i class="${isFavorite ? 'ph-fill text-red-500' : 'ph hover:ph-fill'} ph-heart text-base"></i>
-                                </button>
-                                <!-- 複製按鈕 -->
-                                <button onclick="utils.copyText(decodeURIComponent('${encodedContent}'), decodeURIComponent('${encodedTitle}'))" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded flex items-center gap-1 px-1.5 py-1 transition-colors border border-indigo-100 hover:border-indigo-600" title="複製內容">
-                                    <i class="ph ph-copy text-sm"></i><span class="text-[11px] font-bold">複製</span>
-                                </button>
-                            </div>
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm leading-snug truncate flex-grow" title="${snippet.title}">${snippet.title}</h3>
+                            ${headerTools}
                         </div>
                         <div class="flex items-center justify-between mb-2 min-h-[20px]">
-                            <span class="text-[10px] font-medium px-1.5 py-0.5 ${appState.categories.includes(snippet.category) ? 'bg-slate-100 text-slate-500' : 'bg-orange-50 text-orange-600 border border-orange-100'} rounded truncate max-w-[65%] leading-none" title="${!appState.categories.includes(snippet.category) ? '此分類已從設定中移除' : ''}">${snippet.category}</span>
+                            <span class="text-[10px] font-medium px-1.5 py-0.5 ${appState.categories.includes(snippet.category) ? 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300' : 'bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-800'} rounded truncate max-w-[65%] leading-none">${snippet.category}</span>
+                            ${!appState.isBatchMode ? `
                             <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onclick="uiManager.openModal('${snippet.id}')" class="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="編輯">
+                                <button onclick="uiManager.openModal('${snippet.id}')" class="p-1 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded transition-colors" title="編輯">
                                     <i class="ph ph-pencil-simple text-sm"></i>
                                 </button>
-                                <button onclick="dialogManager.openConfirm(() => dataService.deleteSnippet('${snippet.id}'))" class="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors" title="刪除">
+                                <button onclick="dialogManager.openConfirm(() => dataService.deleteSnippet('${snippet.id}'))" class="p-1 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors" title="刪除">
                                     <i class="ph ph-trash text-sm"></i>
                                 </button>
-                            </div>
+                            </div>` : ''}
                         </div>
-                        <div class="bg-slate-50 p-2 rounded border border-slate-100 mt-auto">
-                            <pre class="text-xs text-slate-500 font-mono whitespace-pre-wrap line-clamp-2 break-words m-0 leading-relaxed">${safeDisplayContent}</pre>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-2 rounded border border-slate-100 dark:border-slate-700 mt-auto">
+                            <pre class="text-xs text-slate-500 dark:text-slate-400 font-mono whitespace-pre-wrap line-clamp-2 break-words m-0 leading-relaxed">${safeDisplayContent}</pre>
                         </div>
                     `;
                     container.appendChild(card);
@@ -581,6 +1074,8 @@
                 const title = document.getElementById('modal-title');
                 const selectEl = document.getElementById('form-category');
                 
+                if(!modal || !content || !selectEl) return;
+                
                 selectEl.innerHTML = '';
                 appState.categories.forEach(cat => {
                     const opt = document.createElement('option');
@@ -591,7 +1086,8 @@
 
                 if (id) {
                     const snippet = appState.snippets.find(s => s.id === id);
-                    document.getElementById('form-id').value = snippet.id;
+                    const formIdEl = document.getElementById('form-id');
+                    if(formIdEl) formIdEl.value = snippet.id;
                     
                     if(!appState.categories.includes(snippet.category)) {
                         const opt = document.createElement('option');
@@ -601,14 +1097,18 @@
                     }
 
                     selectEl.value = snippet.category;
-                    document.getElementById('form-title').value = snippet.title;
-                    document.getElementById('form-content').value = snippet.content;
-                    title.innerText = "編輯字串";
+                    const formTitleEl = document.getElementById('form-title');
+                    const formContentEl = document.getElementById('form-content');
+                    if(formTitleEl) formTitleEl.value = snippet.title;
+                    if(formContentEl) formContentEl.value = snippet.content;
+                    if(title) title.innerText = "編輯字串";
                 } else {
-                    document.getElementById('snippet-form').reset();
-                    document.getElementById('form-id').value = "";
+                    const form = document.getElementById('snippet-form');
+                    if(form) form.reset();
+                    const formIdEl = document.getElementById('form-id');
+                    if(formIdEl) formIdEl.value = "";
                     selectEl.value = appState.currentCategory !== CONFIG.DEFAULT_CATEGORY ? appState.currentCategory : appState.categories[0];
-                    title.innerText = "新增字串";
+                    if(title) title.innerText = "新增字串";
                 }
 
                 modal.classList.remove('hidden');
@@ -621,6 +1121,7 @@
             closeModal() {
                 const modal = document.getElementById('snippet-modal');
                 const content = document.getElementById('modal-content');
+                if(!modal || !content) return;
                 modal.classList.add('opacity-0');
                 content.classList.remove('scale-100');
                 content.classList.add('scale-95');
@@ -629,19 +1130,26 @@
 
             showStatus(text, isSpinner = false, isError = false) {
                 const msg = document.getElementById('status-message');
-                msg.querySelector('#status-text').innerText = text;
-                msg.querySelector('i').className = isSpinner ? 'ph ph-spinner animate-spin text-sm' : (isError ? 'ph ph-warning-circle text-sm' : 'ph ph-info text-sm');
-                // 1. 修改：變更 CSS class 適應 Header 的排版
-                msg.className = `ml-2 px-2 py-1 rounded-md text-xs flex items-center gap-1.5 transition-opacity ${isError ? 'bg-red-50 text-red-700' : 'bg-blue-50 text-blue-700'}`;
+                if(!msg) return;
+                const textEl = msg.querySelector('#status-text');
+                const iconEl = msg.querySelector('i');
+                if(textEl) textEl.innerText = text;
+                if(iconEl) iconEl.className = isSpinner ? 'ph ph-spinner animate-spin text-sm' : (isError ? 'ph ph-warning-circle text-sm' : 'ph ph-info text-sm');
+                msg.className = `ml-2 px-2 py-1 rounded-md text-xs flex items-center gap-1.5 transition-opacity ${isError ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'}`;
+                msg.classList.remove('hidden');
             },
             hideStatus() { 
-                document.getElementById('status-message').classList.add('hidden'); 
+                const msg = document.getElementById('status-message');
+                if(msg) msg.classList.add('hidden'); 
             },
 
             showToast(message, isError = false) {
                 const toast = document.getElementById('toast');
-                document.getElementById('toast-message').innerText = message;
-                toast.querySelector('i').className = isError ? 'ph-fill ph-x-circle text-red-400 text-lg shrink-0' : 'ph-fill ph-check-circle text-green-400 text-lg shrink-0';
+                if(!toast) return;
+                const msgEl = document.getElementById('toast-message');
+                const iconEl = toast.querySelector('i');
+                if(msgEl) msgEl.innerText = message;
+                if(iconEl) iconEl.className = isError ? 'ph-fill ph-x-circle text-red-400 text-lg shrink-0' : 'ph-fill ph-check-circle text-green-400 text-lg shrink-0';
                 toast.classList.remove('translate-y-20', 'opacity-0');
                 setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 2500);
             }
@@ -652,6 +1160,17 @@
                 return str.replace(/[&<>'"]/g, tag => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[tag] || tag));
             },
             async copyText(text, title = "內容") {
+                // 解析動態變數模板
+                text = text.replace(/\{\{date\}\}/g, new Date().toLocaleDateString('zh-TW'));
+                if (text.includes('{{clipboard}}')) {
+                    try {
+                        const clipText = await navigator.clipboard.readText();
+                        text = text.replace(/\{\{clipboard\}\}/g, clipText);
+                    } catch (e) {
+                        uiManager.showToast("無法讀取剪貼簿以替換變數", true);
+                    }
+                }
+
                 const successMessage = `已複製：${title}`;
                 try {
                     await navigator.clipboard.writeText(text);
@@ -670,6 +1189,28 @@
                 }
             }
         };
+
+        // 點擊外部關閉下拉選單 (Req 4)
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('settings-dropdown-container');
+            if (container && !container.contains(e.target)) {
+                uiManager.closeDropdown('settings-dropdown');
+            }
+        });
+
+        // 監聽滾動以顯示/隱藏回到頂端按鈕 (Req 3)
+        window.addEventListener('scroll', () => {
+            const fab = document.getElementById('fab-back-to-top');
+            if(fab) {
+                if (window.scrollY > 300) {
+                    fab.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                    fab.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                } else {
+                    fab.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                    fab.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                }
+            }
+        });
 
         window.addEventListener('DOMContentLoaded', () => uiManager.init());
     </script>
