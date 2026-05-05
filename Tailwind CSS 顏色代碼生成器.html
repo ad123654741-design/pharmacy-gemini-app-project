@@ -545,11 +545,11 @@
                         </Modal>
                     )}
 
-                    {/* 版面邏輯優化：加入 items-start 讓右側面板不會被強制拉長 */}
-                    <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-8 items-start">
+                    {/* 版面邏輯優化：加寬容器至 max-w-[1600px]，提升橫向空間利用率 */}
+                    <div className="w-full max-w-[1600px] grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 mt-8 items-start">
                         
-                        {/* 左側控制面板 (佔 7 欄) */}
-                        <div className="lg:col-span-7 bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-200/50 p-6 md:p-8 border border-white flex flex-col gap-8 transition-all">
+                        {/* 左側控制面板 (佔 7~8 欄) */}
+                        <div className="lg:col-span-7 xl:col-span-8 bg-white/90 backdrop-blur-xl rounded-[2rem] shadow-2xl shadow-slate-200/50 p-6 md:p-8 border border-white flex flex-col gap-8 transition-all">
                             
                             {/* 標題與按鈕區 */}
                             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -557,7 +557,7 @@
                                     <div className="p-2 bg-blue-50 text-blue-600 rounded-2xl shadow-sm border border-blue-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.087 0-.875.75-1.5 1.5-1.5H17c2.75 0 5-2.25 5-5 0-3.875-3.375-7-10-7z"/></svg>
                                     </div>
-                                    Tailwind色彩工具
+                                    Tailwind 顏色工具
                                 </h1>
                                 <div className="flex flex-wrap gap-3 w-full sm:w-auto">
                                     <button onClick={handleReset} className="flex-1 sm:flex-none items-center justify-center gap-1.5 text-sm bg-slate-50 text-slate-600 px-5 py-2.5 rounded-full hover:bg-slate-100 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all border border-slate-200 font-bold whitespace-nowrap">
@@ -572,185 +572,196 @@
                                 </div>
                             </div>
 
-                            {/* 主要設定區域塊 */}
-                            <div className="bg-slate-50/50 p-2 rounded-2xl border border-slate-100">
-                                {/* 標籤切換 */}
-                                <div className="flex gap-1">
-                                    {['bg', 'text', 'border'].map((tab) => (
-                                        <button
-                                            key={tab}
-                                            onClick={() => setActiveTab(tab)}
-                                            className={`flex-1 py-3 px-2 text-sm font-bold rounded-xl transition-all duration-300 ${
-                                                activeTab === tab 
-                                                ? 'bg-white text-blue-600 shadow-md shadow-slate-200/50 border border-slate-100 scale-100' 
-                                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 scale-95'
-                                            }`}
-                                        >
-                                            {tab === 'bg' ? '背景顏色' : tab === 'text' ? '文字顏色' : '邊框顏色'}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* 漸層控制列 */}
-                                <div className={`overflow-hidden transition-all duration-300 ${activeTab === 'bg' ? 'max-h-40 opacity-100 mt-4 px-2' : 'max-h-0 opacity-0 m-0 p-0'}`}>
-                                    <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-3 justify-between items-center">
-                                        <div className="flex bg-slate-100 p-1.5 rounded-lg gap-1 w-full sm:w-auto">
-                                            <button onClick={() => setBgMode('solid')} className={`flex-1 sm:px-5 py-1.5 text-xs font-bold rounded-md transition-all duration-200 ${bgMode === 'solid' ? 'bg-white text-slate-800 shadow shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>單色模式</button>
-                                            <button onClick={() => setBgMode('gradient')} className={`flex-1 sm:px-5 py-1.5 text-xs font-bold rounded-md transition-all duration-200 ${bgMode === 'gradient' ? 'bg-white text-slate-800 shadow shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>漸層模式</button>
+                            {/* 版面邏輯優化：寬度提升與水平雙欄配置，減少向下滾動 */}
+                            <div className="flex flex-col xl:flex-row gap-6 xl:gap-8">
+                                {/* 色彩與標籤控制主區 (左半) */}
+                                <div className="flex-1 flex flex-col gap-6">
+                                    {/* 主要設定區域塊 */}
+                                    <div className="bg-slate-50/50 p-2 rounded-2xl border border-slate-100">
+                                        {/* 標籤切換 */}
+                                        <div className="flex gap-1">
+                                            {['bg', 'text', 'border'].map((tab) => (
+                                                <button
+                                                    key={tab}
+                                                    onClick={() => setActiveTab(tab)}
+                                                    className={`flex-1 py-3 px-2 text-sm font-bold rounded-xl transition-all duration-300 ${
+                                                        activeTab === tab 
+                                                        ? 'bg-white text-blue-600 shadow-md shadow-slate-200/50 border border-slate-100 scale-100' 
+                                                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50 scale-95'
+                                                    }`}
+                                                >
+                                                    {tab === 'bg' ? '背景顏色' : tab === 'text' ? '文字顏色' : '邊框顏色'}
+                                                </button>
+                                            ))}
                                         </div>
-                                        {bgMode === 'gradient' && (
-                                            <select 
-                                                value={gradientDir} 
-                                                onChange={(e) => setGradientDir(e.target.value)}
-                                                className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-700 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow cursor-pointer hover:bg-slate-100"
-                                            >
-                                                <option value="to-r">向右漸層 (to-r)</option>
-                                                <option value="to-l">向左漸層 (to-l)</option>
-                                                <option value="to-t">向上漸層 (to-t)</option>
-                                                <option value="to-b">向下漸層 (to-b)</option>
-                                                <option value="to-br">向右下 (to-br)</option>
-                                                <option value="to-tr">向右上 (to-tr)</option>
-                                            </select>
-                                        )}
-                                    </div>
-                                    
-                                    {bgMode === 'gradient' && (
-                                        <div className="flex gap-2 mt-3 mx-1">
-                                            <button onClick={() => setGradientTab('from')} className={`flex-1 py-2 text-xs font-bold rounded-t-xl border-b-2 transition-all ${gradientTab === 'from' ? 'border-blue-500 text-blue-700 bg-blue-50/80' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>🔸 起始色 (From)</button>
-                                            <button onClick={() => setGradientTab('to')} className={`flex-1 py-2 text-xs font-bold rounded-t-xl border-b-2 transition-all ${gradientTab === 'to' ? 'border-purple-500 text-purple-700 bg-purple-50/80' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>🔹 結束色 (To)</button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
 
-                            {/* 顏色選擇區 */}
-                            <div className="px-2">
-                                <label className="block text-sm font-bold text-slate-700 mb-4 flex justify-between items-center">
-                                    <span>選擇主色系 ({currentConfig.color})</span>
-                                    <span className={`w-5 h-5 rounded-full bg-${currentConfig.color}-500 border-2 border-white shadow-sm ring-1 ring-slate-200`}></span>
-                                </label>
-                                <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-11 gap-3 md:gap-2">
-                                    {COLOR_NAMES.map((colorName) => (
-                                        <button
-                                            key={colorName}
-                                            onClick={() => currentSetter({ ...currentConfig, color: colorName })}
-                                            title={colorName}
-                                            className={`
-                                                w-10 h-10 sm:w-9 sm:h-9 md:w-8 md:h-8 rounded-full border-2 focus:outline-none color-swatch relative shadow-sm hover:shadow-md hover:-translate-y-1 hover:scale-110 active:scale-95 transition-all duration-200
-                                                ${getSwatchClass(colorName)}
-                                                ${currentConfig.color === colorName ? 'border-slate-800 scale-110 ring-4 ring-slate-200/50 z-10' : ''}
-                                            `}
-                                        ></button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* 深淺選擇區 */}
-                            <div className="px-2">
-                                <label className="block text-sm font-bold text-slate-700 mb-4">
-                                    選擇深淺明度 {componentType === 'capsule' ? '' : isSpecialColor(currentConfig.color) ? '(單一色)' : `(${currentConfig.shade})`}
-                                </label>
-                                
-                                {componentType === 'capsule' ? (
-                                    <div className="p-4 bg-blue-50/80 rounded-2xl text-blue-700 text-sm flex items-center justify-center gap-3 border border-blue-100 shadow-sm font-medium animate-fade-in">
-                                        <span className="text-xl">✨</span>
-                                        膠囊模式會自動配對雙模深淺，您只需要切換主色系即可！
-                                    </div>
-                                ) : isSpecialColor(currentConfig.color) ? (
-                                    <div className="p-4 bg-slate-50 rounded-2xl text-slate-500 text-sm text-center border border-slate-100 animate-fade-in">
-                                        黑白模式無需選擇深淺
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-6 sm:grid-cols-11 gap-2">
-                                        {SHADES.map((shade) => (
-                                            <button
-                                                key={shade}
-                                                onClick={() => currentSetter({ ...currentConfig, shade: shade })}
-                                                className={`
-                                                    h-10 sm:h-9 rounded-xl text-xs font-bold transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-95
-                                                    bg-${currentConfig.color}-${shade}
-                                                    ${parseInt(shade) > 400 ? 'text-white' : 'text-slate-800'}
-                                                    ${currentConfig.shade === shade ? 'ring-2 ring-offset-2 ring-slate-400 scale-110 shadow-md' : 'shadow-sm opacity-90 hover:opacity-100'}
-                                                `}
-                                            >
-                                                {shade}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* 透明度選擇區 */}
-                            {componentType !== 'capsule' && (
-                                <div className="px-2 pb-2">
-                                    <div className="flex justify-between text-sm font-bold text-slate-700 mb-3">
-                                        <span>透明度 (Opacity)</span>
-                                        <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-xs">{currentConfig.opacity}%</span>
-                                    </div>
-                                    <input 
-                                        type="range" min="0" max="100" step="5" 
-                                        value={currentConfig.opacity} 
-                                        onChange={(e) => currentSetter({ ...currentConfig, opacity: e.target.value })}
-                                        className="w-full"
-                                    />
-                                </div>
-                            )}
-
-                            <hr className="border-slate-100 my-2" />
-
-                            {/* 外觀細節設定區 */}
-                            <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100">
-                                <h3 className="text-sm font-bold text-slate-800 mb-5 flex items-center gap-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                                    外觀空間細節 (Padding & Borders)
-                                </h3>
-                                <div className="space-y-6">
-                                    <div>
-                                        <div className="flex justify-between text-xs font-bold text-slate-500 mb-2 px-1">
-                                            <span>內距: p-{paddingInput}</span>
-                                            <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[10px]">{parseInt(paddingInput)*4}px</span>
-                                        </div>
-                                        <input 
-                                            type="range" min="0" max="12" step="1" 
-                                            value={paddingInput} 
-                                            onChange={(e) => setPaddingInput(e.target.value)}
-                                            className="w-full"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-6 pt-2">
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 mb-2">粗細 (Width)</label>
-                                            <div className="flex bg-white rounded-lg p-1.5 gap-1 border border-slate-200 shadow-sm">
-                                                {['0', '1', '2', '4', '8'].map(w => (
-                                                    <button 
-                                                        key={w}
-                                                        onClick={() => setBorderWidth(w)}
-                                                        className={`flex-1 text-xs py-1.5 rounded-md transition-all ${borderWidth === w ? 'bg-slate-800 shadow-md text-white font-bold scale-105' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`}
+                                        {/* 漸層控制列 */}
+                                        <div className={`overflow-hidden transition-all duration-300 ${activeTab === 'bg' ? 'max-h-40 opacity-100 mt-4 px-2' : 'max-h-0 opacity-0 m-0 p-0'}`}>
+                                            <div className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-3 justify-between items-center">
+                                                <div className="flex bg-slate-100 p-1.5 rounded-lg gap-1 w-full sm:w-auto">
+                                                    <button onClick={() => setBgMode('solid')} className={`flex-1 sm:px-5 py-1.5 text-xs font-bold rounded-md transition-all duration-200 ${bgMode === 'solid' ? 'bg-white text-slate-800 shadow shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>單色模式</button>
+                                                    <button onClick={() => setBgMode('gradient')} className={`flex-1 sm:px-5 py-1.5 text-xs font-bold rounded-md transition-all duration-200 ${bgMode === 'gradient' ? 'bg-white text-slate-800 shadow shadow-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>漸層模式</button>
+                                                </div>
+                                                {bgMode === 'gradient' && (
+                                                    <select 
+                                                        value={gradientDir} 
+                                                        onChange={(e) => setGradientDir(e.target.value)}
+                                                        className="text-xs font-bold border border-slate-200 rounded-lg px-3 py-2 bg-slate-50 text-slate-700 w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow cursor-pointer hover:bg-slate-100"
                                                     >
-                                                        {w}
+                                                        <option value="to-r">向右漸層 (to-r)</option>
+                                                        <option value="to-l">向左漸層 (to-l)</option>
+                                                        <option value="to-t">向上漸層 (to-t)</option>
+                                                        <option value="to-b">向下漸層 (to-b)</option>
+                                                        <option value="to-br">向右下 (to-br)</option>
+                                                        <option value="to-tr">向右上 (to-tr)</option>
+                                                    </select>
+                                                )}
+                                            </div>
+                                            
+                                            {bgMode === 'gradient' && (
+                                                <div className="flex gap-2 mt-3 mx-1">
+                                                    <button onClick={() => setGradientTab('from')} className={`flex-1 py-2 text-xs font-bold rounded-t-xl border-b-2 transition-all ${gradientTab === 'from' ? 'border-blue-500 text-blue-700 bg-blue-50/80' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>🔸 起始色 (From)</button>
+                                                    <button onClick={() => setGradientTab('to')} className={`flex-1 py-2 text-xs font-bold rounded-t-xl border-b-2 transition-all ${gradientTab === 'to' ? 'border-purple-500 text-purple-700 bg-purple-50/80' : 'border-transparent text-slate-500 hover:bg-slate-100'}`}>🔹 結束色 (To)</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* 顏色選擇區 */}
+                                    <div className="px-2">
+                                        <label className="block text-sm font-bold text-slate-700 mb-4 flex justify-between items-center">
+                                            <span>選擇主色系 ({currentConfig.color})</span>
+                                            <span className={`w-5 h-5 rounded-full bg-${currentConfig.color}-500 border-2 border-white shadow-sm ring-1 ring-slate-200`}></span>
+                                        </label>
+                                        <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-11 gap-3 md:gap-2">
+                                            {COLOR_NAMES.map((colorName) => (
+                                                <button
+                                                    key={colorName}
+                                                    onClick={() => currentSetter({ ...currentConfig, color: colorName })}
+                                                    title={colorName}
+                                                    className={`
+                                                        w-10 h-10 sm:w-9 sm:h-9 md:w-8 md:h-8 xl:w-10 xl:h-10 rounded-full border-2 focus:outline-none color-swatch relative shadow-sm hover:shadow-md hover:-translate-y-1 hover:scale-110 active:scale-95 transition-all duration-200
+                                                        ${getSwatchClass(colorName)}
+                                                        ${currentConfig.color === colorName ? 'border-slate-800 scale-110 ring-4 ring-slate-200/50 z-10' : ''}
+                                                    `}
+                                                ></button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* 深淺選擇區 */}
+                                    <div className="px-2">
+                                        <label className="block text-sm font-bold text-slate-700 mb-4">
+                                            選擇深淺明度 {componentType === 'capsule' ? '' : isSpecialColor(currentConfig.color) ? '(單一色)' : `(${currentConfig.shade})`}
+                                        </label>
+                                        
+                                        {componentType === 'capsule' ? (
+                                            <div className="p-4 bg-blue-50/80 rounded-2xl text-blue-700 text-sm flex items-center justify-center gap-3 border border-blue-100 shadow-sm font-medium animate-fade-in">
+                                                <span className="text-xl">✨</span>
+                                                膠囊模式會自動配對雙模深淺，您只需要切換主色系即可！
+                                            </div>
+                                        ) : isSpecialColor(currentConfig.color) ? (
+                                            <div className="p-4 bg-slate-50 rounded-2xl text-slate-500 text-sm text-center border border-slate-100 animate-fade-in">
+                                                黑白模式無需選擇深淺
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-6 sm:grid-cols-11 gap-2">
+                                                {SHADES.map((shade) => (
+                                                    <button
+                                                        key={shade}
+                                                        onClick={() => currentSetter({ ...currentConfig, shade: shade })}
+                                                        className={`
+                                                            h-10 sm:h-9 xl:h-10 rounded-xl text-xs font-bold transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-95
+                                                            bg-${currentConfig.color}-${shade}
+                                                            ${parseInt(shade) > 400 ? 'text-white' : 'text-slate-800'}
+                                                            ${currentConfig.shade === shade ? 'ring-2 ring-offset-2 ring-slate-400 scale-110 shadow-md' : 'shadow-sm opacity-90 hover:opacity-100'}
+                                                        `}
+                                                    >
+                                                        {shade}
                                                     </button>
                                                 ))}
                                             </div>
+                                        )}
+                                    </div>
+
+                                    {/* 透明度選擇區 */}
+                                    {componentType !== 'capsule' && (
+                                        <div className="px-2 pb-2">
+                                            <div className="flex justify-between text-sm font-bold text-slate-700 mb-3">
+                                                <span>透明度 (Opacity)</span>
+                                                <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-xs">{currentConfig.opacity}%</span>
+                                            </div>
+                                            <input 
+                                                type="range" min="0" max="100" step="5" 
+                                                value={currentConfig.opacity} 
+                                                onChange={(e) => currentSetter({ ...currentConfig, opacity: e.target.value })}
+                                                className="w-full"
+                                            />
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 mb-2">樣式 (Style)</label>
-                                            <div className="flex bg-white rounded-lg p-1.5 gap-1 border border-slate-200 shadow-sm">
-                                                {[
-                                                    {val: 'solid', icon: '一'}, 
-                                                    {val: 'dashed', icon: '---'}, 
-                                                    {val: 'dotted', icon: '...'}, 
-                                                    {val: 'double', icon: '='}
-                                                ].map(s => (
-                                                    <button 
-                                                        key={s.val}
-                                                        onClick={() => setBorderStyle(s.val)}
-                                                        className={`flex-1 text-xs py-1.5 rounded-md transition-all ${borderStyle === s.val ? 'bg-slate-800 shadow-md text-white font-bold scale-105' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`}
-                                                        title={s.val}
-                                                    >
-                                                        {s.icon}
-                                                    </button>
-                                                ))}
+                                    )}
+                                </div>
+
+                                {/* 分隔線 (僅電腦寬螢幕版顯示) */}
+                                <div className="hidden xl:block w-px bg-slate-200/50 shrink-0"></div>
+                                <hr className="block xl:hidden border-slate-100 my-0" />
+
+                                {/* 外觀細節設定區 (右半) */}
+                                <div className="xl:w-[280px] 2xl:w-[320px] shrink-0">
+                                    <div className="bg-slate-50/50 p-6 rounded-3xl border border-slate-100 h-full flex flex-col">
+                                        <h3 className="text-sm font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                                            外觀空間細節 (Padding & Borders)
+                                        </h3>
+                                        <div className="space-y-6 xl:space-y-8 flex-grow">
+                                            <div>
+                                                <div className="flex justify-between text-xs font-bold text-slate-500 mb-3 px-1">
+                                                    <span>內距: p-{paddingInput}</span>
+                                                    <span className="bg-slate-200 text-slate-700 px-2 py-0.5 rounded text-[10px]">{parseInt(paddingInput)*4}px</span>
+                                                </div>
+                                                <input 
+                                                    type="range" min="0" max="12" step="1" 
+                                                    value={paddingInput} 
+                                                    onChange={(e) => setPaddingInput(e.target.value)}
+                                                    className="w-full"
+                                                />
+                                            </div>
+
+                                            {/* 將寬螢幕時的版面改為垂直排列，充分填補空間 */}
+                                            <div className="grid grid-cols-2 xl:grid-cols-1 gap-6 pt-2">
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 mb-3">粗細 (Width)</label>
+                                                    <div className="flex bg-white rounded-lg p-1.5 gap-1 border border-slate-200 shadow-sm">
+                                                        {['0', '1', '2', '4', '8'].map(w => (
+                                                            <button 
+                                                                key={w}
+                                                                onClick={() => setBorderWidth(w)}
+                                                                className={`flex-1 text-xs py-2 rounded-md transition-all ${borderWidth === w ? 'bg-slate-800 shadow-md text-white font-bold scale-105' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`}
+                                                            >
+                                                                {w}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-bold text-slate-500 mb-3">樣式 (Style)</label>
+                                                    <div className="flex bg-white rounded-lg p-1.5 gap-1 border border-slate-200 shadow-sm">
+                                                        {[
+                                                            {val: 'solid', icon: '一'}, 
+                                                            {val: 'dashed', icon: '---'}, 
+                                                            {val: 'dotted', icon: '...'}, 
+                                                            {val: 'double', icon: '='}
+                                                        ].map(s => (
+                                                            <button 
+                                                                key={s.val}
+                                                                onClick={() => setBorderStyle(s.val)}
+                                                                className={`flex-1 text-xs py-2 rounded-md transition-all ${borderStyle === s.val ? 'bg-slate-800 shadow-md text-white font-bold scale-105' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800'}`}
+                                                                title={s.val}
+                                                            >
+                                                                {s.icon}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -758,8 +769,8 @@
                             </div>
                         </div>
 
-                        {/* 右側預覽區域 (佔 5 欄) - 加上 sticky 避免跟隨左側拉長 */}
-                        <div className="lg:col-span-5 flex flex-col gap-6 lg:sticky lg:top-8 self-start w-full">
+                        {/* 右側預覽區域 (佔 5~4 欄) - 加上 sticky 避免跟隨左側拉長 */}
+                        <div className="lg:col-span-5 xl:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8 self-start w-full">
                             
                             {/* 元件類型與背景切換 */}
                             <div className="flex flex-wrap gap-4 justify-between items-center bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-3xl shadow-xl shadow-slate-200/40 border border-white">
