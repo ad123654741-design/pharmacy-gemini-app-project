@@ -1036,11 +1036,11 @@
                </button>
 
                {authRole === 'admin' && (
-                   <div className="relative shrink-0 border-l border-slate-700 pl-2 ml-1">
+                   <div className="shrink-0 border-l border-slate-700 pl-2 ml-1">
                      <button onClick={() => setShowAdvancedMenu(!showAdvancedMenu)} className="px-2 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600"><Icons.Tool /> <span className="hidden lg:inline">進階設定</span></button>
-                     {/* dropdown... */}
+                     {/* dropdown... 移除上層 relative 讓 absolute 定位至 header，避開 overflow 裁切 */}
                      {showAdvancedMenu && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+                        <div className="absolute top-full right-2 md:right-[150px] mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-[100] animate-in fade-in zoom-in-95 duration-100">
                              <button onClick={() => { setShowMailModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Mail /> 郵件通知設定</button>
                              <button onClick={handleExportJSON} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Download /> 資料備份 (匯出)</button>
                              <button onClick={() => fileInputRef.current.click()} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 flex items-center gap-2"><Icons.Upload /> 資料還原 (匯入)</button>
