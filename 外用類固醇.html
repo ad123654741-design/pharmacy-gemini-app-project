@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>外用類固醇</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,16 +22,31 @@
             background-color: var(--bg-color);
             font-family: 'Noto Sans TC', sans-serif;
             color: #334155;
-            background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
+            background-image: radial-gradient(rgba(203, 213, 225, 0.4) 1px, transparent 1px);
             background-size: 24px 24px;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: env(safe-area-inset-bottom); /* iOS safe area */
         }
 
         .serif { font-family: 'Noto Serif TC', serif; }
 
         .journal-card {
             background-color: var(--paper-bg);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+            /* 更柔和且具層次感的現代陰影 */
+            box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08), 0 0 20px rgba(0, 0, 0, 0.03);
             border-top: 6px solid var(--accent-color);
+        }
+
+        /* Loading Skeleton Overlay */
+        #page-loader {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s;
         }
 
         /* 標籤 Badge 樣式 */
@@ -39,72 +54,137 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
             line-height: 1.2;
             white-space: nowrap;
+            transition: all 0.2s ease;
         }
         .badge-mid { background-color: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
         .badge-high { background-color: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
         .badge-low { background-color: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
         
         /* Vehicle/PK Tags */
-        .pk-tag { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; display: inline-block; border: 1px solid transparent; font-weight: 600;}
-        .pk-oint { background: #fff7ed; color: #c2410c; border-color: #fed7aa; } /* Ointment */
-        .pk-cream { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; } /* Cream */
-        .pk-lotion { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; } /* Lotion */
-        .pk-foam { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; } /* Foam */
-        .pk-gel { background: #fdf4ff; color: #d946ef; border-color: #f5d0fe; } /* Gel */
-        .pk-sol { background: #f0f9ff; color: #0ea5e9; border-color: #bae6fd; } /* Solution */
+        .pk-tag { 
+            font-size: 0.7rem; 
+            padding: 3px 8px; 
+            border-radius: 6px; 
+            display: inline-block; 
+            border: 1px solid transparent; 
+            font-weight: 600;
+            margin: 2px 0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .pk-tag:hover { transform: translateY(-2px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .pk-oint { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+        .pk-cream { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .pk-lotion { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; }
+        .pk-foam { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; }
+        .pk-gel { background: #fdf4ff; color: #d946ef; border-color: #f5d0fe; }
+        .pk-sol { background: #f0f9ff; color: #0ea5e9; border-color: #bae6fd; }
 
-        /* Tab 樣式 (Block Style) */
+        /* Top Tab Nav (Hidden on Mobile) */
+        @media (max-width: 767px) {
+            .top-nav { display: none !important; }
+            body { padding-bottom: 5rem !important; } /* Reserve space for bottom nav */
+        }
         .nav-container {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
             overflow-x: auto;
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.75rem;
             scrollbar-width: none;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
         }
         .nav-container::-webkit-scrollbar { display: none; }
 
-        .tab-btn {
-            font-family: 'Noto Sans TC', sans-serif;
-            font-weight: 500;
-            color: #64748b;
-            background-color: #f1f5f9;
-            padding: 0.6rem 1.2rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            border: 1px solid #e2e8f0;
+        /* Bottom Nav (Visible only on Mobile) */
+        .bottom-nav {
+            display: none;
         }
-        
-        .tab-btn:hover {
-            background-color: #e2e8f0;
-            color: #1e293b;
-            transform: translateY(-1px);
+        @media (max-width: 767px) {
+            .bottom-nav {
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(12px);
+                z-index: 50;
+                padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom)) 0.5rem;
+                overflow-x: auto;
+                scrollbar-width: none;
+                gap: 0.5rem;
+                border-top: 1px solid rgba(226, 232, 240, 0.8);
+                box-shadow: 0 -10px 25px -5px rgba(0,0,0,0.05);
+            }
+            .bottom-nav::-webkit-scrollbar { display: none; }
         }
 
+        .tab-btn {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 600;
+            color: #64748b;
+            background-color: #f8fafc;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            border: 1px solid #e2e8f0;
+            scroll-snap-align: start;
+            cursor: pointer;
+        }
+        .tab-btn:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
         .tab-btn.active {
             background-color: var(--accent-color);
             color: white;
             border-color: var(--accent-color);
-            box-shadow: 0 4px 6px -1px rgba(13, 148, 136, 0.3);
-            font-weight: 700;
+            box-shadow: 0 8px 15px -3px rgba(13, 148, 136, 0.25);
+            transform: translateY(-2px);
         }
+        .tab-btn:active { transform: scale(0.96) translateY(0); box-shadow: none; }
+
+        /* Bottom Nav Button specific */
+        .btm-tab-btn {
+            flex: 0 0 auto;
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: 600;
+            color: #64748b;
+            background-color: transparent;
+            padding: 0.6rem 1rem;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            font-size: 0.85rem;
+        }
+        .btm-tab-btn.active {
+            background-color: var(--accent-light);
+            color: var(--accent-color);
+        }
+        .btm-tab-btn:active { transform: scale(0.92); }
 
         /* 統一風格的資訊卡 */
         .info-card {
             border-left-width: 4px;
-            padding: 1.5rem;
-            border-radius: 0.5rem;
+            padding: 1.75rem;
+            border-radius: 1rem;
             background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
             height: 100%;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #f1f5f9;
             border-left: 4px solid; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .info-card:hover {
+            box-shadow: 0 15px 30px -5px rgba(0,0,0,0.06);
+            transform: translateY(-3px);
         }
         .info-card-danger { border-left-color: var(--danger-color); background-color: #fff1f2; }
         .info-card-strategy { border-left-color: var(--accent-color); background-color: #f0fdfa; }
@@ -117,24 +197,29 @@
         .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .modern-table th {
             font-family: 'Noto Serif TC', serif;
-            color: #475569;
+            color: #334155;
             border-bottom: 2px solid #cbd5e1;
-            padding: 0.75rem 0.5rem;
+            padding: 1.25rem 0.75rem;
             text-align: left;
-            background-color: #f8fafc;
+            background-color: rgba(248, 250, 252, 0.95);
+            backdrop-filter: blur(8px);
             position: sticky;
             top: 0;
             z-index: 10;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
         }
         .modern-table td {
-            padding: 0.75rem 0.5rem;
+            padding: 1rem 0.75rem;
             border-bottom: 1px solid #f1f5f9;
             vertical-align: middle;
             background-color: white;
-            transition: background-color 0.2s;
+            transition: all 0.2s ease;
             font-size: 0.9rem;
         }
+        .modern-table td:first-child { white-space: nowrap; }
+        .modern-table tr { transition: background-color 0.2s ease; }
         .modern-table tr:hover td { background-color: #f8fafc; }
         .modern-table tr:last-child td { border-bottom: none; }
         
@@ -142,240 +227,212 @@
         .class-header td {
             background-color: #f1f5f9;
             font-weight: bold;
-            color: #334155;
-            padding-top: 1rem;
-            padding-bottom: 0.5rem;
+            color: #1e293b;
+            padding-top: 1.25rem;
+            padding-bottom: 0.75rem;
             border-bottom: 2px solid #cbd5e1;
+            font-size: 0.95rem;
+            letter-spacing: 0.025em;
         }
 
-        /* MOA 樣式優化 - Beautified */
+        /* MOA 樣式優化 - Refined for Mobile Fit */
         .cell-container {
-            /* Softer background with subtle grid */
-            background-color: #f1f5f9; 
-            border: 1px solid #cbd5e1;
-            border-radius: 16px;
+            background-color: #f8fafc; 
+            border: 1px solid #e2e8f0;
+            border-radius: 1.25rem;
             position: relative;
             overflow: hidden;
             background-image: 
-                linear-gradient(rgba(226, 232, 240, 0.5) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(226, 232, 240, 0.5) 1px, transparent 1px);
-            background-size: 20px 20px;
-        }
-        .cell-cytosol {
-            padding: 2rem;
-            position: relative;
-            z-index: 10;
+                linear-gradient(rgba(203, 213, 225, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(203, 213, 225, 0.3) 1px, transparent 1px);
+            background-size: 24px 24px;
         }
         .cell-membrane {
-            /* More organic barrier look */
-            border-bottom: 6px solid #fb7185; /* Dermis pink */
+            border-bottom: 4px solid #fda4af;
             background: linear-gradient(to bottom, #fff1f2, #ffe4e6);
-            padding: 0.75rem;
+            padding: 0.5rem;
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #9f1239;
             font-weight: 800;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px -2px rgba(0,0,0,0.05);
             position: relative;
             z-index: 20;
         }
-        .cell-nucleus {
-            margin-top: 2rem;
-            border: 2px solid #a5b4fc;
-            border-radius: 20px;
-            padding: 1.5rem;
-            /* Glassmorphism effect for Nucleus */
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(4px);
+        .cell-cytosol {
+            padding: 1rem md:padding-1.5rem;
             position: relative;
-            box-shadow: inset 0 0 20px rgba(165, 180, 252, 0.2);
+            z-index: 10;
+        }
+        .cell-nucleus {
+            border: 2px solid #a5b4fc;
+            border-radius: 1rem;
+            padding: 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(165, 180, 252, 0.15), 0 8px 20px -5px rgba(0,0,0,0.05);
+            width: 100%;
         }
         .cell-nucleus::before {
             content: 'NUCLEUS';
             position: absolute;
-            top: -12px;
-            left: 24px;
+            top: -10px;
+            left: 16px;
             background: #e0e7ff;
             padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 0.7rem;
+            border-radius: 10px;
+            font-size: 0.65rem;
             color: #4338ca;
             font-weight: 800;
             border: 1px solid #c7d2fe;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .moa-node {
             background: white;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 0.75rem;
+            padding: 0.6rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
             position: relative;
+            width: 100%;
         }
         .moa-node:hover, .moa-node.active-node {
             border-color: var(--accent-color);
-            box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.15);
+            box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.2);
             transform: translateY(-3px);
             z-index: 30;
         }
-        .arrow-down {
-            width: 2px;
-            height: 24px;
-            background: #94a3b8;
-            margin: 0 auto;
-            position: relative;
-            opacity: 0.6;
-        }
-        .arrow-down::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: -3px;
-            border-left: 4px solid transparent;
-            border-right: 4px solid transparent;
-            border-top: 4px solid #94a3b8;
+        .moa-node:active { transform: translateY(-1px) scale(0.98); }
+        
+        .arrow-path {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 1.2rem;
+            opacity: 0.7;
         }
 
         /* Algorithm/Safety Card Styles */
         .algorithm-card {
             background: white;
-            border-radius: 12px;
+            border-radius: 1.25rem;
             border: 1px solid #e2e8f0;
             overflow: hidden;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
         }
         .algorithm-card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
         }
         .algo-header {
-            background: #f1f5f9;
-            padding: 1rem;
+            background: #f8fafc;
+            padding: 1.25rem 1.5rem;
             font-weight: 700;
-            color: #334155;
+            color: #1e293b;
             display: flex;
             align-items: center;
             gap: 0.5rem;
             border-bottom: 1px solid #e2e8f0;
         }
         .algo-body { padding: 1.5rem; }
-        .algo-number {
-            background: var(--accent-color);
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
 
         /* Pathway Box Styles */
         .pathway-box {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            border: 2px solid #f1f5f9;
+            border-radius: 1.25rem;
             padding: 1.5rem;
-            background: #fff;
+            background: #ffffff;
             position: relative;
+            transition: all 0.3s ease;
+        }
+        .pathway-box:hover {
+            border-color: #e2e8f0;
+            box-shadow: 0 12px 25px -5px rgba(0,0,0,0.05);
         }
         .pathway-target-card {
             text-align: center;
-            padding: 0.75rem;
-            border-radius: 8px;
+            padding: 1rem 0.75rem;
+            border-radius: 12px;
             background-color: #f8fafc;
             border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        .pathway-target-card:hover {
+            background-color: #ffffff;
+            box-shadow: 0 6px 15px -3px rgba(0,0,0,0.06);
+            transform: translateY(-2px);
         }
         .pathway-target-card strong {
             display: block;
             font-size: 1.1rem;
             font-weight: 800;
-            line-height: 1.2;
-        }
-        .pathway-arrow {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 0.5rem;
-            color: #94a3b8;
+            line-height: 1.3;
+            margin-top: 0.25rem;
         }
         
         .risk-level-tag {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 2px 6px;
-            border-radius: 4px;
-            margin-bottom: 0.25rem;
+            padding: 4px 10px;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
             display: inline-block;
         }
 
-        /* Tab Content Animation */
-        .tab-content { display: none; opacity: 0; transition: opacity 0.3s ease-in; }
-        .tab-content.active { display: block; opacity: 1; }
+        /* Tab Content Animation - Smooth Fade In & Slide Up */
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .tab-content { 
+            display: none; 
+            opacity: 0; 
+        }
+        .tab-content.active { 
+            display: block; 
+            animation: fadeInSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
         
         .ref-section {
-            margin-top: 3rem;
+            margin-top: 3.5rem;
             padding-top: 1.5rem;
-            border-top: 1px solid #e2e8f0;
-            font-size: 0.75rem;
+            border-top: 1px dashed #cbd5e1;
+            font-size: 0.8rem;
             color: #94a3b8;
             font-style: italic;
+            line-height: 1.6;
         }
-
-        /* Modal Styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 100;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            backdrop-filter: blur(2px);
-            align-items: center;
-            justify-content: center;
+        
+        /* Utility for smooth hover cards */
+        .hover-card-lift {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .modal.open {
-            display: flex;
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: auto;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            position: relative;
-        }
-        .close-btn {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .close-btn:hover,
-        .close-btn:focus {
-            color: #000;
-            text-decoration: none;
-            cursor: pointer;
+        .hover-card-lift:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -8px rgba(0,0,0,0.08);
         }
     </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
+<body class="p-0 sm:p-4 md:p-8 min-h-screen flex justify-center items-start selection:bg-teal-200 selection:text-teal-900">
 
-    <main class="journal-card w-full max-w-7xl rounded-2xl p-6 md:p-10 relative overflow-hidden bg-white">
+    <!-- Loading Skeleton Overlay -->
+    <div id="page-loader">
+        <div class="flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mb-4"></div>
+            <div class="text-teal-600 font-bold tracking-widest text-sm animate-pulse">優化載入中...</div>
+        </div>
+    </div>
+
+    <main class="journal-card w-full max-w-7xl sm:rounded-3xl p-5 sm:p-8 md:p-10 relative overflow-hidden bg-white">
         
         <!-- Header -->
         <header class="mb-8 relative z-10">
@@ -386,14 +443,14 @@
                         外用類固醇
                     </h1>
                 </div>
-                <div class="text-right hidden md:block">
+                <div class="text-left md:text-right w-full md:w-auto mt-2 md:mt-0">
                     <p class="text-slate-400 text-sm font-light">Based on Stoughton-Cornell Classification</p>
                     <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師 • 更新日期 : 2026/01/06</p>
                 </div>
             </div>
             
-            <!-- Navigation -->
-            <nav class="nav-container mt-6">
+            <!-- Navigation (Top for Desktop) -->
+            <nav class="nav-container top-nav mt-6">
                 <button onclick="switchTab('potency')" id="tab-potency" class="tab-btn active">強度分級 (Class 1-7)</button>
                 <button onclick="switchTab('vehicle')" id="tab-vehicle" class="tab-btn">劑型與吸收</button>
                 <button onclick="switchTab('guideline')" id="tab-guideline" class="tab-btn">臨床治療指引</button>
@@ -409,31 +466,31 @@
         <!-- ========================================== -->
         <div id="content-potency" class="tab-content active">
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="p-4 rounded-xl bg-rose-50 border border-rose-100 text-center">
-                    <h3 class="text-rose-800 font-bold mb-1 text-sm">超強效 (Super)</h3>
-                    <p class="text-2xl font-bold text-rose-600 my-1">Class 1</p>
-                    <p class="text-[10px] text-rose-700 opacity-80">Clobetasol 0.05%</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 mb-8">
+                <div class="p-4 sm:p-5 rounded-2xl bg-rose-50 border border-rose-100 text-center hover-card-lift">
+                    <h3 class="text-rose-800 font-bold mb-1 text-xs sm:text-sm">超強效 (Super)</h3>
+                    <p class="text-xl sm:text-2xl font-bold text-rose-600 my-1">Class 1</p>
+                    <p class="text-[10px] sm:text-xs text-rose-700 opacity-80">Clobetasol 0.05%</p>
                 </div>
-                <div class="p-4 rounded-xl bg-orange-50 border border-orange-100 text-center">
-                    <h3 class="text-orange-800 font-bold mb-1 text-sm">強效 (Potent)</h3>
-                    <p class="text-2xl font-bold text-orange-600 my-1">Class 2 - 3</p>
-                    <p class="text-[10px] text-orange-700 opacity-80">Fluocinonide 0.05%</p>
+                <div class="p-4 sm:p-5 rounded-2xl bg-orange-50 border border-orange-100 text-center hover-card-lift">
+                    <h3 class="text-orange-800 font-bold mb-1 text-xs sm:text-sm">強效 (Potent)</h3>
+                    <p class="text-xl sm:text-2xl font-bold text-orange-600 my-1">Class 2 - 3</p>
+                    <p class="text-[10px] sm:text-xs text-orange-700 opacity-80">Fluocinonide 0.05%</p>
                 </div>
-                <div class="p-4 rounded-xl bg-amber-50 border border-amber-100 text-center">
-                    <h3 class="text-amber-800 font-bold mb-1 text-sm">中效 (Mid)</h3>
-                    <p class="text-2xl font-bold text-amber-600 my-1">Class 4 - 5</p>
-                    <p class="text-[10px] text-amber-700 opacity-80">Triamcinolone 0.1%</p>
+                <div class="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-100 text-center hover-card-lift">
+                    <h3 class="text-amber-800 font-bold mb-1 text-xs sm:text-sm">中效 (Mid)</h3>
+                    <p class="text-xl sm:text-2xl font-bold text-amber-600 my-1">Class 4 - 5</p>
+                    <p class="text-[10px] sm:text-xs text-amber-700 opacity-80">Triamcinolone 0.1%</p>
                 </div>
-                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-                    <h3 class="text-emerald-800 font-bold mb-1 text-sm">弱效 (Mild)</h3>
-                    <p class="text-2xl font-bold text-emerald-600 my-1">Class 6 - 7</p>
-                    <p class="text-[10px] text-emerald-700 opacity-80">Desonide, Hydrocort.</p>
+                <div class="p-4 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-100 text-center hover-card-lift">
+                    <h3 class="text-emerald-800 font-bold mb-1 text-xs sm:text-sm">弱效 (Mild)</h3>
+                    <p class="text-xl sm:text-2xl font-bold text-emerald-600 my-1">Class 6 - 7</p>
+                    <p class="text-[10px] sm:text-xs text-emerald-700 opacity-80">Desonide, Hydrocort.</p>
                 </div>
             </div>
 
-            <!-- Height increased to 750px as requested -->
-            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm h-[750px] overflow-y-auto relative">
+            <!-- Enhanced Table Container for better mobile scrolling -->
+            <div class="overflow-x-auto rounded-2xl border border-slate-200 mb-8 shadow-sm h-[600px] md:h-[750px] relative bg-white">
                 <table class="modern-table min-w-full">
                     <thead>
                         <tr>
@@ -441,21 +498,14 @@
                             <th class="w-[10%]">濃度</th>
                             <th class="w-[20%]">常見商品名 (Brand)</th>
                             <th class="w-[20%]">劑型 (Vehicle)</th>
-                            <th class="w-[25%]">
-                                <div class="flex items-center justify-between">
-                                    <span>臨床備註</span>
-                                    <button onclick="openHospitalModal()" class="text-xs font-medium bg-white text-slate-600 border border-slate-300 hover:border-teal-500 hover:text-teal-600 hover:bg-teal-50 py-1 px-3 rounded-lg transition-all shadow-sm">
-                                        本院品項
-                                    </button>
-                                </div>
-                            </th>
+                            <th class="w-[25%]">臨床備註</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-700 text-sm">
                         
                         <!-- Class 1 -->
-                        <tr class="class-header sticky top-0 z-20">
-                            <td colspan="5" class="text-rose-700 bg-rose-50">Class 1: Super Potent (超強效) - 嚴禁臉部</td>
+                        <tr class="class-header sticky top-[54px] z-20">
+                            <td colspan="5" class="text-rose-700 bg-rose-50 shadow-sm border-t border-rose-100">Class 1: Super Potent (超強效) - 嚴禁臉部</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Clobetasol propionate</td>
@@ -487,13 +537,13 @@
                         </tr>
 
                         <!-- Class 2 -->
-                        <tr class="class-header sticky top-0 z-20">
-                            <td colspan="5" class="text-orange-700 bg-orange-50">Class 2: Potent (強效)</td>
+                        <tr class="class-header sticky top-[54px] z-20">
+                            <td colspan="5" class="text-orange-700 bg-orange-50 shadow-sm border-t border-orange-100">Class 2: Potent (強效)</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Betamethasone dipropionate</td>
                             <td>0.05%</td>
-                            <td class="text-slate-600">Daivobet OINT複方</td>
+                            <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
                             <td class="text-xs text-slate-500"></td>
                         </tr>
@@ -534,8 +584,8 @@
                         </tr>
 
                         <!-- Class 3 -->
-                        <tr class="class-header sticky top-0 z-20">
-                            <td colspan="5" class="text-orange-600 bg-orange-50">Class 3: Upper Mid-Strength (中強效)</td>
+                        <tr class="class-header sticky top-[54px] z-20">
+                            <td colspan="5" class="text-orange-600 bg-orange-50 shadow-sm border-t border-orange-100">Class 3: Upper Mid-Strength (中強效)</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluocinonide</td>
@@ -572,7 +622,7 @@
                             <td><span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-cream">Cream</span></td>
                             <td class="text-xs text-slate-500">高濃度(0.5%)版本。</td>
                         </tr>
-                         <tr>
+                        <tr>
                             <td class="font-bold">Fluticasone propionate</td>
                             <td>0.005%</td>
                             <td class="text-slate-600"></td>
@@ -582,21 +632,21 @@
                         <tr>
                             <td class="font-bold">Diflucortolone valerate</td>
                             <td>0.1%</td>
-                            <td class="text-slate-600">Nerisone 0.1% Fatty Ointment</td>
+                            <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
                             <td class="text-xs text-slate-500"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Diflucortolone valerate</td>
                             <td>0.1%</td>
-                            <td class="text-slate-600">Enfulon Cream</td>
+                            <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
                             <td class="text-xs text-slate-500"></td>
                         </tr>
 
                         <!-- Class 4 -->
-                        <tr class="class-header sticky top-0 z-20">
-                            <td colspan="5" class="text-amber-700 bg-amber-50">Class 4: Mid-Strength (中效)</td>
+                        <tr class="class-header sticky top-[54px] z-20">
+                            <td colspan="5" class="text-amber-700 bg-amber-50 shadow-sm border-t border-amber-100">Class 4: Mid-Strength (中效)</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Mometasone furoate</td>
@@ -608,8 +658,8 @@
                         <tr>
                             <td class="font-bold">Triamcinolone acetonide</td>
                             <td>0.1%</td>
-                            <td class="text-slate-600">Mycomb Cream複方</td>
-                            <td><span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-cream">Cream</span></td>
+                            <td class="text-slate-600"></td>
+                            <td><span class="pk-tag pk-oint">Ointment</span></td>
                             <td class="text-xs text-slate-500"></td>
                         </tr>
                         <tr>
@@ -635,14 +685,14 @@
                         </tr>
 
                         <!-- Class 5 -->
-                        <tr class="class-header sticky top-0 z-20">
-                            <td colspan="5" class="text-amber-600 bg-amber-50">Class 5: Lower Mid-Strength (中弱效)</td>
+                        <tr class="class-header sticky top-[54px] z-20">
+                            <td colspan="5" class="text-amber-600 bg-amber-50 shadow-sm border-t border-amber-100">Class 5: Lower Mid-Strength (中弱效)</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Triamcinolone acetonide</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
-                            <td><span class="pk-tag pk-lotion">Lotion</span></td>
+                            <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-lotion">Lotion</span></td>
                             <td class="text-xs text-slate-500">部分文獻歸類在第4級。</td>
                         </tr>
                         <tr>
@@ -651,13 +701,6 @@
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-lotion">Lotion</span></td>
                             <td class="text-xs text-slate-500"></td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Betamethasone valerate</td>
-                            <td>0.06%</td>
-                            <td class="text-slate-600">Rinderon-V Cream</td>
-                            <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">每日1~2次。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluocinolone acetonide</td>
@@ -669,9 +712,9 @@
                         <tr>
                             <td class="font-bold">Fluticasone propionate</td>
                             <td>0.05%</td>
-                            <td class="text-slate-600">Fluticosone Cream</td>
+                            <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">每日1~2次。</td>
+                            <td class="text-xs text-slate-500"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Desonide</td>
@@ -703,8 +746,8 @@
                         </tr>
 
                         <!-- Class 6 -->
-                        <tr class="class-header sticky top-0 z-20">
-                            <td colspan="5" class="text-emerald-600 bg-emerald-50">Class 6: Mild (弱效)</td>
+                        <tr class="class-header sticky top-[54px] z-20">
+                            <td colspan="5" class="text-emerald-600 bg-emerald-50 shadow-sm border-t border-emerald-100">Class 6: Mild (弱效)</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Desonide</td>
@@ -743,38 +786,55 @@
                         </tr>
 
                         <!-- Class 7 -->
-                        <tr class="class-header sticky top-0 z-20">
-                            <td colspan="5" class="text-emerald-700 bg-emerald-50">Class 7: Least Potent (最弱效)</td>
+                        <tr class="class-header sticky top-[54px] z-20">
+                            <td colspan="5" class="text-emerald-700 bg-emerald-50 shadow-sm border-t border-emerald-100">Class 7: Least Potent (最弱效)</td>
                         </tr>
                         <!-- Hydrocortisone (Base) Series -->
                         <tr>
-                            <td class="font-bold">Hydrocortisone</td>
+                            <td class="font-bold">Hydrocortisone (Base)</td>
                             <td>2.5%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
                             <td class="text-xs text-slate-500"></td>
                         </tr>
                         <tr>
-                            <td class="font-bold">Hydrocortisone</td>
+                            <td class="font-bold">Hydrocortisone (Base)</td>
                             <td>1%</td>
-                            <td class="text-slate-600">Ureson Cream</td>
-                            <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500">含Urea，每日3~4次。</td>
-                        </tr>
-                        <tr>
-                            <td class="font-bold">Hydrocortisone</td>
-                            <td>0.5%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-lotion">Lotion</span></td>
+                            <td class="text-xs text-slate-500">最安全，臉部首選。</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">Hydrocortisone (Base)</td>
+                            <td>0.5%</td>
+                            <td class="text-slate-600"></td>
+                            <td><span class="pk-tag pk-cream">Cream</span></td>
+                            <td class="text-xs text-slate-500">極低濃度。</td>
+                        </tr>
+                        
+                        <!-- Hydrocortisone Acetate Series -->
+                        <tr>
+                            <td class="font-bold">Hydrocortisone acetate</td>
+                            <td>2.5%</td>
+                            <td class="text-slate-600"></td>
+                            <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
                             <td class="text-xs text-slate-500"></td>
                         </tr>
                         <tr>
-                            <td class="font-bold">Hydrocortisone</td>
-                            <td>0.25%</td>
-                            <td class="text-slate-600">Ulex Cream</td>
-                            <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">含Crotamiton，每日數次。</td>
+                            <td class="font-bold">Hydrocortisone acetate</td>
+                            <td>1%</td>
+                            <td class="text-slate-600"></td>
+                            <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
+                            <td class="text-xs text-slate-500"></td>
                         </tr>
+                        <tr>
+                            <td class="font-bold">Hydrocortisone acetate</td>
+                            <td>0.5%</td>
+                            <td class="text-slate-600"></td>
+                            <td><span class="pk-tag pk-cream">Cream</span></td>
+                            <td class="text-xs text-slate-500"></td>
+                        </tr>
+
                         <tr>
                             <td class="font-bold">Dexamethasone</td>
                             <td>0.1%</td>
@@ -786,10 +846,12 @@
                 </table>
             </div>
 
-            <div class="info-card info-card-note">
-                 <h4 class="font-bold text-blue-700 mb-2">💡 臨床速記：成分相同，強度不同？</h4>
-                 <p class="text-sm text-slate-600 mb-2"><strong>"Ointment > Cream > Lotion"</strong></p>
-                 <p class="text-sm text-slate-600">在成分與濃度完全相同的情況下，<strong>軟膏 (Ointment)</strong> 因封閉性強、穿透力佳，其強度分級通常比乳膏 (Cream) 高出一級。例如：Betamethasone dipropionate 軟膏是 Class 2，但乳膏是 Class 3。</p>
+            <div class="info-card info-card-note flex flex-col justify-center">
+                 <h4 class="font-bold text-blue-700 mb-3 flex items-center gap-2"><span class="text-xl">💡</span> 臨床速記：成分相同，強度不同？</h4>
+                 <div>
+                    <p class="text-[13px] text-blue-800 mb-2 font-medium bg-blue-50 px-3 py-1.5 rounded-lg inline-block border border-blue-100 shadow-sm">Ointment > Cream > Lotion</p>
+                 </div>
+                 <p class="text-sm text-slate-600 leading-relaxed">在成分與濃度完全相同的情況下，<strong class="text-slate-800">軟膏 (Ointment)</strong> 因封閉性強、穿透力佳，其強度分級通常比乳膏 (Cream) 高出一級。例如：Betamethasone dipropionate 軟膏是 Class 2，但乳膏是 Class 3。</p>
             </div>
              <div class="ref-section">Ref: Stoughton-Cornell Classification System; National Psoriasis Foundation.</div>
         </div>
@@ -800,64 +862,64 @@
         <div id="content-vehicle" class="tab-content">
             
             <!-- 身體吸收率視覺化 -->
-             <div class="mb-8">
-                <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-                    <span class="bg-slate-800 text-white w-6 h-6 rounded flex items-center justify-center text-xs">1</span>
+             <div class="mb-8 md:mb-10">
+                <h3 class="font-bold text-slate-800 text-lg mb-5 flex items-center gap-2">
+                    <span class="bg-slate-800 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm shadow-md">1</span>
                     身體部位吸收率 (Regional Absorption)
                 </h3>
-                <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <p class="text-sm text-slate-500 mb-6">若以前臂內側 (Forearm) 吸收率為 1.0 作為基準 (視覺化比例經調整以利閱讀)：</p>
+                <div class="bg-white p-5 sm:p-8 rounded-3xl border border-slate-200 shadow-sm hover-card-lift">
+                    <p class="text-sm text-slate-500 mb-6 bg-slate-50 p-3 rounded-lg border border-slate-100 inline-block">若以前臂內側 (Forearm) 吸收率為 1.0 作為基準 (視覺化比例經調整以利閱讀)：</p>
                     
-                    <div class="space-y-4">
+                    <div class="space-y-5">
                         <!-- Scrotum -->
-                        <div class="flex items-center gap-4">
-                            <div class="w-24 text-right text-sm font-bold text-rose-700">陰囊/生殖器</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-5 overflow-hidden relative group">
-                                <div class="bg-rose-500 h-full rounded-full flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 100%;">42.0x</div>
+                        <div class="flex items-center gap-3 sm:gap-5">
+                            <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-rose-700">陰囊/生殖器</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden relative shadow-inner">
+                                <div class="bg-gradient-to-r from-rose-400 to-rose-600 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 100%;">42.0x</div>
                             </div>
                         </div>
                         <!-- Jaw -->
-                        <div class="flex items-center gap-4">
-                            <div class="w-24 text-right text-sm font-bold text-rose-600">下顎</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-5 overflow-hidden">
-                                <div class="bg-rose-400 h-full rounded-full flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 50%;">13.0x</div>
+                        <div class="flex items-center gap-3 sm:gap-5">
+                            <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-rose-600">下顎</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
+                                <div class="bg-gradient-to-r from-rose-300 to-rose-500 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 50%;">13.0x</div>
                             </div>
                         </div>
                         <!-- Forehead -->
-                        <div class="flex items-center gap-4">
-                            <div class="w-24 text-right text-sm font-bold text-orange-600">前額</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-5 overflow-hidden">
-                                <div class="bg-orange-400 h-full rounded-full flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 30%;">6.0x</div>
+                        <div class="flex items-center gap-3 sm:gap-5">
+                            <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-orange-600">前額</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
+                                <div class="bg-gradient-to-r from-orange-300 to-orange-500 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 30%;">6.0x</div>
                             </div>
                         </div>
                         <!-- Scalp -->
-                        <div class="flex items-center gap-4">
-                            <div class="w-24 text-right text-sm font-bold text-amber-600">頭皮</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-5 overflow-hidden">
-                                <div class="bg-amber-400 h-full rounded-full flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 20%;">3.5x</div>
+                        <div class="flex items-center gap-3 sm:gap-5">
+                            <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-amber-600">頭皮</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
+                                <div class="bg-gradient-to-r from-amber-300 to-amber-500 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 20%;">3.5x</div>
                             </div>
                         </div>
                         <!-- Forearm (Baseline) -->
-                        <div class="flex items-center gap-4">
-                            <div class="w-24 text-right text-sm font-bold text-emerald-600">前臂</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-5 overflow-hidden">
-                                <div class="bg-emerald-500 h-full rounded-full flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 10%;">1.0x</div>
+                        <div class="flex items-center gap-3 sm:gap-5">
+                            <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-emerald-600">前臂</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
+                                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 10%;">1.0x</div>
                             </div>
                         </div>
                         <!-- Palm -->
-                        <div class="flex items-center gap-4">
-                            <div class="w-24 text-right text-sm font-bold text-slate-500">手掌</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-5 overflow-hidden">
-                                <div class="bg-slate-400 h-full rounded-full flex items-center justify-end pr-2 text-[10px] text-white font-bold" style="width: 8%;">0.83x</div>
+                        <div class="flex items-center gap-3 sm:gap-5">
+                            <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-slate-500">手掌</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
+                                <div class="bg-slate-400 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 8%;">0.83x</div>
                             </div>
                         </div>
                         <!-- Sole -->
-                        <div class="flex items-center gap-4">
-                            <div class="w-24 text-right text-sm font-bold text-slate-400">腳掌</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-5 relative">
+                        <div class="flex items-center gap-3 sm:gap-5">
+                            <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-slate-400">腳掌</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 relative shadow-inner">
                                 <div class="bg-slate-300 h-full rounded-full absolute top-0 left-0" style="width: 2%;"></div>
                                 <div class="absolute top-0 bottom-0 flex items-center" style="left: 2%;">
-                                    <span class="text-[10px] text-slate-500 font-bold leading-none ml-2">0.14x</span>
+                                    <span class="text-[11px] text-slate-500 font-bold leading-none ml-2">0.14x</span>
                                 </div>
                             </div>
                         </div>
@@ -865,11 +927,11 @@
                 </div>
              </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 <!-- Vehicle Table -->
-                <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
-                    <h3 class="font-bold text-slate-800 text-lg mb-2 flex items-center gap-2 p-2">
-                        <span class="bg-slate-800 text-white w-6 h-6 rounded flex items-center justify-center text-xs">2</span>
+                <div class="overflow-x-auto rounded-3xl border border-slate-200 shadow-sm bg-white hover-card-lift">
+                    <h3 class="font-bold text-slate-800 text-lg mb-0 border-b border-slate-100 flex items-center gap-3 p-5 bg-slate-50/80">
+                        <span class="bg-slate-800 text-white w-7 h-7 rounded-lg flex items-center justify-center text-sm shadow-md">2</span>
                         劑型選擇 (Vehicle Selection)
                     </h3>
                     <table class="modern-table">
@@ -905,20 +967,29 @@
                     </table>
                 </div>
 
-                <div class="info-card info-card-strategy">
-                    <h4 class="font-bold text-teal-700 mb-2">💡 臨床策略 (Selection Strategy)</h4>
-                    <ul class="text-sm text-slate-600 list-disc pl-4 space-y-3">
-                        <li>
-                            <strong>乾燥苔蘚化 (Lichenified)</strong>：
-                            <br>首選 <span class="pk-tag pk-oint">軟膏</span>。可配合保鮮膜封閉療法 (Occlusion) 增加 10-100 倍吸收。
+                <div class="info-card info-card-strategy flex flex-col justify-center border-l-teal-500">
+                    <h4 class="font-bold text-teal-800 mb-5 text-[19px] flex items-center gap-2"><span class="text-xl">🎯</span> 臨床策略 (Strategy)</h4>
+                    <ul class="text-[14px] text-slate-600 space-y-5">
+                        <li class="flex items-start gap-4 p-3 bg-white rounded-xl shadow-sm border border-teal-50/50 transition-colors hover:border-teal-100">
+                            <div class="w-2 h-2 rounded-full bg-teal-500 mt-2 shrink-0"></div>
+                            <div>
+                                <strong class="text-slate-800 text-base">乾燥苔蘚化 (Lichenified)</strong>
+                                <p class="mt-1.5 leading-relaxed">首選 <span class="pk-tag pk-oint">軟膏</span>。可配合保鮮膜封閉療法 (Occlusion) 增加 10-100 倍吸收。</p>
+                            </div>
                         </li>
-                        <li>
-                            <strong>急性滲出 (Weeping)</strong>：
-                            <br>首選 <span class="pk-tag pk-cream">乳膏</span> 或濕敷。避免油膏導致阻塞毛囊。
+                        <li class="flex items-start gap-4 p-3 bg-white rounded-xl shadow-sm border border-teal-50/50 transition-colors hover:border-teal-100">
+                            <div class="w-2 h-2 rounded-full bg-teal-500 mt-2 shrink-0"></div>
+                            <div>
+                                <strong class="text-slate-800 text-base">急性滲出 (Weeping)</strong>
+                                <p class="mt-1.5 leading-relaxed">首選 <span class="pk-tag pk-cream">乳膏</span> 或濕敷。避免油膏導致阻塞毛囊。</p>
+                            </div>
                         </li>
-                        <li>
-                            <strong>頭皮 (Scalp)</strong>：
-                            <br>首選 <span class="pk-tag pk-foam">泡沫</span> 或 <span class="pk-tag pk-lotion">洗劑</span>。病人依從性最高。
+                        <li class="flex items-start gap-4 p-3 bg-white rounded-xl shadow-sm border border-teal-50/50 transition-colors hover:border-teal-100">
+                            <div class="w-2 h-2 rounded-full bg-teal-500 mt-2 shrink-0"></div>
+                            <div>
+                                <strong class="text-slate-800 text-base">頭皮 (Scalp)</strong>
+                                <p class="mt-1.5 leading-relaxed">首選 <span class="pk-tag pk-foam">泡沫</span> 或 <span class="pk-tag pk-lotion">洗劑</span>。病人依從性最高。</p>
+                            </div>
                         </li>
                     </ul>
                 </div>
@@ -931,60 +1002,64 @@
         <!-- ========================================== -->
         <div id="content-guideline" class="tab-content">
             
-            <div class="space-y-8">
+            <div class="space-y-10">
                 <!-- Psoriasis Pathway -->
                 <section>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="bg-purple-600 text-white font-bold px-3 py-1 rounded-md text-base">乾癬 (Psoriasis)</div>
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="bg-gradient-to-r from-purple-600 to-purple-500 text-white font-bold px-4 py-1.5 rounded-lg shadow-sm text-base">乾癬 (Psoriasis)</div>
                     </div>
 
-                    <div class="pathway-box shadow-sm border-purple-100">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="pathway-box shadow-sm border-purple-100 hover-card-lift">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
                             
                             <!-- Scalp -->
-                            <div class="flex flex-col h-full">
-                                <div class="bg-purple-50 p-3 rounded-t-lg text-center border border-purple-100 border-b-0">
-                                    <span class="risk-level-tag bg-purple-100 text-purple-700 font-bold text-sm">頭皮 (Scalp)</span>
+                            <div class="flex flex-col h-full rounded-2xl overflow-hidden border border-purple-100 bg-white transition-transform hover:-translate-y-1">
+                                <div class="bg-purple-50 p-3 text-center border-b border-purple-100">
+                                    <span class="risk-level-tag bg-purple-100 text-purple-800 font-bold text-[13px] mb-0">頭皮 (Scalp)</span>
                                 </div>
-                                <div class="p-4 border border-purple-100 rounded-b-lg flex-grow bg-white text-center">
-                                    <p class="text-sm text-slate-500 mb-2">角質厚，有毛髮阻礙</p>
-                                    <div class="pathway-target-card border-purple-200 bg-purple-50 mb-2">
-                                        <span class="text-sm text-purple-600 font-bold">Class 1 (Super)</span>
-                                        <div class="text-base font-bold text-purple-800">Clobetasol</div>
+                                <div class="p-5 flex-grow text-center flex flex-col justify-between">
+                                    <p class="text-[13px] text-slate-500 mb-4 font-medium">角質厚，有毛髮阻礙</p>
+                                    <div class="pathway-target-card border-purple-200 bg-purple-50/80 mb-4 shadow-inner">
+                                        <span class="text-xs text-purple-600 font-bold uppercase tracking-wider">Class 1 (Super)</span>
+                                        <div class="text-base font-bold text-purple-900 mt-1">Clobetasol</div>
                                     </div>
-                                    <p class="text-sm text-slate-600">建議劑型：<br><strong>Foam (泡沫)</strong> 或 Solution</p>
+                                    <p class="text-[13px] text-slate-600 bg-slate-50 py-2.5 rounded-xl border border-slate-100">建議劑型：<br><strong class="text-slate-800">Foam (泡沫)</strong> 或 Solution</p>
                                 </div>
                             </div>
 
                             <!-- Body/Limbs -->
-                            <div class="flex flex-col h-full">
-                                <div class="bg-purple-50 p-3 rounded-t-lg text-center border border-purple-100 border-b-0">
-                                    <span class="risk-level-tag bg-purple-100 text-purple-700 font-bold text-sm">身體/四肢 (Body)</span>
+                            <div class="flex flex-col h-full rounded-2xl overflow-hidden border border-purple-100 bg-white transition-transform hover:-translate-y-1">
+                                <div class="bg-purple-50 p-3 text-center border-b border-purple-100">
+                                    <span class="risk-level-tag bg-purple-100 text-purple-800 font-bold text-[13px] mb-0">身體/四肢 (Body)</span>
                                 </div>
-                                <div class="p-4 border border-purple-100 rounded-b-lg flex-grow bg-white text-center">
-                                    <p class="text-sm text-slate-500 mb-2">厚斑塊 (Plaque)</p>
-                                    <div class="pathway-target-card border-purple-200 bg-purple-50 mb-2">
-                                        <span class="text-sm text-purple-600 font-bold">Class 1 - 2</span>
-                                        <div class="text-base font-bold text-purple-800">Clobetasol / Beta-Dip</div>
+                                <div class="p-5 flex-grow text-center flex flex-col justify-between">
+                                    <p class="text-[13px] text-slate-500 mb-4 font-medium">厚斑塊 (Plaque)</p>
+                                    <div class="pathway-target-card border-purple-200 bg-purple-50/80 mb-4 shadow-inner">
+                                        <span class="text-xs text-purple-600 font-bold uppercase tracking-wider">Class 1 - 2</span>
+                                        <div class="text-base font-bold text-purple-900 mt-1">Clobetasol / Beta-Dip</div>
                                     </div>
-                                    <p class="text-sm text-slate-600">建議劑型：<br><strong>Ointment (軟膏)</strong></p>
-                                    <div class="mt-2 text-xs bg-slate-100 p-1 rounded">可搭配 Calcipotriol (維生素D3)</div>
+                                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                        <p class="text-[13px] text-slate-600 mb-1.5">建議劑型：<strong class="text-slate-800">Ointment (軟膏)</strong></p>
+                                        <div class="text-[11px] font-semibold bg-white border border-slate-200 text-slate-500 py-1 rounded-lg">可搭配 Calcipotriol</div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Face/Flexures -->
-                            <div class="flex flex-col h-full">
-                                <div class="bg-purple-50 p-3 rounded-t-lg text-center border border-purple-100 border-b-0">
-                                    <span class="risk-level-tag bg-purple-100 text-purple-700 font-bold text-sm">臉部/皺摺 (Face)</span>
+                            <div class="flex flex-col h-full rounded-2xl overflow-hidden border border-purple-100 bg-white transition-transform hover:-translate-y-1">
+                                <div class="bg-purple-50 p-3 text-center border-b border-purple-100">
+                                    <span class="risk-level-tag bg-purple-100 text-purple-800 font-bold text-[13px] mb-0">臉部/皺摺 (Face)</span>
                                 </div>
-                                <div class="p-4 border border-purple-100 rounded-b-lg flex-grow bg-white text-center">
-                                    <p class="text-sm text-slate-500 mb-2">皮膚薄，吸收快</p>
-                                    <div class="pathway-target-card border-slate-200 bg-white mb-2">
-                                        <span class="text-sm text-slate-500 font-bold">Class 6 - 7</span>
-                                        <div class="text-base font-bold text-slate-700">Desonide / Hydrocort.</div>
+                                <div class="p-5 flex-grow text-center flex flex-col justify-between">
+                                    <p class="text-[13px] text-slate-500 mb-4 font-medium">皮膚薄，吸收快</p>
+                                    <div class="pathway-target-card border-slate-200 bg-white mb-4 shadow-inner">
+                                        <span class="text-xs text-slate-500 font-bold uppercase tracking-wider">Class 6 - 7</span>
+                                        <div class="text-base font-bold text-slate-800 mt-1">Desonide / Hydrocort.</div>
                                     </div>
-                                    <p class="text-sm text-rose-600 font-bold">⚠️ 避免強效類固醇</p>
-                                    <div class="mt-2 text-xs bg-indigo-50 text-indigo-700 p-1 rounded">或改用 TCI (普特皮/埃勒特)</div>
+                                    <div class="bg-rose-50/50 p-2.5 rounded-xl border border-rose-100">
+                                        <p class="text-[13px] text-rose-700 font-bold mb-1.5">⚠️ 避免強效類固醇</p>
+                                        <div class="text-[11px] font-semibold bg-white border border-rose-100 text-indigo-600 py-1 rounded-lg">或改用 TCI (普特皮/埃勒特)</div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -994,45 +1069,45 @@
 
                 <!-- Eczema Pathway -->
                 <section>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="bg-blue-600 text-white font-bold px-3 py-1 rounded-md text-base">異位性皮膚炎 (Atopic Dermatitis)</div>
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold px-4 py-1.5 rounded-lg shadow-sm text-base">異位性皮膚炎 (Atopic Dermatitis)</div>
                     </div>
 
-                    <div class="pathway-box border-blue-100 shadow-md">
-                        <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="pathway-box border-blue-100 shadow-sm hover-card-lift">
+                        <div class="flex flex-col md:flex-row gap-5 md:gap-6 items-stretch">
                             
                             <!-- Acute Phase -->
-                            <div class="flex flex-col flex-1 w-full">
-                                <div class="mb-3">
-                                    <span class="risk-level-tag bg-rose-100 text-rose-700 font-bold text-sm">急性發作期 (Acute Flares)</span>
-                                    <p class="text-sm text-slate-600 mt-2">紅腫、搔癢嚴重、滲出液。</p>
+                            <div class="flex flex-col flex-1 w-full bg-white rounded-2xl p-6 border border-slate-100 shadow-sm relative">
+                                <div class="mb-5">
+                                    <span class="risk-level-tag bg-rose-100 text-rose-800 font-bold text-[13px]">急性發作期 (Acute Flares)</span>
+                                    <p class="text-sm text-slate-600 mt-3 font-medium">紅腫、搔癢嚴重、滲出液。</p>
                                 </div>
-                                <div class="mt-auto pt-4 border-t border-dashed border-blue-100">
-                                    <div class="pathway-target-card border-rose-200 bg-rose-50">
-                                        <span class="text-sm text-rose-600 font-bold">成人：Class 3 - 4</span>
-                                        <strong class="text-rose-800 text-base">Triamcinolone / Mometasone</strong>
+                                <div class="mt-auto pt-5 border-t border-dashed border-slate-200">
+                                    <div class="pathway-target-card border-rose-200 bg-rose-50/80 shadow-inner">
+                                        <span class="text-xs text-rose-600 font-bold uppercase tracking-wider block mb-1">成人：Class 3 - 4</span>
+                                        <strong class="text-rose-900 text-[17px]">Triamcinolone / Mometasone</strong>
                                     </div>
-                                    <div class="text-center mt-2 text-sm text-slate-500">短期使用 (3-7天) 直到病灶變平</div>
+                                    <div class="text-center mt-3 text-[13px] font-bold text-slate-500 bg-slate-50 py-1.5 rounded-lg border border-slate-100">短期使用 (3-7天) 直到病灶變平</div>
                                 </div>
                             </div>
 
                             <!-- Arrow -->
-                             <div class="flex items-center justify-center p-2 text-slate-300">
-                                <span class="text-3xl rotate-90 md:rotate-0">➜</span>
+                             <div class="flex items-center justify-center py-2 md:py-0 text-slate-300">
+                                <span class="text-2xl md:text-3xl rotate-90 md:rotate-0 transform hover:scale-125 transition-transform duration-300 text-blue-300 drop-shadow">➜</span>
                              </div>
 
                             <!-- Maintenance Phase -->
-                            <div class="flex flex-col flex-1 w-full">
-                                <div class="mb-3">
-                                    <span class="risk-level-tag bg-emerald-100 text-emerald-700 font-bold text-sm">慢性/維持期 (Maintenance)</span>
-                                    <p class="text-sm text-slate-600 mt-2">發炎緩解，皮膚乾燥粗糙。</p>
+                            <div class="flex flex-col flex-1 w-full bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                                <div class="mb-5">
+                                    <span class="risk-level-tag bg-emerald-100 text-emerald-800 font-bold text-[13px]">慢性/維持期 (Maintenance)</span>
+                                    <p class="text-sm text-slate-600 mt-3 font-medium">發炎緩解，皮膚乾燥粗糙。</p>
                                 </div>
-                                <div class="mt-auto pt-4 border-t border-dashed border-blue-100">
-                                    <div class="pathway-target-card border-emerald-200 bg-emerald-50">
-                                        <span class="text-sm text-emerald-600 font-bold">降階至 Class 6 - 7</span>
-                                        <strong class="text-emerald-800 text-base">Hydrocortisone / Desonide</strong>
+                                <div class="mt-auto pt-5 border-t border-dashed border-slate-200">
+                                    <div class="pathway-target-card border-emerald-200 bg-emerald-50/80 shadow-inner">
+                                        <span class="text-xs text-emerald-600 font-bold uppercase tracking-wider block mb-1">降階至 Class 6 - 7</span>
+                                        <strong class="text-emerald-900 text-[17px]">Hydrocortisone / Desonide</strong>
                                     </div>
-                                    <div class="text-center mt-2 text-sm text-slate-500">間歇性療法 (週末使用) + 大量保濕劑</div>
+                                    <div class="text-center mt-3 text-[13px] font-bold text-slate-500 bg-slate-50 py-1.5 rounded-lg border border-slate-100">間歇性療法 (週末使用) + 大量保濕劑</div>
                                 </div>
                             </div>
 
@@ -1040,52 +1115,52 @@
                     </div>
                 </section>
                 
-                <!-- Common Conditions Quick Reference (Expanded) -->
+                <!-- Common Conditions Quick Reference -->
                 <section>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="bg-orange-600 text-white font-bold px-3 py-1 rounded-md text-base">其他常見皮膚疾病</div>
+                    <div class="flex items-center gap-2 mb-5">
+                        <div class="bg-gradient-to-r from-orange-600 to-orange-500 text-white font-bold px-4 py-1.5 rounded-lg shadow-sm text-base">其他常見皮膚疾病</div>
                     </div>
-                      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                          <!-- Hand Eczema -->
-                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                            <h5 class="font-bold text-slate-800 mb-2 flex items-center gap-2 text-base"><span class="text-xl">✋</span> 手部濕疹 / 汗皰疹 (Pompholyx)</h5>
-                            <p class="text-sm text-slate-600 mb-2">角質層極厚，穿透困難。</p>
-                            <div class="flex gap-2">
-                                <span class="badge badge-high text-sm">Class 1 (Ointment)</span>
-                                <span class="badge badge-mid text-sm">封閉療法</span>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                         <!-- Hand Eczema -->
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover-card-lift">
+                            <h5 class="font-bold text-slate-800 mb-3 flex items-center gap-3 text-base"><span class="text-xl bg-slate-50 rounded-xl w-10 h-10 flex items-center justify-center shadow-inner border border-slate-100">✋</span> 手部濕疹 / 汗皰疹 (Pompholyx)</h5>
+                            <p class="text-sm text-slate-600 mb-4 ml-12">角質層極厚，穿透困難。</p>
+                            <div class="flex gap-2 ml-12">
+                                <span class="badge badge-high text-[11px] tracking-wide">Class 1 (Ointment)</span>
+                                <span class="badge badge-mid text-[11px] tracking-wide">封閉療法</span>
                             </div>
                         </div>
 
                         <!-- Seborrheic Dermatitis -->
-                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                            <h5 class="font-bold text-slate-800 mb-2 flex items-center gap-2 text-base"><span class="text-xl">🍄</span> 脂漏性皮膚炎 (Seborrheic Derm.)</h5>
-                            <p class="text-sm text-slate-600 mb-2">好發於頭皮、臉部T字、耳後。</p>
-                            <div class="space-y-1">
-                                <div class="text-sm"><strong class="text-slate-700">頭皮：</strong>Class 1-3 Foam/Lotion 或抗黴菌洗劑</div>
-                                <div class="text-sm"><strong class="text-slate-700">臉部：</strong>Class 6-7 (Ketoconazole 為首選)</div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover-card-lift">
+                            <h5 class="font-bold text-slate-800 mb-3 flex items-center gap-3 text-base"><span class="text-xl bg-slate-50 rounded-xl w-10 h-10 flex items-center justify-center shadow-inner border border-slate-100">🍄</span> 脂漏性皮膚炎 (Seborrheic Derm.)</h5>
+                            <p class="text-sm text-slate-600 mb-4 ml-12">好發於頭皮、臉部T字、耳後。</p>
+                            <div class="space-y-2 ml-12 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <div class="text-[13px]"><strong class="text-slate-800">頭皮：</strong>Class 1-3 Foam/Lotion</div>
+                                <div class="text-[13px]"><strong class="text-slate-800">臉部：</strong>Class 6-7 (Ketoconazole 首選)</div>
                             </div>
                         </div>
 
                         <!-- Lichen Simplex Chronicus -->
-                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                            <h5 class="font-bold text-slate-800 mb-2 flex items-center gap-2 text-base"><span class="text-xl">🛡️</span> 慢性單純苔蘚 (LSC)</h5>
-                            <p class="text-sm text-slate-600 mb-2">因長期搔抓導致皮膚增厚(苔蘚化)。</p>
-                            <div class="flex gap-2">
-                                <span class="badge badge-high text-sm">Class 1-2 (Ointment)</span>
-                                <span class="badge badge-mid text-sm">貼布 (Cordran Tape)</span>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover-card-lift">
+                            <h5 class="font-bold text-slate-800 mb-3 flex items-center gap-3 text-base"><span class="text-xl bg-slate-50 rounded-xl w-10 h-10 flex items-center justify-center shadow-inner border border-slate-100">🛡️</span> 慢性單純苔蘚 (LSC)</h5>
+                            <p class="text-sm text-slate-600 mb-4 ml-12">因長期搔抓導致皮膚增厚(苔蘚化)。</p>
+                            <div class="flex gap-2 ml-12">
+                                <span class="badge badge-high text-[11px] tracking-wide">Class 1-2 (Ointment)</span>
+                                <span class="badge badge-mid text-[11px] tracking-wide">貼布 (Cordran Tape)</span>
                             </div>
                         </div>
 
-                          <!-- Discoid Lupus -->
-                          <div class="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                            <h5 class="font-bold text-slate-800 mb-2 flex items-center gap-2 text-base"><span class="text-xl">🦋</span> 圓盤狀紅斑性狼瘡 (DLE)</h5>
-                            <p class="text-sm text-slate-600 mb-2">發炎性高，需強力抗發炎。</p>
-                            <div class="flex gap-2">
-                                <span class="badge badge-high text-sm">Class 1-2 (主要治療)</span>
-                                <span class="badge badge-low text-sm">臉部慎用</span>
+                         <!-- Discoid Lupus -->
+                         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover-card-lift">
+                            <h5 class="font-bold text-slate-800 mb-3 flex items-center gap-3 text-base"><span class="text-xl bg-slate-50 rounded-xl w-10 h-10 flex items-center justify-center shadow-inner border border-slate-100">🦋</span> 圓盤狀狼瘡 (DLE)</h5>
+                            <p class="text-sm text-slate-600 mb-4 ml-12">發炎性高，需強力抗發炎。</p>
+                            <div class="flex gap-2 ml-12">
+                                <span class="badge badge-high text-[11px] tracking-wide">Class 1-2 (主要治療)</span>
+                                <span class="badge badge-low text-[11px] tracking-wide">臉部慎用</span>
                             </div>
                         </div>
-                      </div>
+                     </div>
                 </section>
             </div>
             <div class="ref-section">
@@ -1098,86 +1173,88 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 4: 停藥與濕敷 (Tapering & Wet Wrap) - NEW TAB -->
+        <!-- TAB 4: 停藥與濕敷 (Tapering & Wet Wrap) -->
         <!-- ========================================== -->
         <div id="content-tapering" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 
                 <!-- Tapering Strategies -->
-                <div class="bg-white rounded-xl border border-indigo-200 shadow-sm overflow-hidden">
-                    <div class="bg-indigo-50 p-4 border-b border-indigo-100">
+                <div class="bg-white rounded-3xl border border-indigo-100 shadow-sm overflow-hidden flex flex-col hover-card-lift">
+                    <div class="bg-gradient-to-r from-indigo-50 to-white p-5 md:p-6 border-b border-indigo-100">
                          <h3 class="font-bold text-indigo-900 text-lg flex items-center gap-2">
-                            📉 停藥策略 (Tapering Strategies)
+                            📉 停藥策略 (Tapering)
                         </h3>
                     </div>
-                    <div class="p-6">
-                        <div class="mb-4 text-sm text-slate-600">
-                            長期使用中強效類固醇後，驟然停藥可能導致<strong>反彈 (Rebound)</strong>。應採取漸進式停藥。
+                    <div class="p-5 md:p-6 flex-grow">
+                        <div class="mb-6 text-[14px] text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
+                            長期使用中強效類固醇後，驟然停藥可能導致<strong class="text-slate-800">反彈 (Rebound)</strong>。應採取漸進式停藥。
                         </div>
                         
-                        <div class="space-y-4">
-                            <div class="border-l-4 border-indigo-400 pl-4 py-1">
-                                <strong class="text-indigo-700 block text-base mb-1">策略 A：降低頻率 (Frequency Reduction)</strong>
-                                <p class="text-sm text-slate-600 mb-2">最常用的方法。</p>
-                                <div class="bg-slate-50 p-2 rounded text-sm text-slate-500 font-mono">
-                                    每日2次 → 每日1次 → 隔日1次 → 週末療法 (週六日用)
+                        <div class="space-y-6">
+                            <div class="border-l-[4px] border-indigo-400 pl-4 py-1 transition-colors hover:border-indigo-600">
+                                <strong class="text-indigo-800 block text-[15px] mb-1.5">策略 A：降低頻率 (Frequency)</strong>
+                                <p class="text-sm text-slate-500 mb-3">最常用的方法。</p>
+                                <div class="bg-white border border-slate-100 shadow-sm p-3 rounded-xl text-[13px] text-slate-700 font-mono font-medium">
+                                    每日2次 → 每日1次 → 隔日1次 → 週末療法
                                 </div>
                             </div>
                             
-                            <div class="border-l-4 border-pink-400 pl-4 py-1">
-                                <strong class="text-pink-700 block text-base mb-1">策略 B：降低強度 (Potency Reduction)</strong>
-                                <p class="text-sm text-slate-600 mb-2">適合大面積或兒童。</p>
-                                <div class="bg-slate-50 p-2 rounded text-sm text-slate-500 font-mono">
-                                    Class 2 (軟膏) → Class 4 (乳膏) → Class 7 (弱效)
+                            <div class="border-l-[4px] border-pink-400 pl-4 py-1 transition-colors hover:border-pink-600">
+                                <strong class="text-pink-800 block text-[15px] mb-1.5">策略 B：降低強度 (Potency)</strong>
+                                <p class="text-sm text-slate-500 mb-3">適合大面積或兒童。</p>
+                                <div class="bg-white border border-slate-100 shadow-sm p-3 rounded-xl text-[13px] text-slate-700 font-mono font-medium">
+                                    Class 2 (軟膏) → Class 4 (乳膏) → Class 7
                                 </div>
                             </div>
 
-                             <div class="border-l-4 border-emerald-400 pl-4 py-1">
-                                <strong class="text-emerald-700 block text-base mb-1">策略 C：週末療法 (Weekend Therapy)</strong>
-                                <p class="text-sm text-slate-600">對於慢性反覆發作者，在病灶緩解後，每週僅在<strong>週六、週日</strong>塗抹一次藥膏，平日只擦乳液。可顯著降低復發率且副作用極低。</p>
+                             <div class="border-l-[4px] border-emerald-400 pl-4 py-1 transition-colors hover:border-emerald-600">
+                                <strong class="text-emerald-800 block text-[15px] mb-1.5">策略 C：週末療法 (Weekend)</strong>
+                                <p class="text-[13.5px] text-slate-600 leading-relaxed">對於慢性反覆發作者，在病灶緩解後，每週僅在<strong class="text-slate-800 bg-slate-100 px-1 rounded">週六、週日</strong>塗抹一次藥膏，平日只擦乳液。可顯著降低復發率且副作用極低。</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Wet Wrap Therapy -->
-                <div class="bg-white rounded-xl border border-blue-200 shadow-sm overflow-hidden">
-                    <div class="bg-blue-50 p-4 border-b border-blue-100">
+                <div class="bg-white rounded-3xl border border-blue-100 shadow-sm overflow-hidden flex flex-col hover-card-lift">
+                    <div class="bg-gradient-to-r from-blue-50 to-white p-5 md:p-6 border-b border-blue-100">
                          <h3 class="font-bold text-blue-900 text-lg flex items-center gap-2">
-                            💧 濕敷療法 (Wet Wrap Therapy)
+                            💧 濕敷療法 (Wet Wrap)
                         </h3>
                     </div>
-                    <div class="p-6">
-                         <div class="mb-4 text-sm text-slate-600">
+                    <div class="p-5 md:p-6 flex-grow">
+                         <div class="mb-6 text-[14px] text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100">
                             適用於嚴重、頑固型異位性皮膚炎。可增加藥物吸收、保濕並冷卻止癢。
                         </div>
 
-                        <div class="space-y-4">
-                            <div class="flex gap-4">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                        <div class="space-y-6">
+                            <div class="flex gap-4 group">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0 transition-colors group-hover:bg-blue-600 group-hover:text-white shadow-inner">1</div>
                                 <div>
-                                    <strong class="text-slate-800 text-sm">浸泡與塗藥 (Soak & Seal)</strong>
-                                    <p class="text-sm text-slate-600">洗澡後輕拍乾(微濕)，立即厚塗類固醇藥膏於病灶，其餘部位塗保濕劑。</p>
+                                    <strong class="text-slate-800 text-[15px] block mb-1">浸泡與塗藥 (Soak & Seal)</strong>
+                                    <p class="text-[13.5px] text-slate-600 leading-relaxed">洗澡後輕拍乾(微濕)，立即厚塗類固醇藥膏於病灶，其餘部位塗保濕劑。</p>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                            <div class="flex gap-4 group">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0 transition-colors group-hover:bg-blue-600 group-hover:text-white shadow-inner">2</div>
                                 <div>
-                                    <strong class="text-slate-800 text-sm">濕層包覆 (Wet Layer)</strong>
-                                    <p class="text-sm text-slate-600">將管狀繃帶 (Tubifast) 或棉質衣物用溫水浸濕後擰乾，穿/套在身上。</p>
+                                    <strong class="text-slate-800 text-[15px] block mb-1">濕層包覆 (Wet Layer)</strong>
+                                    <p class="text-[13.5px] text-slate-600 leading-relaxed">將管狀繃帶或棉質衣物用溫水浸濕後擰乾，穿/套在身上。</p>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">3</div>
+                            <div class="flex gap-4 group">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0 transition-colors group-hover:bg-blue-600 group-hover:text-white shadow-inner">3</div>
                                 <div>
-                                    <strong class="text-slate-800 text-sm">乾層固定 (Dry Layer)</strong>
-                                    <p class="text-sm text-slate-600">外層再穿一層乾燥的衣物或繃帶固定。</p>
+                                    <strong class="text-slate-800 text-[15px] block mb-1">乾層固定 (Dry Layer)</strong>
+                                    <p class="text-[13.5px] text-slate-600 leading-relaxed">外層再穿一層乾燥的衣物或繃帶固定。</p>
                                 </div>
                             </div>
-                             <div class="bg-amber-50 border border-amber-200 p-4 rounded text-amber-900 mt-2">
-                                <strong class="block mb-2 text-sm text-amber-800 border-b border-amber-200 pb-1">🤔 臨床迷思：為何不直接用強效藥膏薄擦？</strong>
-                                <p class="text-sm mb-2"><strong>1. 吸收倍增：</strong> 濕敷的「封閉效應 (Occlusion)」會使角質層水合，讓藥物穿透率暴增 <strong>10~100倍</strong>。若在濕敷下使用 Class 1-2 強效藥膏，等於給予極高劑量的類固醇，極易造成 HPA 軸抑制等全身性副作用。</p>
-                                <p class="text-sm"><strong>2. 安全平衡：</strong> 使用 Class 4-7 (中弱效) 藥膏搭配濕敷，能達到「局部強效治療」的效果，但將全身性吸收風險控制在相對安全的範圍內。即便如此，濕敷通常限制在 3-5 天內，需醫師監測。</p>
+                             <div class="bg-amber-50 border border-amber-100 p-5 rounded-2xl text-amber-900 mt-8 shadow-sm">
+                                <strong class="block mb-3 text-[14px] text-amber-800 border-b border-amber-200/50 pb-2 flex items-center gap-2"><span class="text-lg">🤔</span> 臨床迷思：為何不用強效藥？</strong>
+                                <div class="text-[13.5px] leading-relaxed space-y-2 mt-3 text-amber-900/80">
+                                    <p><strong>1. 吸收倍增：</strong> 濕敷的「封閉效應」會使藥物穿透率暴增 <strong class="text-rose-600">10~100倍</strong>。使用強效藥極易造成全身性副作用。</p>
+                                    <p><strong>2. 安全平衡：</strong> 使用 Class 4-7 (中弱效) 藥膏搭配濕敷，能達到「局部強效治療」的效果，但保持吸收風險在安全範圍內。通常限制 3-5 天。</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1192,77 +1269,77 @@
         <!-- ========================================== -->
         <div id="content-safety" class="tab-content">
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8">
                 <!-- FTU Card -->
-                <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm h-full flex flex-col">
-                    <div class="bg-indigo-50 p-4 border-b border-indigo-100">
+                <div class="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm h-full flex flex-col hover-card-lift">
+                    <div class="bg-gradient-to-r from-indigo-50 to-white p-5 md:p-6 border-b border-indigo-100">
                         <h3 class="font-bold text-indigo-900 text-lg flex items-center gap-2">
                             ☝️ 成人指尖單位 (Adult FTU)
                         </h3>
                     </div>
-                    <div class="p-6">
-                        <div class="flex items-center gap-4 mb-4">
-                            <div class="bg-indigo-100 text-indigo-700 font-bold p-3 rounded-lg text-xl">1 FTU ≈ 0.5g</div>
-                            <p class="text-sm text-slate-600">從軟管擠出，食指指尖到第一指節的長度。</p>
+                    <div class="p-5 md:p-6 flex-grow flex flex-col">
+                        <div class="flex items-center gap-4 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <div class="bg-indigo-600 text-white font-bold px-4 py-2.5 rounded-xl text-lg sm:text-xl shadow-md transform hover:scale-105 transition-transform">1 FTU ≈ 0.5g</div>
+                            <p class="text-[14px] text-slate-600 leading-relaxed font-medium">從軟管擠出，食指指尖到第一指節的長度。</p>
                         </div>
                         
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="text-sm font-bold text-slate-700">1 FTU 可塗抹面積</span>
-                                <span class="text-sm text-indigo-600 font-bold">2 個成人手掌 (雙面)</span>
+                        <div class="space-y-2 flex-grow">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-2">
+                                <span class="text-[15px] font-bold text-slate-800">1 FTU 可塗抹面積</span>
+                                <span class="text-[14px] text-indigo-800 font-bold bg-indigo-100/50 px-3 py-1.5 rounded-lg border border-indigo-100">2 個成人手掌 (雙面)</span>
                             </div>
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="text-sm text-slate-600">臉部 + 頸部</span>
-                                <span class="badge badge-mid text-sm">2.5 FTU</span>
+                            <div class="flex justify-between items-center border-b border-slate-100/50 pb-2 hover:bg-slate-50 p-2 -mx-2 px-2 rounded-xl transition-colors">
+                                <span class="text-[14px] text-slate-600 font-medium">臉部 + 頸部</span>
+                                <span class="badge badge-mid text-xs">2.5 FTU</span>
                             </div>
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="text-sm text-slate-600">單隻手臂</span>
-                                <span class="badge badge-mid text-sm">3 FTU</span>
+                            <div class="flex justify-between items-center border-b border-slate-100/50 pb-2 hover:bg-slate-50 p-2 -mx-2 px-2 rounded-xl transition-colors">
+                                <span class="text-[14px] text-slate-600 font-medium">單隻手臂</span>
+                                <span class="badge badge-mid text-xs">3 FTU</span>
                             </div>
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="text-sm text-slate-600">單條腿</span>
-                                <span class="badge badge-mid text-sm">6 FTU</span>
+                            <div class="flex justify-between items-center border-b border-slate-100/50 pb-2 hover:bg-slate-50 p-2 -mx-2 px-2 rounded-xl transition-colors">
+                                <span class="text-[14px] text-slate-600 font-medium">單條腿</span>
+                                <span class="badge badge-mid text-xs">6 FTU</span>
                             </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-sm text-slate-600">軀幹 (前胸+後背)</span>
-                                <span class="badge badge-mid text-sm">14 FTU</span>
+                            <div class="flex justify-between items-center hover:bg-slate-50 p-2 -mx-2 px-2 rounded-xl transition-colors">
+                                <span class="text-[14px] text-slate-600 font-medium">軀幹 (前胸+後背)</span>
+                                <span class="badge badge-mid text-xs">14 FTU</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Pediatric Safety Card -->
-                <div class="bg-white rounded-xl border border-emerald-200 overflow-hidden shadow-sm h-full flex flex-col">
-                     <div class="bg-emerald-50 p-4 border-b border-emerald-100">
+                <div class="bg-white rounded-3xl border border-emerald-200 overflow-hidden shadow-sm h-full flex flex-col hover-card-lift">
+                     <div class="bg-gradient-to-r from-emerald-50 to-white p-5 md:p-6 border-b border-emerald-100">
                         <h3 class="font-bold text-emerald-900 text-lg flex items-center gap-2">
                             👶 嬰幼兒與兒童安全 (Pediatric)
                         </h3>
                     </div>
-                    <div class="p-6">
-                         <div class="mb-4 text-sm text-rose-600 bg-rose-50 p-2 rounded border border-rose-100">
-                            <strong>警示：</strong>兒童體表面積/體重比例大，藥物更易經皮吸收導致全身性副作用 (HPA axis suppression)。
+                    <div class="p-5 md:p-6 flex-grow flex flex-col">
+                         <div class="mb-5 text-[13.5px] text-rose-800 bg-rose-50 p-4 rounded-2xl border border-rose-100 leading-relaxed shadow-sm">
+                            <strong class="text-rose-900">⚠️ 警示：</strong>兒童體表面積/體重比例大，藥物更易經皮吸收導致全身性副作用 (HPA axis suppression)。
                         </div>
-                        <div class="space-y-3">
-                             <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="text-sm font-bold text-slate-700">嬰兒 (3-12個月)</span>
-                                <div class="text-right">
-                                    <span class="block text-sm text-slate-500">臉頸: 1 FTU</span>
-                                    <span class="block text-sm text-slate-500">手臂: 1 FTU</span>
+                        <div class="space-y-2 flex-grow">
+                             <div class="flex justify-between items-center border-b border-slate-100 pb-3 hover:bg-slate-50 p-2.5 -mx-2.5 px-2.5 rounded-xl transition-colors">
+                                <span class="text-[15px] font-bold text-slate-800">嬰兒 (3-12個月)</span>
+                                <div class="text-right flex gap-3">
+                                    <span class="text-[13px] text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">臉頸: <strong class="text-slate-800">1</strong> FTU</span>
+                                    <span class="text-[13px] text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">手臂: <strong class="text-slate-800">1</strong> FTU</span>
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                <span class="text-sm font-bold text-slate-700">兒童 (4歲)</span>
-                                <div class="text-right">
-                                    <span class="block text-sm text-slate-500">臉頸: 2 FTU</span>
-                                    <span class="block text-sm text-slate-500">手臂: 3 FTU</span>
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-3 hover:bg-slate-50 p-2.5 -mx-2.5 px-2.5 rounded-xl transition-colors">
+                                <span class="text-[15px] font-bold text-slate-800">兒童 (4歲)</span>
+                                <div class="text-right flex gap-3">
+                                    <span class="text-[13px] text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">臉頸: <strong class="text-slate-800">2</strong> FTU</span>
+                                    <span class="text-[13px] text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">手臂: <strong class="text-slate-800">3</strong> FTU</span>
                                 </div>
                             </div>
-                             <div class="mt-4">
-                                <strong class="text-sm text-emerald-800 block mb-1">兒童用藥原則：</strong>
-                                <ul class="list-disc pl-4 text-sm text-slate-600 space-y-1">
+                             <div class="mt-5 bg-emerald-50/70 p-4 rounded-2xl border border-emerald-100/50">
+                                <strong class="text-[14px] text-emerald-900 block mb-2">兒童用藥原則：</strong>
+                                <ul class="list-disc pl-5 text-[13px] text-slate-700 space-y-2 marker:text-emerald-500 leading-relaxed">
                                     <li>首選 <strong>Class 6-7 (弱效)</strong>。</li>
                                     <li>避免使用 Class 1-3 強效藥，除非醫師特別指示。</li>
-                                    <li>尿布區 (Diaper area) 視同「封閉式療法」，吸收率高，嚴禁強效藥。</li>
+                                    <li>尿布區 (Diaper area) 視同「封閉式療法」，吸收率極高，嚴禁強效藥。</li>
                                 </ul>
                             </div>
                         </div>
@@ -1271,22 +1348,22 @@
             </div>
 
             <!-- Management Algorithm -->
-            <div class="algorithm-card">
+            <div class="algorithm-card shadow-sm hover-card-lift">
                 <div class="algo-header">
-                    <span>🛡️ 副作用監測與處置</span>
+                    <span class="text-lg">🛡️ 副作用監測與處置</span>
                 </div>
-                <div class="algo-body grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-slate-50 p-3 rounded border border-slate-100">
-                        <strong class="block text-base text-slate-800 mb-1">皮膚萎縮 (Atrophy)</strong>
-                        <p class="text-sm text-slate-600">長期使用強效藥最常見的局部副作用。通常停藥後可逆，但產生皺紋可能無法完全恢復。</p>
+                <div class="algo-body grid grid-cols-1 md:grid-cols-3 gap-5 p-6">
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
+                        <strong class="block text-[15px] text-slate-800 mb-3 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span> 皮膚萎縮 (Atrophy)</strong>
+                        <p class="text-[13.5px] text-slate-600 leading-relaxed">長期使用強效藥最常見的局部副作用。通常停藥後可逆，但產生皺紋可能無法完全恢復。</p>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded border border-slate-100">
-                        <strong class="block text-base text-slate-800 mb-1">類固醇酒糟/痤瘡</strong>
-                        <p class="text-sm text-slate-600">臉部長期不當使用中強效類固醇所致。特徵是停藥後會惡化 (Rebound)，需耐心治療。</p>
+                    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
+                        <strong class="block text-[15px] text-slate-800 mb-3 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-inner"></span> 類固醇酒糟/痤瘡</strong>
+                        <p class="text-[13.5px] text-slate-600 leading-relaxed">臉部長期不當使用中強效類固醇所致。特徵是停藥後會惡化 (Rebound)，需耐心治療。</p>
                     </div>
-                    <div class="bg-rose-50 p-3 rounded border border-rose-100">
-                        <strong class="block text-base text-rose-800 mb-1">全身性吸收</strong>
-                        <p class="text-sm text-rose-600">長期大面積使用 Class 1 藥膏可能抑制 HPA 軸，導致庫欣氏症候群 (Cushing's)，需定期監測。</p>
+                    <div class="bg-rose-50/50 p-5 rounded-2xl border border-rose-100 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-md">
+                        <strong class="block text-[15px] text-rose-800 mb-3 flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-inner"></span> 全身性吸收</strong>
+                        <p class="text-[13.5px] text-rose-700 leading-relaxed">長期大面積使用 Class 1 藥膏可能抑制 HPA 軸，導致庫欣氏症候群 (Cushing's)，需定期監測。</p>
                     </div>
                 </div>
             </div>
@@ -1294,113 +1371,122 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 6: 藥理機轉 (MOA) - Beautified -->
+        <!-- TAB 6: 藥理機轉 (MOA) - Highly Compact & Refined for Mobile -->
         <!-- ========================================== -->
         <div id="content-moa" class="tab-content">
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
                 
                 <!-- Diagram Container -->
-                <div class="lg:col-span-2 cell-container h-[550px] flex flex-col shadow-lg">
+                <!-- Use full width, refined padding to fit single mobile screen -->
+                <div class="lg:col-span-2 cell-container h-auto flex flex-col shadow-sm transition-shadow hover:shadow-md bg-white">
                     
                     <!-- Top: Topical Application -->
-                    <div class="bg-rose-100 border-b-4 border-rose-200 p-3 flex justify-between items-center relative z-20 h-16 shrink-0">
-                        <div class="text-xs font-bold text-rose-800 tracking-wider uppercase ml-2 flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
-                            Skin Surface (Topical Application)
+                    <div class="bg-gradient-to-r from-rose-100/80 to-rose-50/80 border-b-[3px] border-rose-200 p-2 sm:p-3 flex justify-between items-center relative z-20 shrink-0">
+                        <div class="text-[11px] sm:text-xs font-bold text-rose-800 tracking-wider uppercase ml-1 sm:ml-2 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
+                            Skin Surface
                         </div>
-                        <div class="flex gap-4 mr-8">
+                        <div class="flex gap-3 mr-2 sm:mr-6">
                              <!-- Steroid Molecule -->
                              <div class="flex flex-col items-center">
-                                <div class="w-8 h-8 rounded-full bg-white border-2 border-teal-500 shadow-md flex items-center justify-center text-[10px] font-bold text-teal-700">GC</div>
+                                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-teal-500 shadow-md flex items-center justify-center text-[9px] sm:text-[10px] font-bold text-teal-700 transform hover:scale-110 transition-transform cursor-help" title="Glucocorticoid">GC</div>
                              </div>
                         </div>
                     </div>
 
                     <!-- Cell Membrane -->
-                    <div class="cell-membrane">CELL MEMBRANE (Keratinocyte / Immune Cell)</div>
+                    <div class="cell-membrane py-1.5 sm:py-2">CELL MEMBRANE (Keratinocyte / Immune Cell)</div>
                     
-                    <!-- Cytosol -->
-                    <div class="cell-cytosol flex-grow grid grid-cols-2 gap-8 items-start justify-items-center pt-8">
+                    <!-- Cytosol (Compact Layout for Mobile) -->
+                    <div class="cell-cytosol flex-grow flex flex-col items-center pt-5 sm:pt-6 pb-4 w-full gap-4 sm:gap-6 bg-slate-50/50">
                         
-                        <!-- Pathway -->
-                        <div class="flex flex-col items-center gap-4 relative">
-                            <!-- Dashed line for pathway -->
-                            <div class="absolute top-0 bottom-0 left-1/2 w-0.5 border-l-2 border-dashed border-slate-300 -z-10"></div>
+                        <!-- Top Row: Pathway into cytosol -->
+                        <div class="flex flex-row flex-wrap sm:flex-nowrap justify-center items-center w-full gap-2 sm:gap-6 relative">
+                            <!-- Dashed background connection (Desktop) -->
+                            <div class="hidden sm:block absolute top-1/2 left-[20%] right-[20%] h-0.5 border-t-2 border-dashed border-slate-300 -z-10 opacity-50"></div>
                             
-                            <div class="moa-node w-48 border-blue-200" onclick="showMoaDetail(1)">
-                                <div class="text-[10px] text-blue-500 font-bold uppercase">Step 1</div>
-                                <div class="text-sm font-bold text-slate-700">Passive Diffusion</div>
-                                <div class="text-[10px] text-slate-500">Lipophilic Penetration</div>
+                            <div class="moa-node w-[45%] sm:w-40 border-blue-200 p-2.5 sm:p-3" onclick="showMoaDetail(1)">
+                                <div class="text-[9px] sm:text-[10px] text-blue-500 font-bold uppercase tracking-wide">Step 1</div>
+                                <div class="text-[12px] sm:text-sm font-bold text-slate-800 mt-1">Passive Diffusion</div>
+                                <div class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">Lipophilic Penetration</div>
                             </div>
                             
-                            <div class="arrow-down"></div>
+                            <div class="arrow-path rotate-[-90deg] sm:rotate-0 my-1 sm:my-0 text-lg">➜</div>
 
-                            <div class="moa-node w-56 border-l-4 border-l-teal-500 shadow-md" onclick="showMoaDetail(2)">
-                                <div class="text-[10px] text-teal-500 font-bold uppercase mb-1">Cytosol</div>
-                                <div class="text-base font-bold text-slate-800">GR Binding</div>
-                                <div class="text-[10px] text-slate-500">HSP90 Dissociation</div>
+                            <div class="moa-node w-[45%] sm:w-48 border-l-[3px] sm:border-l-4 border-l-teal-500 shadow-sm p-2.5 sm:p-3" onclick="showMoaDetail(2)">
+                                <div class="text-[9px] sm:text-[10px] text-teal-600 font-bold uppercase tracking-wide mb-1">Cytosol</div>
+                                <div class="text-[13px] sm:text-base font-bold text-slate-800">GR Binding</div>
+                                <div class="text-[9px] sm:text-[10px] text-slate-500 mt-0.5">HSP90 Dissociation</div>
                             </div>
-
-                            <div class="arrow-down"></div>
-
-                            <div class="moa-node w-48 bg-indigo-50 border-indigo-200" onclick="showMoaDetail(3)">
-                                <div class="text-sm font-bold text-indigo-700">Nuclear Translocation</div>
-                                <div class="text-[10px] text-indigo-600">Enter Nucleus</div>
+                            
+                            <!-- Arrow down to nucleus -->
+                            <div class="w-full flex justify-center mt-1 sm:hidden">
+                                <div class="arrow-path rotate-[90deg] text-lg">➜</div>
                             </div>
+                            <div class="hidden sm:flex arrow-path rotate-[90deg] mx-2 text-lg">➜</div>
+
+                            <div class="moa-node w-full sm:w-40 bg-indigo-50/80 border-indigo-200 p-2.5 sm:p-3" onclick="showMoaDetail(3)">
+                                <div class="text-[13px] sm:text-sm font-bold text-indigo-800">Nuclear Translocation</div>
+                                <div class="text-[9px] sm:text-[10px] text-indigo-600 mt-0.5">Enter Nucleus</div>
+                            </div>
+                        </div>
+
+                        <!-- Down Arrow from Translocation to Nucleus (Mobile) -->
+                        <div class="w-full flex justify-center sm:hidden mt-[-0.5rem] mb-[-0.5rem]">
+                            <div class="arrow-path rotate-[90deg] text-lg">➜</div>
                         </div>
 
                         <!-- Nucleus Actions -->
-                        <div class="flex flex-col items-center gap-6 justify-center h-full w-full">
+                        <div class="cell-nucleus w-[96%] sm:w-[90%] flex flex-col items-center gap-3 sm:gap-4 p-3 sm:p-5 mt-2 sm:mt-0">
+                            <div class="moa-node w-full sm:w-56 bg-purple-50/80 border-purple-200 p-2 sm:p-3" onclick="showMoaDetail(4)">
+                                <div class="text-[9px] sm:text-[10px] text-purple-600 font-bold uppercase tracking-wide">DNA Binding</div>
+                                <div class="text-[13px] sm:text-[15px] font-bold text-purple-800 mt-1">GRE Activation</div>
+                            </div>
                             
-                            <!-- Nuclear Event -->
-                            <div class="cell-nucleus w-full flex flex-col items-center gap-2">
-                                <div class="moa-node w-48 bg-purple-50 border-purple-200" onclick="showMoaDetail(4)">
-                                    <div class="text-[10px] text-purple-600 font-bold uppercase">DNA Binding</div>
-                                    <div class="text-sm font-bold text-purple-800">GRE Activation</div>
+                            <!-- The split outputs -->
+                            <div class="flex w-full justify-center gap-3 sm:gap-6 mt-1 sm:mt-2">
+                                <div class="moa-node bg-red-50/80 border-red-200 text-center flex-1 max-w-[120px] p-2" onclick="showMoaDetail(5)">
+                                    <div class="text-sm sm:text-lg mb-0.5 sm:mb-1">⬇️</div>
+                                    <div class="text-[10px] sm:text-[11px] font-bold text-red-800 leading-tight">Cytokines</div>
+                                    <div class="text-[8.5px] sm:text-[9px] text-red-600 mt-0.5">(IL-1, TNF-α)</div>
                                 </div>
-                                
-                                <div class="flex w-full justify-between mt-4">
-                                    <div class="moa-node w-24 bg-red-50 border-red-200 text-center" onclick="showMoaDetail(5)">
-                                        <div class="text-lg">⬇️</div>
-                                        <div class="text-[9px] font-bold text-red-800">Cytokines</div>
-                                        <div class="text-[8px] text-red-600">(IL-1, TNF-α)</div>
-                                    </div>
-                                    <div class="moa-node w-24 bg-green-50 border-green-200 text-center" onclick="showMoaDetail(6)">
-                                        <div class="text-lg">⬆️</div>
-                                        <div class="text-[9px] font-bold text-green-800">Lipocortin-1</div>
-                                        <div class="text-[8px] text-green-600">(Anti-inflam)</div>
-                                    </div>
+                                <div class="moa-node bg-green-50/80 border-green-200 text-center flex-1 max-w-[120px] p-2" onclick="showMoaDetail(6)">
+                                    <div class="text-sm sm:text-lg mb-0.5 sm:mb-1">⬆️</div>
+                                    <div class="text-[10px] sm:text-[11px] font-bold text-green-800 leading-tight">Lipocortin-1</div>
+                                    <div class="text-[8.5px] sm:text-[9px] text-green-600 mt-0.5">(Anti-inflam)</div>
                                 </div>
                             </div>
-
                         </div>
+
                     </div>
                 </div>
 
                 <!-- Detail Panel -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white border border-slate-200 rounded-xl p-6 h-full shadow-sm flex flex-col">
-                        <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
-                            <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">ℹ️</span>
-                            <h4 class="serif text-slate-800 font-bold text-lg">Mechanism Detail</h4>
+                <div class="lg:col-span-1 mt-2 lg:mt-0">
+                    <div class="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 h-full shadow-sm flex flex-col hover-card-lift">
+                        <div class="flex items-center gap-3 mb-4 sm:mb-5 border-b border-slate-100 pb-3 sm:pb-4">
+                            <span class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-600 shadow-inner border border-slate-100">ℹ️</span>
+                            <h4 class="serif text-slate-800 font-bold text-[17px] sm:text-[19px]">Mechanism Detail</h4>
                         </div>
                         
-                        <div id="moa-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                        <div id="moa-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 transition-opacity duration-300">
                             <div>
-                                <p class="mb-2 font-bold text-slate-400">Interactive Diagram</p>
-                                <p>請點擊左側圖表中的方塊<br>以查看類固醇抗發炎機轉</p>
+                                <div class="text-2xl sm:text-3xl mb-2 sm:mb-3 opacity-50">👆</div>
+                                <p class="mb-1 sm:mb-2 font-bold text-slate-600 text-[14px] sm:text-base">Interactive Diagram</p>
+                                <p class="text-[12px] sm:text-[13px]">請點擊左側圖表中的節點方塊<br>以查看類固醇抗發炎詳細機轉</p>
                             </div>
                         </div>
 
-                        <div id="moa-detail-content" class="hidden animate-fade-in">
-                            <h5 id="moa-title" class="text-teal-700 font-bold text-lg mb-3"></h5>
-                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 mb-4">
-                                <p id="moa-desc" class="text-slate-700 text-sm leading-relaxed"></p>
+                        <!-- Active State Content -->
+                        <div id="moa-detail-content" class="hidden animate-fade-in flex-grow flex flex-col">
+                            <h5 id="moa-title" class="text-teal-700 font-bold text-[16px] sm:text-lg mb-3"></h5>
+                            <div class="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-100 mb-4 sm:mb-5 shadow-inner">
+                                <p id="moa-desc" class="text-slate-700 text-[13.5px] sm:text-[14.5px] leading-relaxed"></p>
                             </div>
-                            <div class="border-l-4 border-teal-500 pl-3">
-                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">Clinical Relevance</p>
-                                <p id="moa-impact" class="text-sm text-slate-600 font-medium"></p>
+                            <div class="mt-auto border-l-[3px] border-teal-500 pl-4 py-1.5 bg-white">
+                                <p class="text-[10px] sm:text-[11px] text-slate-400 uppercase font-bold tracking-wider mb-1.5">Clinical Relevance</p>
+                                <p id="moa-impact" class="text-[13px] sm:text-[14px] text-slate-800 font-medium leading-relaxed"></p>
                             </div>
                         </div>
                     </div>
@@ -1414,58 +1500,58 @@
         <!-- ========================================== -->
         <div id="content-special" class="tab-content">
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mb-8">
                 
-                <!-- Combination Therapy (Refactored) -->
-                <div class="space-y-4">
-                    <h4 class="font-bold text-indigo-700 text-lg">🧪 複方藥膏 (Combination Therapy)</h4>
+                <!-- Combination Therapy -->
+                <div class="space-y-4 md:space-y-5">
+                    <h4 class="font-bold text-indigo-800 text-[19px] flex items-center gap-2">🧪 複方藥膏 (Combination Therapy)</h4>
                     
                     <!-- Salicylic Acid -->
-                    <div class="bg-white p-4 rounded-lg border border-indigo-200 border-l-4 border-l-indigo-500 shadow-sm">
-                        <strong class="text-indigo-800 text-base block mb-2">1. 水楊酸 (Salicylic Acid)</strong>
-                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                    <div class="bg-white p-5 rounded-2xl border border-indigo-100 border-l-[4px] border-l-indigo-500 shadow-sm hover-card-lift">
+                        <strong class="text-indigo-900 text-base block mb-3">1. 水楊酸 (Salicylic Acid)</strong>
+                        <ul class="text-[14px] text-slate-600 list-disc pl-5 space-y-2.5 marker:text-indigo-300 leading-relaxed">
                             <li><strong>機制：</strong>角質溶解 (Keratolytic)，軟化並去除增厚的角質層，幫助類固醇穿透。</li>
                             <li><strong>適應症：</strong>厚皮型乾癬、嚴重苔蘚化濕疹、掌蹠角化症。</li>
-                            <li><strong>注意：</strong>大面積使用可能造成水楊酸中毒 (Salicylism)，兒童應慎用。</li>
+                            <li><strong class="text-rose-600 bg-rose-50 px-1 rounded">注意：</strong>大面積使用可能造成水楊酸中毒 (Salicylism)，兒童應慎用。</li>
                         </ul>
                     </div>
 
                     <!-- Urea -->
-                    <div class="bg-white p-4 rounded-lg border border-blue-200 border-l-4 border-l-blue-500 shadow-sm">
-                        <strong class="text-blue-800 text-base block mb-2">2. 尿素 (Urea)</strong>
-                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                    <div class="bg-white p-5 rounded-2xl border border-blue-100 border-l-[4px] border-l-blue-500 shadow-sm hover-card-lift">
+                        <strong class="text-blue-900 text-base block mb-3">2. 尿素 (Urea)</strong>
+                        <ul class="text-[14px] text-slate-600 list-disc pl-5 space-y-2.5 marker:text-blue-300 leading-relaxed">
                             <li><strong>機制：</strong>增加角質層含水量 (Hydration) 並具有輕微去角質效果。</li>
                             <li><strong>適應症：</strong>極度乾燥的濕疹、魚鱗癬、毛孔角化症。</li>
-                            <li><strong>優勢：</strong>比水楊酸溫和，保濕效果更佳。</li>
+                            <li><strong class="text-teal-600 bg-teal-50 px-1 rounded">優勢：</strong>比水楊酸溫和，保濕效果更佳。</li>
                         </ul>
                     </div>
 
                     <!-- Antimicrobials -->
-                    <div class="bg-white p-4 rounded-lg border border-rose-200 border-l-4 border-l-rose-500 shadow-sm">
-                        <strong class="text-rose-800 text-base block mb-2">3. 抗生素/抗黴菌劑 (Antimicrobials)</strong>
-                        <ul class="text-sm text-slate-600 list-disc pl-4 space-y-1">
+                    <div class="bg-white p-5 rounded-2xl border border-rose-100 border-l-[4px] border-l-rose-500 shadow-sm hover-card-lift">
+                        <strong class="text-rose-900 text-base block mb-3">3. 抗生素/抗黴菌劑 (Antimicrobials)</strong>
+                        <ul class="text-[14px] text-slate-600 list-disc pl-5 space-y-2.5 marker:text-rose-300 leading-relaxed">
                             <li><strong>成分：</strong>常見如 Neomycin, Gentamicin, Clotrimazole。</li>
                             <li><strong>適應症：</strong>濕疹合併金黃色葡萄球菌感染 (流湯/結黃痂)，或黴菌感染急性發炎期。</li>
-                            <li><strong>警示：</strong>一旦發炎緩解應停用複方，改回單方抗感染藥，以免產生抗藥性或導致難治癒癬病 (Tinea incognito)。Neomycin 本身是常見接觸性過敏原。</li>
+                            <li><strong class="text-rose-600 bg-rose-50 px-1 rounded">警示：</strong>一旦發炎緩解應停用複方，改回單方抗感染藥，以免產生抗藥性或導致難治癒癬病 (Tinea incognito)。</li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Special Populations -->
-                <div class="info-card info-card-pink">
-                    <h4 class="font-bold text-pink-700 mb-4 text-lg">👶 特殊族群 (Special Pops)</h4>
-                    <div class="space-y-4">
-                        <div class="bg-white p-3 rounded border border-pink-100">
-                            <strong class="block text-slate-800 text-sm mb-1">嬰幼兒 (Children)</strong>
-                            <p class="text-sm text-slate-600">皮膚薄，體表面積比例大，容易全身性吸收。首選 <strong>Class 6-7 (Mild)</strong>。避免強效藥膏，避免大面積使用。</p>
+                <div class="info-card info-card-pink flex flex-col hover-card-lift border-pink-100 border-l-pink-500">
+                    <h4 class="font-bold text-pink-800 mb-5 text-[19px] flex items-center gap-2">👶 特殊族群 (Special Pops)</h4>
+                    <div class="space-y-4 flex-grow">
+                        <div class="bg-white p-5 rounded-2xl border border-pink-50 shadow-sm transition-colors hover:border-pink-200">
+                            <strong class="block text-slate-800 text-[15px] mb-2.5 flex items-center gap-2"><span class="text-lg bg-pink-50 w-8 h-8 flex items-center justify-center rounded-lg">🧸</span> 嬰幼兒 (Children)</strong>
+                            <p class="text-[14px] text-slate-600 leading-relaxed">皮膚薄，體表面積比例大，容易全身性吸收。首選 <strong class="text-pink-700 bg-pink-50 px-1.5 py-0.5 rounded-md">Class 6-7 (Mild)</strong>。避免強效藥膏，避免大面積使用。</p>
                         </div>
-                        <div class="bg-white p-3 rounded border border-pink-100">
-                            <strong class="block text-slate-800 text-sm mb-1">懷孕 (Pregnancy)</strong>
-                            <p class="text-sm text-slate-600">FDA 分級通常為 Category C。弱效與中效 (Mild/Moderate) 被認為相對安全。應避免大量使用強效藥膏，因可能與低出生體重有關。</p>
+                        <div class="bg-white p-5 rounded-2xl border border-pink-50 shadow-sm transition-colors hover:border-pink-200">
+                            <strong class="block text-slate-800 text-[15px] mb-2.5 flex items-center gap-2"><span class="text-lg bg-pink-50 w-8 h-8 flex items-center justify-center rounded-lg">🤰</span> 懷孕 (Pregnancy)</strong>
+                            <p class="text-[14px] text-slate-600 leading-relaxed">FDA 分級通常為 Category C。弱效與中效 (Mild/Moderate) 被認為相對安全。應避免大量使用強效藥膏，因可能與低出生體重有關。</p>
                         </div>
-                         <div class="bg-white p-3 rounded border border-pink-100">
-                            <strong class="block text-slate-800 text-sm mb-1">臉部/眼周 (Face/Eyes)</strong>
-                            <p class="text-sm text-slate-600">眼周長期使用可能導致<strong>青光眼</strong>或<strong>白內障</strong>。務必限制在 Class 7 且短期使用。</p>
+                         <div class="bg-white p-5 rounded-2xl border border-pink-50 shadow-sm transition-colors hover:border-pink-200">
+                            <strong class="block text-slate-800 text-[15px] mb-2.5 flex items-center gap-2"><span class="text-lg bg-pink-50 w-8 h-8 flex items-center justify-center rounded-lg">👁️</span> 臉部/眼周 (Face/Eyes)</strong>
+                            <p class="text-[14px] text-slate-600 leading-relaxed">眼周長期使用可能導致<strong class="text-rose-600 font-semibold bg-rose-50 px-1 rounded">青光眼</strong>或<strong class="text-rose-600 font-semibold bg-rose-50 px-1 rounded">白內障</strong>。務必限制在 Class 7 且極短期使用。</p>
                         </div>
                     </div>
                 </div>
@@ -1474,15 +1560,13 @@
         </div>
 
         <!-- Footer -->
-        <footer class="mt-12 pt-6 border-t border-slate-200 text-center">
+        <footer class="mt-12 pt-8 border-t border-slate-200 text-center">
             <div class="max-w-4xl mx-auto px-4">
-                <p class="text-xs text-slate-400 leading-relaxed">
-                    <strong>免責聲明 (Disclaimer)：</strong><br>
-                    本網站內容僅供醫療專業人員臨床參考與學術交流使用，旨在提供最新的實證醫學資訊整理。<br>
-                    所有內容不能取代醫師的專業臨床判斷。對於個別病患的診斷與治療，請務必諮詢合格醫師並依據實際臨床狀況進行評估。<br>
-                    製作者已盡力確保內容的準確性，但醫學知識更新迅速，恕不對資料的即時性與完整性負法律責任。
+                <p class="text-[11px] sm:text-xs text-slate-400 leading-relaxed text-justify sm:text-center bg-slate-50 p-4 rounded-xl">
+                    <strong class="text-slate-500">免責聲明 (Disclaimer)：</strong><br>
+                    本網站內容僅供醫療專業人員臨床參考與學術交流使用，旨在提供最新的實證醫學資訊整理。所有內容不能取代醫師的專業臨床判斷。對於個別病患的診斷與治療，請務必諮詢合格醫師並依據實際臨床狀況進行評估。製作者已盡力確保內容的準確性，但醫學知識更新迅速，恕不對資料的即時性與完整性負法律責任。
                 </p>
-                <p class="serif text-slate-400 text-xs italic mt-4">
+                <p class="serif text-slate-400 text-xs italic mt-5">
                     Designed for Medical Professionals • Use as Clinical Aid Only
                 </p>
             </div>
@@ -1490,51 +1574,82 @@
 
     </main>
 
-    <!-- Hospital Items Modal -->
-    <div id="hospitalModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeHospitalModal()">&times;</span>
-            <h2 class="text-2xl font-bold mb-4 text-teal-800">本院類固醇品項整理</h2>
-            
-            <!-- TODO: 請在此處修改圖片連結 (Paste your image URL in the src attribute below) -->
-            <!-- 例如: src="https://example.com/my-hospital-steroids.jpg" -->
-            <img src="https://placehold.co/800x600?text=Please+Insert+Your+Hospital+Items+Image+Here" 
-                 alt="本院品項圖表" 
-                 class="w-full h-auto rounded shadow-sm border border-slate-200">
-            
-            <p class="text-sm text-slate-500 mt-4 text-center">
-                (請將本院品項圖片連結更新至程式碼中)
-            </p>
-        </div>
-    </div>
+    <!-- Bottom Mobile Navigation -->
+    <nav class="bottom-nav">
+        <button onclick="switchTab('potency')" id="btm-tab-potency" class="btm-tab-btn active">強度分級</button>
+        <button onclick="switchTab('vehicle')" id="btm-tab-vehicle" class="btm-tab-btn">劑型與吸收</button>
+        <button onclick="switchTab('guideline')" id="btm-tab-guideline" class="btm-tab-btn">臨床治療指引</button>
+        <button onclick="switchTab('tapering')" id="btm-tab-tapering" class="btm-tab-btn">停藥策略與濕敷</button>
+        <button onclick="switchTab('safety')" id="btm-tab-safety" class="btm-tab-btn">使用量與安全性</button>
+        <button onclick="switchTab('moa')" id="btm-tab-moa" class="btm-tab-btn">藥理機轉 (MOA)</button>
+        <button onclick="switchTab('special')" id="btm-tab-special" class="btm-tab-btn">複方與特殊族群</button>
+    </nav>
 
     <script>
-        // Tab Logic
+        // Loading Skeleton Logic
+        window.addEventListener('load', () => {
+            const loader = document.getElementById('page-loader');
+            if(loader) {
+                // Short delay to ensure visual presence of loading state
+                setTimeout(() => {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.style.display = 'none', 600);
+                }, 400);
+            }
+        });
+
+        // Tab Logic - Support for dual navigations (Top & Bottom)
         function switchTab(tabName) {
+            // Remove active classes
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById('content-' + tabName).classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
-        }
+            document.querySelectorAll('.tab-btn, .btm-tab-btn').forEach(el => el.classList.remove('active'));
+            
+            // Add active classes and trigger animation
+            const targetContent = document.getElementById('content-' + tabName);
+            if(targetContent) targetContent.classList.add('active');
+            
+            // Top Nav
+            const targetBtn = document.getElementById('tab-' + tabName);
+            if(targetBtn) {
+                targetBtn.classList.add('active');
+                targetBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
 
-        // Modal Logic
-        function openHospitalModal() {
-            document.getElementById('hospitalModal').classList.add('open');
-        }
-
-        function closeHospitalModal() {
-            document.getElementById('hospitalModal').classList.remove('open');
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            const modal = document.getElementById('hospitalModal');
-            if (event.target == modal) {
-                modal.classList.remove('open');
+            // Bottom Nav
+            const btmBtn = document.getElementById('btm-tab-' + tabName);
+            if(btmBtn) {
+                btmBtn.classList.add('active');
+                btmBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
 
-        // MOA Logic
+        // MOA Event Delegation (Performance optimization)
+        const moaContainer = document.querySelector('.cell-cytosol');
+        if (moaContainer) {
+            document.addEventListener('click', function(event) {
+                const clickedNode = event.target.closest('.moa-node');
+                
+                // Reset all nodes
+                document.querySelectorAll('.moa-node').forEach(el => {
+                    el.classList.remove('active-node');
+                    el.style.opacity = clickedNode ? '0.6' : '1';
+                });
+
+                if (clickedNode) {
+                    clickedNode.classList.add('active-node');
+                    clickedNode.style.opacity = '1';
+                } else if (!event.target.closest('.lg\\:col-span-1')) {
+                    // Clicked outside node and details panel -> reset
+                    const defaultText = document.getElementById('moa-text-default');
+                    const detailContent = document.getElementById('moa-detail-content');
+                    if (defaultText && detailContent) {
+                        defaultText.style.display = 'flex';
+                        detailContent.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
         function showMoaDetail(step) {
             const defaultText = document.getElementById('moa-text-default');
             const detailContent = document.getElementById('moa-detail-content');
@@ -1542,11 +1657,10 @@
             const desc = document.getElementById('moa-desc');
             const impact = document.getElementById('moa-impact');
             
-            // Highlight active node
-            document.querySelectorAll('.moa-node').forEach(el => el.classList.remove('active-node'));
-
-            defaultText.classList.add('hidden');
-            detailContent.classList.remove('hidden');
+            if (defaultText && detailContent) {
+                defaultText.style.display = 'none';
+                detailContent.classList.remove('hidden');
+            }
 
             const data = {
                 1: {
@@ -1581,7 +1695,7 @@
                 }
             };
 
-            if(data[step]) {
+            if(data[step] && title && desc && impact) {
                 title.innerText = data[step].title;
                 desc.innerText = data[step].desc;
                 impact.innerText = data[step].impact;
