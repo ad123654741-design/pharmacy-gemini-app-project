@@ -435,7 +435,7 @@
       const existingCompartments = Array.from(new Set(activeBag.items.map(i => i.compartment || '主空間')));
       const filterCompartments = ['全部', ...existingCompartments];
 
-      // === 資料同步邏輯 (支援增量更新 Incremental Sync 架構) ===
+      // === 資料同步邏輯 (修正儲存失敗問題) ===
       const fetchFromSheet = async (url = gsUrl) => {
         if (!url) { setIsLoading(false); return; }
         setSyncStatus('syncing');
@@ -462,18 +462,18 @@
         }
       };
 
-      // 加入 patchInfo 參數以發送增量更新片段
+      // 修正：強制發送完整陣列資料，確保相容所有舊版或新版的 GAS 後端，保證儲存成功
       const saveToSheet = async (newData, patchInfo = null) => {
         setBags(newData);
         localStorage.setItem('gobag_data_cache', JSON.stringify(newData));
         if (!gsUrl) return;
         setSyncStatus('syncing');
         try {
-          const payload = patchInfo 
-            ? { action: 'patch', patch: patchInfo, timestamp: Date.now() }
-            : { action: 'full_sync', data: newData, timestamp: Date.now() };
-
-          await fetch(gsUrl, { method: 'POST', body: JSON.stringify(payload), headers: { 'Content-Type': 'text/plain' } });
+          await fetch(gsUrl, { 
+            method: 'POST', 
+            body: JSON.stringify(newData), 
+            headers: { 'Content-Type': 'text/plain' } 
+          });
           setSyncStatus('success');
         } catch (e) {
           console.error("Save failed", e);
@@ -1003,35 +1003,42 @@
 
       return (
         <div className="min-h-screen h-[100dvh] w-full flex flex-col overflow-hidden">
-          {/* === 系統 Header === */}
-          <header className="bg-slate-800 border-b border-slate-700 p-0 flex justify-between items-stretch shrink-0 h-12 z-30 relative">
-            <div className="flex-1 flex overflow-hidden px-2 gap-2 items-center">
-              <div className="flex items-center text-amber-500 font-bold px-3 select-none mr-2 shrink-0">
+          {/* === 系統 Header (響應式手機版優化) === */}
+          <header className="bg-slate-800 border-b border-slate-700 flex flex-col md:flex-row justify-between items-stretch shrink-0 z-30 relative min-h-[48px]">
+            {/* 上半部：Logo 與深淺色切換 (手機版) */}
+            <div className="flex-1 flex justify-between md:justify-start items-center px-3 py-2 md:py-0 border-b md:border-none border-slate-700">
+              <div className="flex items-center text-amber-500 font-bold select-none shrink-0">
                 <Icons.Backpack /> 
-                <span className="ml-2 text-sm md:text-lg hidden md:inline">防災物資管理系統</span>
-                <span className="ml-2 text-sm md:hidden">防災管理</span>
-                {syncStatus === 'syncing' && <span className="ml-2 text-[10px] text-yellow-400 animate-pulse">● 同步中</span>}
-                {syncStatus === 'success' && <span className="ml-2 text-[10px] text-emerald-400">● 已儲存</span>}
-                {syncStatus === 'error' && <span className="ml-2 text-[10px] text-rose-400">● 失敗</span>}
+                <span className="ml-2 text-base md:text-lg">防災物資管理系統</span>
+                {syncStatus === 'syncing' && <span className="ml-2 text-[10px] text-yellow-400 animate-pulse hidden sm:inline">● 同步中</span>}
+                {syncStatus === 'success' && <span className="ml-2 text-[10px] text-emerald-400 hidden sm:inline">● 已儲存</span>}
+                {syncStatus === 'error' && <span className="ml-2 text-[10px] text-rose-400 hidden sm:inline">● 失敗</span>}
               </div>
-              
-              {clipboard && (
-                  <button onClick={() => setPasteMode(!pasteMode)} className={`ml-2 px-3 py-1 rounded text-xs font-bold flex items-center gap-1 transition-all hidden md:flex ${pasteMode ? 'bg-yellow-500 text-slate-900 animate-pulse' : 'bg-slate-700 text-slate-400'}`}>
-                    {pasteMode ? <Icons.ClipboardCheck /> : <Icons.Clipboard />}{pasteMode ? '貼上模式' : '複製待命'}
-                  </button>
-              )}
-
-              <button onClick={() => setIsBagSelectorOpen(!isBagSelectorOpen)} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold text-sm md:text-base transition-colors border border-slate-600 ml-auto md:ml-0 truncate max-w-[150px] md:max-w-none">
-                <span className="truncate">{activeBag.name}</span><Icons.ChevronDown />
-              </button>
-
-              <button onClick={openBagMenu} className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-full transition-colors ml-1" title="編輯位置"><Icons.Edit /></button>
+              <div className="md:hidden flex items-center gap-2">
+                 <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-1.5 rounded-full text-slate-400 hover:text-amber-500 bg-slate-900/50">
+                    {theme === 'dark' ? '☀️' : '🌙'}
+                 </button>
+              </div>
             </div>
             
-            <div className="flex items-center px-2 md:px-4 bg-slate-900 border-l border-slate-800 shadow-[-10px_0_10px_rgba(0,0,0,0.5)] z-20 gap-1 md:gap-2 shrink-0">
+            {/* 下半部：控制選項與檢視切換 */}
+            <div className="flex items-center justify-between md:justify-end px-2 py-2 md:py-0 md:px-4 bg-slate-900 md:border-l border-slate-800 z-20 gap-2 shrink-0 overflow-x-auto no-scrollbar">
+               
+               <div className="flex items-center gap-1 shrink-0">
+                  <button onClick={() => setIsBagSelectorOpen(!isBagSelectorOpen)} className="flex items-center gap-1 px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-bold text-sm transition-colors border border-slate-600 truncate max-w-[140px] md:max-w-[200px]">
+                    <span className="truncate">{activeBag.name}</span><Icons.ChevronDown />
+                  </button>
+                  <button onClick={openBagMenu} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors" title="編輯位置"><Icons.Edit /></button>
+               </div>
+
+               <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="hidden md:flex p-1.5 rounded-lg text-slate-400 hover:text-amber-500 transition-colors ml-1" title="切換深淺色主題">
+                  {theme === 'dark' ? '☀️' : '🌙'}
+               </button>
+
                {authRole === 'admin' && (
-                   <div className="relative mr-1 md:mr-2 border-r border-slate-700 pr-1 md:pr-2">
-                     <button onClick={() => setShowAdvancedMenu(!showAdvancedMenu)} className="px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600" title="進階設定"><Icons.Tool /> <span className="hidden md:inline">進階設定</span></button>
+                   <div className="relative shrink-0 border-l border-slate-700 pl-2 ml-1">
+                     <button onClick={() => setShowAdvancedMenu(!showAdvancedMenu)} className="px-2 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition text-slate-300 bg-slate-800 hover:bg-slate-700 border border-slate-600"><Icons.Tool /> <span className="hidden lg:inline">進階設定</span></button>
+                     {/* dropdown... */}
                      {showAdvancedMenu && (
                         <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
                              <button onClick={() => { setShowMailModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Mail /> 郵件通知設定</button>
@@ -1043,13 +1050,10 @@
                    </div>
                )}
                
-               <div className="flex bg-black/40 rounded p-0.5 border border-slate-700 gap-0.5">
-                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition text-slate-400 hover:text-white" title="切換深淺色主題">
-                    {theme === 'dark' ? '☀️' : '🌙'}
-                </button>
-                <button onClick={()=>{setMode('card');setSelectedItem(null);}} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='card'?'bg-blue-600 text-white':'text-slate-400 hover:text-white'}`} title="卡片檢視"><Icons.Grid /> <span className="hidden md:inline">卡片</span></button>
-                <button onClick={()=>{setMode('list');setSelectedItem(null);}} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='list'?'bg-purple-600 text-white':'text-slate-400 hover:text-white'}`} title="清單"><Icons.List /> <span className="hidden md:inline">清單</span></button>
-                <button onClick={authRole === 'admin' ? handleLogout : handleAdminAccess} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${authRole==='admin'?'bg-amber-600 text-white':'text-slate-400 hover:text-white'}`} title="權限設定"><Icons.Settings /> <span className="hidden md:inline">{authRole === 'admin' ? '管理員登出' : '管理員登入'}</span></button>
+               <div className="flex bg-black/40 rounded-lg p-1 border border-slate-700 gap-1 shrink-0 ml-1">
+                <button onClick={()=>{setMode('card');setSelectedItem(null);}} className={`px-2 py-1.5 rounded-md text-xs font-bold flex items-center gap-1 transition ${mode==='card'?'bg-blue-600 text-white':'text-slate-400 hover:text-white'}`}><Icons.Grid /> <span className="hidden sm:inline">卡片</span></button>
+                <button onClick={()=>{setMode('list');setSelectedItem(null);}} className={`px-2 py-1.5 rounded-md text-xs font-bold flex items-center gap-1 transition ${mode==='list'?'bg-purple-600 text-white':'text-slate-400 hover:text-white'}`}><Icons.List /> <span className="hidden sm:inline">清單</span></button>
+                <button onClick={authRole === 'admin' ? handleLogout : handleAdminAccess} className={`px-2 py-1.5 rounded-md text-xs font-bold flex items-center gap-1 transition ${authRole==='admin'?'bg-amber-600 text-white':'text-slate-400 hover:text-white'}`}><Icons.Settings /> <span className="hidden sm:inline">{authRole === 'admin' ? '登出' : '管理'}</span></button>
               </div>
             </div>
 
@@ -1132,14 +1136,14 @@
                   <table className="w-full text-left text-sm text-slate-400 relative">
                     <thead className="text-xs uppercase text-slate-200 sticky top-0 z-20 shadow-md select-none bg-slate-800">
                       <tr>
-                        <th onClick={() => requestSort('bagName')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[15%]">儲存位置 {sortIndicator('bagName')}</th>
-                        <th onClick={() => requestSort('compartment')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[12%]">口袋標籤 {sortIndicator('compartment')}</th>
-                        <th onClick={() => requestSort('itemName')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[20%]">物資名稱 {sortIndicator('itemName')}</th>
-                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right w-[8%]">應備</th>
-                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right text-emerald-400 w-[8%]">現有</th>
-                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right w-[8%]">批次數量</th>
-                        <th onClick={() => requestSort('expiry')} className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[15%]">效期 (YYYY-MM-DD) {sortIndicator('expiry')}</th>
-                        <th className="px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-center w-[14%]">狀態</th>
+                        <th onClick={() => requestSort('bagName')} className="hidden md:table-cell px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[15%]">儲存位置 {sortIndicator('bagName')}</th>
+                        <th onClick={() => requestSort('compartment')} className="hidden lg:table-cell px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[12%]">口袋標籤 {sortIndicator('compartment')}</th>
+                        <th onClick={() => requestSort('itemName')} className="px-3 md:px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-auto md:w-[20%]">物資名稱 {sortIndicator('itemName')}</th>
+                        <th className="hidden sm:table-cell px-2 md:px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right w-[8%]">應備</th>
+                        <th className="px-2 md:px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right text-emerald-400 w-[15%] md:w-[8%]">現有</th>
+                        <th className="hidden sm:table-cell px-2 md:px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-right w-[8%]">批次</th>
+                        <th onClick={() => requestSort('expiry')} className="px-2 md:px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 cursor-pointer hover:bg-slate-700 transition-colors w-[25%] md:w-[15%]">效期 {sortIndicator('expiry')}</th>
+                        <th className="px-2 md:px-4 py-3 font-bold border-b border-slate-700 bg-slate-800 text-center w-[15%] md:w-[14%]">狀態</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1157,19 +1161,22 @@
                             
                             return (
                               <tr key={`${item.bagId}-${item.itemId}-${idx}`} className="hover:bg-slate-800/50 transition-colors border-t border-slate-700 h-[48px]">
-                                <td className="px-4 py-2 font-bold text-blue-400">{item.bagName}</td>
-                                <td className="px-4 py-2"><span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded font-bold border border-slate-600">{item.compartment}</span></td>
-                                <td className="px-4 py-2 font-medium text-white">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <span>{item.itemName}</span>
-                                    {item.isCritical && <span className="text-[10px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-bold">重要</span>}
+                                <td className="hidden md:table-cell px-4 py-2 font-bold text-blue-400">{item.bagName}</td>
+                                <td className="hidden lg:table-cell px-4 py-2"><span className="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded font-bold border border-slate-600">{item.compartment}</span></td>
+                                <td className="px-3 md:px-4 py-2 font-medium text-white">
+                                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2">
+                                    <span className="truncate">{item.itemName}</span>
+                                    <div className="flex flex-wrap gap-1">
+                                       <span className="lg:hidden text-[9px] bg-slate-700 text-slate-300 px-1.5 py-0.5 rounded font-bold border border-slate-600">{item.compartment}</span>
+                                       {item.isCritical && <span className="text-[9px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-bold">重要</span>}
+                                    </div>
                                   </div>
                                 </td>
-                                <td className="px-4 py-2 font-mono text-right text-white font-bold">{item.requiredQty}</td>
-                                <td className={`px-4 py-2 font-mono text-right font-bold ${totalStyle}`}>{item.totalQty}</td>
-                                <td className="px-4 py-2 font-mono text-right font-bold text-slate-300">{item.batchQty}</td>
-                                <td className="px-4 py-2 font-mono text-slate-300">{item.isNoExpiry ? '無期限' : (item.expiry || '未設定')}</td>
-                                <td className="px-4 py-2 text-center"><span className={`inline-flex px-2 py-1 rounded-full text-[10px] font-bold border-2 ${item.statusObj.bg} ${item.statusObj.text} ${item.statusObj.border}`}>{item.statusObj.label}</span></td>
+                                <td className="hidden sm:table-cell px-2 md:px-4 py-2 font-mono text-right text-white font-bold">{item.requiredQty}</td>
+                                <td className={`px-2 md:px-4 py-2 font-mono text-right font-bold ${totalStyle}`}>{item.totalQty}</td>
+                                <td className="hidden sm:table-cell px-2 md:px-4 py-2 font-mono text-right font-bold text-slate-300">{item.batchQty}</td>
+                                <td className="px-2 md:px-4 py-2 font-mono text-slate-300 text-xs md:text-sm">{item.isNoExpiry ? '無期限' : (item.expiry || '未設定')}</td>
+                                <td className="px-2 md:px-4 py-2 text-center"><span className={`inline-flex px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-[9px] md:text-[10px] font-bold border md:border-2 ${item.statusObj.bg} ${item.statusObj.text} ${item.statusObj.border}`}>{item.statusObj.label}</span></td>
                               </tr>
                             );
                           })}
