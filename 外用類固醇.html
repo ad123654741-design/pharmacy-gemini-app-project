@@ -238,6 +238,14 @@
                 font-size: 0.65rem; 
                 margin: 1px 0;
             }
+            /* 1. 手機版隱藏「常見商品名(第3欄)」，並修正 Class-header 的吸頂縫隙 */
+            .modern-table th:nth-child(3),
+            .modern-table td:nth-child(3) {
+                display: none;
+            }
+            .class-header {
+                top: 42px !important;
+            }
         }
 
         /* Class 分隔線 */
@@ -279,7 +287,6 @@
             z-index: 20;
         }
         .cell-cytosol {
-            padding: 1rem md:padding-1.5rem;
             position: relative;
             z-index: 10;
         }
@@ -962,15 +969,21 @@
                         <!-- Forearm (Baseline) -->
                         <div class="flex items-center gap-3 sm:gap-5">
                             <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-emerald-600">前臂</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
-                                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 10%;">1.0x</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 relative shadow-inner">
+                                <div class="bg-gradient-to-r from-emerald-400 to-emerald-500 h-full rounded-full absolute top-0 left-0 transition-all duration-1000 ease-out" style="width: 10%;"></div>
+                                <div class="absolute top-0 bottom-0 flex items-center" style="left: 10%;">
+                                    <span class="text-[11px] text-slate-600 font-bold leading-none ml-2">1.0x</span>
+                                </div>
                             </div>
                         </div>
                         <!-- Palm -->
                         <div class="flex items-center gap-3 sm:gap-5">
                             <div class="w-20 sm:w-28 text-right text-[13px] sm:text-sm font-bold text-slate-500">手掌</div>
-                            <div class="flex-grow bg-slate-100 rounded-full h-6 overflow-hidden shadow-inner">
-                                <div class="bg-slate-400 h-full rounded-full flex items-center justify-end pr-3 text-[11px] text-white font-bold" style="width: 8%;">0.83x</div>
+                            <div class="flex-grow bg-slate-100 rounded-full h-6 relative shadow-inner">
+                                <div class="bg-slate-400 h-full rounded-full absolute top-0 left-0 transition-all duration-1000 ease-out" style="width: 8%;"></div>
+                                <div class="absolute top-0 bottom-0 flex items-center" style="left: 8%;">
+                                    <span class="text-[11px] text-slate-600 font-bold leading-none ml-2">0.83x</span>
+                                </div>
                             </div>
                         </div>
                         <!-- Sole -->
@@ -1459,7 +1472,7 @@
                     <div class="cell-membrane py-1.5 sm:py-2">CELL MEMBRANE (Keratinocyte / Immune Cell)</div>
                     
                     <!-- Cytosol (Compact Layout for Mobile) -->
-                    <div class="cell-cytosol flex-grow flex flex-col items-center pt-5 sm:pt-6 pb-4 w-full gap-4 sm:gap-6 bg-slate-50/50">
+                    <div class="cell-cytosol flex-grow flex flex-col items-center px-4 sm:px-8 pt-6 sm:pt-8 pb-5 sm:pb-6 w-full gap-5 sm:gap-6 bg-slate-50/50">
                         
                         <!-- Top Row: Pathway into cytosol -->
                         <div class="flex flex-row flex-wrap sm:flex-nowrap justify-center items-center w-full gap-2 sm:gap-6 relative">
@@ -1498,7 +1511,7 @@
                         </div>
 
                         <!-- Nucleus Actions -->
-                        <div class="cell-nucleus w-[96%] sm:w-[90%] flex flex-col items-center gap-3 sm:gap-4 p-3 sm:p-5 mt-2 sm:mt-0">
+                        <div class="cell-nucleus w-full sm:w-[90%] flex flex-col items-center gap-3 sm:gap-4 p-4 sm:p-6 mt-3 sm:mt-0">
                             <div class="moa-node w-full sm:w-56 bg-purple-50/80 border-purple-200 p-2 sm:p-3" onclick="showMoaDetail(4)">
                                 <div class="text-[9px] sm:text-[10px] text-purple-600 font-bold uppercase tracking-wide">DNA Binding</div>
                                 <div class="text-[13px] sm:text-[15px] font-bold text-purple-800 mt-1">GRE Activation</div>
