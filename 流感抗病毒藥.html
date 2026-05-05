@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>流感抗病毒藥物</title>
+    <title>流感抗病毒藥物臨床指引</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -60,15 +60,23 @@
         .dt-pera { background: #ffe4e6; color: #be123c; border: 1px solid #fda4af; } /* Peramivir */
         .dt-zana { background: #ecfccb; color: #3f6212; border: 1px solid #bef264; } /* Zanamivir */
 
+        /* 滑動優化 (隱藏捲軸但保留滑動功能) */
+        .hide-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
         /* Tab 樣式 */
         .nav-container {
             display: flex;
             gap: 0.5rem;
             overflow-x: auto;
             padding-bottom: 0.5rem;
-            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch; /* 讓 iOS 滑動更順暢 */
         }
-        .nav-container::-webkit-scrollbar { display: none; }
 
         .tab-btn {
             font-family: 'Noto Sans TC', sans-serif;
@@ -99,7 +107,7 @@
         /* 統一風格的資訊卡 */
         .info-card {
             border-left-width: 4px;
-            padding: 1.5rem;
+            padding: 1.25rem; /* 手機版略縮小 Padding */
             border-radius: 0.5rem;
             background: linear-gradient(to right, #ffffff, rgba(255,255,255,0));
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
@@ -107,6 +115,8 @@
             border: 1px solid #e2e8f0;
             border-left: 4px solid; 
         }
+        @media (min-width: 768px) { .info-card { padding: 1.5rem; } } /* 平板以上恢復 */
+
         .info-card-blue { border-left-color: #3b82f6; background-color: #eff6ff; }
         .info-card-danger { border-left-color: var(--danger-color); background-color: #fff1f2; }
         .info-card-strategy { border-left-color: var(--accent-color); background-color: #f0f9ff; }
@@ -114,7 +124,7 @@
         .info-card-warning { border-left-color: #f59e0b; background-color: #fffbeb; }
         .info-card-orange { border-left-color: #ea580c; background-color: #fff7ed; }
         
-        /* 表格優化 */
+        /* 表格優化 (確保在小螢幕也能滑動而不變形) */
         .modern-table { width: 100%; border-collapse: separate; border-spacing: 0; }
         .modern-table th {
             font-family: 'Noto Serif TC', serif;
@@ -127,6 +137,7 @@
             top: 0;
             z-index: 10;
             font-size: 0.9rem;
+            white-space: nowrap; /* 表頭不換行 */
         }
         .modern-table td {
             padding: 0.75rem 0.5rem;
@@ -139,7 +150,7 @@
         .modern-table tr:hover td { background-color: #f8fafc; }
         .modern-table tr:last-child td { border-bottom: none; }
 
-        /* MOA 4.0 樣式 - FIXED & OPTIMIZED */
+        /* MOA 5.0 樣式 - FIXED & OPTIMIZED (精緻細小化) */
         .moa-container {
             background-color: #f8fafc; 
             border: 1px solid #cbd5e1;
@@ -147,8 +158,8 @@
             position: relative;
             overflow: hidden;
             background-image: radial-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 20px 20px;
-            height: 500px;
+            background-size: 16px 16px;
+            height: 420px; /* 縮小整體高度 */
         }
         
         .moa-membrane-top {
@@ -156,9 +167,9 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 40px;
+            height: 32px; /* 變細 */
             background: #ffe4e6;
-            border-bottom: 4px solid #fb7185;
+            border-bottom: 3px solid #fb7185;
             z-index: 10;
             display: flex;
             align-items: center;
@@ -167,10 +178,10 @@
         }
         .moa-membrane-label {
             background: #fff;
-            padding: 2px 12px;
+            padding: 2px 10px;
             border-radius: 20px;
             color: #be123c;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 800;
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -181,12 +192,12 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 70%;
-            height: 180px;
+            width: 75%;
+            height: 150px; /* 高度縮小 */
             background: rgba(255, 255, 255, 0.85);
-            border: 3px dashed #a5b4fc;
-            border-radius: 40px;
-            box-shadow: 0 10px 25px rgba(165, 180, 252, 0.15);
+            border: 2px dashed #a5b4fc;
+            border-radius: 30px;
+            box-shadow: 0 8px 20px rgba(165, 180, 252, 0.15);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -196,46 +207,46 @@
         
         .moa-nucleus-label {
             position: absolute;
-            top: -12px;
+            top: -10px;
             background: #4f46e5;
             color: white;
             font-weight: bold;
-            font-size: 0.7rem;
-            padding: 2px 10px;
-            border-radius: 12px;
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 10px;
         }
 
-        /* Interactive Nodes - Using absolute with % to prevent breaking */
+        /* Interactive Nodes - 縮小且精緻化 */
         .moa-step-node {
             position: absolute;
             background: white;
-            border: 2px solid #94a3b8;
-            border-radius: 12px;
-            padding: 8px;
-            width: 140px;
+            border: 1.5px solid #94a3b8;
+            border-radius: 10px;
+            padding: 6px;
+            width: 110px; /* 寬度變小 */
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            box-shadow: 0 3px 5px -1px rgba(0,0,0,0.1);
             z-index: 20;
         }
         
         .moa-step-node:hover, .moa-step-node.active-step {
             transform: scale(1.05);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 12px -3px rgba(0,0,0,0.15);
             border-color: var(--accent-color);
             z-index: 30;
         }
 
         .moa-step-num {
             display: inline-block;
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             background: #64748b;
             color: white;
             border-radius: 50%;
-            font-size: 0.75rem;
-            line-height: 22px;
+            font-size: 0.65rem;
+            line-height: 18px;
             margin-bottom: 2px;
             font-weight: bold;
         }
@@ -245,18 +256,18 @@
         }
 
         .moa-step-title {
-            font-size: 0.8rem;
+            font-size: 0.7rem; /* 字體變小 */
             font-weight: 700;
             color: #334155;
-            line-height: 1.2;
+            line-height: 1.1;
         }
         
         .moa-step-drug {
-            font-size: 0.7rem;
-            margin-top: 4px;
+            font-size: 0.6rem;
+            margin-top: 3px;
             color: #be123c;
             background: #fff1f2;
-            padding: 2px 6px;
+            padding: 2px 4px;
             border-radius: 4px;
             font-weight: 700;
             display: inline-block;
@@ -274,8 +285,8 @@
         .arrow-path {
             fill: none;
             stroke: #cbd5e1;
-            stroke-width: 2;
-            stroke-dasharray: 6 4;
+            stroke-width: 1.5; /* 箭頭變細 */
+            stroke-dasharray: 4 3;
         }
         .arrow-head {
             fill: #cbd5e1;
@@ -313,10 +324,11 @@
         .action-btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
-            border-radius: 6px;
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
             font-weight: 600;
             transition: all 0.2s;
             text-decoration: none;
@@ -335,40 +347,69 @@
             border: 1px solid #fed7aa;
         }
         .btn-img:hover { background-color: #ffedd5; }
+        
+        /* 底部導覽列 (Bottom Navigation) 手機版專屬樣式 */
+        .bottom-nav {
+            -webkit-overflow-scrolling: touch;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            padding-bottom: env(safe-area-inset-bottom, 0px); /* 兼容 iOS 底部安全區 */
+        }
+        
+        .bottom-tab-btn {
+            position: relative;
+            outline: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .bottom-tab-btn.active {
+            color: var(--accent-color);
+        }
+        
+        .bottom-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 3px;
+            background-color: var(--accent-color);
+            border-radius: 0 0 3px 3px;
+        }
     </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen flex justify-center items-start">
+<body class="p-2 pb-24 md:p-8 md:pb-8 min-h-screen flex justify-center items-start"> <!-- 手機版縮小外圍 padding 並增加底部留白給 Bottom Nav -->
 
-    <main class="journal-card w-full max-w-7xl rounded-2xl p-6 md:p-10 relative overflow-hidden bg-white">
+    <main class="journal-card w-full max-w-7xl rounded-2xl p-4 md:p-10 relative overflow-hidden bg-white mb-4 md:mb-0">
         
-        <!-- Action Buttons Row -->
-        <div class="flex gap-3 mb-4 relative z-20">
-            <a href="https://www.cdc.gov.tw/Category/Page/fHHHNV-HWyYD00tnKeXsLA" target="_blank" class="action-btn btn-link">
+        <!-- Action Buttons Row (手機版優化: 垂直排列滿版，電腦版: 水平排列) -->
+        <div class="flex flex-col sm:flex-row gap-3 mb-6 relative z-20">
+            <a href="https://www.cdc.gov.tw/Category/Page/fHHHNV-HWyYD00tnKeXsLA" target="_blank" class="action-btn btn-link w-full sm:w-auto">
                 <span>🔗</span> 公費流感抗病毒藥用藥條件
             </a>
             <!-- Modified Hospital Item Button to trigger Modal -->
-            <button onclick="openHospitalModal()" class="action-btn btn-img">
+            <button onclick="openHospitalModal()" class="action-btn btn-img w-full sm:w-auto">
                 <span>💊</span> 本院品項
             </button>
         </div>
 
         <!-- Header -->
-        <header class="mb-8 relative z-10">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-6 border-b border-slate-100">
+        <header class="mb-6 md:mb-8 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-4 md:pb-6 border-b border-slate-100">
                 <div>
-                    <h2 class="text-xs font-bold tracking-widest text-sky-600 uppercase mb-2">Evidence-Based Medicine</h2>
-                    <h1 class="serif text-3xl md:text-4xl text-slate-900 leading-tight font-bold">
-                        流感抗病毒藥物
+                    <h2 class="text-xs font-bold tracking-widest text-sky-600 uppercase mb-1 md:mb-2">Evidence-Based Medicine</h2>
+                    <h1 class="serif text-2xl md:text-4xl text-slate-900 leading-tight font-bold">
+                        流感抗病毒藥物指引
                     </h1>
                 </div>
-                <div class="text-right hidden md:block">
-                    <p class="text-slate-400 text-sm font-light">Influenza Antiviral Medications</p>
-                    <p class="text-slate-500 text-sm font-medium mt-1">製作者 : 蝦仁藥師 • 更新日期 : 2026/01/09</p>
+                <div class="text-left md:text-right w-full md:w-auto text-xs md:text-sm">
+                    <p class="text-slate-400 font-light hidden md:block">Influenza Antiviral Medications</p>
+                    <p class="text-slate-500 font-medium mt-1">製作者 : 蝦仁藥師 • 更新日期 : 2026/01/09</p>
                 </div>
             </div>
             
-            <!-- Navigation -->
-            <nav class="nav-container mt-6">
+            <!-- Navigation (手機版隱藏，改用底部導覽列) -->
+            <nav class="nav-container mt-4 md:mt-6 hide-scrollbar hidden md:flex">
                 <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active">藥物綜合比較</button>
                 <button onclick="switchTab('details')" id="tab-details" class="tab-btn">藥物臨床詳解</button>
                 <button onclick="switchTab('special')" id="tab-special" class="tab-btn">特殊族群與腎調整</button>
@@ -384,44 +425,45 @@
         <!-- ========================================== -->
         <div id="content-overview" class="tab-content active">
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <!-- 手機版優化: 網格從 1欄直排 改為 2欄(2x2排列) 節省垂直空間 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
                 <!-- Oseltamivir Card -->
-                <div class="p-4 rounded-xl bg-blue-50 border border-blue-100 text-center">
-                    <h3 class="text-blue-800 font-bold mb-1 text-sm">口服首選 (Oral)</h3>
-                    <p class="text-xl font-bold text-blue-600 my-1">
+                <div class="p-3 md:p-4 rounded-xl bg-blue-50 border border-blue-100 text-center flex flex-col justify-center">
+                    <h3 class="text-blue-800 font-bold mb-1 text-xs md:text-sm">口服首選 (Oral)</h3>
+                    <p class="text-lg md:text-xl font-bold text-blue-600 my-1 truncate">
                         <a href="https://www.knh.org.tw/subarchive/cms/item/17/T%E4%BB%BF%E5%96%AE/OTAM01.pdf" target="_blank" class="hover:underline cursor-pointer">Oseltamivir</a>
                     </p>
-                    <p class="text-[10px] text-blue-700 opacity-80">Tamiflu 克流感</p>
+                    <p class="text-[10px] md:text-xs text-blue-700 opacity-80">Tamiflu 克流感</p>
                 </div>
                 <!-- Baloxavir Card -->
-                <div class="p-4 rounded-xl bg-purple-50 border border-purple-100 text-center">
-                    <h3 class="text-purple-800 font-bold mb-1 text-sm">單次口服 (One-dose)</h3>
-                    <p class="text-xl font-bold text-purple-600 my-1">
+                <div class="p-3 md:p-4 rounded-xl bg-purple-50 border border-purple-100 text-center flex flex-col justify-center">
+                    <h3 class="text-purple-800 font-bold mb-1 text-xs md:text-sm">單次口服</h3>
+                    <p class="text-lg md:text-xl font-bold text-purple-600 my-1 truncate">
                         <a href="https://www.cth.org.tw/public/medi_news/8cdf7d55601bb3d90e49535b7ab90961.pdf" target="_blank" class="hover:underline cursor-pointer">Baloxavir</a>
                     </p>
-                    <p class="text-[10px] text-purple-700 opacity-80">Xofluza 紓伏效 (自費)</p>
+                    <p class="text-[10px] md:text-xs text-purple-700 opacity-80">Xofluza 紓伏效 (自費)</p>
                 </div>
                 <!-- Peramivir Card -->
-                <div class="p-4 rounded-xl bg-rose-50 border border-rose-100 text-center">
-                    <h3 class="text-rose-800 font-bold mb-1 text-sm">針劑 (IV Injection)</h3>
-                    <p class="text-xl font-bold text-rose-600 my-1">
-                        <!-- 請在此處更換 Rapiacta 仿單連結 -->
+                <div class="p-3 md:p-4 rounded-xl bg-rose-50 border border-rose-100 text-center flex flex-col justify-center">
+                    <h3 class="text-rose-800 font-bold mb-1 text-xs md:text-sm">針劑 (IV)</h3>
+                    <p class="text-lg md:text-xl font-bold text-rose-600 my-1 truncate">
                         <a href="https://www.shionogi.com/content/dam/shionogi/ts/products/pdf/RAC%20PI%20v4-1131119(%E6%96%B0%E5%9C%B0%E5%9D%80).pdf" target="_blank" class="hover:underline cursor-pointer">Peramivir</a>
                     </p>
-                    <p class="text-[10px] text-rose-700 opacity-80">Rapiacta 瑞貝塔</p>
+                    <p class="text-[10px] md:text-xs text-rose-700 opacity-80">Rapiacta 瑞貝塔</p>
                 </div>
                 <!-- Zanamivir Card -->
-                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
-                    <h3 class="text-emerald-800 font-bold mb-1 text-sm">吸入劑 (Inhalation)</h3>
-                    <p class="text-xl font-bold text-emerald-600 my-1">
+                <div class="p-3 md:p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-center flex flex-col justify-center">
+                    <h3 class="text-emerald-800 font-bold mb-1 text-xs md:text-sm">吸入劑</h3>
+                    <p class="text-lg md:text-xl font-bold text-emerald-600 my-1 truncate">
                         <a href="https://www.arich.com.tw/education/xfl_label/%E8%97%A5%E5%93%81%E4%BB%BF%E5%96%AE-4.pdf" target="_blank" class="hover:underline cursor-pointer">Zanamivir</a>
                     </p>
-                    <p class="text-[10px] text-emerald-700 opacity-80">Relenza 瑞樂沙</p>
+                    <p class="text-[10px] md:text-xs text-emerald-700 opacity-80">Relenza 瑞樂沙</p>
                 </div>
             </div>
 
-            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm">
-                <table class="modern-table min-w-full">
+            <!-- 表格手機版優化: min-w-[700px] 確保不會擠壓，提供平滑橫向滾動 -->
+            <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 shadow-sm hide-scrollbar">
+                <table class="modern-table min-w-[700px] md:min-w-full">
                     <thead>
                         <tr>
                             <th class="w-[20%]">藥物 (Trade Name)</th>
@@ -442,7 +484,7 @@
                             </td>
                             <td>NA Inhibitor</td>
                             <td>
-                                <span class="badge badge-blue">BID x 5天</span><br>
+                                <span class="badge badge-blue mb-1 block w-fit">BID x 5天</span>
                                 <span class="text-xs">口服膠囊/水劑</span>
                             </td>
                             <td>
@@ -454,7 +496,7 @@
                             </td>
                             <td class="text-xs">
                                 <span class="text-emerald-600">● 臨床經驗最豐、孕婦首選</span><br>
-                                <span class="text-rose-600">● 噁心嘔吐副作用較高</span>
+                                <span class="text-rose-600 mt-1 block">● 噁心嘔吐副作用較高</span>
                             </td>
                         </tr>
 
@@ -478,7 +520,7 @@
                             <td><span class="badge badge-purple">單次口服</span></td>
                             <td class="text-xs">
                                 <span class="text-emerald-600">● 只需服藥一次、病毒降解快</span><br>
-                                <span class="text-rose-600"></span>
+                                <span class="text-rose-600 mt-1 block">● 兒童易產生抗藥性</span>
                             </td>
                         </tr>
 
@@ -490,14 +532,14 @@
                             </td>
                             <td>NA Inhibitor</td>
                             <td>
-                                <span class="badge badge-rose">單次 IV</span><br>
+                                <span class="badge badge-rose mb-1 block w-fit">單次 IV</span>
                                 <span class="text-xs">300mg / 600mg</span>
                             </td>
                             <td>≥ 6 個月</td>
                             <td><span class="text-slate-400">-</span></td>
                             <td class="text-xs">
                                 <span class="text-emerald-600">● 適合無法口服/吸收不良者</span><br>
-                                <span class="text-rose-600">● 需醫護施打</span>
+                                <span class="text-rose-600 mt-1 block">● 需醫護施打</span>
                             </td>
                         </tr>
 
@@ -509,14 +551,14 @@
                             </td>
                             <td>NA Inhibitor</td>
                             <td>
-                                <span class="badge badge-amber">BID x 5天</span><br>
+                                <span class="badge badge-amber mb-1 block w-fit">BID x 5天</span>
                                 <span class="text-xs">吸入粉劑</span>
                             </td>
                             <td>≥ 5 歲</td>
                             <td><span class="badge badge-amber">QD x 10天</span></td>
                             <td class="text-xs">
                                 <span class="text-emerald-600">● 全身副作用少</span><br>
-                                <span class="text-rose-600">● 氣喘/COPD 忌用</span>
+                                <span class="text-rose-600 mt-1 block">● 氣喘/COPD 忌用</span>
                             </td>
                         </tr>
 
@@ -531,7 +573,7 @@
         <!-- ========================================== -->
         <div id="content-details" class="tab-content">
             
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 
                 <!-- Oseltamivir Card -->
                 <div class="info-card info-card-blue flex flex-col gap-3">
@@ -542,11 +584,11 @@
                     <div class="text-sm text-slate-700 space-y-2">
                         <p><strong>臨床定位：</strong>治療與預防的首選藥物，尤其適用於<strong>住院重症、孕婦及嬰幼兒</strong>。</p>
                         <p><strong>副作用：</strong>最常見為噁心、嘔吐 (隨餐服用可減緩)。上市後有極少數神經精神事件報告 (尤其是兒童/青少年)，建議服藥期間留意異常行為。</p>
-                        <div class="bg-white p-2 rounded border border-blue-100">
+                        <div class="bg-white p-3 md:p-2 rounded border border-blue-100">
                             <strong class="block text-blue-700 mb-1">標準劑量 (腎功能正常)：</strong>
-                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                            <ul class="list-disc pl-4 text-xs text-slate-600 space-y-1">
                                 <li><strong>成人治療：</strong>75 mg, BID × 5 天。</li>
-                                <li><strong>預防性投藥：</strong>75 mg, QD × <strong class="text-rose-600">10 天</strong> <span class="text-slate-500">(台灣兒童感染症醫學會建議為 7 天)</span>。</li>
+                                <li><strong>預防性投藥：</strong>75 mg, QD × <strong class="text-rose-600">10 天</strong> <span class="text-slate-500 block md:inline">(台灣兒童感染症醫學會建議為 7 天)</span>。</li>
                             </ul>
                         </div>
                     </div>
@@ -557,19 +599,19 @@
                     <div class="flex justify-between items-center border-b border-purple-200 pb-2">
                         <h3 class="font-bold text-purple-800 text-lg">Baloxavir (Xofluza)</h3>
                         <div class="flex gap-2">
-                            <span class="badge badge-amber">自費藥物</span>
+                            <span class="badge badge-amber">自費</span>
                             <span class="badge badge-purple">單次口服</span>
                         </div>
                     </div>
                     <div class="text-sm text-slate-700 space-y-2">
                         <p><strong>臨床定位：</strong>適用於<strong>單純性流感</strong>，尤其是門診病患或遵醫囑性差者。重症目前仍以 Oseltamivir 為主。</p>
-                        <div class="bg-purple-50 p-2 rounded border border-purple-200">
+                        <div class="bg-purple-50 p-3 md:p-2 rounded border border-purple-200">
                             <strong class="text-rose-600 block mb-1">⚠️ 重要交互作用：</strong>
                             <p class="text-xs text-slate-600">避免與<strong>多價陽離子</strong> (鈣、鋁、鎂、鐵、鋅) 併用 (如胃藥、鈣片、維他命)，會導致失效。</p>
                         </div>
-                        <div class="bg-white p-2 rounded border border-purple-100">
+                        <div class="bg-white p-3 md:p-2 rounded border border-purple-100">
                             <strong class="block text-purple-700 mb-1">劑量 (單次服用)：</strong>
-                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                            <ul class="list-disc pl-4 text-xs text-slate-600 space-y-1">
                                 <li>體重 < 20 kg：<strong>20 mg</strong> (台灣兒童感染醫學會建議)<br>
                                     <span class="text-[10px] text-slate-500">※ 部分國外指引建議 2 mg/kg</span>
                                 </li>
@@ -585,21 +627,21 @@
                     <div class="flex justify-between items-center border-b border-rose-200 pb-2">
                         <h3 class="font-bold text-rose-800 text-lg">Peramivir (Rapiacta)</h3>
                         <div class="flex gap-2">
-                             <span class="badge badge-amber">自費藥物</span>
-                             <span class="badge badge-rose">針劑專用</span>
+                             <span class="badge badge-amber">自費</span>
+                             <span class="badge badge-rose">針劑</span>
                         </div>
                     </div>
                     <div class="text-sm text-slate-700 space-y-2">
                         <p><strong>臨床定位：</strong>適用於<strong>無法口服</strong>、腸胃道吸收不良或意識不清的病患。</p>
-                        <div class="bg-white p-2 rounded border border-rose-100 mb-2">
+                        <div class="bg-white p-3 md:p-2 rounded border border-rose-100 mb-2">
                             <strong class="block text-rose-700 mb-1">建議劑量 (依仿單)：</strong>
-                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                            <ul class="list-disc pl-4 text-xs text-slate-600 space-y-1">
                                 <li><strong>成人 (一般)：</strong>300 mg 單次靜脈注射 (15分鐘以上)。</li>
                                 <li><strong>成人 (高劑量)：</strong>600 mg 單次注射，適用於重症或有併發症風險者。</li>
                                 <li><strong>兒童 (6個月以上)：</strong>10 mg/kg (單次)，上限 600 mg。</li>
                             </ul>
                         </div>
-                        <div class="bg-rose-50 p-2 rounded border border-rose-200 mt-2">
+                        <div class="bg-rose-50 p-3 md:p-2 rounded border border-rose-200 mt-2">
                             <strong class="text-rose-800 block mb-1">💉 重症治療策略：</strong>
                             <p class="text-xs text-slate-700">針對重症患者，視臨床需求可連續給藥 (如 600 mg QD，連續 5 天或以上)，以維持抗病毒效果。</p>
                         </div>
@@ -615,18 +657,18 @@
                     </div>
                     <div class="text-sm text-slate-700 space-y-2">
                         <p><strong>臨床定位：</strong>當懷疑對 Oseltamivir 有抗藥性時的替代選擇。</p>
-                         <div class="bg-white p-2 rounded border border-amber-100 mb-2">
+                         <div class="bg-white p-3 md:p-2 rounded border border-amber-100 mb-2">
                             <strong class="block text-amber-700 mb-1">成分與規格：</strong>
                             <p class="text-xs text-slate-600">Zanamivir 5mg/blister (每片旋達碟含4個劑量泡囊，共20mg)。</p>
                         </div>
-                        <div class="bg-white p-2 rounded border border-amber-100">
+                        <div class="bg-white p-3 md:p-2 rounded border border-amber-100">
                             <strong class="block text-amber-700 mb-1">標準用法 (吸入)：</strong>
-                            <ul class="list-disc pl-4 text-xs text-slate-600">
+                            <ul class="list-disc pl-4 text-xs text-slate-600 space-y-1">
                                 <li><strong>成人與7歲以上兒童治療：</strong>每次吸入 2 泡囊 (10mg)，每日 2 次，共 5 天。</li>
-                                <li><strong>預防性投藥：</strong>每次吸入 2 泡囊 (10mg)，每日 1 次，共 10 天 <span class="text-slate-500">(台灣兒童感染症醫學會建議為 7 天)</span>。</li>
+                                <li><strong>預防性投藥：</strong>每次吸入 2 泡囊 (10mg)，每日 1 次，共 10 天 <span class="text-slate-500 block md:inline">(台灣兒童感染症醫學會建議為 7 天)</span>。</li>
                             </ul>
                         </div>
-                        <div class="bg-amber-50 p-2 rounded border border-amber-200 mt-2">
+                        <div class="bg-amber-50 p-3 md:p-2 rounded border border-amber-200 mt-2">
                             <strong class="text-amber-800 block mb-1">⛔ 絕對禁忌：</strong>
                             <p class="text-xs text-slate-700"><strong>氣喘 (Asthma)</strong> 或 <strong>慢性阻塞性肺病 (COPD)</strong> 患者禁止使用。</p>
                         </div>
@@ -641,20 +683,20 @@
         <!-- ========================================== -->
         <div id="content-special" class="tab-content">
             
-            <div class="space-y-8">
+            <div class="space-y-6 md:space-y-8">
                 
                 <!-- Renal Table Section -->
                 <section>
-                    <div class="flex items-center gap-2 mb-4">
-                        <div class="bg-blue-600 text-white font-bold px-3 py-1 rounded-md text-base">腎功能不全劑量調整 (Renal Impairment)</div>
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 mb-4">
+                        <div class="bg-blue-600 text-white font-bold px-3 py-1 rounded-md text-sm md:text-base w-fit">腎功能不全劑量調整</div>
                         <span class="text-xs text-slate-500">依據 Cockcroft-Gault 公式計算 CrCl</span>
                     </div>
                     
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                         <!-- Oseltamivir Renal -->
-                        <div class="overflow-hidden rounded-lg border border-blue-200 shadow-sm">
-                            <div class="bg-blue-50 p-2 border-b border-blue-100 font-bold text-blue-800 text-center text-sm">Oseltamivir (口服)</div>
-                            <table class="modern-table">
+                        <div class="overflow-x-auto rounded-lg border border-blue-200 shadow-sm hide-scrollbar">
+                            <div class="bg-blue-50 p-2 border-b border-blue-100 font-bold text-blue-800 text-center text-sm min-w-[450px] md:min-w-full">Oseltamivir (口服)</div>
+                            <table class="modern-table min-w-[450px] md:min-w-full">
                                 <thead>
                                     <tr>
                                         <th>CrCl (mL/min)</th>
@@ -688,9 +730,9 @@
                         </div>
 
                         <!-- Peramivir Renal -->
-                        <div class="overflow-hidden rounded-lg border border-rose-200 shadow-sm">
-                            <div class="bg-rose-50 p-2 border-b border-rose-100 font-bold text-rose-800 text-center text-sm">Peramivir (Rapiacta 針劑)</div>
-                            <table class="modern-table">
+                        <div class="overflow-x-auto rounded-lg border border-rose-200 shadow-sm hide-scrollbar">
+                            <div class="bg-rose-50 p-2 border-b border-rose-100 font-bold text-rose-800 text-center text-sm min-w-[450px] md:min-w-full">Peramivir (Rapiacta 針劑)</div>
+                            <table class="modern-table min-w-[450px] md:min-w-full">
                                 <thead>
                                     <tr>
                                         <th>CrCl (mL/min)</th>
@@ -716,30 +758,30 @@
                                     </tr>
                                     <tr class="bg-slate-50">
                                         <td class="font-bold">HD (洗腎)</td>
-                                        <td colspan="2" class="text-center">透析後給予 (劑量依殘餘腎功能調整，通常為100mg)</td>
+                                        <td colspan="2" class="text-center">透析後給予 (通常為100mg)</td>
                                     </tr>
                                 </tbody>
                             </table>
-                            <div class="p-2 bg-rose-50 text-[10px] text-rose-800 italic">* 高劑量(600mg)適用於重症或有併發症風險患者。</div>
+                            <div class="p-2 bg-rose-50 text-[10px] text-rose-800 italic min-w-[450px] md:min-w-full">* 高劑量(600mg)適用於重症或有併發症風險患者。</div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Pediatric & Pregnancy -->
-                <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <section class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     
                     <!-- Pediatric Table -->
                     <div class="bg-white rounded-xl border border-emerald-200 shadow-sm overflow-hidden">
                         <div class="bg-emerald-50 p-3 border-b border-emerald-100">
                             <h3 class="font-bold text-emerald-800 text-base flex items-center gap-2">
-                                👶 兒童劑量建議 (Pediatric Dosing)
+                                👶 兒童劑量建議
                             </h3>
                         </div>
                         
                         <!-- Oseltamivir Block -->
-                        <div class="p-2">
+                        <div class="p-2 overflow-x-auto hide-scrollbar">
                             <span class="badge badge-blue mb-1">Oseltamivir (Tamiflu)</span>
-                            <table class="modern-table text-xs">
+                            <table class="modern-table text-xs min-w-[350px] md:min-w-full">
                                 <thead>
                                     <tr>
                                         <th>體重 (Weight)</th>
@@ -781,7 +823,7 @@
                                 💉 Peramivir (Rapiacta)
                             </h4>
                             <p class="text-xs text-rose-700">
-                                <strong>6個月以上兒童：</strong>10 mg/kg，單次靜脈注射 (最高劑量不超過 600 mg)。
+                                <strong>6個月以上兒童：</strong>10 mg/kg，單次靜脈注射 (上限 600 mg)。
                             </p>
                         </div>
                     </div>
@@ -819,64 +861,64 @@
             <div class="space-y-6">
                 
                 <!-- 48HR Rule -->
-                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
-                    <div class="shrink-0 w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-3xl">
+                <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 md:p-6 flex flex-col sm:flex-row items-center gap-4 md:gap-6 text-center sm:text-left">
+                    <div class="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-full bg-indigo-100 flex items-center justify-center text-3xl">
                         ⏱️
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-indigo-800 mb-2">黃金治療期：48 小時</h3>
-                        <p class="text-slate-700 mb-2">所有抗病毒藥物在症狀發作 <strong>48 小時內</strong> 使用效果最佳，可顯著縮短病程。</p>
-                        <p class="text-sm text-slate-500">註：對於<strong>重症或住院患者</strong>，即使超過 48 小時仍建議立即投藥，以降低死亡率與併發症。</p>
+                        <h3 class="text-lg md:text-xl font-bold text-indigo-800 mb-2">黃金治療期：48 小時</h3>
+                        <p class="text-slate-700 mb-2 text-sm md:text-base">所有抗病毒藥物在症狀發作 <strong>48 小時內</strong> 使用效果最佳，可顯著縮短病程。</p>
+                        <p class="text-xs md:text-sm text-slate-500">註：對於<strong>重症或住院患者</strong>，即使超過 48 小時仍建議立即投藥，以降低死亡率與併發症。</p>
                     </div>
                 </div>
 
                 <!-- Decision Pathway -->
-                <div class="pathway-box shadow-sm border-slate-200">
+                <div class="pathway-box shadow-sm border-slate-200 p-4 md:p-6">
                     <h4 class="font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">治療決策演算法</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                         
                         <!-- Mild/Outpatient -->
                         <div class="flex flex-col h-full">
-                            <div class="bg-emerald-50 p-3 rounded-t-lg text-center border border-emerald-100">
+                            <div class="bg-emerald-50 p-2 md:p-3 rounded-t-lg text-center border border-emerald-100">
                                 <span class="badge badge-green">一般門診 / 輕症</span>
                             </div>
-                            <div class="p-4 border border-emerald-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
-                                <p class="text-sm text-slate-500 mb-2">無併發症風險</p>
+                            <div class="p-3 md:p-4 border border-emerald-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
+                                <p class="text-xs md:text-sm text-slate-500 mb-2">無併發症風險</p>
                                 <div class="pathway-target-card border-emerald-200 bg-emerald-50 mb-2">
-                                    <span class="text-xs text-emerald-600 font-bold">首選</span>
+                                    <span class="text-[10px] md:text-xs text-emerald-600 font-bold">首選</span>
                                     <div class="text-sm font-bold text-emerald-800">Oseltamivir <br>or Baloxavir</div>
                                 </div>
-                                <p class="text-xs text-slate-600">Baloxavir 單次服用便利性高 (自費)</p>
+                                <p class="text-[10px] md:text-xs text-slate-600">Baloxavir 單次服用便利性高 (自費)</p>
                             </div>
                         </div>
 
                         <!-- Severe/Inpatient -->
                         <div class="flex flex-col h-full">
-                            <div class="bg-blue-50 p-3 rounded-t-lg text-center border border-blue-100">
+                            <div class="bg-blue-50 p-2 md:p-3 rounded-t-lg text-center border border-blue-100">
                                 <span class="badge badge-blue">重症 / 住院</span>
                             </div>
-                            <div class="p-4 border border-blue-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
-                                <p class="text-sm text-slate-500 mb-2">肺炎、缺氧、需住院</p>
+                            <div class="p-3 md:p-4 border border-blue-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
+                                <p class="text-xs md:text-sm text-slate-500 mb-2">肺炎、缺氧、需住院</p>
                                 <div class="pathway-target-card border-blue-200 bg-blue-50 mb-2">
-                                    <span class="text-xs text-blue-600 font-bold">絕對首選</span>
+                                    <span class="text-[10px] md:text-xs text-blue-600 font-bold">絕對首選</span>
                                     <div class="text-sm font-bold text-blue-800">Oseltamivir</div>
                                 </div>
-                                <p class="text-xs text-slate-600">數據最充足。若無法口服或Oseltamivir無效，改用 Peramivir 連續注射。</p>
+                                <p class="text-[10px] md:text-xs text-slate-600">數據最充足。若無法口服，改用 Peramivir 連續注射。</p>
                             </div>
                         </div>
 
                         <!-- Prophylaxis -->
                         <div class="flex flex-col h-full">
-                            <div class="bg-amber-50 p-3 rounded-t-lg text-center border border-amber-100">
+                            <div class="bg-amber-50 p-2 md:p-3 rounded-t-lg text-center border border-amber-100">
                                 <span class="badge badge-amber">預防性投藥</span>
                             </div>
-                            <div class="p-4 border border-amber-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
-                                <p class="text-sm text-slate-500 mb-2">接觸確診者 48hr 內</p>
+                            <div class="p-3 md:p-4 border border-amber-100 border-t-0 rounded-b-lg flex-grow bg-white text-center">
+                                <p class="text-xs md:text-sm text-slate-500 mb-2">接觸確診者 48hr 內</p>
                                 <div class="pathway-target-card border-amber-200 bg-amber-50 mb-2">
-                                    <span class="text-xs text-amber-600 font-bold">高風險群</span>
+                                    <span class="text-[10px] md:text-xs text-amber-600 font-bold">高風險群</span>
                                     <div class="text-sm font-bold text-amber-800">Oseltamivir QD<br>(10天)</div>
                                 </div>
-                                <p class="text-xs text-slate-600">適用機構群聚或高風險未打疫苗者</p>
+                                <p class="text-[10px] md:text-xs text-slate-600">適用機構群聚或高風險未打疫苗者</p>
                             </div>
                         </div>
 
@@ -890,29 +932,28 @@
         <!-- TAB NEW 1: 危險徵兆與鑑別 (Danger Signs) -->
         <!-- ========================================== -->
         <div id="content-danger" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 
                 <!-- Danger Signs -->
                 <div class="info-card info-card-danger">
-                    <h3 class="font-bold text-rose-800 text-xl mb-4 flex items-center gap-2">
-                        <span>🚨</span> 流感重症危險徵兆 (Danger Signs)
+                    <h3 class="font-bold text-rose-800 text-lg md:text-xl mb-4 flex items-center gap-2">
+                        <span>🚨</span> 流感重症危險徵兆
                     </h3>
-                    <p class="text-sm text-slate-600 mb-4">若病患出現以下任一徵兆，應立即轉診至大醫院或急診就醫：</p>
+                    <p class="text-sm text-slate-600 mb-4">若病患出現以下任一徵兆，應立即轉診或急診就醫：</p>
                     
-                    <div class="space-y-4">
+                    <div class="space-y-3 md:space-y-4">
                         <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
-                            <strong class="text-rose-700 block mb-1">1. 呼吸系統異常</strong>
-                            <ul class="list-disc pl-5 text-sm text-slate-700">
+                            <strong class="text-rose-700 block mb-1 text-sm md:text-base">1. 呼吸系統異常</strong>
+                            <ul class="list-disc pl-5 text-xs md:text-sm text-slate-700">
                                 <li>呼吸困難、呼吸急促</li>
                                 <li>發紺 (缺氧、嘴唇發紫)</li>
-                                <li>血痰</li>
-                                <li>胸痛</li>
+                                <li>血痰、胸痛</li>
                             </ul>
                         </div>
                         
                         <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
-                            <strong class="text-rose-700 block mb-1">2. 神經系統異常</strong>
-                            <ul class="list-disc pl-5 text-sm text-slate-700">
+                            <strong class="text-rose-700 block mb-1 text-sm md:text-base">2. 神經系統異常</strong>
+                            <ul class="list-disc pl-5 text-xs md:text-sm text-slate-700">
                                 <li>意識改變 (嗜睡、昏迷)</li>
                                 <li>癲癇、痙攣</li>
                                 <li>肢體無力</li>
@@ -920,8 +961,8 @@
                         </div>
 
                         <div class="bg-white p-3 rounded border border-rose-100 shadow-sm">
-                            <strong class="text-rose-700 block mb-1">3. 循環與其他系統</strong>
-                            <ul class="list-disc pl-5 text-sm text-slate-700">
+                            <strong class="text-rose-700 block mb-1 text-sm md:text-base">3. 循環與其他系統</strong>
+                            <ul class="list-disc pl-5 text-xs md:text-sm text-slate-700">
                                 <li>低血壓 (收縮壓 < 90mmHg)</li>
                                 <li>高燒持續 72 小時不退</li>
                                 <li>無法進食、劇烈嘔吐、脫水</li>
@@ -931,17 +972,18 @@
                 </div>
 
                 <!-- Differential Diagnosis Table -->
-                <div class="info-card info-card-blue">
-                    <h3 class="font-bold text-blue-800 text-xl mb-4 flex items-center gap-2">
-                        <span>🔍</span> 簡易臨床鑑別 (Differential Dx)
+                <div class="info-card info-card-blue overflow-hidden flex flex-col">
+                    <h3 class="font-bold text-blue-800 text-lg md:text-xl mb-4 flex items-center gap-2">
+                        <span>🔍</span> 簡易臨床鑑別
                     </h3>
-                    <div class="overflow-x-auto rounded-lg border border-slate-200">
-                        <table class="modern-table text-sm">
+                    <!-- 確保在小螢幕能橫向滑動 -->
+                    <div class="overflow-x-auto rounded-lg border border-slate-200 hide-scrollbar flex-grow">
+                        <table class="modern-table text-xs md:text-sm min-w-[500px] md:min-w-full h-full">
                             <thead>
                                 <tr>
                                     <th>症狀</th>
                                     <th class="text-blue-700">流感 (Flu)</th>
-                                    <th>一般感冒 (Cold)</th>
+                                    <th>一般感冒</th>
                                     <th>COVID-19</th>
                                 </tr>
                             </thead>
@@ -954,7 +996,7 @@
                                 </tr>
                                 <tr>
                                     <td class="font-bold">發燒</td>
-                                    <td class="text-rose-600 font-bold bg-rose-50">常見高燒 > 38.5℃</td>
+                                    <td class="text-rose-600 font-bold bg-rose-50">常見 > 38.5℃</td>
                                     <td>少見</td>
                                     <td>常見</td>
                                 </tr>
@@ -966,7 +1008,7 @@
                                 </tr>
                                 <tr>
                                     <td class="font-bold">倦怠感</td>
-                                    <td class="text-rose-600 font-bold bg-rose-50">非常明顯 (虛脫)</td>
+                                    <td class="text-rose-600 font-bold bg-rose-50">非常明顯(虛脫)</td>
                                     <td>輕微</td>
                                     <td>常見</td>
                                 </tr>
@@ -985,8 +1027,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-4 text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
-                        * 此表僅供參考，確診仍需依賴快篩 (Rapid Test) 或 PCR 核酸檢測。
+                    <div class="mt-4 text-[10px] md:text-xs text-slate-500 bg-white p-2 rounded border border-slate-100">
+                        * 確診仍需依賴快篩 (Rapid Test) 或 PCR 核酸檢測。
                     </div>
                 </div>
             </div>
@@ -996,37 +1038,34 @@
         <!-- TAB NEW 2: 管灌與磨粉 (Pharmaceutics) -->
         <!-- ========================================== -->
         <div id="content-pharmacy" class="tab-content">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 
                 <!-- Oseltamivir Compounding -->
                 <div class="info-card info-card-orange">
-                    <h3 class="font-bold text-orange-800 text-xl mb-4 flex items-center gap-2">
+                    <h3 class="font-bold text-orange-800 text-lg md:text-xl mb-4 flex items-center gap-2">
                         <span>💊</span> Oseltamivir 磨粉與泡製
                     </h3>
-                    <p class="text-sm text-slate-700 mb-4">
-                        當病患無法吞嚥膠囊，且醫院無庫存口服懸液劑時，可依以下建議泡製 (Extemporaneous preparation)：
+                    <p class="text-xs md:text-sm text-slate-700 mb-4">
+                        無法吞嚥膠囊且無口服懸液劑時，可依以下建議泡製：
                     </p>
                     
                     <div class="space-y-4">
-                        <div class="bg-white p-4 rounded-xl border border-orange-200">
-                            <strong class="text-orange-700 block mb-2 border-b border-orange-100 pb-1">方法 A：立即服用 (Bedside Mixing)</strong>
-                            <ol class="list-decimal pl-5 text-sm text-slate-700 space-y-1">
-                                <li>小心打開 Oseltamivir 膠囊，將粉末倒入小杯中。</li>
-                                <li>加入適量甜味液體掩蓋苦味 (如：糖漿、巧克力醬、煉乳、果汁)。</li>
+                        <div class="bg-white p-3 md:p-4 rounded-xl border border-orange-200">
+                            <strong class="text-orange-700 block mb-2 border-b border-orange-100 pb-1 text-sm md:text-base">方法 A：立即服用 (Bedside)</strong>
+                            <ol class="list-decimal pl-5 text-xs md:text-sm text-slate-700 space-y-1 md:space-y-2">
+                                <li>打開膠囊，將粉末倒入小杯中。</li>
+                                <li>加入適量甜味液體掩蓋苦味 (糖漿、巧克力醬)。</li>
                                 <li>攪拌均勻後，讓病患<span class="text-rose-600 font-bold">立即服用</span>。</li>
-                                <li>杯中殘留藥液，可再加少許水潤洗後喝下，確保劑量完整。</li>
+                                <li>殘留藥液加少許水潤洗後喝下，確保劑量。</li>
                             </ol>
                         </div>
 
-                        <div class="bg-white p-4 rounded-xl border border-orange-200">
-                            <strong class="text-orange-700 block mb-2 border-b border-orange-100 pb-1">方法 B：藥局預先配置 (Pharmacy Bulk)</strong>
-                            <p class="text-xs text-slate-600 mb-2">若需預先配置成懸液劑 (6mg/mL)：</p>
-                            <ul class="list-disc pl-5 text-sm text-slate-700 space-y-1">
-                                <li>將膠囊內容物溶於 Simple Syrup (單一糖漿) 或 Ora-Sweet 中。</li>
-                                <li><strong>保存期限：</strong>
-                                    <br>- 室溫 (25℃)：可保存 2 天。
-                                    <br>- 冷藏 (2-8℃)：可保存 17 天 (建議冷藏)。
-                                </li>
+                        <div class="bg-white p-3 md:p-4 rounded-xl border border-orange-200">
+                            <strong class="text-orange-700 block mb-2 border-b border-orange-100 pb-1 text-sm md:text-base">方法 B：藥局預先配置</strong>
+                            <p class="text-[10px] md:text-xs text-slate-600 mb-2">若需預先配置成懸液劑 (6mg/mL)：</p>
+                            <ul class="list-disc pl-5 text-xs md:text-sm text-slate-700 space-y-1">
+                                <li>內容物溶於 Simple Syrup 或 Ora-Sweet。</li>
+                                <li><strong>保存：</strong>室溫 2天 / 冷藏(2-8℃) 17天。</li>
                                 <li>使用前務必振搖均勻。</li>
                             </ul>
                         </div>
@@ -1035,17 +1074,17 @@
 
                 <!-- NG Tube & Other Drugs -->
                 <div class="info-card info-card-warning">
-                    <h3 class="font-bold text-amber-800 text-xl mb-4 flex items-center gap-2">
-                        <span>🧪</span> 鼻胃管 (NG Tube) 與其他藥物
+                    <h3 class="font-bold text-amber-800 text-lg md:text-xl mb-4 flex items-center gap-2">
+                        <span>🧪</span> 鼻胃管 (NG) 與其他藥物
                     </h3>
                     
-                    <div class="space-y-6">
+                    <div class="space-y-4 md:space-y-6">
                         <div>
                             <span class="badge badge-blue mb-2">Oseltamivir (Tamiflu)</span>
-                            <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                            <ul class="text-xs md:text-sm text-slate-700 list-disc pl-5 space-y-1">
                                 <li><strong>可管灌。</strong></li>
-                                <li>建議打開膠囊，將粉末溶於溫水後灌入。</li>
-                                <li>注意粉末可能有些微不溶物，需充分攪拌避免阻塞管路。</li>
+                                <li>打開膠囊，將粉末溶於溫水後灌入。</li>
+                                <li>注意粉末微不溶物，需充分攪拌避免阻塞。</li>
                             </ul>
                         </div>
 
@@ -1054,11 +1093,11 @@
                         <div>
                             <span class="badge badge-purple mb-2">Baloxavir (Xofluza)</span>
                             <div class="bg-white p-3 rounded border border-amber-200">
-                                <strong class="text-rose-600 text-sm block mb-1">⚠️ 磨粉/管灌注意事項：</strong>
-                                <ul class="text-sm text-slate-700 list-disc pl-5 space-y-1">
+                                <strong class="text-rose-600 text-[10px] md:text-sm block mb-1">⚠️ 磨粉/管灌注意：</strong>
+                                <ul class="text-xs md:text-sm text-slate-700 list-disc pl-5 space-y-1">
                                     <li>原廠建議<strong>整粒吞服</strong>。</li>
-                                    <li>臨床資料顯示，若必須管灌，可將藥錠粉碎後懸浮於水中給予，但應<strong>避免與含多價陽離子 (鈣、鎂、鐵)</strong> 的管灌營養品同時使用。</li>
-                                    <li>建議作法：管灌藥物前後暫停餵食營養品 (前後間隔至少 2 小時)，或確保該餐營養品不含高量鈣鎂。</li>
+                                    <li>若必須管灌，粉碎後懸浮於水中給予，但<strong>避免與含多價陽離子 (鈣鎂鐵)</strong> 營養品同用。</li>
+                                    <li>作法：前後間隔至少 2 小時。</li>
                                 </ul>
                             </div>
                         </div>
@@ -1067,7 +1106,7 @@
 
                         <div>
                             <span class="badge badge-rose mb-2">Peramivir (Rapiacta)</span>
-                            <p class="text-sm text-slate-700">針劑藥物，無管灌問題。若病患無法使用腸胃道藥物，應優先考慮改用此藥。</p>
+                            <p class="text-xs md:text-sm text-slate-700">針劑藥物無管灌問題。若病患無法使用腸胃道藥物，應優先考慮改用此藥。</p>
                         </div>
                     </div>
                 </div>
@@ -1076,89 +1115,96 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- TAB 5: 藥理機轉 (MOA) - V4.0 Re-designed (Fixed Layout) -->
+        <!-- TAB 5: 藥理機轉 (MOA) - 手機版優化 (水平捲動包覆) -->
         <!-- ========================================== -->
         <div id="content-moa" class="tab-content">
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                 
-                <!-- MOA 4.0 Diagram -->
-                <div class="lg:col-span-2 moa-container shadow-lg">
-                    
-                    <!-- Membrane Top -->
-                    <div class="moa-membrane-top">
-                        <span class="moa-membrane-label">HOST CELL MEMBRANE</span>
-                    </div>
-
-                    <!-- SVG Overlay for Arrows (Responsive & Centered) -->
-                    <svg class="moa-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <!-- Path 1 -> 2: Top Left to Nucleus -->
-                        <path d="M 15,20 Q 15,70 50,70" class="arrow-path" />
-                        <polygon points="50,70 47,68 47,72" class="arrow-head" />
-
-                        <!-- Path 2 -> 3: Nucleus to Top Right -->
-                        <path d="M 50,70 Q 80,70 80,25" class="arrow-path" />
-                        <polygon points="80,25 78,28 82,28" class="arrow-head" />
+                <!-- 手機版加入 overflow-x-auto 包覆確保圖表不會被壓縮 -->
+                <div class="lg:col-span-2 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar">
+                    <!-- MOA 5.0 Diagram (強制最小寬度確保排版) -->
+                    <div class="moa-container shadow-lg rounded-xl min-w-[550px]">
                         
-                         <!-- Path 3 -> 4: Exit -->
-                        <path d="M 80,25 L 95,25" class="arrow-path" stroke-dasharray="0" />
-                        <polygon points="95,25 92,22 92,28" class="arrow-head" />
-                    </svg>
-
-                    <!-- STEP 1: ENTRY (Top Left) -->
-                    <div class="moa-step-node" style="top: 15%; left: 5%;" onclick="showMoaDetail('Entry')">
-                        <span class="moa-step-num">1</span>
-                        <div class="moa-step-title">Entry & Uncoating</div>
-                    </div>
-
-                    <!-- STEP 2: REPLICATION (Center Bottom - Nucleus) -->
-                    <div class="moa-nucleus-zone">
-                        <span class="moa-nucleus-label">CELL NUCLEUS</span>
-                        <div class="moa-step-node has-drug" style="position: relative; z-index: 10;" onclick="showMoaDetail('Replication')">
-                            <span class="moa-step-num">2</span>
-                            <div class="moa-step-title">RNA Replication</div>
-                            <div class="moa-step-drug">Baloxavir (Xofluza)</div>
+                        <!-- Membrane Top -->
+                        <div class="moa-membrane-top">
+                            <span class="moa-membrane-label">HOST CELL MEMBRANE</span>
                         </div>
-                    </div>
 
-                    <!-- STEP 3: ASSEMBLY (Top Right) -->
-                    <div class="moa-step-node" style="top: 15%; right: 20%;" onclick="showMoaDetail('Assembly')">
-                        <span class="moa-step-num">3</span>
-                        <div class="moa-step-title">Assembly</div>
-                    </div>
+                        <!-- SVG Overlay for Arrows (Responsive & Centered) -->
+                        <svg class="moa-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <!-- Path 1 -> 2: Top Left to Nucleus -->
+                            <path d="M 16,18 Q 16,65 50,65" class="arrow-path" />
+                            <polygon points="50,65 47,63 47,67" class="arrow-head" />
 
-                    <!-- STEP 4: RELEASE (Far Right Edge) -->
-                    <div class="moa-step-node has-drug" style="top: 15%; right: 2%; width: 130px; border-color: #0284c7;" onclick="showMoaDetail('Release')">
-                        <span class="moa-step-num" style="background: #0284c7;">4</span>
-                        <div class="moa-step-title">Release</div>
-                        <div class="moa-step-drug" style="color: #0284c7; background: #e0f2fe;">Oseltamivir</div>
-                    </div>
+                            <!-- Path 2 -> 3: Nucleus to Top Right -->
+                            <path d="M 50,65 Q 84,65 84,23" class="arrow-path" />
+                            <polygon points="84,23 82,26 86,26" class="arrow-head" />
+                            
+                             <!-- Path 3 -> 4: Exit -->
+                            <path d="M 84,23 L 95,23" class="arrow-path" stroke-dasharray="0" />
+                            <polygon points="95,23 92,20 92,26" class="arrow-head" />
+                        </svg>
 
+                        <!-- STEP 1: ENTRY (Top Left) -->
+                        <div class="moa-step-node" style="top: 15%; left: 6%;" onclick="showMoaDetail('Entry')">
+                            <span class="moa-step-num">1</span>
+                            <div class="moa-step-title">Entry & Uncoating</div>
+                        </div>
+
+                        <!-- STEP 2: REPLICATION (Center Bottom - Nucleus) -->
+                        <div class="moa-nucleus-zone">
+                            <span class="moa-nucleus-label">CELL NUCLEUS</span>
+                            <div class="moa-step-node has-drug" style="position: relative; z-index: 10;" onclick="showMoaDetail('Replication')">
+                                <span class="moa-step-num">2</span>
+                                <div class="moa-step-title">RNA Replication</div>
+                                <div class="moa-step-drug">Baloxavir (Xofluza)</div>
+                            </div>
+                        </div>
+
+                        <!-- STEP 3: ASSEMBLY (Top Right) -->
+                        <div class="moa-step-node" style="top: 15%; right: 22%;" onclick="showMoaDetail('Assembly')">
+                            <span class="moa-step-num">3</span>
+                            <div class="moa-step-title">Assembly</div>
+                        </div>
+
+                        <!-- STEP 4: RELEASE (Far Right Edge) -->
+                        <div class="moa-step-node has-drug" style="top: 15%; right: 2%; width: 110px; border-color: #0284c7;" onclick="showMoaDetail('Release')">
+                            <span class="moa-step-num" style="background: #0284c7;">4</span>
+                            <div class="moa-step-title">Release</div>
+                            <div class="moa-step-drug" style="color: #0284c7; background: #e0f2fe;">Oseltamivir</div>
+                        </div>
+
+                    </div>
+                    <!-- 手機版提示文字 -->
+                    <div class="text-center text-xs text-slate-400 mt-2 block lg:hidden">
+                        👈 左右滑動以查看完整機轉圖 👉
+                    </div>
                 </div>
 
                 <!-- Detail Panel -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white border border-slate-200 rounded-xl p-6 h-full shadow-sm flex flex-col">
-                        <div class="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
-                            <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">ℹ️</span>
-                            <h4 class="serif text-slate-800 font-bold text-lg">Mechanism Detail</h4>
+                <div class="lg:col-span-1" id="moa-detail-section">
+                    <div class="bg-white border border-slate-200 rounded-xl p-4 md:p-6 h-full shadow-sm flex flex-col">
+                        <div class="flex items-center gap-2 mb-3 md:mb-4 border-b border-slate-100 pb-2 md:pb-3">
+                            <span class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 text-xs md:text-sm">ℹ️</span>
+                            <h4 class="serif text-slate-800 font-bold text-base md:text-lg">Mechanism Detail</h4>
                         </div>
                         
-                        <div id="moa-text-default" class="text-slate-500 text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                        <div id="moa-text-default" class="text-slate-500 text-xs md:text-sm leading-relaxed flex-grow flex items-center justify-center text-center p-4 bg-slate-50 rounded-lg border border-dashed border-slate-200 min-h-[150px]">
                             <div>
-                                <p class="mb-2 font-bold text-slate-400">Interactive Cycle</p>
-                                <p>請點擊左側圖表中的步驟 (1-4)<br>查看詳細機轉與藥物作用點</p>
+                                <p class="mb-1 md:mb-2 font-bold text-slate-400">Interactive Cycle</p>
+                                <p>請點擊圖表中的步驟 (1-4)<br>查看詳細機轉與藥物作用點</p>
                             </div>
                         </div>
 
                         <div id="moa-detail-content" class="hidden animate-fade-in">
-                            <h5 id="moa-title" class="text-sky-700 font-bold text-lg mb-3"></h5>
-                            <div class="bg-slate-50 p-4 rounded-lg border border-slate-100 mb-4">
-                                <p id="moa-desc" class="text-slate-700 text-sm leading-relaxed"></p>
+                            <h5 id="moa-title" class="text-sky-700 font-bold text-base md:text-lg mb-2 md:mb-3"></h5>
+                            <div class="bg-slate-50 p-3 md:p-4 rounded-lg border border-slate-100 mb-3 md:mb-4">
+                                <p id="moa-desc" class="text-slate-700 text-xs md:text-sm leading-relaxed"></p>
                             </div>
                             <div class="border-l-4 border-sky-500 pl-3">
-                                <p class="text-xs text-slate-400 uppercase font-bold mb-1">Clinical Impact</p>
-                                <p id="moa-impact" class="text-sm text-slate-600 font-medium"></p>
+                                <p class="text-[10px] md:text-xs text-slate-400 uppercase font-bold mb-1">Clinical Impact</p>
+                                <p id="moa-impact" class="text-xs md:text-sm text-slate-600 font-medium"></p>
                             </div>
                         </div>
                     </div>
@@ -1168,13 +1214,13 @@
         </div>
 
         <!-- Footer -->
-        <footer class="mt-12 pt-6 border-t border-slate-200 text-center">
+        <footer class="mt-8 md:mt-12 pt-4 md:pt-6 border-t border-slate-200 text-center">
             <div class="max-w-4xl mx-auto px-4">
-                <p class="text-xs text-slate-400 leading-relaxed">
+                <p class="text-[10px] md:text-xs text-slate-400 leading-relaxed">
                     <strong>免責聲明：</strong>本網站內容僅供醫療專業人員參考。所有劑量與治療建議請依據病患實際狀況與最新仿單為準。
                 </p>
-                <p class="serif text-slate-400 text-xs italic mt-4">
-                    Clinical Guide based on TW CDC & IDSA Guidelines • 2025 Update
+                <p class="serif text-slate-400 text-[10px] md:text-xs italic mt-2 md:mt-4">
+                    Clinical Guide based on TW CDC & IDSA Guidelines • 2026 Update
                 </p>
             </div>
         </footer>
@@ -1182,28 +1228,28 @@
     </main>
 
     <!-- Modal Structure -->
-    <div id="hospital-items-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl m-4 relative overflow-hidden transform transition-all scale-100">
+    <div id="hospital-items-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity duration-300 px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-3xl relative overflow-hidden transform transition-all scale-100">
             <!-- Header -->
-            <div class="flex justify-between items-center p-4 border-b border-slate-100 bg-orange-50">
-                <h3 class="font-bold text-lg text-orange-800 flex items-center gap-2">
+            <div class="flex justify-between items-center p-3 md:p-4 border-b border-slate-100 bg-orange-50">
+                <h3 class="font-bold text-base md:text-lg text-orange-800 flex items-center gap-2">
                     <span>💊</span> 本院抗病毒藥物品項
                 </h3>
                 <button onclick="closeHospitalModal()" class="text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full p-1 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
             <!-- Content -->
-            <div class="p-6 overflow-y-auto max-h-[80vh]">
+            <div class="p-4 md:p-6 overflow-y-auto max-h-[75vh]">
                 <!-- Placeholder for Image -->
-                <div class="flex flex-col items-center justify-center text-slate-400 min-h-[200px] border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex flex-col items-center justify-center text-slate-400 min-h-[150px] md:min-h-[200px] border-2 border-dashed border-slate-200 rounded-lg bg-slate-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 md:h-12 md:w-12 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <p class="text-sm">請在此處插入本院品項圖片</p>
-                    <p class="text-xs mt-1 text-slate-300">(src="您的圖片連結")</p>
+                    <p class="text-xs md:text-sm">請在此處插入本院品項圖片</p>
+                    <p class="text-[10px] md:text-xs mt-1 text-slate-300">(src="您的圖片連結")</p>
                     <!-- 請解除下方註解並更換 src 為您的圖片網址 -->
                     <!-- <img src="您的圖片網址" alt="本院品項" class="w-full h-auto rounded-lg shadow-sm" /> -->
                 </div>
@@ -1211,20 +1257,69 @@
         </div>
     </div>
 
+    <!-- 底部導覽列 Bottom Navigation Bar (僅在手機版尺寸顯示) -->
+    <nav class="bottom-nav flex md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50 overflow-x-auto hide-scrollbar">
+        <div class="flex w-full justify-between items-center px-1">
+            <button id="bottom-tab-overview" onclick="switchTab('overview')" class="bottom-tab-btn active flex flex-col items-center justify-start min-w-[70px] pt-3 pb-2 text-slate-400 hover:text-sky-600 transition-colors flex-shrink-0">
+                <span class="text-xl mb-1">📊</span>
+                <span class="text-[10px] font-bold">比較</span>
+            </button>
+            <button id="bottom-tab-details" onclick="switchTab('details')" class="bottom-tab-btn flex flex-col items-center justify-start min-w-[70px] pt-3 pb-2 text-slate-400 hover:text-sky-600 transition-colors flex-shrink-0">
+                <span class="text-xl mb-1">📝</span>
+                <span class="text-[10px] font-bold">詳解</span>
+            </button>
+            <button id="bottom-tab-special" onclick="switchTab('special')" class="bottom-tab-btn flex flex-col items-center justify-start min-w-[70px] pt-3 pb-2 text-slate-400 hover:text-sky-600 transition-colors flex-shrink-0">
+                <span class="text-xl mb-1">👶</span>
+                <span class="text-[10px] font-bold">特殊</span>
+            </button>
+            <button id="bottom-tab-strategy" onclick="switchTab('strategy')" class="bottom-tab-btn flex flex-col items-center justify-start min-w-[70px] pt-3 pb-2 text-slate-400 hover:text-sky-600 transition-colors flex-shrink-0">
+                <span class="text-xl mb-1">💡</span>
+                <span class="text-[10px] font-bold">策略</span>
+            </button>
+            <button id="bottom-tab-danger" onclick="switchTab('danger')" class="bottom-tab-btn flex flex-col items-center justify-start min-w-[70px] pt-3 pb-2 text-slate-400 hover:text-sky-600 transition-colors flex-shrink-0">
+                <span class="text-xl mb-1">🚨</span>
+                <span class="text-[10px] font-bold">鑑別</span>
+            </button>
+            <button id="bottom-tab-pharmacy" onclick="switchTab('pharmacy')" class="bottom-tab-btn flex flex-col items-center justify-start min-w-[70px] pt-3 pb-2 text-slate-400 hover:text-sky-600 transition-colors flex-shrink-0">
+                <span class="text-xl mb-1">💊</span>
+                <span class="text-[10px] font-bold">管灌</span>
+            </button>
+            <button id="bottom-tab-moa" onclick="switchTab('moa')" class="bottom-tab-btn flex flex-col items-center justify-start min-w-[70px] pt-3 pb-2 text-slate-400 hover:text-sky-600 transition-colors flex-shrink-0">
+                <span class="text-xl mb-1">🔬</span>
+                <span class="text-[10px] font-bold">機轉</span>
+            </button>
+        </div>
+    </nav>
+
     <script>
-        // Tab Logic
+        // Tab Logic (已更新以支援底部導覽列切換)
         function switchTab(tabName) {
+            // 隱藏所有內容與取消 active 狀態
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.bottom-tab-btn').forEach(el => el.classList.remove('active'));
+            
+            // 顯示選擇的內容
             document.getElementById('content-' + tabName).classList.add('active');
-            document.getElementById('tab-' + tabName).classList.add('active');
+            
+            // 亮起頂部按鈕 (如果存在)
+            const topTab = document.getElementById('tab-' + tabName);
+            if(topTab) topTab.classList.add('active');
+            
+            // 亮起底部按鈕 (如果存在)
+            const bottomTab = document.getElementById('bottom-tab-' + tabName);
+            if(bottomTab) bottomTab.classList.add('active');
+
+            // 手機版切換 Tab 時自動捲動至最上方，提升體驗
+            if (window.innerWidth < 768) {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         }
 
         // Modal Logic
         function openHospitalModal() {
             const modal = document.getElementById('hospital-items-modal');
             modal.classList.remove('hidden');
-            // Simple animation
             setTimeout(() => {
                 modal.firstElementChild.classList.remove('scale-95', 'opacity-0');
                 modal.firstElementChild.classList.add('scale-100', 'opacity-100');
@@ -1289,9 +1384,18 @@
                 title.innerText = data[step].title;
                 desc.innerText = data[step].desc;
                 impact.innerText = data[step].impact;
+                
+                // 手機版自動捲動優化 (Auto-scroll UX for Mobile)
+                if (window.innerWidth < 1024) {
+                    setTimeout(() => {
+                        const detailSection = document.getElementById('moa-detail-section');
+                        if (detailSection) {
+                            detailSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    }, 100);
+                }
             }
         }
     </script>
 </body>
 </html>
-
