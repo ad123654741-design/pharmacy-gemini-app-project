@@ -9,13 +9,12 @@
     <style>
         body {
             font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            /* 背景樣式：純白背景 + 極淡淺綠色網格 (優化1: 淺綠色系) */
             background-color: #ffffff;
             background-image: 
                 linear-gradient(#ecfdf5 1px, transparent 1px), 
                 linear-gradient(90deg, #ecfdf5 1px, transparent 1px);
             background-size: 24px 24px;
-            color: #334155; /* Slate-700 保持高對比 */
+            color: #334155;
             overflow-y: scroll;
             min-height: 100vh;
         }
@@ -25,40 +24,28 @@
             padding: 3rem 2rem;
         }
         
-        /* 響應式優化：針對小螢幕調整間距 */
         @media (max-width: 640px) {
-            .container {
-                padding: 1.5rem 1rem;
-            }
-            .card {
-                padding: 1.5rem !important;
-            }
-            h1 {
-                font-size: 1.75rem !important;
-            }
-            /* 手機版按鈕堆疊時增加間距 */
-            .flex.gap-3 {
-                gap: 0.75rem;
-            }
+            .container { padding: 1.5rem 1rem; }
+            .card { padding: 1.5rem !important; }
+            h1 { font-size: 1.75rem !important; }
+            .flex.gap-3 { gap: 0.75rem; }
         }
 
-        /* 卡片風格優化 */
         .card {
             background-color: #ffffff;
             border-radius: 12px;
-            /* 輕微陰影讓卡片浮起 */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             padding: 2.5rem;
             margin-bottom: 2rem;
-            border: 1px solid #d1fae5; /* 優化1: 邊框改為極淡綠色 */
+            border: 1px solid #d1fae5;
             transition: all 0.2s ease;
         }
         .card:hover {
             box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.05), 0 4px 6px -2px rgba(5, 150, 105, 0.025);
             transform: translateY(-2px);
-            border-color: #a7f3d0; /* 優化1: hover 時邊框稍微變綠 */
+            border-color: #a7f3d0;
         }
-        /* 按鈕風格優化 - 淺綠色調 (優化1) */
+
         .btn {
             padding: 0.75rem 1.5rem;
             border-radius: 8px;
@@ -75,40 +62,34 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.15), 0 2px 4px -1px rgba(5, 150, 105, 0.08); 
         }
-        .btn:active {
-            transform: translateY(1px);
-        }
+        .btn:active { transform: translateY(1px); }
         .btn-primary {
-            background-color: #059669; /* Emerald-600 */
+            background-color: #059669;
             color: #ffffff;
-            border: 1px solid #047857; /* Emerald-700 */
+            border: 1px solid #047857;
             box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
         }
-        .btn-primary:hover {
-            background-color: #047857; /* Emerald-700 */
-        }
+        .btn-primary:hover { background-color: #047857; }
         .btn-secondary {
             background-color: #ffffff;
-            color: #059669; /* Emerald-600 */
-            border: 1px solid #a7f3d0; /* Emerald-200 */
+            color: #059669;
+            border: 1px solid #a7f3d0;
         }
         .btn-secondary:hover {
-            background-color: #ecfdf5; /* Emerald-50 */
-            color: #047857; /* Emerald-700 */
-            border-color: #34d399; /* Emerald-400 */
+            background-color: #ecfdf5;
+            color: #047857;
+            border-color: #34d399;
         }
         .btn-danger {
-            background-color: #ef4444; /* Red-500 */
+            background-color: #ef4444;
             color: #ffffff;
             border: 1px solid #dc2626;
         }
-        .btn-danger:hover {
-            background-color: #dc2626; /* Red-600 */
-        }
-        /* 資訊卡按鈕 */
+        .btn-danger:hover { background-color: #dc2626; }
+
         .btn-info-card {
-            background-color: #f8fafc; /* Slate-50 */
-            color: #475569; /* Slate-600 */
+            background-color: #f8fafc;
+            color: #475569;
             border: 1px solid #e2e8f0;
             padding: 1.5rem 1rem;
             border-radius: 12px;
@@ -120,14 +101,13 @@
             gap: 0.75rem;
         }
         .btn-info-card:hover {
-            background-color: #ecfdf5; /* 優化1: hover 呈現淡綠色 */
+            background-color: #ecfdf5;
             border-color: #6ee7b7;
             transform: translateY(-2px);
             box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.1);
             color: #047857;
         }
         
-        /* 輸入框優化 - 高度增加且文字內縮 */
         input, select, textarea {
             border: 1px solid #cbd5e1;
             border-radius: 8px;
@@ -137,27 +117,38 @@
             font-size: 1rem;
             line-height: 1.5;
             color: #334155;
-            
-            height: 4rem; 
-            padding-left: 1.25rem !important; 
-            padding-right: 1.25rem !important;
+            height: 3.5rem; /* 優化：手機版預設縮減為 3.5rem */
+            padding-left: 1rem !important; 
+            padding-right: 1rem !important;
         }
 
-        /* 針對 textarea 覆寫高度設定，改用 padding */
+        @media (min-width: 640px) {
+            input, select, textarea {
+                height: 4rem; /* 優化：電腦版維持 4rem */
+                padding-left: 1.25rem !important; 
+                padding-right: 1.25rem !important;
+            }
+        }
+
         textarea {
             height: auto;
-            padding: 1.25rem !important;
+            padding: 1rem !important;
         }
 
-        /* 特別針對 select 調整，確保文字與箭頭位置正確 (優化2: 美化下拉選單) */
+        @media (min-width: 640px) {
+            textarea {
+                padding: 1.25rem !important;
+            }
+        }
+
         select {
              background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23059669' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-             background-position: right 1rem center; /* 將箭頭往左拉一點 */
+             background-position: right 1rem center;
              background-repeat: no-repeat;
              background-size: 1.5em 1.5em;
              padding-right: 3rem !important;
-             padding-left: 1rem !important; /* 保留左側基礎留白 */
-             text-indent: 0.5rem; /* 利用 text-indent 將文字往右推，避免太擠 */
+             padding-left: 1rem !important;
+             text-indent: 0.5rem;
              -webkit-appearance: none;
              -moz-appearance: none;
              appearance: none;
@@ -165,8 +156,6 @@
              color: #1e293b;
              cursor: pointer;
         }
-
-        /* 針對選單展開後的選項 (Option) 增加左側內距與質感 */
         select option {
             padding-left: 1.5rem;
             font-weight: 500;
@@ -174,26 +163,19 @@
             background-color: #ffffff;
         }
 
-        input::placeholder {
-            color: #94a3b8;
-        }
+        input::placeholder { color: #94a3b8; }
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #059669; /* 優化1: 綠色 Focus */
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15); /* 綠色光暈 */
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
         }
 
-        /* 移除數字輸入框加減按鈕 */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
-        input[type=number] {
-            -moz-appearance: textfield;
-        }
+        input[type=number] { -moz-appearance: textfield; }
 
-        /* Modal 優化 */
         .modal {
             display: none;
             position: fixed;
@@ -202,22 +184,19 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(15, 23, 42, 0.5); /* Slate-900 半透明 */
+            background-color: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(2px);
             justify-content: center;
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-        .modal.show {
-            display: flex;
-            opacity: 1;
-        }
+        .modal.show { display: flex; opacity: 1; }
         .modal-content {
             background-color: #ffffff;
-            padding: 2.5rem;
+            padding: 1.5rem; /* 優化：手機版內距縮減 */
             border-radius: 16px;
-            width: 90%;
+            width: 95%; /* 優化：手機版寬度加寬 */
             max-width: 700px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             position: relative;
@@ -227,37 +206,36 @@
             transition: transform 0.2s ease;
             border: 1px solid #e2e8f0;
         }
-        .modal.show .modal-content {
-            transform: scale(1);
+
+        @media (min-width: 640px) {
+            .modal-content {
+                padding: 2.5rem;
+                width: 90%;
+            }
         }
-        .modal-lg {
-            max-width: 900px;
-        }
-        /* 標題樣式 */
-        h1 {
-            color: #1e293b; /* Slate-800 */
-        }
+
+        .modal.show .modal-content { transform: scale(1); }
+        .modal-lg { max-width: 900px; }
+        
+        h1 { color: #1e293b; }
         h2 {
-            border-left: 5px solid #059669; /* 優化1: 綠色左邊框 */
+            border-left: 5px solid #059669;
             padding-left: 1rem;
             line-height: 1.3;
             color: #1e293b;
         }
-        /* 表格優化 (優化5: 美化資料庫排版) */
+        
         table thead tr th {
-            background-color: #ecfdf5; /* 淺綠色表頭 */
-            color: #047857; /* 深綠色文字 */
+            background-color: #ecfdf5;
+            color: #047857;
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
             font-size: 0.75rem;
             border-bottom: 2px solid #a7f3d0;
         }
-        table tbody tr:hover {
-            background-color: #f0fdf4;
-        }
+        table tbody tr:hover { background-color: #f0fdf4; }
 
-        /* 3. 浮動按鈕 (FAB) 樣式 */
         .fab-btn {
             position: fixed;
             bottom: 2rem;
@@ -266,7 +244,7 @@
             width: 3.5rem;
             height: 3.5rem;
             border-radius: 50%;
-            background-color: #059669; /* 綠色 FAB */
+            background-color: #059669;
             color: white;
             box-shadow: 0 4px 10px rgba(5, 150, 105, 0.4);
             display: flex;
@@ -279,48 +257,21 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 1px solid #047857;
         }
-        .fab-btn.show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        .fab-btn:hover {
-            background-color: #047857;
-            box-shadow: 0 6px 14px rgba(4, 120, 87, 0.6);
-            transform: translateY(-3px);
-        }
-        .fab-btn:active {
-            transform: translateY(0);
-        }
+        .fab-btn.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .fab-btn:hover { background-color: #047857; box-shadow: 0 6px 14px rgba(4, 120, 87, 0.6); transform: translateY(-3px); }
+        .fab-btn:active { transform: translateY(0); }
 
-        /* 捲軸美化 */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* 確保子 Modal 在層級上覆蓋母 Modal */
-        #advice-modal {
-            z-index: 60;
-        }
-        #message-modal, #confirmation-modal {
-            z-index: 70;
-        }
+        #advice-modal { z-index: 60; }
+        #message-modal, #confirmation-modal { z-index: 70; }
     </style>
 </head>
 <body>
 
-    <!-- 1. 新增書本設定按鈕於右上角 -->
     <button id="open-settings-btn" class="fixed top-4 right-4 md:top-8 md:right-8 w-12 h-12 bg-white rounded-full shadow border border-slate-200 text-slate-600 flex items-center justify-center hover:-translate-y-1 hover:rotate-12 hover:shadow-md hover:text-emerald-600 transition-all duration-300 z-40" title="設定與說明">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -341,30 +292,46 @@
         </header>
 
         <!-- 單一藥物LED等效轉換區塊 -->
-        <div class="card">
+        <!-- 修正：加入 relative z-20 確保第一張卡片層級高於第二張卡片 -->
+        <div class="card relative z-20">
             <h2 class="text-xl font-bold text-slate-700 mb-6 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                 </svg>
                 單一藥物 LED 等效轉換
             </h2>
-            <div class="grid md:grid-cols-4 gap-6 items-end mb-6">
-                <div class="md:col-span-2">
-                    <label for="single-drug-select" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">選擇藥物</label>
-                    <select id="single-drug-select" class="block w-full rounded-lg shadow-sm cursor-pointer hover:border-slate-400"></select>
+            <div class="grid md:grid-cols-4 gap-4 md:gap-6 items-end mb-6">
+                <!-- 自訂單一下拉選單支援分類與搜尋 -->
+                <!-- 修正：將自訂 z-[30] 改為標準 Tailwind 類別 z-40 -->
+                <div class="md:col-span-2 relative z-40" id="single-dropdown-wrapper">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2 ml-1">選擇藥物</label>
+                    <div id="single-dropdown-btn" class="border border-slate-300 rounded-lg h-14 sm:h-16 flex items-center justify-between px-4 sm:px-5 bg-white cursor-pointer hover:border-emerald-500 transition-colors focus:ring-2 focus:ring-emerald-400" tabindex="0">
+                        <span id="single-dropdown-label" class="text-slate-700">請選擇藥物...</span>
+                        <svg class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                    <!-- 修正：將 z-[60] 改為標準類別 z-50 -->
+                    <div id="single-dropdown-menu" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-2xl hidden flex-col overflow-hidden">
+                        <div class="p-3 border-b border-slate-100 bg-slate-50">
+                            <input type="text" id="single-dropdown-search" placeholder="搜尋藥名或機轉..." class="w-full border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-400 text-sm" style="height: 2.5rem !important; padding-left: 0.75rem !important; padding-right: 0.75rem !important;">
+                        </div>
+                        <!-- 修正：將自訂高度 max-h-[250px] 改為標準類別 max-h-64 (約 256px) 確保相容性 -->
+                        <ul id="single-dropdown-list" class="overflow-y-auto p-2 space-y-1 max-h-64 bg-white"></ul>
+                    </div>
                 </div>
+
                 <div>
                     <label for="single-dosage-input" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">單次劑量 (mg)</label>
-                    <input type="number" id="single-dosage-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 100">
+                    <!-- 修正2：加入 inputmode="decimal" 以自動叫出手機數字鍵盤 -->
+                    <input type="number" inputmode="decimal" id="single-dosage-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 100">
                 </div>
                 <div class="flex gap-3">
-                    <button id="calculate-single-led-btn" class="btn btn-primary flex-1 shadow-sm">
+                    <button id="calculate-single-led-btn" class="btn btn-primary flex-1 shadow-sm h-14 sm:h-16">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
                         </svg>
                         換算
                     </button>
-                    <button id="clear-single-led-btn" class="btn btn-secondary" style="height: 4rem;">
+                    <button id="clear-single-led-btn" class="btn btn-secondary h-14 sm:h-16">
                         清除
                     </button>
                 </div>
@@ -375,28 +342,44 @@
         </div>
 
         <!-- 計算 LED 總劑量區塊 -->
-        <div class="card">
+        <!-- 修正：加入 relative z-10 防止被前一張卡片的選單穿透，且層級低於第一張 -->
+        <div class="card relative z-10">
             <h2 class="text-xl font-bold text-slate-700 mb-8 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
                 計算 LED 總劑量
             </h2>
-            <div class="grid md:grid-cols-4 gap-6 items-end mb-6">
-                <div>
-                    <label for="drug-select" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">藥物名稱</label>
-                    <select id="drug-select" class="block w-full rounded-lg shadow-sm cursor-pointer hover:border-slate-400"></select>
+            <div class="grid md:grid-cols-4 gap-4 md:gap-6 items-end mb-6">
+                
+                <!-- 自訂主計算下拉選單支援分類與搜尋 -->
+                <!-- 修正：將自訂 z-[20] 改為標準 Tailwind 類別 z-30 -->
+                <div class="relative w-full z-30" id="calc-dropdown-wrapper">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2 ml-1">藥物名稱</label>
+                    <div id="calc-dropdown-btn" class="border border-slate-300 rounded-lg h-14 sm:h-16 flex items-center justify-between px-4 sm:px-5 bg-white cursor-pointer hover:border-emerald-500 transition-colors focus:ring-2 focus:ring-emerald-400" tabindex="0">
+                        <span id="calc-dropdown-label" class="text-slate-700">請選擇藥物...</span>
+                        <svg class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                    <!-- 修正：將 z-[60] 改為標準類別 z-50 -->
+                    <div id="calc-dropdown-menu" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-2xl hidden flex-col overflow-hidden">
+                        <div class="p-3 border-b border-slate-100 bg-slate-50">
+                            <input type="text" id="calc-dropdown-search" placeholder="搜尋藥名或機轉..." class="w-full border border-slate-300 rounded-md focus:ring-2 focus:ring-emerald-400 text-sm" style="height: 2.5rem !important; padding-left: 0.75rem !important; padding-right: 0.75rem !important;">
+                        </div>
+                        <!-- 修正：將自訂高度 max-h-[250px] 改為標準類別 max-h-64 -->
+                        <ul id="calc-dropdown-list" class="overflow-y-auto p-2 space-y-1 max-h-64 bg-white"></ul>
+                    </div>
                 </div>
+
                 <div>
                     <label for="dosage-input" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">單次劑量 (mg)</label>
-                    <input type="number" id="dosage-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 100">
+                    <input type="number" inputmode="decimal" id="dosage-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 100">
                 </div>
                 <div>
                     <label for="frequency-input" class="block text-sm font-semibold text-slate-600 mb-2 ml-1">給藥頻次 (次/天)</label>
-                    <input type="number" id="frequency-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 3">
+                    <input type="number" inputmode="decimal" id="frequency-input" class="block w-full rounded-lg shadow-sm hover:border-slate-400" placeholder="例如: 3">
                 </div>
                 <div class="flex justify-end md:justify-start">
-                    <button id="add-drug-btn" class="btn btn-primary w-full shadow-sm" style="height: 4rem;">
+                    <button id="add-drug-btn" class="btn btn-primary w-full shadow-sm h-14 sm:h-16">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
                         </svg>
@@ -404,12 +387,26 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Entacapone 精準綁定專區 -->
+            <div id="entacapone-bind-wrapper" class="hidden bg-emerald-50/70 p-5 rounded-xl border border-emerald-200 mt-2 mb-6 shadow-inner relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                <label class="block text-sm font-bold text-emerald-800 mb-3 ml-1 flex items-center">
+                    <svg class="w-5 h-5 mr-1.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                    綁定目標 L-dopa 處方 (計算必需)
+                </label>
+                <select id="entacapone-target-select" class="block w-full rounded-lg shadow-sm border border-emerald-300 focus:ring-emerald-400 bg-white h-12 px-4 cursor-pointer font-medium text-slate-700"></select>
+                <p class="text-xs text-emerald-700 mt-3 font-medium bg-white/70 px-3 py-2 rounded-md inline-flex items-center">
+                    <span class="mr-1">✨</span> 依據指引，Entacapone 的 LED 會從所綁定的 L-dopa LED 乘以 0.33 得出。
+                </p>
+            </div>
+
             <div class="flex justify-between items-center mt-3 mb-6 px-1">
                 <div id="error-message" class="text-red-600 text-sm font-medium hidden flex items-center bg-red-50 px-3 py-1 rounded-md border border-red-100">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                     </svg>
-                    請輸入有效的藥物名稱、劑量和頻次。
+                    <span>請輸入有效的藥物名稱、劑量和頻次。</span>
                 </div>
                 <div class="flex gap-2 ml-auto">
                     <button id="clear-input-btn" class="text-sm px-3 py-1.5 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-800 font-medium transition-colors flex items-center">
@@ -427,26 +424,27 @@
                 <!-- 換算後的藥物列表將在此顯示 -->
             </div>
 
-            <div id="total-led" class="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center">
+            <div id="total-led" class="mt-8 p-6 bg-slate-50 border border-slate-200 rounded-lg flex justify-between items-center shadow-inner">
                 <span class="font-bold text-slate-700 text-lg">每日總 LED 劑量</span> 
                 <span class="text-4xl font-extrabold text-slate-800 tracking-tight"><span id="total-led-value">0</span> <span class="text-xl font-semibold text-slate-500 ml-1">mg</span></span>
             </div>
 
-            <div class="mt-10 flex flex-wrap justify-end gap-3 border-t pt-8 border-slate-100">
-                <button id="copy-btn" class="btn btn-secondary">
+            <!-- 修正2：底端控制按鈕在手機上調整為自動滿版堆疊顯示 -->
+            <div class="mt-10 flex flex-col sm:flex-row flex-wrap justify-end gap-3 border-t pt-8 border-slate-100">
+                <button id="copy-btn" class="btn btn-secondary w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
                         <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
                     </svg>
                     複製結果
                 </button>
-                <button id="export-txt-btn" class="btn btn-secondary">
+                <button id="export-txt-btn" class="btn btn-secondary w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
                     匯出病歷 (TXT)
                 </button>
-                <button id="open-db-modal-btn" class="btn btn-secondary">
+                <button id="open-db-modal-btn" class="btn btn-secondary w-full sm:w-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M5 4a1 1 0 00-2 0v7.268a2 2 0 000 3.464V16a1 1 0 102 0v-1.268a2 2 0 000-3.464V4zM11 4a1 1 0 10-2 0v1.268a2 2 0 000 3.464V16a1 1 0 102 0V8.732a2 2 0 000-3.464V4zM16 3a1 1 0 011 1v7.268a2 2 0 010 3.464V16a1 1 0 11-2 0v-1.268a2 2 0 010-3.464V4a1 1 0 011-1z" />
                     </svg>
@@ -456,7 +454,8 @@
         </div>
 
         <!-- 資料來源區塊 -->
-        <div class="card bg-white border border-slate-200 shadow-none opacity-80 hover:opacity-100 transition-opacity">
+        <!-- 修正：加入 relative z-0 確保層疊順序正確 -->
+        <div class="card relative z-0 bg-white border border-slate-200 shadow-none opacity-80 hover:opacity-100 transition-opacity">
             <h2 class="text-lg font-bold text-slate-600 mb-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
@@ -490,7 +489,7 @@
                 </button>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
                 <button id="open-info-modal-btn-1" class="btn-info-card group">
                     <div class="text-slate-400 group-hover:text-slate-600 transition-colors">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -549,6 +548,17 @@
                 <div class="grid sm:grid-cols-2 gap-6">
                     <input type="hidden" id="edit-drug-id">
                     <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">藥品機轉 (分類)</label>
+                        <select id="db-drug-group" class="focus:ring-2 focus:ring-emerald-300 rounded-lg border-slate-300 w-full px-4 h-16 bg-white cursor-pointer">
+                            <option value="Levodopa">Levodopa</option>
+                            <option value="DA Agonist">DA Agonist</option>
+                            <option value="MAO-B I">MAO-B I</option>
+                            <option value="COMT I">COMT I</option>
+                            <option value="NMDA Ant.">NMDA Ant.</option>
+                            <option value="其他">其他</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">藥品名稱</label>
                         <input type="text" id="db-drug-name" placeholder="例如: Levodopa IR" class="focus:ring-2 focus:ring-emerald-300">
                     </div>
@@ -562,16 +572,15 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">LED 換算因子</label>
-                        <input type="number" step="0.01" id="db-led-factor" placeholder="例如: 1">
+                        <input type="number" inputmode="decimal" step="0.01" id="db-led-factor" placeholder="例如: 1">
                     </div>
-                    <!-- 優化3: 新增極量設定欄位 -->
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">單次極量 (mg)</label>
-                        <input type="number" id="db-max-single-dose" placeholder="例如: 500">
+                        <input type="number" inputmode="decimal" id="db-max-single-dose" placeholder="例如: 500">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">每日極量 (mg)</label>
-                        <input type="number" id="db-max-daily-dose" placeholder="例如: 1500">
+                        <input type="number" inputmode="decimal" id="db-max-daily-dose" placeholder="例如: 1500">
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">建議劑量範例</label>
@@ -598,14 +607,22 @@
             </div>
             
             <div>
-                <h4 class="text-xl font-bold text-slate-700 mb-6 flex items-center">
-                    <span class="bg-emerald-100 p-1.5 rounded-lg mr-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                    <h4 class="text-xl font-bold text-slate-700 flex items-center mb-0">
+                        <span class="bg-emerald-100 p-1.5 rounded-lg mr-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                            </svg>
+                        </span>
+                        目前資料庫藥物
+                    </h4>
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="db-search-input" placeholder="篩選藥品..." class="w-full border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-400 text-sm shadow-sm" style="height: 2.5rem !important; padding-left: 2.5rem !important; padding-right: 0.75rem !important;">
+                        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                         </svg>
-                    </span>
-                    目前資料庫藥物
-                </h4>
+                    </div>
+                </div>
                 <div class="overflow-x-auto rounded-lg border border-slate-200 shadow-sm">
                     <table class="w-full text-sm text-left text-slate-500">
                         <thead class="text-xs text-emerald-800 uppercase bg-emerald-50 border-b border-emerald-200">
@@ -624,6 +641,12 @@
                 </div>
             </div>
         </div>
+        <!-- 新增資料庫專用回到頂端按鈕，設定較高的 z-index 防止被遮蔽 -->
+        <button id="db-fab-back-to-top" class="fab-btn" style="z-index: 60;" title="回到頂端">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+        </button>
     </div>
     
     <!-- 訊息提示視窗 -->
@@ -654,7 +677,7 @@
             <p id="confirmation-text" class="text-lg font-bold text-slate-800 mb-8">確定要刪除此藥物嗎？</p>
             <div class="flex justify-center space-x-4">
                 <button id="confirm-no" class="btn btn-secondary w-1/2 justify-center">取消</button>
-                <button id="confirm-yes" class="btn btn-danger w-1/2 justify-center shadow-sm">刪除</button>
+                <button id="confirm-yes" class="btn btn-danger w-1/2 justify-center shadow-sm">確定</button>
             </div>
         </div>
     </div>
@@ -688,7 +711,6 @@
             </div>
             <h3 class="text-xl font-bold text-gray-800 mb-2">管理者驗證</h3>
             <p class="text-sm text-gray-500 mb-6">請輸入密碼以維護藥物資料庫</p>
-            <!-- 驗證輸入框 -->
             <input type="password" id="admin-password-input" class="mb-6 text-center text-xl tracking-[0.5em] font-mono focus:ring-2 focus:ring-emerald-400" placeholder="">
             <div class="flex justify-center space-x-4">
                 <button id="cancel-password-btn" class="btn btn-secondary w-1/2 justify-center shadow-sm">取消</button>
@@ -697,7 +719,6 @@
         </div>
     </div>
 
-    <!-- 3. 浮動按鈕 (FAB 回到頂端) -->
     <button id="fab-back-to-top" class="fab-btn" title="回到頂端">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -705,39 +726,40 @@
     </button>
 
     <script type="module">
-        // 設定 Firebase 日誌等級以進行偵錯
         import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        setLogLevel('debug');
+        setLogLevel('error');
         
-        // Firebase 服務的模組匯入
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        // 內建藥物資料庫 (新增 maxSingleDose 單次極量設定)
+        // 加入 Group 分類
         const initialDrugDatabase = [
-            { id: 'levodopa_ir', name: 'Levodopa IR', brand: 'Sinemet', formulation: '錠劑', factor: 1, example: '100mg TID', availableDosages: [100, 250, 500], maxSingleDose: 500, maxDose: 1500 },
-            { id: 'levodopa_cr', name: 'Levodopa CR', brand: 'Sinemet CR', formulation: '控釋錠', factor: 0.75, example: '200mg BID', availableDosages: [200, 500], maxSingleDose: 500, maxDose: 1500 },
-            { id: 'entacapone', name: 'Entacapone (需與L-dopa併用)', brand: 'Comtan', formulation: '錠劑', factor: 0.33, example: '200mg/dose (與Levodopa併用)', availableDosages: [200], maxSingleDose: 400, maxDose: 1600 },
-            { id: 'pramipexole', name: 'Pramipexole', brand: 'Mirapex', formulation: '錠劑', factor: 100, example: '1mg/day', availableDosages: [0.125, 0.25, 1, 1.5], maxSingleDose: 1.5, maxDose: 4.5 },
-            { id: 'ropinirole', name: 'Ropinirole', brand: 'Requip', formulation: '錠劑', factor: 20, example: '4mg/day', availableDosages: [0.25, 0.5, 1, 2, 4], maxSingleDose: 8, maxDose: 24 },
-            { id: 'amantadine', name: 'Amantadine', brand: 'Symmetrel', formulation: '錠劑', factor: 1, example: '100mg BID', availableDosages: [100], maxSingleDose: 100, maxDose: 400 },
-            { id: 'bromocriptine', name: 'Bromocriptine', brand: 'Parlodel', formulation: '錠劑', factor: 10, example: '10mg/day', availableDosages: [2.5], maxSingleDose: 10, maxDose: 30 },
-            { id: 'rasagiline', name: 'Rasagiline', brand: 'Azilect', formulation: '錠劑', factor: 100, example: '1mg/day', availableDosages: [0.5, 1], maxSingleDose: 1, maxDose: 1 },
-            { id: 'levodopa_er', name: 'Levodopa ER', brand: 'Rytary, Duopa', formulation: '緩釋膠囊', factor: 0.75, example: '100mg TID', availableDosages: [23.75, 48.75, 95], maxSingleDose: 500, maxDose: 2450 },
-            { id: 'selegiline', name: 'Selegiline', brand: 'Eldepryl', formulation: '錠劑', factor: 10, example: '10mg/day', availableDosages: [5], maxSingleDose: 5, maxDose: 10 },
-            { id: 'safinamide_50', name: 'Safinamide (50mg)', brand: 'Xadago', formulation: '錠劑', factor: 2, example: '50mg/day', availableDosages: [50], maxSingleDose: 50, maxDose: 50 },
-            { id: 'safinamide_100', name: 'Safinamide (100mg)', brand: 'Xadago', formulation: '錠劑', factor: 1.25, example: '100mg/day', availableDosages: [100], maxSingleDose: 100, maxDose: 100 },
-            { id: 'rotigotine_patch', name: 'Rotigotine patch', brand: 'Neupro', formulation: '貼片', factor: 30, example: '4mg/day', availableDosages: [2, 4, 6, 8], maxSingleDose: 8, maxDose: 8 },
-            { id: 'apomorphine', name: 'Apomorphine', brand: 'Apokyn', formulation: '注射劑', factor: 10, example: '1mg/dose', availableDosages: [1, 5, 10], maxSingleDose: 6, maxDose: 20 },
+            { id: 'levodopa_ir', name: 'Levodopa IR', group: 'Levodopa', brand: 'Sinemet', formulation: '錠劑', factor: 1, example: '100mg TID', availableDosages: [100, 250, 500], maxSingleDose: 500, maxDose: 1500 },
+            { id: 'levodopa_cr', name: 'Levodopa CR', group: 'Levodopa', brand: 'Sinemet CR', formulation: '控釋錠', factor: 0.75, example: '200mg BID', availableDosages: [200, 500], maxSingleDose: 500, maxDose: 1500 },
+            { id: 'levodopa_er', name: 'Levodopa ER', group: 'Levodopa', brand: 'Rytary, Duopa', formulation: '緩釋膠囊', factor: 0.75, example: '100mg TID', availableDosages: [23.75, 48.75, 95], maxSingleDose: 500, maxDose: 2450 },
+            { id: 'entacapone', name: 'Entacapone (需與L-dopa併用)', group: 'COMT I', brand: 'Comtan', formulation: '錠劑', factor: 0.33, example: '200mg/dose (與Levodopa併用)', availableDosages: [200], maxSingleDose: 400, maxDose: 1600 },
+            { id: 'pramipexole', name: 'Pramipexole', group: 'DA Agonist', brand: 'Mirapex', formulation: '錠劑', factor: 100, example: '1mg/day', availableDosages: [0.125, 0.25, 1, 1.5], maxSingleDose: 1.5, maxDose: 4.5 },
+            { id: 'ropinirole', name: 'Ropinirole', group: 'DA Agonist', brand: 'Requip', formulation: '錠劑', factor: 20, example: '4mg/day', availableDosages: [0.25, 0.5, 1, 2, 4], maxSingleDose: 8, maxDose: 24 },
+            { id: 'rotigotine_patch', name: 'Rotigotine patch', group: 'DA Agonist', brand: 'Neupro', formulation: '貼片', factor: 30, example: '4mg/day', availableDosages: [2, 4, 6, 8], maxSingleDose: 8, maxDose: 8 },
+            { id: 'apomorphine', name: 'Apomorphine', group: 'DA Agonist', brand: 'Apokyn', formulation: '注射劑', factor: 10, example: '1mg/dose', availableDosages: [1, 5, 10], maxSingleDose: 6, maxDose: 20 },
+            { id: 'bromocriptine', name: 'Bromocriptine', group: 'DA Agonist', brand: 'Parlodel', formulation: '錠劑', factor: 10, example: '10mg/day', availableDosages: [2.5], maxSingleDose: 10, maxDose: 30 },
+            { id: 'rasagiline', name: 'Rasagiline', group: 'MAO-B I', brand: 'Azilect', formulation: '錠劑', factor: 100, example: '1mg/day', availableDosages: [0.5, 1], maxSingleDose: 1, maxDose: 1 },
+            { id: 'selegiline', name: 'Selegiline', group: 'MAO-B I', brand: 'Eldepryl', formulation: '錠劑', factor: 10, example: '10mg/day', availableDosages: [5], maxSingleDose: 5, maxDose: 10 },
+            { id: 'safinamide_50', name: 'Safinamide (50mg)', group: 'MAO-B I', brand: 'Xadago', formulation: '錠劑', factor: 2, example: '50mg/day', availableDosages: [50], maxSingleDose: 50, maxDose: 50 },
+            { id: 'safinamide_100', name: 'Safinamide (100mg)', group: 'MAO-B I', brand: 'Xadago', formulation: '錠劑', factor: 1.25, example: '100mg/day', availableDosages: [100], maxSingleDose: 100, maxDose: 100 },
+            { id: 'amantadine', name: 'Amantadine', group: 'NMDA Ant.', brand: 'Symmetrel', formulation: '錠劑', factor: 1, example: '100mg BID', availableDosages: [100], maxSingleDose: 100, maxDose: 400 },
         ];
         
         let firebaseConfig, appId, auth, db, userId;
         let ledEntries = [];
         let drugDatabase = {};
         
+        // State variables for Custom Dropdowns
+        let selectedCalcDrugId = null;
+        let selectedSingleDrugId = null;
+
         const userInfoEl = document.getElementById('user-info');
-        const drugSelectEl = document.getElementById('drug-select');
         const dosageInputEl = document.getElementById('dosage-input');
         const frequencyInputEl = document.getElementById('frequency-input');
         const addDrugBtn = document.getElementById('add-drug-btn');
@@ -747,18 +769,19 @@
         const ledListEl = document.getElementById('led-list');
         const totalLedValueEl = document.getElementById('total-led-value');
         const copyBtn = document.getElementById('copy-btn');
-        const exportTxtBtn = document.getElementById('export-txt-btn'); // 綁定匯出TXT按鈕
+        const exportTxtBtn = document.getElementById('export-txt-btn');
         const dbModal = document.getElementById('db-modal');
         const openDbModalBtn = document.getElementById('open-db-modal-btn');
         const closeDbModalBtn = document.getElementById('close-db-modal-btn');
         const saveDrugBtn = document.getElementById('save-drug-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const dbDrugGroupEl = document.getElementById('db-drug-group');
         const dbDrugNameEl = document.getElementById('db-drug-name');
         const dbBrandNameEl = document.getElementById('db-brand-name');
         const dbFormulationEl = document.getElementById('db-formulation');
         const dbLedFactorEl = document.getElementById('db-led-factor');
-        const dbMaxSingleDoseEl = document.getElementById('db-max-single-dose'); // 新增欄位
-        const dbMaxDailyDoseEl = document.getElementById('db-max-daily-dose'); // 新增欄位
+        const dbMaxSingleDoseEl = document.getElementById('db-max-single-dose');
+        const dbMaxDailyDoseEl = document.getElementById('db-max-daily-dose');
         const dbDosageExampleEl = document.getElementById('db-dosage-example');
         const dbAvailableDosagesEl = document.getElementById('db-available-dosages');
         const dbClinicalNotesEl = document.getElementById('db-clinical-notes');
@@ -772,33 +795,28 @@
         const confirmYesBtn = document.getElementById('confirm-yes');
         const confirmNoBtn = document.getElementById('confirm-no');
         
-        // 設定選單按鈕與視窗
         const settingsModal = document.getElementById('settings-modal');
         const openSettingsBtn = document.getElementById('open-settings-btn');
         const closeSettingsBtn = document.getElementById('close-settings-btn');
 
-        // 單一藥物等效轉換功能所需的元素
-        const singleDrugSelectEl = document.getElementById('single-drug-select');
         const singleDosageInputEl = document.getElementById('single-dosage-input');
         const calculateSingleLedBtn = document.getElementById('calculate-single-led-btn');
         const clearSingleLedBtn = document.getElementById('clear-single-led-btn');
         const singleLedResultsEl = document.getElementById('single-led-results');
         
-        // 請先讀我區塊按鈕
         const openInfoModalBtn1 = document.getElementById('open-info-modal-btn-1');
         const openInfoModalBtn2 = document.getElementById('open-info-modal-btn-2');
         const openInfoModalBtn3 = document.getElementById('open-info-modal-btn-3');
         const openInfoModalBtn4 = document.getElementById('open-info-modal-btn-4');
 
-        // 臨床建議 Modal
         const adviceModal = document.getElementById('advice-modal');
         const closeAdviceModalBtn = document.getElementById('close-advice-modal-btn');
         const adviceModalTitleEl = document.getElementById('advice-modal-title');
         const adviceModalContentEl = document.getElementById('advice-modal-content');
 
-        const fabBackToTopBtn = document.getElementById('fab-back-to-top'); // 綁定 FAB
+        const fabBackToTopBtn = document.getElementById('fab-back-to-top');
+        const dbFabBackToTopBtn = document.getElementById('db-fab-back-to-top'); // 新增：資料庫專用 FAB
 
-        // 彈出視窗內容 (優化排版)
         const modalContents = {
             '使用說明': `<div class="space-y-6">
                 <div class="bg-emerald-50 p-6 rounded-lg border-l-4 border-emerald-500">
@@ -822,7 +840,7 @@
                     <ul class="list-disc list-inside mt-2 text-sm pl-2 space-y-1">
                         <li>依序選擇藥物、輸入單次劑量及每日頻次，點擊「新增藥物」。</li>
                         <li>系統會自動加總並顯示於下方。</li>
-                        <li class="text-red-500 font-medium mt-1">特殊規則：Entacapone 的計算會自動偵測併用的 Levodopa 總量 (0.33 x Levodopa LED)。</li>
+                        <li class="text-red-500 font-medium mt-1">特殊規則：若選擇 Entacapone，系統會要求您綁定一項已開立的 L-dopa 進行精準計算。</li>
                     </ul>
                 </div>
                 <div class="bg-slate-50 p-6 rounded-lg border-l-4 border-slate-500">
@@ -852,7 +870,7 @@
                             <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-emerald-600">DA Agonist</td><td>Rotigotine</td><td class="px-4 py-2 font-bold">30</td></tr>
                             <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">MAO-B I</td><td>Rasagiline</td><td class="px-4 py-2 font-bold">100</td></tr>
                             <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">MAO-B I</td><td>Selegiline</td><td class="px-4 py-2 font-bold">10</td></tr>
-                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">COMT I</td><td>Entacapone</td><td class="px-4 py-2 text-xs text-slate-400">0.33 (需併用L-dopa)</td></tr>
+                            <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">COMT I</td><td>Entacapone</td><td class="px-4 py-2 text-xs text-slate-400">0.33 (需綁定L-dopa)</td></tr>
                             <tr class="hover:bg-slate-50"><td class="px-4 py-2 font-medium text-slate-600">NMDA Ant.</td><td>Amantadine</td><td class="px-4 py-2 font-bold">1.0</td></tr>
                         </tbody>
                     </table>
@@ -912,13 +930,10 @@
             </div>`
         };
 
-        // Helper function to format numbers for display
         function formatNumber(num) {
-            // Format to 2 decimal places and then parse back to a float to remove trailing zeros
             return parseFloat(num.toFixed(2));
         }
 
-        // 防抖函數 (Debounce) 實作
         function debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -931,17 +946,11 @@
             };
         }
 
-        // --- UI Helper Functions ---
         function showMessage(message) {
             const modal = document.getElementById('message-modal');
             const text = document.getElementById('message-text');
             text.textContent = message;
             modal.classList.add('show');
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.remove('show');
         }
 
         function showConfirmation(message, onConfirm) {
@@ -972,18 +981,15 @@
             noBtn.addEventListener('click', handleNo);
         }
 
-        // --- Application Logic ---
-
-        function setupFirebase() {
-            // 前端快取 (Local Caching) 機制：先從 localStorage 讀取並渲染，達到零延遲體驗
+        // ================= 核心 Firebase 與資料載入 =================
+        async function setupFirebase() {
             const cachedDrugs = localStorage.getItem('cachedLedDrugs');
             if (cachedDrugs) {
                 try {
                     drugDatabase = JSON.parse(cachedDrugs);
-                    renderDrugSelect();
-                    renderSingleDrugSelect();
+                    renderDrugSelects();
                     renderModalDrugDatabaseTable();
-                } catch(e) { console.error('Cache parsing failed'); }
+                } catch(e) {}
             }
 
             try {
@@ -994,88 +1000,219 @@
                     auth = getAuth(app);
                     db = getFirestore(app);
                     
+                    // 優化1: 強制 Top-level await 等待驗證結束，再掛載 OnAuthStateChanged
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } else {
+                        await signInAnonymously(auth);
+                    }
+                    
                     onAuthStateChanged(auth, async (user) => {
-                        if (user) {
-                            userId = user.uid;
-                            userInfoEl.textContent = `使用者 ID: ${userId}`;
-                            
-                            const userDrugsRef = collection(db, `artifacts/${appId}/users/${userId}/led_drugs`);
-                            const snapshot = await getDocs(userDrugsRef);
-                            if (snapshot.empty) {
-                                for (const drug of initialDrugDatabase) {
-                                    await setDoc(doc(userDrugsRef, drug.id), drug);
-                                }
-                            }
-                            onSnapshot(userDrugsRef, (snapshot) => {
-                                drugDatabase = {};
-                                snapshot.forEach(doc => {
-                                    drugDatabase[doc.id] = { ...doc.data(), id: doc.id };
-                                });
-                                // 儲存至本地快取
-                                localStorage.setItem('cachedLedDrugs', JSON.stringify(drugDatabase));
-                                
-                                renderDrugSelect();
-                                renderSingleDrugSelect();
-                                renderModalDrugDatabaseTable();
-                                recalculateAllLed();
-                            });
-                        } else {
-                            try {
-                                if (typeof __initial_auth_token !== 'undefined') {
-                                    await signInWithCustomToken(auth, __initial_auth_token);
-                                } else {
-                                    await signInAnonymously(auth);
-                                }
-                            } catch (error) {
-                                console.error("Firebase auth error:", error);
-                                userInfoEl.textContent = "使用者 ID: 登入失敗";
+                        if (!user) return; // 確保有權限
+                        userId = user.uid;
+                        userInfoEl.textContent = `使用者 ID: ${userId}`;
+                        
+                        const userDrugsRef = collection(db, `artifacts/${appId}/users/${userId}/led_drugs`);
+                        const snapshot = await getDocs(userDrugsRef);
+                        if (snapshot.empty) {
+                            for (const drug of initialDrugDatabase) {
+                                // 修正: 使用 doc() 自動建立關聯或指定 ID
+                                await setDoc(doc(userDrugsRef, drug.id), drug);
                             }
                         }
+                        
+                        onSnapshot(userDrugsRef, (snapshot) => {
+                            drugDatabase = {};
+                            snapshot.forEach(doc => {
+                                drugDatabase[doc.id] = { ...doc.data(), id: doc.id };
+                            });
+                            localStorage.setItem('cachedLedDrugs', JSON.stringify(drugDatabase));
+                            
+                            renderDrugSelects();
+                            renderModalDrugDatabaseTable();
+                            recalculateAllLed();
+                        }, (error) => {
+                            console.error("Firestore Error:", error);
+                        });
                     });
                 } else {
-                    console.error("Firebase config or app ID is not defined.");
-                    userInfoEl.textContent = "使用者 ID: 未設定";
+                    userInfoEl.textContent = "使用者 ID: 未設定 (本機模式)";
                     initialDrugDatabase.forEach(drug => {
                         drugDatabase[drug.id] = drug;
                     });
-                    renderDrugSelect();
-                    renderSingleDrugSelect();
+                    renderDrugSelects();
                     renderModalDrugDatabaseTable();
                 }
             } catch (e) {
-                console.error("Error setting up Firebase: ", e);
-                userInfoEl.textContent = "使用者 ID: 初始化失敗";
+                console.error("Firebase Initialization Failed:", e);
+                userInfoEl.textContent = "使用者 ID: 驗證失敗";
             }
         }
         
-        function renderDrugSelect() {
-            drugSelectEl.innerHTML = '';
-            for (const id in drugDatabase) {
-                const drug = drugDatabase[id];
-                const option = document.createElement('option');
-                option.value = id;
-                // 加入空白字元強制內縮
-                option.textContent = `\u00A0\u00A0${drug.name} (${drug.formulation})`;
-                drugSelectEl.appendChild(option);
-            }
-            updateDosageFields();
+        // ================= 客製化分類下拉選單 (含搜尋) =================
+        function setupDropdownSearch(searchInputId, listId) {
+            const searchInput = document.getElementById(searchInputId);
+            if(!searchInput) return;
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const list = document.getElementById(listId);
+                const options = list.querySelectorAll('.drug-option');
+                const groups = list.querySelectorAll('.group-header');
+
+                options.forEach(opt => {
+                    if (opt.dataset.search.includes(term)) {
+                        opt.style.display = 'flex';
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
+
+                groups.forEach(group => {
+                    let hasVisible = false;
+                    let next = group.nextElementSibling;
+                    while (next && next.classList.contains('drug-option')) {
+                        if (next.style.display !== 'none') {
+                            hasVisible = true;
+                            break;
+                        }
+                        next = next.nextElementSibling;
+                    }
+                    group.style.display = hasVisible ? 'block' : 'none';
+                });
+            });
         }
 
-        function renderSingleDrugSelect() {
-            singleDrugSelectEl.innerHTML = '';
-            for (const id in drugDatabase) {
+        document.addEventListener('click', (e) => {
+            const calcWrapper = document.getElementById('calc-dropdown-wrapper');
+            const calcMenu = document.getElementById('calc-dropdown-menu');
+            const singleWrapper = document.getElementById('single-dropdown-wrapper');
+            const singleMenu = document.getElementById('single-dropdown-menu');
+
+            if (calcWrapper && calcMenu && !calcWrapper.contains(e.target)) {
+                calcMenu.classList.add('hidden');
+            }
+            if (singleWrapper && singleMenu && !singleWrapper.contains(e.target)) {
+                singleMenu.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('calc-dropdown-btn').addEventListener('click', () => {
+            document.getElementById('calc-dropdown-menu').classList.toggle('hidden');
+            document.getElementById('calc-dropdown-search').focus();
+        });
+
+        document.getElementById('single-dropdown-btn').addEventListener('click', () => {
+            document.getElementById('single-dropdown-menu').classList.toggle('hidden');
+            document.getElementById('single-dropdown-search').focus();
+        });
+
+        function renderDrugSelects() {
+            const groups = {};
+            for(const id in drugDatabase) {
                 const drug = drugDatabase[id];
-                if (id === 'entacapone') {
-                    continue;
+                const g = drug.group || '其他';
+                if(!groups[g]) groups[g] = [];
+                groups[g].push({...drug, id});
+            }
+            
+            const buildList = (listId, isSingle) => {
+                const list = document.getElementById(listId);
+                if(!list) return;
+                list.innerHTML = '';
+                for(const g in groups) {
+                    // 單一換算不顯示需要綁定的 Entacapone
+                    const drugsInGroup = groups[g].filter(d => !(isSingle && d.id === 'entacapone'));
+                    if (drugsInGroup.length === 0) continue;
+
+                    const liGroup = document.createElement('li');
+                    liGroup.className = 'group-header text-xs font-bold text-emerald-800 bg-emerald-100/50 px-3 py-1.5 mt-2 mb-1 rounded uppercase tracking-wider';
+                    liGroup.textContent = g;
+                    list.appendChild(liGroup);
+                    
+                    drugsInGroup.forEach(drug => {
+                        const li = document.createElement('li');
+                        li.className = 'drug-option px-3 py-2 hover:bg-emerald-100 cursor-pointer rounded-md text-sm text-slate-700 transition-colors flex justify-between items-center';
+                        li.innerHTML = `<span><span class="font-bold text-slate-800">${drug.name}</span> <span class="text-slate-500 ml-1 text-xs">(${drug.formulation})</span></span>`;
+                        li.dataset.id = drug.id;
+                        li.dataset.search = `${drug.name} ${drug.brand || ''} ${drug.formulation} ${g}`.toLowerCase();
+                        li.onclick = () => {
+                            if (isSingle) {
+                                selectedSingleDrugId = drug.id;
+                                document.getElementById('single-dropdown-label').innerHTML = `<span class="font-bold">${drug.name}</span> <span class="text-slate-500 text-sm ml-1">(${drug.formulation})</span>`;
+                                document.getElementById('single-dropdown-menu').classList.add('hidden');
+                                // 修正：加入 false 參數，代表這不是手動點擊按鈕，不要跳出警告
+                                calculateSingleLedEquivalent(false);
+                            } else {
+                                selectedCalcDrugId = drug.id;
+                                document.getElementById('calc-dropdown-label').innerHTML = `<span class="font-bold">${drug.name}</span> <span class="text-slate-500 text-sm ml-1">(${drug.formulation})</span>`;
+                                document.getElementById('calc-dropdown-menu').classList.add('hidden');
+                                onCalcDrugSelected();
+                            }
+                        };
+                        list.appendChild(li);
+                    });
                 }
-                const option = document.createElement('option');
-                option.value = id;
-                // 加入空白字元強制內縮
-                option.textContent = `\u00A0\u00A0${drug.name} (${drug.formulation})`;
-                singleDrugSelectEl.appendChild(option);
+            };
+
+            buildList('calc-dropdown-list', false);
+            buildList('single-dropdown-list', true);
+            setupDropdownSearch('calc-dropdown-search', 'calc-dropdown-list');
+            setupDropdownSearch('single-dropdown-search', 'single-dropdown-list');
+        }
+
+        // ================= Entacapone 綁定邏輯 =================
+        function onCalcDrugSelected() {
+            const drug = drugDatabase[selectedCalcDrugId];
+            if (!drug) return;
+
+            const bindWrapper = document.getElementById('entacapone-bind-wrapper');
+            const targetSelect = document.getElementById('entacapone-target-select');
+            
+            if (selectedCalcDrugId === 'entacapone') {
+                bindWrapper.classList.remove('hidden');
+                targetSelect.innerHTML = '';
+                const ldopas = ledEntries.filter(e => drugDatabase[e.id]?.group === 'Levodopa' || e.name.toLowerCase().includes('levodopa'));
+                if (ldopas.length === 0) {
+                    targetSelect.innerHTML = '<option value="">(尚未新增任何 L-dopa，請先在上方新增)</option>';
+                    targetSelect.disabled = true;
+                    addDrugBtn.disabled = true;
+                    addDrugBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    targetSelect.disabled = false;
+                    addDrugBtn.disabled = false;
+                    addDrugBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    ldopas.forEach(l => {
+                        const opt = document.createElement('option');
+                        opt.value = l.uid;
+                        opt.textContent = `${l.name} (${l.dosage}mg × ${l.frequency})`;
+                        targetSelect.appendChild(opt);
+                    });
+                }
+            } else {
+                bindWrapper.classList.add('hidden');
+                addDrugBtn.disabled = false;
+                addDrugBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (drug.example) {
+                const example = drug.example.toLowerCase();
+                let dosage = 0;
+                let frequency = 1;
+                const dosageMatch = example.match(/(\d+)mg/);
+                if (dosageMatch && dosageMatch[1]) dosage = parseInt(dosageMatch[1], 10);
+                if (example.includes('bid')) frequency = 2;
+                else if (example.includes('tid')) frequency = 3;
+                else if (example.includes('qid')) frequency = 4;
+                
+                dosageInputEl.value = dosage || '';
+                frequencyInputEl.value = frequency || '';
+            } else {
+                dosageInputEl.value = '';
+                frequencyInputEl.value = '';
             }
         }
         
+        // ================= DB 管理 =================
         function renderModalDrugDatabaseTable() {
             modalDbTableBodyEl.innerHTML = '';
             for (const id in drugDatabase) {
@@ -1086,9 +1223,11 @@
                 const maxSingleText = drug.maxSingleDose ? drug.maxSingleDose : '-';
                 const maxDailyText = drug.maxDose ? drug.maxDose : '-';
                 
-                // 優化5: 排版與視覺化
                 tr.innerHTML = `
-                    <td class="px-5 py-4 font-bold text-slate-700">${drug.name}</td>
+                    <td class="px-5 py-4 font-bold text-slate-700">
+                        ${drug.name}<br>
+                        <span class="text-xs font-normal text-slate-400 bg-slate-100 px-2 py-0.5 rounded">${drug.group || '其他'}</span>
+                    </td>
                     <td class="px-4 py-4 text-emerald-600 font-bold bg-emerald-50/50">${drug.factor}</td>
                     <td class="px-4 py-4 text-xs text-slate-500 whitespace-nowrap">
                         單: <span class="font-semibold text-slate-700">${maxSingleText}</span><br>
@@ -1106,6 +1245,7 @@
         
         async function addOrUpdateDrug() {
             const id = editDrugIdEl.value;
+            const drugGroup = dbDrugGroupEl.value;
             const drugName = dbDrugNameEl.value.trim();
             const brandName = dbBrandNameEl.value.trim();
             const formulation = dbFormulationEl.value.trim();
@@ -1126,6 +1266,7 @@
             }
             
             const drugData = {
+                group: drugGroup,
                 name: drugName,
                 brand: brandName,
                 formulation: formulation,
@@ -1177,6 +1318,7 @@
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
                     </svg> 編輯藥物`;
             editDrugIdEl.value = id;
+            dbDrugGroupEl.value = drug.group || '其他';
             dbDrugNameEl.value = drug.name;
             dbBrandNameEl.value = drug.brand || '';
             dbFormulationEl.value = drug.formulation;
@@ -1189,10 +1331,8 @@
             
             cancelEditBtn.classList.remove('hidden');
             cancelEditBtn.style.display = 'inline-flex';
-            
             dbModal.classList.add('show');
-            
-            // 新增功能: 自動捲動到 modal 頂端
+            dbFabBackToTopBtn.classList.remove('show'); // 開啟時隱藏按鈕
             dbModal.querySelector('.modal-content').scrollTop = 0;
         };
         
@@ -1201,6 +1341,7 @@
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
                     </svg> 新增藥物`;
             editDrugIdEl.value = '';
+            dbDrugGroupEl.value = 'Levodopa';
             dbDrugNameEl.value = '';
             dbBrandNameEl.value = '';
             dbFormulationEl.value = '';
@@ -1228,93 +1369,106 @@
                 clearInputFields();
             });
         }
-
-        function updateDosageFields() {
-            const selectedDrugId = drugSelectEl.value;
-            const drug = drugDatabase[selectedDrugId];
-            if (drug && drug.example) {
-                const example = drug.example.toLowerCase();
-                let dosage = 0;
-                let frequency = 1;
-
-                const dosageMatch = example.match(/(\d+)mg/);
-                if (dosageMatch && dosageMatch[1]) {
-                    dosage = parseInt(dosageMatch[1], 10);
-                }
-
-                if (example.includes('bid')) {
-                    frequency = 2;
-                } else if (example.includes('tid')) {
-                    frequency = 3;
-                } else if (example.includes('qid')) {
-                    frequency = 4;
-                } else if (example.includes('/day')) {
-                    frequency = 1;
-                } else if (example.includes('/dose')) {
-                    frequency = 1;
-                }
-                
-                dosageInputEl.value = dosage;
-                frequencyInputEl.value = frequency;
-            } else {
-                dosageInputEl.value = '';
-                frequencyInputEl.value = '';
-            }
-        }
         
         function addDrugEntry() {
-            const selectedDrugId = drugSelectEl.value;
-            const dosage = parseFloat(dosageInputEl.value);
-            const frequency = parseFloat(frequencyInputEl.value);
-            
-            if (!selectedDrugId || isNaN(dosage) || dosage <= 0 || isNaN(frequency) || frequency <= 0) {
+            if (!selectedCalcDrugId) {
+                errorMsgEl.querySelector('span').textContent = '請先選擇藥物。';
                 errorMsgEl.classList.remove('hidden');
                 return;
             }
+            const dosage = parseFloat(dosageInputEl.value);
+            const frequency = parseFloat(frequencyInputEl.value);
+            
+            if (isNaN(dosage) || dosage <= 0 || isNaN(frequency) || frequency <= 0) {
+                errorMsgEl.querySelector('span').textContent = '請輸入有效的單次劑量和頻次。';
+                errorMsgEl.classList.remove('hidden');
+                return;
+            }
+
+            let boundUid = null;
+            if (selectedCalcDrugId === 'entacapone') {
+                boundUid = document.getElementById('entacapone-target-select').value;
+                if (!boundUid) {
+                    errorMsgEl.querySelector('span').textContent = '請選擇要綁定的 L-dopa 處方。';
+                    errorMsgEl.classList.remove('hidden');
+                    return;
+                }
+            }
+
             errorMsgEl.classList.add('hidden');
-            
-            const drug = drugDatabase[selectedDrugId];
-            if (!drug) return;
-            
+            const drug = drugDatabase[selectedCalcDrugId];
             const dailyDosage = dosage * frequency;
-            const led = dailyDosage * drug.factor;
             
             ledEntries.push({
-                id: selectedDrugId,
+                uid: Date.now().toString() + Math.random().toString(36).substring(2,9),
+                id: selectedCalcDrugId,
                 name: drug.name,
                 dosage: dosage,
                 frequency: frequency,
                 formulation: drug.formulation,
                 dailyDosage: dailyDosage,
-                led: led,
-                factor: drug.factor
+                led: 0,
+                factor: drug.factor,
+                boundUid: boundUid
             });
             
             recalculateAllLed();
             clearInputFields();
+
+            // 重置選單狀態
+            document.getElementById('calc-dropdown-label').innerHTML = '請選擇藥物...';
+            selectedCalcDrugId = null;
+            document.getElementById('entacapone-bind-wrapper').classList.add('hidden');
         }
         
         function removeDrugEntry(index) {
             ledEntries.splice(index, 1);
             recalculateAllLed();
         }
+
+        window.editDrugEntry = (uid) => {
+            const index = ledEntries.findIndex(e => e.uid === uid);
+            if (index === -1) return;
+            const entry = ledEntries[index];
+            
+            selectedCalcDrugId = entry.id;
+            document.getElementById('calc-dropdown-label').innerHTML = `<span class="font-bold">${entry.name}</span> <span class="text-slate-500 text-sm ml-1">(${entry.formulation})</span>`;
+            
+            dosageInputEl.value = entry.dosage;
+            frequencyInputEl.value = entry.frequency;
+            
+            onCalcDrugSelected();
+            if (entry.id === 'entacapone') {
+                setTimeout(() => {
+                    document.getElementById('entacapone-target-select').value = entry.boundUid || '';
+                }, 10);
+            }
+            
+            ledEntries.splice(index, 1);
+            recalculateAllLed();
+            document.getElementById('calc-dropdown-wrapper').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        };
         
         function recalculateAllLed() {
-            let totalLevodopaLed = 0;
+            // 優先計算非 Entacapone
+            ledEntries.forEach(entry => {
+                if (entry.id !== 'entacapone') {
+                    entry.led = entry.dailyDosage * entry.factor;
+                }
+            });
 
-            const entacaponeInList = ledEntries.some(entry => entry.id === 'entacapone');
-            if (entacaponeInList) {
-                ledEntries.forEach(entry => {
-                    if (entry.name.includes('Levodopa')) {
-                        totalLevodopaLed += entry.led;
-                    }
-                });
-            }
-
+            // 依據綁定的 L-dopa 計算 Entacapone
             ledEntries.forEach(entry => {
                 if (entry.id === 'entacapone') {
-                    if (totalLevodopaLed > 0) {
-                        entry.led = totalLevodopaLed * entry.factor;
+                    if (entry.boundUid) {
+                        const target = ledEntries.find(e => e.uid === entry.boundUid);
+                        if (target) {
+                            entry.led = target.led * entry.factor;
+                            entry.warning = null;
+                        } else {
+                            entry.led = 0;
+                            entry.warning = '原綁定的 L-dopa 處方已被移除';
+                        }
                     } else {
                         entry.led = 0;
                     }
@@ -1330,10 +1484,21 @@
             ledEntries.forEach((entry, index) => {
                 const dailyDosageFormatted = formatNumber(entry.dailyDosage);
                 const ledFormatted = formatNumber(entry.led);
-                const formula = (entry.id === 'entacapone') ? `併用 Levodopa 成分藥物之總LED × ${entry.factor} = ${ledFormatted} mg LED` : `(${dailyDosageFormatted} mg/天) × ${entry.factor} = ${ledFormatted} mg LED`;
                 
-                // 臨床安全警示 (Safety Alerts) - 包含單次與每日極量判斷
+                let formula = '';
                 let warningHtml = '';
+
+                if (entry.id === 'entacapone') {
+                    const target = ledEntries.find(e => e.uid === entry.boundUid);
+                    const targetName = target ? target.name : '未知處方';
+                    formula = `綁定 ${targetName} LED × ${entry.factor} = ${ledFormatted} mg`;
+                    if (entry.warning) {
+                        warningHtml += `<div class="mt-2 text-xs text-red-800 bg-red-50 border border-red-300 px-3 py-1.5 rounded-md inline-block shadow-sm">⚠️ ${entry.warning}</div>`;
+                    }
+                } else {
+                    formula = `(${dailyDosageFormatted} mg/天) × ${entry.factor} = ${ledFormatted} mg`;
+                }
+                
                 const dbDrug = drugDatabase[entry.id];
                 if (dbDrug) {
                     let warnings = [];
@@ -1344,7 +1509,7 @@
                         warnings.push(`單日總量超出極量 (${dbDrug.maxDose} mg)`);
                     }
                     if (warnings.length > 0) {
-                        warningHtml = `
+                        warningHtml += `
                         <div class="mt-2 text-xs text-yellow-800 bg-yellow-50 border border-yellow-300 px-3 py-1.5 rounded-md inline-block shadow-sm">
                             ⚠️ <strong>用藥警示：</strong> ${warnings.join('，')}
                         </div>`;
@@ -1360,7 +1525,10 @@
                         <p class="text-xs text-emerald-700 mt-1 font-medium bg-white px-2 py-1 rounded inline-block border border-emerald-100">換算：${formula}</p>
                         <br>${warningHtml}
                     </div>
-                    <button onclick="removeDrugEntry(${index})" class="btn btn-danger text-xs ml-4 mt-1 px-3 py-1 h-auto min-h-0">移除</button>
+                    <div class="flex flex-col gap-2 ml-4">
+                        <button onclick="editDrugEntry('${entry.uid}')" class="btn btn-secondary text-xs px-3 py-1.5 h-auto min-h-0 border-emerald-300 text-emerald-700 flex justify-center w-full">編輯</button>
+                        <button onclick="removeDrugEntry(${index})" class="btn btn-danger text-xs px-3 py-1.5 h-auto min-h-0 flex justify-center w-full">移除</button>
+                    </div>
                 `;
                 ledListEl.appendChild(div);
             });
@@ -1396,7 +1564,6 @@
             document.body.removeChild(textarea);
         }
 
-        // 匯出純文字報表 (優化4: 匯出 TXT)
         function exportTxtReport() {
             if (ledEntries.length === 0) {
                 showMessage('尚未新增任何藥物，無法匯出。');
@@ -1441,30 +1608,34 @@
             document.body.removeChild(link);
         }
 
-        function calculateSingleLedEquivalent() {
-            const selectedDrugId = singleDrugSelectEl.value;
+        // 修正：加入參數 eOrManual 判斷是否為按鈕點擊，防止自動觸發時跳出警告干擾
+        function calculateSingleLedEquivalent(eOrManual) {
+            const isManualClick = (eOrManual instanceof Event) || (eOrManual === true);
+
+            if (!selectedSingleDrugId) {
+                if (isManualClick) showMessage('請先從下拉選單選擇藥物！');
+                return;
+            }
             const singleDosage = parseFloat(singleDosageInputEl.value);
 
             singleLedResultsEl.innerHTML = '';
 
             if (isNaN(singleDosage) || singleDosage <= 0) {
-                showMessage('請輸入有效的單次劑量！');
+                if (isManualClick) showMessage('請輸入有效的單次劑量！');
                 return;
             }
 
-            const selectedDrug = drugDatabase[selectedDrugId];
+            const selectedDrug = drugDatabase[selectedSingleDrugId];
             if (!selectedDrug) return;
 
             const baseLed = singleDosage * selectedDrug.factor;
             const baseLedFormatted = formatNumber(baseLed);
 
-            // 單一藥品極量警告 (包含單次與每日)
             let warningHtml = '';
             let warnings = [];
             if (selectedDrug.maxSingleDose && singleDosage > selectedDrug.maxSingleDose) {
                 warnings.push(`單次劑量 (${singleDosage}mg) 已超過建議單次極量 (${selectedDrug.maxSingleDose}mg)`);
             }
-            // 由於這裡是單次計算，要超過每日極量通常代表單次吃太多，但也一併提示
             if (selectedDrug.maxDose && singleDosage > selectedDrug.maxDose) {
                 warnings.push(`單次劑量 (${singleDosage}mg) 甚至已超過建議單日極量 (${selectedDrug.maxDose}mg)`);
             }
@@ -1488,7 +1659,7 @@
 
             for (const id in drugDatabase) {
                 const drug = drugDatabase[id];
-                if (id !== selectedDrugId && id !== 'entacapone') { 
+                if (id !== selectedSingleDrugId && id !== 'entacapone') { 
                     let equivalentText;
                     if (id === 'safinamide_100') {
                         equivalentText = `<div class="bg-white p-4 rounded-lg border border-red-100 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
@@ -1521,38 +1692,40 @@
         function clearSingleLedFields() {
             singleDosageInputEl.value = '';
             singleLedResultsEl.innerHTML = '';
+            selectedSingleDrugId = null;
+            document.getElementById('single-dropdown-label').innerHTML = '請選擇藥物...';
         }
 
-        // 開啟與關閉設定說明 Modal
-        openSettingsBtn.addEventListener('click', () => {
-            settingsModal.classList.add('show');
-        });
-        closeSettingsBtn.addEventListener('click', () => {
-            settingsModal.classList.remove('show');
-        });
+        // 綁定 Enter 快捷鍵
+        const handleEnterKey = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addDrugBtn.click();
+            }
+        };
+        dosageInputEl.addEventListener('keydown', handleEnterKey);
+        frequencyInputEl.addEventListener('keydown', handleEnterKey);
+
+        openSettingsBtn.addEventListener('click', () => { settingsModal.classList.add('show'); });
+        closeSettingsBtn.addEventListener('click', () => { settingsModal.classList.remove('show'); });
         
         addDrugBtn.addEventListener('click', addDrugEntry);
         clearInputBtn.addEventListener('click', clearInputFields);
         clearAllDrugsBtn.addEventListener('click', clearAllDrugs);
         copyBtn.addEventListener('click', copyResultsToClipboard);
-        exportTxtBtn.addEventListener('click', exportTxtReport); // 綁定匯出TXT
+        exportTxtBtn.addEventListener('click', exportTxtReport);
         
-        // 優化3: 點擊管理藥物按鈕，先跳出密碼驗證視窗
         const passwordModal = document.getElementById('password-modal');
         const adminPasswordInput = document.getElementById('admin-password-input');
         const confirmPasswordBtn = document.getElementById('confirm-password-btn');
         const cancelPasswordBtn = document.getElementById('cancel-password-btn');
 
         openDbModalBtn.addEventListener('click', () => {
-            adminPasswordInput.value = ''; // 清空先前的輸入
+            adminPasswordInput.value = '';
             passwordModal.classList.add('show');
-            // 自動 focus 輸入框 (使用 setTimeout 確保 Modal 顯示動畫已啟動)
-            setTimeout(() => {
-                adminPasswordInput.focus();
-            }, 100);
+            setTimeout(() => { adminPasswordInput.focus(); }, 100);
         });
 
-        // 密碼輸入框支援 Enter 鍵
         adminPasswordInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -1560,37 +1733,32 @@
             }
         });
 
-        // 密碼驗證邏輯
         confirmPasswordBtn.addEventListener('click', () => {
             if (adminPasswordInput.value === '789') {
                 passwordModal.classList.remove('show');
                 dbModal.classList.add('show');
+                dbFabBackToTopBtn.classList.remove('show'); // 開啟時隱藏按鈕
+                // 開啟時將卷軸推至頂部
+                dbModal.querySelector('.modal-content').scrollTop = 0;
             } else {
                 showMessage('密碼錯誤，請重新輸入！');
             }
         });
 
-        cancelPasswordBtn.addEventListener('click', () => {
-            passwordModal.classList.remove('show');
-        });
-
-        closeDbModalBtn.addEventListener('click', () => {
-            dbModal.classList.remove('show');
-            clearDrugForm();
+        cancelPasswordBtn.addEventListener('click', () => { passwordModal.classList.remove('show'); });
+        closeDbModalBtn.addEventListener('click', () => { 
+            dbModal.classList.remove('show'); 
+            dbFabBackToTopBtn.classList.remove('show'); // 關閉時隱藏按鈕
+            clearDrugForm(); 
         });
         saveDrugBtn.addEventListener('click', addOrUpdateDrug);
-        cancelEditBtn.addEventListener('click', () => {
-            clearDrugForm();
-        });
+        cancelEditBtn.addEventListener('click', () => { clearDrugForm(); });
         calculateSingleLedBtn.addEventListener('click', calculateSingleLedEquivalent);
         clearSingleLedBtn.addEventListener('click', clearSingleLedFields);
         
-        // 套用防抖 (Debounce) 於輸入框，實現即時變更計算不卡頓
-        singleDosageInputEl.addEventListener('input', debounce(calculateSingleLedEquivalent, 500));
-        
-        drugSelectEl.addEventListener('change', updateDosageFields);
+        // 修正：包裝回呼函式傳入 false，避免在刪除數字或打字時觸發無效的警告彈窗
+        singleDosageInputEl.addEventListener('input', debounce(() => calculateSingleLedEquivalent(false), 500));
 
-        // Modal triggers
         [openInfoModalBtn1, openInfoModalBtn2, openInfoModalBtn3, openInfoModalBtn4].forEach(btn => {
             btn.addEventListener('click', () => {
                 const modalTitle = btn.textContent.trim();
@@ -1600,33 +1768,43 @@
             });
         });
 
-        closeAdviceModalBtn.addEventListener('click', () => {
-            adviceModal.classList.remove('show');
-        });
+        closeAdviceModalBtn.addEventListener('click', () => { adviceModal.classList.remove('show'); });
+        closeMessageBtn.addEventListener('click', () => { messageModal.classList.remove('show'); });
 
-        // Close message modal (修正為操作 classList)
-        closeMessageBtn.addEventListener('click', () => {
-            messageModal.classList.remove('show');
-        });
-
-        // FAB (回到頂端) 滾動監聽與點擊事件
         window.addEventListener('scroll', debounce(() => {
-            if (window.scrollY > 300) {
-                fabBackToTopBtn.classList.add('show');
-            } else {
-                fabBackToTopBtn.classList.remove('show');
-            }
+            if (window.scrollY > 300) { fabBackToTopBtn.classList.add('show'); } 
+            else { fabBackToTopBtn.classList.remove('show'); }
         }, 100));
 
-        fabBackToTopBtn.addEventListener('click', () => {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
+        fabBackToTopBtn.addEventListener('click', () => { window.scrollTo({ top: 0, behavior: 'smooth' }); });
+
+        // 新增：資料庫 Modal 內部滾動監聽與點擊事件
+        const dbModalContent = dbModal.querySelector('.modal-content');
+        dbModalContent.addEventListener('scroll', debounce(() => {
+            if (dbModalContent.scrollTop > 300) { dbFabBackToTopBtn.classList.add('show'); } 
+            else { dbFabBackToTopBtn.classList.remove('show'); }
+        }, 100));
+
+        dbFabBackToTopBtn.addEventListener('click', () => { dbModalContent.scrollTo({ top: 0, behavior: 'smooth' }); });
 
         window.removeDrugEntry = removeDrugEntry;
         window.deleteDrug = deleteDrug;
         window.editDrug = editDrug;
         window.showMessage = showMessage;
         window.showConfirmation = showConfirmation;
+
+        // 資料庫快速檢索功能
+        const dbSearchInput = document.getElementById('db-search-input');
+        if(dbSearchInput) {
+            dbSearchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                const rows = document.querySelectorAll('#modal-db-table-body tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(term) ? '' : 'none';
+                });
+            });
+        }
 
         window.onload = setupFirebase;
 
