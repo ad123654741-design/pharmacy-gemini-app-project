@@ -223,6 +223,23 @@
         .modern-table tr:hover td { background-color: #f8fafc; }
         .modern-table tr:last-child td { border-bottom: none; }
         
+        /* 行動版表格優化 */
+        @media (max-width: 767px) {
+            .modern-table th, .modern-table td {
+                padding: 0.75rem 0.4rem;
+                font-size: 0.8rem;
+            }
+            .modern-table td:first-child { 
+                white-space: normal; /* 允許藥名在手機版換行，減少橫向卷軸 */
+                word-break: break-word; 
+            }
+            .pk-tag { 
+                padding: 2px 4px; 
+                font-size: 0.65rem; 
+                margin: 1px 0;
+            }
+        }
+
         /* Class 分隔線 */
         .class-header td {
             background-color: #f1f5f9;
@@ -420,6 +437,49 @@
             transform: translateY(-4px);
             box-shadow: 0 15px 30px -8px rgba(0,0,0,0.08);
         }
+
+        /* 浮動回到頂端按鈕 (FAB) */
+        #back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 1.5rem;
+            background-color: var(--accent-color);
+            color: white;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(15px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+        }
+        #back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        #back-to-top:hover {
+            background-color: #0f766e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(13, 148, 136, 0.4);
+        }
+        #back-to-top:active {
+            transform: scale(0.92) translateY(0);
+        }
+        @media (max-width: 767px) {
+            #back-to-top {
+                bottom: calc(4.5rem + env(safe-area-inset-bottom)); /* 避開底部導覽列 */
+                right: 1rem;
+                width: 2.75rem;
+                height: 2.75rem;
+            }
+        }
     </style>
 </head>
 <body class="p-0 sm:p-4 md:p-8 min-h-screen flex justify-center items-start selection:bg-teal-200 selection:text-teal-900">
@@ -467,25 +527,25 @@
         <div id="content-potency" class="tab-content active">
             
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 mb-8">
-                <div class="p-4 sm:p-5 rounded-2xl bg-rose-50 border border-rose-100 text-center hover-card-lift">
+                <div class="p-3 sm:p-5 rounded-2xl bg-rose-50 border border-rose-100 text-center hover-card-lift">
                     <h3 class="text-rose-800 font-bold mb-1 text-xs sm:text-sm">超強效 (Super)</h3>
-                    <p class="text-xl sm:text-2xl font-bold text-rose-600 my-1">Class 1</p>
-                    <p class="text-[10px] sm:text-xs text-rose-700 opacity-80">Clobetasol 0.05%</p>
+                    <p class="text-lg sm:text-2xl font-bold text-rose-600 my-1">Class 1</p>
+                    <p class="hidden sm:block text-[10px] sm:text-xs text-rose-700 opacity-80">Clobetasol 0.05%</p>
                 </div>
-                <div class="p-4 sm:p-5 rounded-2xl bg-orange-50 border border-orange-100 text-center hover-card-lift">
+                <div class="p-3 sm:p-5 rounded-2xl bg-orange-50 border border-orange-100 text-center hover-card-lift">
                     <h3 class="text-orange-800 font-bold mb-1 text-xs sm:text-sm">強效 (Potent)</h3>
-                    <p class="text-xl sm:text-2xl font-bold text-orange-600 my-1">Class 2 - 3</p>
-                    <p class="text-[10px] sm:text-xs text-orange-700 opacity-80">Fluocinonide 0.05%</p>
+                    <p class="text-lg sm:text-2xl font-bold text-orange-600 my-1">Class 2 - 3</p>
+                    <p class="hidden sm:block text-[10px] sm:text-xs text-orange-700 opacity-80">Fluocinonide 0.05%</p>
                 </div>
-                <div class="p-4 sm:p-5 rounded-2xl bg-amber-50 border border-amber-100 text-center hover-card-lift">
+                <div class="p-3 sm:p-5 rounded-2xl bg-amber-50 border border-amber-100 text-center hover-card-lift">
                     <h3 class="text-amber-800 font-bold mb-1 text-xs sm:text-sm">中效 (Mid)</h3>
-                    <p class="text-xl sm:text-2xl font-bold text-amber-600 my-1">Class 4 - 5</p>
-                    <p class="text-[10px] sm:text-xs text-amber-700 opacity-80">Triamcinolone 0.1%</p>
+                    <p class="text-lg sm:text-2xl font-bold text-amber-600 my-1">Class 4 - 5</p>
+                    <p class="hidden sm:block text-[10px] sm:text-xs text-amber-700 opacity-80">Triamcinolone 0.1%</p>
                 </div>
-                <div class="p-4 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-100 text-center hover-card-lift">
+                <div class="p-3 sm:p-5 rounded-2xl bg-emerald-50 border border-emerald-100 text-center hover-card-lift">
                     <h3 class="text-emerald-800 font-bold mb-1 text-xs sm:text-sm">弱效 (Mild)</h3>
-                    <p class="text-xl sm:text-2xl font-bold text-emerald-600 my-1">Class 6 - 7</p>
-                    <p class="text-[10px] sm:text-xs text-emerald-700 opacity-80">Desonide, Hydrocort.</p>
+                    <p class="text-lg sm:text-2xl font-bold text-emerald-600 my-1">Class 6 - 7</p>
+                    <p class="hidden sm:block text-[10px] sm:text-xs text-emerald-700 opacity-80">Desonide, Hydrocort.</p>
                 </div>
             </div>
 
@@ -494,11 +554,11 @@
                 <table class="modern-table min-w-full">
                     <thead>
                         <tr>
-                            <th class="w-[25%]">藥物成分 (Generic Name)</th>
-                            <th class="w-[10%]">濃度</th>
-                            <th class="w-[20%]">常見商品名 (Brand)</th>
-                            <th class="w-[20%]">劑型 (Vehicle)</th>
-                            <th class="w-[25%]">臨床備註</th>
+                            <th class="w-[35%] md:w-[25%]">藥物成分 (Generic Name)</th>
+                            <th class="w-[15%] md:w-[10%] whitespace-nowrap">濃度</th>
+                            <th class="w-[25%] md:w-[20%]">常見商品名 (Brand)</th>
+                            <th class="w-[25%] md:w-[20%]">劑型 (Vehicle)</th>
+                            <th class="w-[25%] hidden md:table-cell">臨床備註</th>
                         </tr>
                     </thead>
                     <tbody class="text-slate-700 text-sm">
@@ -512,28 +572,28 @@
                             <td>0.05%</td>
                             <td class="text-slate-600">Vimax Foaming Solution</td>
                             <td><span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-foam">Foam</span></td>
-                            <td class="text-xs text-slate-500">臨床最強效標準藥。每日1~2次。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">臨床最強效標準藥。每日1~2次。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Betamethasone dipropionate (Augmented)</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-gel">Gel</span></td>
-                            <td class="text-xs text-slate-500">特殊增強基劑Augmented，比一般配方強。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">特殊增強基劑Augmented，比一般配方強。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Halobetasol propionate</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">極強效。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">極強效。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Diflorasone diacetate</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500">限厚皮與難治部位。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">限厚皮與難治部位。</td>
                         </tr>
 
                         <!-- Class 2 -->
@@ -545,42 +605,42 @@
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Mometasone furoate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500">軟膏劑型強於乳膏(Class 4)。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">軟膏劑型強於乳膏(Class 4)。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluocinonide</td>
                             <td>0.05%</td>
                             <td class="text-slate-600">Topsym Cream</td>
                             <td><span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-gel">Gel</span> <span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">每日1~3次。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">每日1~3次。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Diflorasone diacetate</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">乳膏劑型降為2級。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">乳膏劑型降為2級。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Halcinonide</td>
                             <td>0.1%</td>
                             <td class="text-slate-600">Confumin Cream</td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500">每日2~3次。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">每日2~3次。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Desoximetasone</td>
                             <td>0.25%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
 
                         <!-- Class 3 -->
@@ -592,56 +652,56 @@
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">乳膏劑型。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">乳膏劑型。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Betamethasone dipropionate</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">部分文獻歸類在第2級。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">部分文獻歸類在第2級。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Betamethasone valerate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Desoximetasone</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">低濃度版本。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">低濃度版本。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Triamcinolone acetonide</td>
                             <td>0.5%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">高濃度(0.5%)版本。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">高濃度(0.5%)版本。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluticasone propionate</td>
                             <td>0.005%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Diflucortolone valerate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Diflucortolone valerate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
 
                         <!-- Class 4 -->
@@ -653,35 +713,35 @@
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-lotion">Lotion</span></td>
-                            <td class="text-xs text-slate-500">兒童較常用的中效藥物。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">兒童較常用的中效藥物。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Triamcinolone acetonide</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Hydrocortisone valerate</td>
                             <td>0.2%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluocinolone acetonide</td>
                             <td>0.025%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Betamethasone valerate</td>
                             <td>0.12%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-foam">Foam</span></td>
-                            <td class="text-xs text-slate-500">特殊泡沫劑型。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">特殊泡沫劑型。</td>
                         </tr>
 
                         <!-- Class 5 -->
@@ -693,56 +753,56 @@
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-lotion">Lotion</span></td>
-                            <td class="text-xs text-slate-500">部分文獻歸類在第4級。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">部分文獻歸類在第4級。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Betamethasone valerate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-lotion">Lotion</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluocinolone acetonide</td>
                             <td>0.025%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluticasone propionate</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Desonide</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500">軟膏穿透力較強，有時歸為5級。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">軟膏穿透力較強，有時歸為5級。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Prednicarbate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                          <tr>
                             <td class="font-bold">Hydrocortisone valerate</td>
                             <td>0.2%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Hydrocortisone butyrate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
 
                         <!-- Class 6 -->
@@ -754,35 +814,35 @@
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-lotion">Lotion</span></td>
-                            <td class="text-xs text-slate-500">兒童臉部安全首選。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">兒童臉部安全首選。</td>
                         </tr>
                          <tr>
                             <td class="font-bold">Alclometasone dipropionate</td>
                             <td>0.05%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Triamcinolone acetonide</td>
                             <td>0.025%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">低濃度版本。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">低濃度版本。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Fluocinolone acetonide</td>
                             <td>0.01%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-sol">Sol</span></td>
-                            <td class="text-xs text-slate-500">低濃度版本。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">低濃度版本。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Betamethasone valerate</td>
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-lotion">Lotion</span></td>
-                            <td class="text-xs text-slate-500">洗劑有時歸為弱效。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">洗劑有時歸為弱效。</td>
                         </tr>
 
                         <!-- Class 7 -->
@@ -795,21 +855,21 @@
                             <td>2.5%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Hydrocortisone (Base)</td>
                             <td>1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span> <span class="pk-tag pk-lotion">Lotion</span></td>
-                            <td class="text-xs text-slate-500">最安全，臉部首選。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">最安全，臉部首選。</td>
                         </tr>
                         <tr>
                             <td class="font-bold">Hydrocortisone (Base)</td>
                             <td>0.5%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">極低濃度。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">極低濃度。</td>
                         </tr>
                         
                         <!-- Hydrocortisone Acetate Series -->
@@ -818,21 +878,21 @@
                             <td>2.5%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Hydrocortisone acetate</td>
                             <td>1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span> <span class="pk-tag pk-oint">Ointment</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
                         <tr>
                             <td class="font-bold">Hydrocortisone acetate</td>
                             <td>0.5%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500"></td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell"></td>
                         </tr>
 
                         <tr>
@@ -840,7 +900,7 @@
                             <td>0.1%</td>
                             <td class="text-slate-600"></td>
                             <td><span class="pk-tag pk-cream">Cream</span></td>
-                            <td class="text-xs text-slate-500">常與抗生素製成複方。</td>
+                            <td class="text-xs text-slate-500 hidden md:table-cell">常與抗生素製成複方。</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1574,6 +1634,13 @@
 
     </main>
 
+    <!-- Back to Top FAB -->
+    <button id="back-to-top" aria-label="回到頂端" title="回到頂端">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+        </svg>
+    </button>
+
     <!-- Bottom Mobile Navigation -->
     <nav class="bottom-nav">
         <button onclick="switchTab('potency')" id="btm-tab-potency" class="btm-tab-btn active">強度分級</button>
@@ -1701,6 +1768,19 @@
                 impact.innerText = data[step].impact;
             }
         }
+
+        // Back to Top Logic
+        const backToTopBtn = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.add('show');
+            } else {
+                backToTopBtn.classList.remove('show');
+            }
+        });
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     </script>
 </body>
 </html>
