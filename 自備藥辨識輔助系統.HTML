@@ -62,8 +62,21 @@
             /* 恢復 padding 為 0，將留白交給正規的 @page margin 處理，避免跨頁被切斷 */
             #print-view:not(.hidden), #print-label-view:not(.hidden) { display: block !important; position: static !important; overflow: visible !important; height: auto !important; min-height: auto !important; padding: 0 !important; }
             #print-view.hidden, #print-label-view.hidden { display: none !important; }
-            /* 恢復 @page 邊界，這是確保每一頁(包含跨頁)都有上下留白的唯一正規方式 */
-            @page { margin: 1.5cm; size: portrait; }
+            
+            /* * 針對列印邊界與頁尾的標準設定 
+             * (註: Chrome/Edge 原生不支援分開隱藏網址與保留頁碼，此為 W3C 標準語法，Safari/Firefox 適用)
+             */
+            @page { 
+                margin: 1.5cm; 
+                size: portrait; 
+                @bottom-left {
+                    content: ""; /* 隱藏左下角的網址 */
+                }
+                @bottom-right {
+                    content: counter(page) " / " counter(pages); /* 僅保留右下角頁碼 */
+                }
+            }
+            
             /* 智能分頁：確保表頭重複與避免切斷列 */
             table { page-break-inside: auto; }
             tr { page-break-inside: avoid; break-inside: avoid; page-break-after: auto; }
@@ -264,6 +277,13 @@
     <!-- 3. 列印與匯出隱藏視圖 (Print View)         -->
     <!-- ========================================== -->
     <div id="print-view" class="hidden bg-white p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
+        <!-- 新增：列印小提醒 (不印出) -->
+        <div class="max-w-5xl mx-auto print-hide">
+            <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
+                <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
+                <p><strong>列印排版提醒：</strong>網頁程式無法自動更改瀏覽器的列印預設值。為了畫面乾淨並避免印出網址與日期，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
+            </div>
+        </div>
         <!-- 新增：動態自訂列印欄位 -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 print-hide max-w-5xl mx-auto border-b border-slate-200 pb-4 gap-4">
             <div>
@@ -313,6 +333,13 @@
     <!-- 3.5. 列印標籤隱藏視圖 (Print Label View)   -->
     <!-- ========================================== -->
     <div id="print-label-view" class="hidden bg-slate-100 p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
+        <!-- 新增：列印小提醒 (不印出) -->
+        <div class="max-w-5xl mx-auto print-hide">
+            <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
+                <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
+                <p><strong>列印排版提醒：</strong>網頁程式無法自動更改瀏覽器的列印預設值。為了畫面乾淨並避免印出網址與日期，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
+            </div>
+        </div>
         <div class="flex justify-end gap-3 mb-6 print-hide max-w-5xl mx-auto border-b border-slate-300 pb-4">
             <button onclick="app.closePrintLabelView()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors shadow-sm">返回編輯</button>
             <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition-colors shadow-sm">
@@ -338,6 +365,22 @@
                 <button onclick="app.closeConfirmModal()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">取消</button>
                 <button onclick="app.executeClearData()" class="px-5 py-2.5 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-xl transition-colors shadow-sm shadow-pink-500/30">確定清空</button>
             </div>
+        </div>
+    </div>
+
+    <!-- 登入畫面 (Login Overlay) -->
+    <div id="login-overlay" class="fixed inset-0 bg-slate-100 z-[200] flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-[90%] text-center border border-slate-200/60">
+            <div class="w-16 h-16 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
+                <i class="ph ph-lock-key text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">系統登入</h2>
+            <p class="text-sm text-slate-500 mb-6">請輸入存取密碼以繼續使用本系統</p>
+            <input type="password" id="login-pwd" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-center text-xl tracking-[0.25em] transition-all" placeholder="請輸入密碼">
+            <button onclick="app.verifyPassword()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
+                登入系統
+            </button>
+            <p id="login-error" class="text-red-500 text-sm mt-4 hidden opacity-0 transition-opacity font-medium">密碼錯誤，請重新輸入</p>
         </div>
     </div>
 
@@ -374,7 +417,10 @@
                 appUi: document.getElementById('app-ui'),
                 confirmModal: document.getElementById('confirm-modal'),
                 confirmModalContent: document.getElementById('confirm-modal-content'),
-                searchInput: document.getElementById('search-input')
+                searchInput: document.getElementById('search-input'),
+                loginOverlay: document.getElementById('login-overlay'),
+                loginPwd: document.getElementById('login-pwd'),
+                loginError: document.getElementById('login-error')
             };
 
             const utils = {
@@ -830,7 +876,38 @@
             };
 
             const api = {
-                init: () => { medList = storage.load(); ui.renderTable(); setupEvents(); },
+                init: () => { 
+                    // 登入驗證檢查 (利用 sessionStorage 避免同一個分頁一直重複登入)
+                    if (sessionStorage.getItem('medAssistantAuth') === 'true') {
+                        els.loginOverlay.classList.add('hidden');
+                        els.loginOverlay.classList.remove('flex');
+                    } else {
+                        els.loginPwd.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') api.verifyPassword();
+                        });
+                        // 稍微延遲 focus 避免行動裝置鍵盤異常彈出
+                        setTimeout(() => els.loginPwd.focus(), 100);
+                    }
+                    
+                    medList = storage.load(); ui.renderTable(); setupEvents(); 
+                },
+
+                // 新增：驗證密碼邏輯
+                verifyPassword: () => {
+                    if (els.loginPwd.value === '789') {
+                        sessionStorage.setItem('medAssistantAuth', 'true');
+                        els.loginOverlay.classList.add('opacity-0');
+                        setTimeout(() => {
+                            els.loginOverlay.classList.add('hidden');
+                            els.loginOverlay.classList.remove('flex');
+                        }, 300);
+                    } else {
+                        els.loginError.classList.remove('hidden');
+                        els.loginError.classList.remove('opacity-0');
+                        els.loginPwd.value = '';
+                        els.loginPwd.focus();
+                    }
+                },
                 
                 // 新增：切換解析模式 UI 與狀態
                 setParseMode: (mode) => {
