@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藥品庫存視覺化查詢系統 | Pro UI</title>
+    
+    <!-- 引入 Tailwind CSS (用於快速且高質感的 UI 排版) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 引入 Lucide Icons (高質感開源圖示庫) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- 引入 Google Fonts: Noto Sans TC -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 自訂 Tailwind 設定與 CSS 動畫 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // 支援深色模式切換
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0ea5e9', // 醫療科技感的藍色
+                        primaryDark: '#0284c7',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* 隱藏捲軸但保持可捲動 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 搜尋命中時的鐵架發光呼吸燈動畫 */
+        @keyframes highlight-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
+            50% { box-shadow: 0 0 25px 10px rgba(14, 165, 233, 0.6); border-color: #38bdf8; transform: translateY(-8px) scale(1.02); }
+            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
+        }
+
+        /* 深色模式發光呼吸燈 */
+        .dark .rack-highlighted {
+            animation: highlight-pulse-dark 2s infinite ease-in-out;
+            background-color: rgba(14, 165, 233, 0.1);
+        }
+        @keyframes highlight-pulse-dark {
+            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
+            50% { box-shadow: 0 0 25px 10px rgba(14, 165, 233, 0.4); border-color: #38bdf8; transform: translateY(-8px) scale(1.02); }
+            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
+        }
+
+        /* 鐵架動態高光 Class */
+        .rack-highlighted {
+            animation: highlight-pulse 2s infinite ease-in-out;
+            z-index: 20;
+            background-color: #f0f9ff;
+        }
+
+        /* 點選鎖定時的樣式 */
+        .rack-selected {
+            border-color: #10b981 !important; 
+            background-color: #ecfdf5 !important;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.4) !important;
+            transform: translateY(-8px);
+            z-index: 15;
+        }
+        
+        .dark .rack-selected {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2) !important;
+        }
+        
+        /* 鐵架基礎過渡動畫 */
+        .rack-base {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-900 h-screen w-full overflow-hidden flex flex-col text-slate-800 dark:text-slate-100 transition-colors duration-300">
+
+    <!-- 頂部導覽列 (Header) -->
+    <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex items-center px-6 shrink-0 z-30 relative transition-colors duration-300">
+        <div class="flex items-center gap-3 text-primary">
+            <i data-lucide="cross" class="w-6 h-6"></i>
+            <h1 class="text-xl font-bold tracking-wide">藥品庫存區視覺化地圖</h1>
+        </div>
+        <div class="ml-auto flex items-center gap-4">
+            <div class="hidden sm:flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+                <i data-lucide="clock" class="w-4 h-4"></i>
+                <span id="lastUpdateTime">最後更新: 載入中...</span>
+            </div>
+            
+            <!-- 登入/登出切換按鈕 -->
+            <button onclick="Controllers.toggleAuth()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-all duration-200 hover:-translate-y-0.5 shadow-sm border border-transparent dark:border-slate-600" title="管理員登入">
+                <i data-lucide="log-in" id="authIcon" class="w-4 h-4"></i>
+                <span class="text-sm font-medium hidden md:block" id="authText">登入</span>
+            </button>
+
+            <!-- 設定按鈕 (齒輪) -->
+            <button onclick="Controllers.openSettingsModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all duration-300 hover:rotate-90 shadow-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600" title="系統設定">
+                <i data-lucide="settings" class="w-4 h-4"></i>
+            </button>
+
+            <!-- 深淺色切換按鈕 -->
+            <button onclick="Controllers.toggleDarkMode()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all duration-200 hover:-translate-y-0.5 shadow-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600" title="切換深淺色模式">
+                <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+                <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 主要內容區塊 -->
+    <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative pb-[70px] md:pb-0">
+        
+        <!-- 左側面板：搜尋與列表 -->
+        <aside class="w-full md:w-[400px] bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-[40vh] md:h-auto transition-colors duration-300">
+            
+            <!-- 搜尋區塊 -->
+            <div class="p-6 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 shrink-0 transition-colors duration-300">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">尋找藥品</h2>
+                    <div class="hidden md:flex items-center gap-2">
+                        <button onclick="Controllers.resetAll()" class="flex items-center gap-1 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5 shadow-sm border border-slate-200 dark:border-slate-600" title="清除搜尋與選取狀態">
+                            <i data-lucide="eraser" class="w-3.5 h-3.5"></i> 清除
+                        </button>
+                        <button onclick="Controllers.openEditModal('', '', 'Rack-A')" class="auth-required hidden flex items-center gap-1 text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 shadow-sm hover:shadow-primary/30">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增
+                        </button>
+                    </div>
+                </div>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i data-lucide="search" class="w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors"></i>
+                    </div>
+                    <input type="text" id="searchInput" 
+                        class="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:shadow-sm"
+                        placeholder="請輸入藥品名稱或縮寫 (Ctrl+F)">
+                    <button id="clearSearchBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                        <i data-lucide="x-circle" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                
+                <div id="statusMessage" class="mt-4 text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 inline-block" id="statusDot"></span>
+                    <span id="statusText">顯示所有藥品清單</span>
+                </div>
+            </div>
+
+            <!-- 藥品列表區塊 -->
+            <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-50/50 dark:bg-slate-900/20" id="medicineListContainer">
+                <!-- JS 動態渲染 -->
+            </div>
+            
+            <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center text-slate-400 dark:text-slate-500 shrink-0 transition-colors duration-300">
+                系統中共有 <span id="totalItemsCount" class="font-bold text-slate-600 dark:text-slate-300">0</span> 項藥品
+            </div>
+        </aside>
+
+        <!-- 右側面板：庫存視覺化 -->
+        <section class="flex-1 bg-slate-100/50 dark:bg-slate-900/50 relative overflow-hidden flex flex-col transition-colors duration-300">
+            
+            <div class="p-6 pb-0 shrink-0 flex justify-between items-start z-10">
+                <div class="pr-4">
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">搜尋左側藥品，系統將自動為您標示儲位。點擊鐵架可檢視單一儲位內容。</p>
+                </div>
+                
+                <div class="hidden sm:flex flex-col items-center gap-1 shrink-0">
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest">空間俯視圖</span>
+                    <div class="relative w-28 h-32 border-[3px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-sm p-2 transition-colors duration-300">
+                        <div id="minimap-Rack-A" class="absolute top-[15%] left-[10%] w-[35%] h-[12%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
+                        <div id="minimap-Rack-B" class="absolute top-[25%] left-[55%] w-[25%] h-[20%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
+                        <div id="minimap-Rack-C" class="absolute top-[50%] left-[55%] w-[18%] h-[30%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
+                        <div id="minimap-Rack-D" class="absolute top-[50%] left-[75%] w-[18%] h-[30%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
+                        <div id="minimap-Rack-E" class="absolute top-[82%] left-[55%] w-[38%] h-[12%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5個鐵架視覺化容器 -->
+            <div class="flex-1 w-full overflow-x-auto no-scrollbar">
+                <div class="flex w-max min-w-full h-full items-center justify-center px-6 md:px-12 py-8">
+                    <div class="flex flex-row gap-4 md:gap-8 lg:gap-12" id="racksContainer">
+                        <!-- JS 動態渲染 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 手機版底部導覽列 (僅小螢幕顯示) -->
+    <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around p-2 z-40 transition-colors duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe">
+        <button onclick="document.getElementById('searchInput').focus()" class="flex flex-col items-center gap-1 p-2 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all duration-200 hover:-translate-y-1">
+            <i data-lucide="search" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium">搜尋</span>
+        </button>
+        <button onclick="Controllers.openEditModal('', '', 'Rack-A')" class="auth-required hidden flex flex-col items-center gap-1 p-2 text-primary hover:text-primaryDark transition-all duration-200 hover:-translate-y-1">
+            <div class="bg-primary/10 p-1.5 rounded-full">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+            </div>
+            <span class="text-[10px] font-medium">新增</span>
+        </button>
+        <button onclick="Controllers.resetAll()" class="flex flex-col items-center gap-1 p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-all duration-200 hover:-translate-y-1">
+            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            <span class="text-[10px] font-medium">重置</span>
+        </button>
+    </nav>
+
+    <!-- 新增/編輯藥品 Modal -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="editModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg" id="modalTitle">新增/編輯藥品</h3>
+                <button onclick="Controllers.closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+                <input type="hidden" id="editMedId">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">藥品名稱</label>
+                    <input type="text" id="editMedName" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="請輸入藥品名稱">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">存放儲位 (鐵架)</label>
+                    <select id="editMedRack" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm">
+                        <!-- 選項由 JS 動態產生，以連動層架編輯 -->
+                    </select>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                <button onclick="Controllers.closeEditModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
+                <button onclick="Controllers.saveEditForm()" id="saveMedBtn" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4 hidden" id="saveIcon"></i> 儲存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 層架類別編輯 Modal -->
+    <div id="rackEditModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="rackEditModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg">編輯層架</h3>
+                <button onclick="Controllers.closeRackEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col gap-3 max-h-[60vh] overflow-y-auto no-scrollbar" id="rackEditListContainer">
+                <!-- JS 動態生成層架編輯清單 -->
+            </div>
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                <button onclick="Controllers.closeRackEditModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
+                <button id="saveRackBtn" onclick="Controllers.saveRackEditForm()" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> 儲存變更
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系統設定 Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="settingsModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg">系統設定</h3>
+                <button onclick="Controllers.closeSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col gap-3">
+                <button onclick="Controllers.closeSettingsModal(); Controllers.openRackEditModal()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="layers" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">層架編輯</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">修改層架顯示名稱與庫存類別標籤</div>
+                    </div>
+                </button>
+                <!-- 匯出層架標籤功能 -->
+                <button onclick="Controllers.closeSettingsModal(); Controllers.exportRackLabels()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="printer" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">匯出層架標籤</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">產生適合列印的儲位標籤，方便黏貼對照</div>
+                    </div>
+                </button>
+                <!-- 匯出藥品標籤功能 -->
+                <button onclick="Controllers.closeSettingsModal(); Controllers.exportMedicineLabels()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="tags" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">匯出藥品標籤</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">依層架分類匯出藥品標籤，橫向雙排方便剪貼</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 登入 Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[60] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-xs mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="loginModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg">管理員登入</h3>
+                <button onclick="Controllers.closeLoginModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">請輸入管理員密碼</label>
+                <input type="password" id="loginPwd" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="Password" onkeypress="if(event.key === 'Enter') Controllers.submitLogin()">
+                <!-- 密碼錯誤提示 -->
+                <p id="loginErrorMsg" class="text-red-500 dark:text-red-400 text-xs mt-2 hidden flex items-center gap-1">
+                    <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> 密碼錯誤，請重新輸入
+                </p>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                <button onclick="Controllers.submitLogin()" class="w-full px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i> 登入系統
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript 應用程式邏輯區塊 -->
+    <script>
+        /**
+         * 1. 資料架構與狀態
+         */
+        
+        // 定義5個鐵架的基礎資料 (新增 category 屬性與底層編號 no)
+        let RACKS_CONFIG = [
+            { no: 1, id: 'Rack-A', name: '鐵架 A', label: 'A區', theme: 'border-slate-300', category: '' },
+            { no: 2, id: 'Rack-B', name: '鐵架 B', label: 'B區', theme: 'border-slate-300', category: '' },
+            { no: 3, id: 'Rack-C', name: '鐵架 C', label: 'C區', theme: 'border-slate-300', category: '' },
+            { no: 4, id: 'Rack-D', name: '鐵架 D', label: 'D區', theme: 'border-slate-300', category: '' },
+            { no: 5, id: 'Rack-E', name: '鐵架 E', label: 'E區', theme: 'border-slate-300', category: '' }
+        ];
+
+        const AppState = {
+            medicines: [],
+            searchQuery: '',
+            selectedRackId: null, 
+            lastUpdate: null, 
+            isLoggedIn: false, // 新增登入狀態
+            
+            SHEET_ID: '1NSoY899Pk9KDaXJwhPxwka3YSsd_2Wt0DKffEU0tXkA', 
+            WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzSdtEPXrU_tbM8aGsfO4V254solwNr9KlOY6rfSVZOUV5qmj8HWcVc4ccOui9uB6eN/exec',
+            
+            async initData() {
+                if(!this.SHEET_ID) {
+                    this.medicines = [];
+                    this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false }) + " (未設定資料庫)";
+                    DOM.updateLastUpdateTime();
+                    return;
+                }
+
+                // 核心 Fetch 函數
+                const fetchSheet = async (sheetName = '') => {
+                    let url = `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:json`;
+                    if (sheetName) url += `&sheet=${encodeURIComponent(sheetName)}`;
+                    
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    const text = await res.text();
+                    const match = text.match(/google\.visualization\.Query\.setResponse\(([\s\S\w]+)\);/);
+                    if (!match) throw new Error('Invalid response format');
+                    const data = JSON.parse(match[1]);
+                    if (data.status === 'error') {
+                        throw new Error(data.errors?.[0]?.message || 'Google Sheet 讀取錯誤');
+                    }
+                    return data;
+                };
+
+                try {
+                    // --- 先嘗試讀取後端的層架設定 (Racks 工作表) ---
+                    try {
+                        const rackJson = await fetchSheet('Racks');
+                        const backendRacks = rackJson.table.rows.map(row => ({
+                            id: row.c[0]?.v || '',
+                            name: row.c[1]?.v || '',
+                            category: row.c[2]?.v || ''
+                        }));
+                        // 套用後端層架設定
+                        backendRacks.forEach(br => {
+                            const r = RACKS_CONFIG.find(x => x.id === br.id);
+                            if (r) {
+                                if (br.name) r.name = br.name;
+                                if (br.category) r.category = br.category;
+                            }
+                        });
+                    } catch(e) {
+                        console.warn("尚未建立 Racks 工作表或層架讀取失敗，使用預設或本機快取層架。");
+                    }
+                    DOM.renderRackOptions(); // 同步更新下拉選單
+
+                    // --- 讀取藥品資料 ---
+                    const medJson = await fetchSheet();
+                    
+                    this.medicines = medJson.table.rows.map(row => {
+                        let rawRackId = (row.c[2]?.v || '').toString().trim();
+                        // 支援在 Google Sheet C欄直接填寫 1, 2, 3, 4, 5，自動對應內部 ID
+                        if (rawRackId === '1') rawRackId = 'Rack-A';
+                        if (rawRackId === '2') rawRackId = 'Rack-B';
+                        if (rawRackId === '3') rawRackId = 'Rack-C';
+                        if (rawRackId === '4') rawRackId = 'Rack-D';
+                        if (rawRackId === '5') rawRackId = 'Rack-E';
+                        
+                        return {
+                            id: row.c[0]?.v || '',
+                            name: row.c[1]?.v || '',
+                            rackId: rawRackId
+                        };
+                    }).filter(m => m.name !== ''); 
+
+                    // 成功讀取後，將真實資料快取到本地端
+                    localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
+
+                    this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
+                    DOM.updateLastUpdateTime();
+                } catch (error) {
+                    console.error("讀取 Google Sheet 失敗", error);
+                    // 離線或讀取失敗時，載入最後一次成功連線的真實資料
+                    const cachedMeds = localStorage.getItem('drugSysRealMedicines');
+                    this.medicines = cachedMeds ? JSON.parse(cachedMeds) : [];
+                    
+                    this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false }) + " (連線失敗/離線模式)";
+                    DOM.updateLastUpdateTime();
+                    
+                    // 彈出強烈警告提示權限問題
+                    alert("連線失敗 (Failed to fetch)！\n\n如果這是您第一次設定，請務必開啟您的 Google Sheet：\n1. 點擊右上角的「共用」\n2. 將權限設為「知道連結的任何人」皆可「檢視」\n\n否則系統將被瀏覽器阻擋無法讀取資料喔！");
+                }
+            },
+
+            getFilteredMedicines() {
+                return this.medicines.filter(med => {
+                    const matchSearch = med.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                    const matchRack = this.selectedRackId ? (med.rackId === this.selectedRackId) : true;
+                    return matchSearch && matchRack;
+                });
+            },
+
+            getHighlightedRackIds() {
+                if (!this.searchQuery) return new Set(); 
+                const matchedMeds = this.medicines.filter(med => 
+                    med.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                );
+                return new Set(matchedMeds.map(m => m.rackId));
+            },
+
+            async syncRacksToServer(racks) {
+                if (!this.WEB_APP_URL) return true;
+                try {
+                    const payload = { action: 'saveRacks', racks: racks };
+                    const response = await fetch(this.WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    return result.status === 'success';
+                } catch (error) {
+                    console.error("層架同步至後端失敗", error);
+                    return false;
+                }
+            },
+
+            async syncToServer(id, name, rackId) {
+                if (!this.WEB_APP_URL) {
+                    this._updateLocalState(id, name, rackId);
+                    this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
+                    DOM.updateLastUpdateTime();
+                    return true;
+                }
+
+                try {
+                    const payload = { action: 'saveMedicine', id, name, rackId };
+                    const response = await fetch(this.WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        this._updateLocalState(result.id, result.name, result.rackId);
+                        this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
+                        DOM.updateLastUpdateTime();
+                        return true;
+                    } else {
+                        alert("儲存失敗：" + result.message);
+                        return false;
+                    }
+                } catch (error) {
+                    alert("網路連線錯誤，無法同步至後端！將暫時更新於本地端預覽。");
+                    this._updateLocalState(id, name, rackId);
+                    this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false }) + " (本地更新)";
+                    DOM.updateLastUpdateTime();
+                    return true;
+                }
+            },
+
+            _updateLocalState(id, name, rackId) {
+                const existIndex = this.medicines.findIndex(m => m.id === id);
+                if (existIndex >= 0) {
+                    this.medicines[existIndex] = { id, name, rackId };
+                } else {
+                    const newId = id || ('m' + Date.now()); 
+                    this.medicines.push({ id: newId, name, rackId }); 
+                }
+                
+                // 同步更新本地快取，確保離線作業不遺失
+                localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
+            }
+        };
+
+        /**
+         * 2. DOM 操作與渲染
+         */
+        const DOM = {
+            searchInput: document.getElementById('searchInput'),
+            clearSearchBtn: document.getElementById('clearSearchBtn'),
+            medicineListContainer: document.getElementById('medicineListContainer'),
+            racksContainer: document.getElementById('racksContainer'),
+            statusText: document.getElementById('statusText'),
+            statusDot: document.getElementById('statusDot'),
+            totalItemsCount: document.getElementById('totalItemsCount'),
+            lastUpdateTime: document.getElementById('lastUpdateTime'),
+            
+            editModal: document.getElementById('editModal'),
+            editModalContent: document.getElementById('editModalContent'),
+            modalTitle: document.getElementById('modalTitle'),
+            editMedId: document.getElementById('editMedId'),
+            editMedName: document.getElementById('editMedName'),
+            editMedRack: document.getElementById('editMedRack'),
+            saveMedBtn: document.getElementById('saveMedBtn'),
+            
+            rackEditModal: document.getElementById('rackEditModal'),
+            rackEditModalContent: document.getElementById('rackEditModalContent'),
+            rackEditListContainer: document.getElementById('rackEditListContainer'),
+
+            settingsModal: document.getElementById('settingsModal'),
+            settingsModalContent: document.getElementById('settingsModalContent'),
+
+            loginModal: document.getElementById('loginModal'),
+            loginModalContent: document.getElementById('loginModalContent'),
+
+            updateLastUpdateTime() {
+                if (this.lastUpdateTime && AppState.lastUpdate) {
+                    this.lastUpdateTime.textContent = '最後更新: ' + AppState.lastUpdate;
+                }
+            },
+
+            renderRackOptions() {
+                if (this.editMedRack) {
+                    // 動態將當前的層架設定渲染至 <select> 之中，確保名稱一致
+                    this.editMedRack.innerHTML = RACKS_CONFIG.map(rack => 
+                        `<option value="${rack.id}">${rack.no}號儲位 - ${rack.name}</option>`
+                    ).join('');
+                }
+            },
+
+            renderRacks() {
+                this.racksContainer.innerHTML = RACKS_CONFIG.map(rack => {
+                    const rackMeds = AppState.medicines.filter(m => m.rackId === rack.id);
+                    const displayName = rack.category ? rack.category : 'RACK'; // 顯示編輯的分類名稱
+                    
+                    return `
+                    <div id="rack-el-${rack.id}" 
+                         class="rack-base cursor-pointer relative flex flex-col items-center justify-between
+                                w-32 md:w-44 h-[28rem] bg-white dark:bg-slate-800 border-2 dark:border-slate-600 rounded-xl shadow-lg dark:shadow-slate-900/50
+                                hover:shadow-2xl dark:hover:shadow-slate-900 hover:-translate-y-1 group ${rack.theme} transition-all duration-300"
+                         onclick="Controllers.handleRackClick('${rack.id}')">
+                         
+                        <!-- 鐵架頂部裝飾 -->
+                        <div class="w-full h-10 bg-slate-100 dark:bg-slate-700 rounded-t-xl border-b-2 border-slate-200 dark:border-slate-600 flex items-center justify-center shrink-0 transition-colors px-2">
+                            <span class="text-xs font-bold text-slate-500 dark:text-slate-300 truncate w-full text-center" title="${displayName}">${displayName}</span>
+                        </div>
+                        
+                        <!-- 鐵架內容 -->
+                        <div class="flex-1 w-full px-2.5 py-3 flex flex-col gap-2 overflow-y-auto no-scrollbar content-start">
+                            ${rackMeds.length > 0 
+                                ? rackMeds.map(m => `
+                                    <div class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600/50 rounded px-2 py-1.5 text-center text-[11px] text-slate-600 dark:text-slate-300 truncate group-hover:border-primary/50 dark:group-hover:border-primary/50 transition-colors shadow-sm">
+                                        ${m.name}
+                                    </div>
+                                  `).join('')
+                                : `<div class="w-full h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 text-xs gap-2"><i data-lucide="package-x" class="w-6 h-6"></i>空儲位</div>`
+                            }
+                        </div>
+
+                        <!-- 鐵架標籤 -->
+                        <div class="absolute -bottom-6 w-full text-center shrink-0">
+                            <span class="bg-slate-800 dark:bg-slate-700 text-white text-sm font-bold px-5 py-1.5 rounded-full shadow-md border border-transparent dark:border-slate-600 transition-colors">
+                                ${rack.name}
+                            </span>
+                        </div>
+                        
+                        <!-- 選擇指示器圖示 -->
+                        <div class="absolute -top-4 right-[-10px] hidden select-icon bg-emerald-500 text-white rounded-full p-1 shadow-md">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                `}).join('');
+                lucide.createIcons();
+            },
+
+            renderList(medicines) {
+                if (medicines.length === 0) {
+                    this.medicineListContainer.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 py-10">
+                            <i data-lucide="package-open" class="w-12 h-12 mb-3 opacity-50"></i>
+                            <p class="text-center font-medium">找不到符合條件的藥品</p>
+                            <p class="text-xs mt-1">請嘗試其他關鍵字或清除鐵架篩選</p>
+                        </div>
+                    `;
+                    lucide.createIcons();
+                    return;
+                }
+
+                this.medicineListContainer.innerHTML = medicines.map(med => {
+                    const rackName = RACKS_CONFIG.find(r => r.id === med.rackId)?.name || med.rackId;
+                    const editBtnHTML = AppState.isLoggedIn ? `
+                                <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${med.id}', '${med.name}', '${med.rackId}')">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                </button>
+                    ` : '';
+
+                    return `
+                        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-3 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md dark:hover:shadow-slate-900/50 transition-all duration-200 hover:-translate-y-1 cursor-pointer group flex justify-between items-center" onclick="Controllers.focusOnRack('${med.rackId}')">
+                            <div class="flex-1 pr-3 overflow-hidden">
+                                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-primary dark:group-hover:text-primary transition-colors leading-tight truncate">${med.name}</h3>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] px-2.5 py-1 rounded-md font-medium border border-slate-200 dark:border-slate-600 transition-colors">
+                                    ${rackName}
+                                </span>
+                                ${editBtnHTML}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                lucide.createIcons();
+            },
+
+            updateRacksVisuals(highlightedIds, selectedId) {
+                RACKS_CONFIG.forEach(rack => {
+                    const el = document.getElementById(`rack-el-${rack.id}`);
+                    const minimapEl = document.getElementById(`minimap-${rack.id}`); 
+                    
+                    if (!el) return;
+
+                    if (highlightedIds.has(rack.id) && !selectedId) {
+                        el.classList.add('rack-highlighted');
+                        if (minimapEl) {
+                            minimapEl.classList.remove('bg-slate-100', 'border-slate-800', 'dark:bg-slate-700', 'dark:border-slate-400');
+                            minimapEl.classList.add('bg-primary', 'border-primaryDark', 'shadow-[0_0_8px_rgba(14,165,233,0.6)]');
+                        }
+                    } else {
+                        el.classList.remove('rack-highlighted');
+                        if (minimapEl) {
+                            minimapEl.classList.add('bg-slate-100', 'border-slate-800', 'dark:bg-slate-700', 'dark:border-slate-400');
+                            minimapEl.classList.remove('bg-primary', 'border-primaryDark', 'shadow-[0_0_8px_rgba(14,165,233,0.6)]');
+                        }
+                    }
+
+                    const iconEl = el.querySelector('.select-icon');
+                    if (selectedId === rack.id) {
+                        el.classList.add('rack-selected');
+                        el.classList.remove('opacity-40', 'scale-95'); 
+                        iconEl.classList.remove('hidden');
+                        if (minimapEl) {
+                            minimapEl.classList.remove('bg-slate-100', 'border-slate-800', 'dark:bg-slate-700', 'dark:border-slate-400', 'opacity-30'); 
+                            minimapEl.classList.add('bg-emerald-400', 'border-emerald-600');
+                        }
+                    } else {
+                        el.classList.remove('rack-selected');
+                        iconEl.classList.add('hidden');
+                        if (minimapEl) {
+                            minimapEl.classList.remove('bg-emerald-400', 'border-emerald-600');
+                        }
+                        
+                        if (selectedId) {
+                            el.classList.add('opacity-40', 'scale-95');
+                            if (minimapEl) minimapEl.classList.add('opacity-30');
+                        } else {
+                            el.classList.remove('opacity-40', 'scale-95');
+                            if (minimapEl) minimapEl.classList.remove('opacity-30');
+                        }
+                    }
+                });
+            },
+
+            updateStatusText() {
+                let text = "顯示所有藥品";
+                let dotColor = "bg-slate-300 dark:bg-slate-600";
+
+                if (AppState.selectedRackId) {
+                    const rackName = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId)?.name;
+                    text = `篩選條件: ${rackName}`;
+                    dotColor = "bg-emerald-500";
+                    if (AppState.searchQuery) text += ` + 關鍵字 "${AppState.searchQuery}"`;
+                } else if (AppState.searchQuery) {
+                    text = `正在搜尋: "${AppState.searchQuery}"`;
+                    dotColor = "bg-primary";
+                }
+
+                this.statusText.textContent = text;
+                this.statusDot.className = `w-2 h-2 rounded-full inline-block ${dotColor}`;
+                
+                if (AppState.searchQuery) {
+                    this.clearSearchBtn.classList.remove('hidden');
+                } else {
+                    this.clearSearchBtn.classList.add('hidden');
+                }
+            }
+        };
+
+        /**
+         * 3. 互動邏輯控制器
+         */
+        let searchDebounceTimer; // 搜尋防抖計時器
+
+        const Controllers = {
+            // 防抖搜尋：延遲 300 毫秒
+            handleInput(e) {
+                clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = setTimeout(() => {
+                    const query = e.target.value.trim();
+                    AppState.searchQuery = query;
+                    if (query.length > 0 && AppState.selectedRackId) {
+                        AppState.selectedRackId = null; 
+                    }
+                    this.refreshUI();
+                }, 300);
+            },
+
+            clearSearch() {
+                DOM.searchInput.value = '';
+                AppState.searchQuery = '';
+                DOM.searchInput.focus();
+                this.refreshUI();
+            },
+
+            resetAll() {
+                DOM.searchInput.value = '';
+                AppState.searchQuery = '';
+                AppState.selectedRackId = null;
+                this.refreshUI();
+            },
+
+            handleRackClick(rackId) {
+                if (AppState.selectedRackId === rackId) {
+                    AppState.selectedRackId = null;
+                } else {
+                    AppState.selectedRackId = rackId;
+                    AppState.searchQuery = '';
+                    DOM.searchInput.value = '';
+                }
+                this.refreshUI();
+            },
+
+            focusOnRack(rackId) {
+                AppState.selectedRackId = rackId;
+                AppState.searchQuery = '';
+                DOM.searchInput.value = '';
+                this.refreshUI();
+            },
+
+            refreshUI() {
+                const filteredList = AppState.getFilteredMedicines();
+                const highlightedRacks = AppState.getHighlightedRackIds();
+                
+                DOM.renderList(filteredList);
+                DOM.updateRacksVisuals(highlightedRacks, AppState.selectedRackId);
+                DOM.updateStatusText();
+                DOM.totalItemsCount.textContent = AppState.medicines.length; 
+            },
+
+            // --- 登入/登出 控制邏輯 ---
+            toggleAuth() {
+                if (AppState.isLoggedIn) {
+                    AppState.isLoggedIn = false;
+                    sessionStorage.removeItem('drugSysAuth');
+                    this.updateAuthUI();
+                } else {
+                    this.openLoginModal();
+                }
+            },
+
+            openLoginModal() {
+                DOM.loginModal.classList.remove('hidden');
+                setTimeout(() => {
+                    DOM.loginModal.classList.remove('opacity-0');
+                    DOM.loginModalContent.classList.remove('scale-95');
+                    document.getElementById('loginPwd').focus();
+                }, 10);
+            },
+
+            closeLoginModal() {
+                DOM.loginModal.classList.add('opacity-0');
+                DOM.loginModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    DOM.loginModal.classList.add('hidden');
+                    document.getElementById('loginPwd').value = '';
+                    // 關閉時清除錯誤狀態
+                    const errorMsg = document.getElementById('loginErrorMsg');
+                    if (errorMsg) errorMsg.classList.add('hidden');
+                    const pwdInput = document.getElementById('loginPwd');
+                    if (pwdInput) pwdInput.classList.remove('border-red-500', 'ring-red-500/50', 'text-red-500');
+                }, 300);
+            },
+
+            submitLogin() {
+                const pwdInput = document.getElementById('loginPwd');
+                const pwd = pwdInput.value;
+                const errorMsg = document.getElementById('loginErrorMsg');
+
+                if (pwd === 'pwylvh') {
+                    AppState.isLoggedIn = true;
+                    sessionStorage.setItem('drugSysAuth', 'true');
+                    this.updateAuthUI();
+                    
+                    if (errorMsg) errorMsg.classList.add('hidden');
+                    if (pwdInput) pwdInput.classList.remove('border-red-500', 'ring-red-500/50', 'text-red-500');
+                    
+                    this.closeLoginModal();
+                } else {
+                    // UI 錯誤提示與震動效果
+                    if (errorMsg) {
+                        errorMsg.classList.remove('hidden');
+                        lucide.createIcons();
+                    }
+                    if (pwdInput) {
+                        pwdInput.classList.add('border-red-500', 'ring-red-500/50', 'text-red-500');
+                        pwdInput.focus();
+                    }
+                    
+                    DOM.loginModalContent.classList.add('translate-x-2');
+                    setTimeout(() => DOM.loginModalContent.classList.replace('translate-x-2', '-translate-x-2'), 100);
+                    setTimeout(() => DOM.loginModalContent.classList.replace('-translate-x-2', 'translate-x-1'), 200);
+                    setTimeout(() => DOM.loginModalContent.classList.replace('translate-x-1', '-translate-x-1'), 300);
+                    setTimeout(() => DOM.loginModalContent.classList.remove('-translate-x-1'), 400);
+                }
+            },
+
+            updateAuthUI() {
+                const authIcon = document.getElementById('authIcon');
+                const authText = document.getElementById('authText');
+                if (AppState.isLoggedIn) {
+                    if (authIcon) authIcon.setAttribute('data-lucide', 'log-out');
+                    if (authText) authText.textContent = '登出';
+                    document.querySelectorAll('.auth-required').forEach(el => el.classList.remove('hidden'));
+                } else {
+                    if (authIcon) authIcon.setAttribute('data-lucide', 'log-in');
+                    if (authText) authText.textContent = '登入';
+                    document.querySelectorAll('.auth-required').forEach(el => el.classList.add('hidden'));
+                }
+                lucide.createIcons();
+                this.refreshUI(); 
+            },
+
+            // --- 設定 Modal 控制邏輯 ---
+            openSettingsModal() {
+                if (!AppState.isLoggedIn) {
+                    this.openLoginModal();
+                    return;
+                }
+                DOM.settingsModal.classList.remove('hidden');
+                setTimeout(() => {
+                    DOM.settingsModal.classList.remove('opacity-0');
+                    DOM.settingsModalContent.classList.remove('scale-95');
+                }, 10);
+            },
+
+            closeSettingsModal() {
+                DOM.settingsModal.classList.add('opacity-0');
+                DOM.settingsModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    DOM.settingsModal.classList.add('hidden');
+                }, 300);
+            },
+
+            openEditModal(id, name, rackId) {
+                DOM.editMedId.value = id || '';
+                DOM.editMedName.value = name || '';
+                DOM.editMedRack.value = rackId || 'Rack-A';
+                DOM.modalTitle.textContent = id ? '編輯藥品資訊' : '新增藥品';
+                
+                DOM.editModal.classList.remove('hidden');
+                setTimeout(() => {
+                    DOM.editModal.classList.remove('opacity-0');
+                    DOM.editModalContent.classList.remove('scale-95');
+                }, 10);
+            },
+
+            closeEditModal() {
+                DOM.editModal.classList.add('opacity-0');
+                DOM.editModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    DOM.editModal.classList.add('hidden');
+                }, 300);
+            },
+
+            async saveEditForm() {
+                const id = DOM.editMedId.value.trim();
+                const name = DOM.editMedName.value.trim();
+                const rackId = DOM.editMedRack.value;
+
+                if (!name) {
+                    alert("請務必輸入藥品名稱！");
+                    return;
+                }
+
+                const originalText = DOM.saveMedBtn.innerHTML;
+                DOM.saveMedBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 同步中...';
+                DOM.saveMedBtn.disabled = true;
+                lucide.createIcons();
+
+                const success = await AppState.syncToServer(id, name, rackId);
+                
+                DOM.saveMedBtn.innerHTML = originalText;
+                DOM.saveMedBtn.disabled = false;
+                lucide.createIcons();
+
+                if (success) {
+                    this.closeEditModal();
+                    DOM.renderRacks(); 
+                    this.refreshUI();  
+                }
+            },
+
+            // --- 層架編輯控制邏輯 ---
+            openRackEditModal() {
+                DOM.rackEditListContainer.innerHTML = RACKS_CONFIG.map(rack => `
+                    <div class="flex flex-col gap-3 bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl border border-slate-200 dark:border-slate-600 transition-colors">
+                        <div class="font-bold text-primary dark:text-primary mb-1">${rack.no}號儲位</div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="flex-1">
+                                <label class="text-[11px] text-slate-500 dark:text-slate-400 mb-1.5 block">顯示名稱 (如：鐵架 A)</label>
+                                <input type="text" id="rack-name-input-${rack.id}" value="${rack.name}" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="請輸入層架名稱...">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[11px] text-slate-500 dark:text-slate-400 mb-1.5 block">庫存類別 (如：血壓藥)</label>
+                                <input type="text" id="rack-cat-input-${rack.id}" value="${rack.category || ''}" class="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="請輸入類別名稱...">
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                DOM.rackEditModal.classList.remove('hidden');
+                setTimeout(() => {
+                    DOM.rackEditModal.classList.remove('opacity-0');
+                    DOM.rackEditModalContent.classList.remove('scale-95');
+                }, 10);
+            },
+
+            closeRackEditModal() {
+                DOM.rackEditModal.classList.add('opacity-0');
+                DOM.rackEditModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    DOM.rackEditModal.classList.add('hidden');
+                }, 300);
+            },
+
+            async saveRackEditForm() {
+                // UI 載入狀態
+                const saveBtn = document.getElementById('saveRackBtn');
+                if(saveBtn) {
+                    saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 同步中...';
+                    saveBtn.disabled = true;
+                    lucide.createIcons();
+                }
+
+                // 儲存輸入的新層架名稱與類別
+                RACKS_CONFIG.forEach(rack => {
+                    const nameEl = document.getElementById(`rack-name-input-${rack.id}`);
+                    const catEl = document.getElementById(`rack-cat-input-${rack.id}`);
+                    if (nameEl && nameEl.value.trim() !== '') {
+                        rack.name = nameEl.value.trim();
+                    }
+                    if (catEl) {
+                        rack.category = catEl.value.trim();
+                    }
+                });
+
+                // 呼叫 AppState 同步至 Google Sheet
+                const success = await AppState.syncRacksToServer(RACKS_CONFIG);
+                if (!success && AppState.WEB_APP_URL) {
+                    alert("層架設定同步至後端失敗，將暫時儲存於本機。請檢查權限或網路。");
+                }
+
+                // 寫入 localStorage 作為備用與加速本地體驗
+                localStorage.setItem('drugSysRacksConfig', JSON.stringify(RACKS_CONFIG));
+
+                this.closeRackEditModal();
+                DOM.renderRacks(); // 重新渲染鐵架更新標題
+                DOM.renderRackOptions(); // 同步更新藥品編輯視窗內的選單
+                this.refreshUI();
+                
+                if(saveBtn) {
+                    saveBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> 儲存變更';
+                    saveBtn.disabled = false;
+                    lucide.createIcons();
+                }
+            },
+
+            // --- 匯出層架標籤 ---
+            exportRackLabels() {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    alert('請允許瀏覽器開啟彈出視窗以進行列印！');
+                    return;
+                }
+
+                const today = new Date().toLocaleDateString('zh-TW');
+                
+                let htmlContent = `
+                <!DOCTYPE html>
+                <html lang="zh-TW">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>層架標籤列印 - ${today}</title>
+                    <style>
+                        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; background: #f8fafc; }
+                        .label-card { width: 340px; height: 180px; border: 3px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; text-align: center; background: #fff; page-break-inside: avoid; }
+                        .label-no { font-size: 16px; font-weight: bold; color: #64748b; margin-bottom: 8px; letter-spacing: 2px; }
+                        .label-name { font-size: 38px; font-weight: 900; color: #0f172a; margin-bottom: 12px; }
+                        .label-category { font-size: 18px; color: #0284c7; background: #f0f9ff; border: 2px solid #bae6fd; padding: 6px 20px; border-radius: 30px; font-weight: bold; }
+                        @media print {
+                            body { padding: 0; background: #fff; display: block; }
+                            .label-card { border: 2px solid #000; break-inside: avoid; margin: 0 auto 30px auto; width: 80%; height: 250px; }
+                            .label-category { border: 2px solid #000; color: #000; background: #fff; }
+                            .label-no { color: #000; }
+                        }
+                    </style>
+                </head>
+                <body>
+                `;
+
+                RACKS_CONFIG.forEach(rack => {
+                    htmlContent += `
+                    <div class="label-card">
+                        <div class="label-no">STORE LOCATION NO.${rack.no}</div>
+                        <div class="label-name">${rack.name}</div>
+                        ${rack.category ? `<div class="label-category">${rack.category}</div>` : ''}
+                    </div>
+                    `;
+                });
+
+                htmlContent += `
+                </body>
+                <script>
+                    window.onload = function() {
+                        setTimeout(() => { window.print(); }, 500);
+                    }
+                <\/script>
+                </html>
+                `;
+
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+            },
+
+            // --- 匯出藥品標籤 ---
+            exportMedicineLabels() {
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    alert('請允許瀏覽器開啟彈出視窗以進行列印！');
+                    return;
+                }
+
+                const today = new Date().toLocaleDateString('zh-TW');
+                
+                let htmlContent = `
+                <!DOCTYPE html>
+                <html lang="zh-TW">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>藥品標籤列印 - ${today}</title>
+                    <style>
+                        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; background: #f8fafc; color: #0f172a; }
+                        .rack-section { margin-bottom: 40px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+                        .rack-title { font-size: 20px; font-weight: bold; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
+                        .rack-title-badge { background: #0ea5e9; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
+                        .labels-container { 
+                            display: grid; 
+                            grid-template-columns: repeat(2, 1fr); /* 左右共兩列橫向排列 */
+                            gap: 15px; 
+                        }
+                        .med-label { 
+                            border: 2px dashed #cbd5e1; 
+                            border-radius: 8px; 
+                            padding: 15px; 
+                            display: flex; 
+                            flex-direction: column; 
+                            justify-content: center; 
+                            align-items: flex-start;
+                            min-height: 70px;
+                            page-break-inside: avoid;
+                            background: #fafafa;
+                        }
+                        .med-name { font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 4px; }
+                        .med-id { font-size: 12px; color: #64748b; }
+                        @media print {
+                            body { padding: 0; background: #fff; }
+                            .rack-section { box-shadow: none; padding: 0; margin-bottom: 30px; }
+                            .med-label { border: 1px solid #000; background: #fff; }
+                            .rack-title { border-bottom: 2px solid #000; }
+                            .rack-title-badge { background: #000; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                        }
+                    </style>
+                </head>
+                <body>
+                `;
+
+                if (AppState.medicines.length === 0) {
+                    htmlContent += '<h3>目前系統中沒有任何藥品可供匯出。</h3></body></html>';
+                    printWindow.document.write(htmlContent);
+                    printWindow.document.close();
+                    return;
+                }
+
+                RACKS_CONFIG.forEach(rack => {
+                    const rackMeds = AppState.medicines.filter(m => m.rackId === rack.id);
+                    if (rackMeds.length > 0) {
+                        htmlContent += `
+                        <div class="rack-section">
+                            <div class="rack-title">
+                                <span class="rack-title-badge">No.${rack.no}</span>
+                                ${rack.name} ${rack.category ? `(${rack.category})` : ''}
+                            </div>
+                            <div class="labels-container">
+                        `;
+
+                        rackMeds.forEach(med => {
+                            htmlContent += `
+                                <div class="med-label">
+                                    <div class="med-name">${med.name}</div>
+                                    <div class="med-id">代碼：${med.id}</div>
+                                </div>
+                            `;
+                        });
+
+                        htmlContent += `
+                            </div>
+                        </div>
+                        `;
+                    }
+                });
+
+                htmlContent += `
+                </body>
+                <script>
+                    window.onload = function() {
+                        setTimeout(() => { window.print(); }, 500);
+                    }
+                <\/script>
+                </html>
+                `;
+
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+            },
+
+            // --- 深淺色模式切換 ---
+            toggleDarkMode() {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                localStorage.setItem('drugSysDarkMode', isDark ? 'dark' : 'light');
+            }
+        };
+
+        /**
+         * 4. 系統初始化
+         */
+        async function initApp() {
+            // 讀取深色模式偏好設定
+            if (localStorage.getItem('drugSysDarkMode') === 'dark' || (!('drugSysDarkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // 讀取儲存的層架設定 (LocalStorage)
+            const savedRacks = localStorage.getItem('drugSysRacksConfig');
+            if (savedRacks) {
+                const parsedRacks = JSON.parse(savedRacks);
+                RACKS_CONFIG.forEach(rack => {
+                    const saved = parsedRacks.find(r => r.id === rack.id);
+                    if (saved) {
+                        rack.name = saved.name || rack.name; // 還原自訂名稱
+                        rack.category = saved.category;
+                    }
+                });
+            }
+
+            // 讀取登入狀態 (SessionStorage)
+            if (sessionStorage.getItem('drugSysAuth') === 'true') {
+                AppState.isLoggedIn = true;
+            }
+
+            // 綁定全域快捷鍵 (Ctrl+F: 搜尋, Esc: 關閉彈窗)
+            document.addEventListener('keydown', (e) => {
+                // Ctrl + F
+                if (e.ctrlKey && e.key.toLowerCase() === 'f') {
+                    e.preventDefault(); // 防止瀏覽器原生搜尋框跳出
+                    DOM.searchInput.focus();
+                }
+                // Esc
+                if (e.key === 'Escape') {
+                    if (!DOM.editModal.classList.contains('hidden')) Controllers.closeEditModal();
+                    if (!DOM.rackEditModal.classList.contains('hidden')) Controllers.closeRackEditModal();
+                    if (!DOM.settingsModal.classList.contains('hidden')) Controllers.closeSettingsModal();
+                    if (!DOM.loginModal.classList.contains('hidden')) Controllers.closeLoginModal();
+                }
+            });
+
+            // 初始化圖示
+            lucide.createIcons();
+            
+            // 初始化驗證 UI
+            Controllers.updateAuthUI();
+            
+            // 預先產生預設的下拉選單
+            DOM.renderRackOptions();
+
+            await AppState.initData();
+            DOM.totalItemsCount.textContent = AppState.medicines.length;
+
+            DOM.renderRacks();
+
+            DOM.searchInput.addEventListener('input', (e) => Controllers.handleInput(e));
+            DOM.clearSearchBtn.addEventListener('click', () => Controllers.clearSearch());
+
+            Controllers.refreshUI();
+        }
+
+        document.addEventListener('DOMContentLoaded', initApp);
+
+    </script>
+</body>
+</html>
