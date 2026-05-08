@@ -402,6 +402,18 @@
         </div>
     </div>
 
+    <!-- 隱藏彩蛋 Modal -->
+    <div id="easterEggModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[80] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 text-center transform scale-95 transition-all duration-300 max-w-xs w-full mx-4" id="easterEggContent">
+            <div class="w-16 h-16 bg-emerald-500/20 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="party-popper" class="w-8 h-8"></i>
+            </div>
+            <h3 class="font-bold text-xl text-slate-800 dark:text-slate-100 mb-2">隱藏彩蛋</h3>
+            <p id="easterEggMessage" class="text-slate-600 dark:text-slate-300 mb-6 font-medium">居然被你發現了！</p>
+            <button onclick="document.getElementById('easterEggModal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('easterEggModal').classList.add('hidden'),300);" class="px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 w-full transition-colors font-medium">關閉</button>
+        </div>
+    </div>
+
     <!-- JavaScript 應用程式邏輯區塊 -->
     <script>
         /**
@@ -492,7 +504,8 @@
                             rackId: rawRackId,
                             chName: row.c[3]?.v || '' // 新增中文品名對應 Google Sheet D欄
                         };
-                    }).filter(m => m.name !== ''); 
+                    }).filter(m => m.name !== '')
+                      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase(), 'en')); // 預設依據藥品英文名稱字母排序
 
                     // 成功讀取後，將真實資料快取到本地端
                     localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
@@ -565,7 +578,9 @@
                     const result = await response.json();
                     
                     if (result.status === 'success') {
-                        this._updateLocalState(result.id, result.name, result.rackId, result.chName);
+                        // 修正：即使後端沒有將 chName 原樣回傳，前端依然寫入我們送出的 chName，避免因後端缺漏導致本地資料被清空
+                        const savedChName = (result.chName !== undefined) ? result.chName : chName;
+                        this._updateLocalState(result.id || id, result.name || name, result.rackId || rackId, savedChName);
                         this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
                         DOM.updateLastUpdateTime();
                         return true;
@@ -1649,6 +1664,92 @@
                     this.scene.add(group);
                     this.rackMeshes[rack.id] = { hitBox, group, wireframes, boxInstanced, originalY: rackHeight / 2 };
                 });
+
+                this.easterEggBoxes = []; // 準備存放彩蛋判定框
+
+                // ==========================================
+                // 隱藏彩蛋 1：A 區鐵架下方的地板磁磚簽名 (改粗黑手寫、往內放、調整角度)
+                // ==========================================
+                const rackA = RACKS_CONFIG.find(r => r.id === 'Rack-A');
+                if (rackA) {
+                    const ax = (parseFloat(rackA.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackA.width) / 100 * roomW / 2);
+                    const az = (parseFloat(rackA.top) / 100 * roomD) - (roomD / 2) + (parseFloat(rackA.height) / 100 * roomD / 2);
+                    
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 1024;
+                    canvas.height = 128;
+                    const ctx = canvas.getContext('2d');
+                    ctx.font = 'bold 44px "Caveat", "Comic Sans MS", "Bradley Hand", cursive, "Noto Sans TC", sans-serif';
+                    ctx.fillStyle = '#0f172a'; // 粗黑字體
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('製作者 : 其仁藥師 2026.05.08', 512, 64);
+                    
+                    const tex = new THREE.CanvasTexture(canvas);
+                    const signMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.85, depthWrite: false });
+                    const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(6, 0.75), signMat);
+                    
+                    signMesh.rotation.x = -Math.PI / 2;
+                    signMesh.rotation.z = -Math.PI / 6; // 換一個書寫傾斜角度
+                    signMesh.position.set(ax + 0.8, 0.03, az + 0.8); // 往裡面放一點，避免太靠邊緣
+                    
+                    // 獨立的點擊判定框
+                    const signHitBox = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 1), new THREE.MeshBasicMaterial({ visible: false }));
+                    signHitBox.position.copy(signMesh.position);
+                    signHitBox.rotation.copy(signMesh.rotation);
+                    signHitBox.userData = { isEasterEgg: true, message: '居然被你發現了!' };
+
+                    this.scene.add(signMesh);
+                    this.scene.add(signHitBox);
+                    this.easterEggBoxes.push(signHitBox);
+                }
+
+                // ==========================================
+                // 隱藏彩蛋 2：D 區鐵架下方橫躺的紅黃色小膠囊
+                // ==========================================
+                const rackD = RACKS_CONFIG.find(r => r.id === 'Rack-D');
+                if (rackD) {
+                    const dx = (parseFloat(rackD.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackD.width) / 100 * roomW / 2);
+                    const dz = (parseFloat(rackD.top) / 100 * roomD) - (roomD / 2) + (parseFloat(rackD.height) / 100 * roomD / 2);
+                    
+                    const capsuleGroup = new THREE.Group();
+                    
+                    // 膠囊半徑與長度 (與層架比例相符的微小尺寸)
+                    const capRadius = 0.06;
+                    const capHeight = 0.15;
+                    
+                    // 紅色半邊
+                    const redMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 });
+                    const redGeo = new THREE.CylinderGeometry(capRadius, capRadius, capHeight, 16);
+                    const redPart = new THREE.Mesh(redGeo, redMat);
+                    redPart.position.y = capHeight / 2;
+                    const redCap = new THREE.Mesh(new THREE.SphereGeometry(capRadius, 16, 16), redMat);
+                    redCap.position.y = capHeight;
+                    
+                    // 黃色半邊
+                    const yellowMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.4 });
+                    const yellowGeo = new THREE.CylinderGeometry(capRadius, capRadius, capHeight, 16);
+                    const yellowPart = new THREE.Mesh(yellowGeo, yellowMat);
+                    yellowPart.position.y = -capHeight / 2;
+                    const yellowCap = new THREE.Mesh(new THREE.SphereGeometry(capRadius, 16, 16), yellowMat);
+                    yellowCap.position.y = -capHeight;
+                    
+                    capsuleGroup.add(redPart, redCap, yellowPart, yellowCap);
+                    
+                    // 讓膠囊橫著倒在地板上
+                    capsuleGroup.position.set(dx, capRadius, dz);
+                    capsuleGroup.rotation.x = Math.PI / 2;
+                    capsuleGroup.rotation.z = Math.PI / 3;
+                    
+                    // 點擊判定隱藏區塊 (稍微放大判定範圍以便輕鬆點擊)
+                    const capHitBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshBasicMaterial({ visible: false }));
+                    capHitBox.position.copy(capsuleGroup.position);
+                    capHitBox.userData = { isEasterEgg: true, message: '掉地板的藥不要撿起來XD' };
+                    
+                    this.scene.add(capsuleGroup);
+                    this.scene.add(capHitBox);
+                    this.easterEggBoxes.push(capHitBox);
+                }
             },
 
             updateVisuals(highlightedIds, selectedId) {
@@ -1697,10 +1798,26 @@
 
                 this.raycaster.setFromCamera(this.mouse, this.camera);
                 const hitBoxes = Object.values(this.rackMeshes).map(r => r.hitBox);
+                if (this.easterEggBoxes) hitBoxes.push(...this.easterEggBoxes); // 加入多個彩蛋的判定框
+                
                 const intersects = this.raycaster.intersectObjects(hitBoxes, false);
                 
                 if (intersects.length > 0) {
                     const obj = intersects[0].object;
+                    
+                    // 若點擊到彩蛋物件 (包含簽名或膠囊)
+                    if (obj.userData && obj.userData.isEasterEgg) {
+                        const modal = document.getElementById('easterEggModal');
+                        const msgEl = document.getElementById('easterEggMessage');
+                        
+                        // 動態寫入該彩蛋專屬的訊息
+                        if (msgEl) msgEl.textContent = obj.userData.message;
+                        
+                        modal.classList.remove('hidden');
+                        setTimeout(() => { modal.classList.remove('opacity-0'); }, 10);
+                        return;
+                    }
+                    
                     if (obj.userData && obj.userData.id) {
                         Controllers.handleRackClick(obj.userData.id);
                     }
