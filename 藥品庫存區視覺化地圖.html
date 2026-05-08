@@ -46,27 +46,8 @@
             scrollbar-width: none;
         }
 
-        /* 搜尋命中時的鐵架發光呼吸燈動畫 */
-        @keyframes highlight-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
-            50% { box-shadow: 0 0 25px 10px rgba(14, 165, 233, 0.6); border-color: #38bdf8; transform: translateY(-8px) scale(1.02); }
-            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
-        }
-
-        /* 深色模式發光呼吸燈 */
-        .dark .rack-highlighted {
-            animation: highlight-pulse-dark 2s infinite ease-in-out;
-            background-color: rgba(14, 165, 233, 0.1);
-        }
-        @keyframes highlight-pulse-dark {
-            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
-            50% { box-shadow: 0 0 25px 10px rgba(14, 165, 233, 0.4); border-color: #38bdf8; transform: translateY(-8px) scale(1.02); }
-            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); border-color: #0ea5e9; }
-        }
-
         /* 鐵架動態高光 Class */
         .rack-highlighted {
-            animation: highlight-pulse 2s infinite ease-in-out;
             z-index: 20;
             background-color: #f0f9ff;
         }
@@ -334,14 +315,14 @@
 
     <!-- 系統設定 Modal -->
     <div id="settingsModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="settingsModalContent">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="settingsModalContent">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg">系統設定</h3>
                 <button onclick="Controllers.closeSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="p-6 flex flex-col gap-3">
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto no-scrollbar">
                 <button onclick="Controllers.closeSettingsModal(); Controllers.openRackEditModal()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="layers" class="w-5 h-5"></i>
@@ -353,7 +334,7 @@
                 </button>
                 <!-- 匯出層架標籤功能 -->
                 <button onclick="Controllers.closeSettingsModal(); Controllers.exportRackLabels()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
-                    <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="printer" class="w-5 h-5"></i>
                     </div>
                     <div>
@@ -373,13 +354,105 @@
                 </button>
                 <!-- 匯出藥品清單功能 (表單模式) -->
                 <button onclick="Controllers.closeSettingsModal(); Controllers.openPrintFilterModal('list')" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
-                    <div class="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div class="w-10 h-10 rounded-full bg-violet-500/10 text-violet-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="list" class="w-5 h-5"></i>
                     </div>
                     <div>
                         <div class="font-bold text-slate-800 dark:text-slate-100">匯出藥品清單</div>
                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">以 A4 滿版表格列印，方便整體盤點與檢視</div>
                     </div>
+                </button>
+
+                <!-- 新增：備份匯出與匯入功能 -->
+                <button onclick="Controllers.exportBackup()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="download-cloud" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">備份資料匯出</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">將當前所有藥品與層架資料下載為 JSON 檔</div>
+                    </div>
+                </button>
+                
+                <button onclick="Controllers.triggerImportBackup()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-pink-500/10 text-pink-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">還原資料匯入</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">上傳 JSON 備份檔，將覆蓋當前所有資料</div>
+                    </div>
+                </button>
+                <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="Controllers.importBackup(event)">
+                
+                <button onclick="Controllers.closeSettingsModal(); Controllers.openAppearanceModal()" class="col-span-1 md:col-span-2 flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left mt-2">
+                    <div class="w-10 h-10 rounded-full bg-teal-500/10 text-teal-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="palette" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">3D 外觀與發光設定</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">自訂紙箱、地板風格及高亮發光色彩</div>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="appearanceModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[70] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="appearanceModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5 text-teal-500"></i> 3D 視覺外觀設定</h3>
+                <button onclick="Controllers.closeAppearanceModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <!-- 基本外觀：移除紙箱設定，保留雙欄位 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">地板顏色</label>
+                        <select id="settingFloorColor" onchange="Controllers.updateAppearance()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-800 dark:text-slate-100">
+                            <option value="white">白色磁磚</option>
+                            <option value="dark">工業深色</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">走道風格</label>
+                        <select id="settingAisleColor" onchange="Controllers.updateAppearance()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-800 dark:text-slate-100">
+                            <option value="gray">灰藍走道</option>
+                            <option value="red">星光紅毯(金邊)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- 發光顏色與亮度設定 -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">搜尋高亮顏色</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="settingSearchColor" onchange="Controllers.updateAppearance()" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent">
+                            <span class="text-xs text-slate-600 dark:text-slate-400">自訂搜尋色</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">選取發光顏色</label>
+                        <div class="flex items-center gap-3">
+                            <input type="color" id="settingSelectColor" onchange="Controllers.updateAppearance()" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent">
+                            <span class="text-xs text-slate-600 dark:text-slate-400">自訂選取色</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">3D 發光亮度 (<span id="glowIntensityVal">0.2</span>)</label>
+                        <input type="range" id="settingGlowIntensity" min="0.0" max="2.0" step="0.1" oninput="document.getElementById('glowIntensityVal').textContent=this.value; Controllers.updateAppearance()" class="w-full accent-primary">
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                <button onclick="Controllers.resetAppearance()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 shadow-sm flex items-center gap-2">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> 還原預設
+                </button>
+                <button onclick="Controllers.closeAppearanceModal()" class="px-6 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 shadow-sm">
+                    完成
                 </button>
             </div>
         </div>
@@ -427,7 +500,16 @@
         /**
          * 1. 資料架構與狀態
          */
-        
+         
+        // 集中管理外觀與發光設定
+        window.AppearanceConfig = {
+            floorColor: 'white',
+            aisleColor: 'gray',
+            searchColor: '#ac0606', // 附圖預設搜尋高亮色 (紅色)
+            selectColor: '#35a207', // 附圖預設選取發光色 (綠色)
+            glowIntensity: 0.2      // 附圖預設發光亮度
+        };
+
         // 定義5個鐵架的基礎資料 (新增 category 屬性與底層編號 no)
         let RACKS_CONFIG = [
             { no: 1, id: 'Rack-A', name: '鐵架 A', label: 'A區', theme: 'border-slate-800', category: '', top: '25%', left: '42%', width: '14%', height: '18%' },
@@ -441,6 +523,8 @@
             medicines: [],
             searchQuery: '',
             selectedRackId: null, 
+            focusedRackId: null, // 單純紀錄視覺聚焦，不影響搜尋條件
+            keyboardSelectedIndex: -1, // 新增：用於全鍵盤導航追蹤清單項目
             lastUpdate: null, 
             isLoggedIn: false, // 新增登入狀態
             
@@ -586,7 +670,7 @@
                     const result = await response.json();
                     
                     if (result.status === 'success') {
-                        // 修正：即使後端沒有將 chName 原樣回傳，前端依然寫入我們送出的 chName，避免因後端缺漏導致本地資料被清空
+                        // 即使後端沒有將 chName 原樣回傳，前端依然寫入我們送出的 chName
                         const savedChName = (result.chName !== undefined) ? result.chName : chName;
                         this._updateLocalState(result.id || id, result.name || name, result.rackId || rackId, savedChName);
                         this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
@@ -651,6 +735,9 @@
 
             printFilterModal: document.getElementById('printFilterModal'),
             printFilterModalContent: document.getElementById('printFilterModalContent'),
+            
+            appearanceModal: document.getElementById('appearanceModal'),
+            appearanceModalContent: document.getElementById('appearanceModalContent'),
 
             loginModal: document.getElementById('loginModal'),
             loginModalContent: document.getElementById('loginModalContent'),
@@ -685,12 +772,12 @@
                     }).join('');
                 }
 
-                // 2. 渲染右上角的純粹版俯視小圖 (移除文字減少干擾，僅依據選擇層架亮顏色)
+                // 2. 渲染右上角的純粹版俯視小圖
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
                     minimapContainer.innerHTML = `
-                        <!-- 灰色走道區塊 -->
-                        <div class="absolute bg-[#c0c0c0] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
+                        <!-- 灰色走道區塊 (更換為柔和粉藍灰色) -->
+                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
                     ` + RACKS_CONFIG.map(rack => `
                         <div id="minimap-rack-${rack.id}" 
                              class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
@@ -735,8 +822,11 @@
                         
                         this.virtualScrollNode.style.transform = `translateY(${startIdx * this.itemHeight}px)`;
                         
-                        // 只渲染可視範圍內的 HTML
-                        this.virtualScrollNode.innerHTML = this.filteredMeds.slice(startIdx, endIdx).map(med => {
+                        // 只渲染可視範圍內的 HTML，並加入鍵盤選取狀態判斷
+                        this.virtualScrollNode.innerHTML = this.filteredMeds.slice(startIdx, endIdx).map((med, idx) => {
+                            const globalIdx = startIdx + idx;
+                            const isKeyboardSelected = AppState.keyboardSelectedIndex === globalIdx;
+                            
                             const rackName = RACKS_CONFIG.find(r => r.id === med.rackId)?.name || med.rackId;
                             const chNameParam = med.chName ? med.chName.replace(/'/g, "\\'") : '';
                             const editBtnHTML = AppState.isLoggedIn ? `
@@ -745,8 +835,13 @@
                                         </button>
                             ` : '';
 
+                            // 根據鍵盤選中狀態切換凸顯樣式
+                            const activeClass = isKeyboardSelected 
+                                ? 'border-primary dark:border-primary ring-2 ring-primary/30 bg-slate-50 dark:bg-slate-700/90 transform translate-x-2 shadow-md z-10' 
+                                : 'border-slate-100 dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md dark:hover:shadow-slate-900/50 hover:-translate-y-1';
+
                             return `
-                                <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-3 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md dark:hover:shadow-slate-900/50 transition-all duration-200 hover:-translate-y-1 cursor-pointer group flex justify-between items-center h-[66px]" onclick="Controllers.focusOnRack('${med.rackId}')">
+                                <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border mb-3 cursor-pointer group flex justify-between items-center h-[66px] transition-all duration-200 ${activeClass}" onclick="Controllers.viewRackIn3D('${med.rackId}')">
                                     <div class="flex-1 pr-3 overflow-hidden">
                                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-primary dark:group-hover:text-primary transition-colors leading-tight truncate">${med.name}</h3>
                                         ${med.chName ? `<p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">${med.chName}</p>` : ''}
@@ -794,6 +889,9 @@
             },
 
             updateRacksVisuals(highlightedIds, selectedId) {
+                const searchColor = window.AppearanceConfig.searchColor;
+                const selectColor = window.AppearanceConfig.selectColor;
+
                 RACKS_CONFIG.forEach(rack => {
                     const mapEl = document.getElementById(`minimap-rack-${rack.id}`);
                     const legendDot = document.getElementById(`legend-dot-${rack.id}`);
@@ -803,71 +901,105 @@
                     
                     if (mapEl) {
                         // 狀態重置
-                        mapEl.classList.remove('border-primary', 'dark:border-primaryDark', 'border-emerald-500', 'opacity-40', 'bg-emerald-500', 'bg-primary/30');
+                        mapEl.style.backgroundColor = '';
+                        mapEl.style.borderColor = '';
+                        mapEl.classList.remove('opacity-40');
                         mapEl.classList.add('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
                         
                         if (legendDot) {
+                            legendDot.style.backgroundColor = '';
                             legendDot.className = "w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 transition-colors";
                         }
                         if (tagEl) {
+                            tagEl.style.borderColor = '';
+                            tagEl.style.backgroundColor = '';
+                            tagEl.classList.remove('opacity-50', 'scale-95');
                             tagEl.className = "flex items-center gap-1.5 bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm cursor-pointer hover:-translate-y-0.5 transition-all duration-300";
+                            
+                            nameEl.style.color = '';
                             nameEl.className = "text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors";
+                            
+                            catEl.style.color = '';
                             catEl.className = "text-[10px] text-slate-500 dark:text-slate-400 font-medium transition-colors";
                         }
 
                         // 處理高亮邏輯
                         if (highlightedIds.has(rack.id) && !selectedId) {
-                            mapEl.classList.add('border-primary', 'dark:border-primaryDark', 'bg-primary/30');
                             mapEl.classList.remove('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
-                            if(legendDot) legendDot.classList.replace('bg-slate-300', 'bg-primary');
-                            if(legendDot) legendDot.classList.replace('dark:bg-slate-600', 'dark:bg-primaryDark');
-                            if(tagEl) tagEl.classList.replace('border-slate-200', 'border-primary/50');
-                            if(tagEl) tagEl.classList.replace('dark:border-slate-700', 'dark:border-primary/50');
+                            mapEl.style.borderColor = searchColor;
+                            mapEl.style.backgroundColor = searchColor + '40'; 
+                            
+                            if(legendDot) {
+                                legendDot.classList.remove('bg-slate-300', 'dark:bg-slate-600');
+                                legendDot.style.backgroundColor = searchColor;
+                            }
+                            if(tagEl) {
+                                tagEl.classList.remove('border-slate-200', 'dark:border-slate-700');
+                                tagEl.style.borderColor = searchColor + '80'; 
+                            }
                         }
 
                         // 處理選中邏輯
                         if (selectedId === rack.id) {
-                            mapEl.classList.add('bg-emerald-500', 'border-emerald-600');
                             mapEl.classList.remove('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
-                            if(legendDot) legendDot.classList.replace('bg-slate-300', 'bg-emerald-500');
-                            if(legendDot) legendDot.classList.replace('dark:bg-slate-600', 'dark:bg-emerald-600');
+                            mapEl.style.borderColor = selectColor;
+                            mapEl.style.backgroundColor = selectColor;
                             
-                            // 高度辨識的標籤樣式
+                            if(legendDot) {
+                                legendDot.classList.remove('bg-slate-300', 'dark:bg-slate-600');
+                                legendDot.style.backgroundColor = selectColor;
+                            }
+                            
                             if(tagEl) {
-                                tagEl.className = "flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 border-2 border-emerald-500 px-3 py-1.5 rounded-lg shadow-md backdrop-blur-sm cursor-pointer transform -translate-y-1 transition-all duration-300";
-                                nameEl.className = "text-xs font-bold text-emerald-700 dark:text-emerald-300 transition-colors";
-                                catEl.className = "text-[10px] text-emerald-600 dark:text-emerald-400 font-medium transition-colors";
+                                tagEl.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg shadow-md backdrop-blur-sm cursor-pointer transform -translate-y-1 transition-all duration-300 border-2";
+                                tagEl.style.borderColor = selectColor;
+                                tagEl.style.backgroundColor = selectColor + '1A'; 
+                                
+                                nameEl.className = "text-xs font-bold transition-colors";
+                                nameEl.style.color = selectColor;
+                                
+                                catEl.className = "text-[10px] font-medium transition-colors";
+                                catEl.style.color = selectColor;
                             }
                         } else if (selectedId) {
                             mapEl.classList.add('opacity-40');
-                            // 未選中的標籤稍微淡化與縮小
                             if(tagEl) tagEl.classList.add('opacity-50', 'scale-95');
                         }
                     }
                 });
 
-                // 連動更新 3D 視覺化
                 if (typeof ThreeApp !== 'undefined') {
                     ThreeApp.updateVisuals(highlightedIds, selectedId);
                 }
             },
 
             updateStatusText() {
+                const searchColor = window.AppearanceConfig.searchColor;
+                const selectColor = window.AppearanceConfig.selectColor;
+
                 let text = "顯示所有藥品";
-                let dotColor = "bg-slate-300 dark:bg-slate-600";
+                let dotColorClass = "bg-slate-300 dark:bg-slate-600";
+                let dotStyleColor = "";
 
                 if (AppState.selectedRackId) {
                     const rackName = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId)?.name;
                     text = `篩選條件: ${rackName}`;
-                    dotColor = "bg-emerald-500";
+                    dotColorClass = "";
+                    dotStyleColor = selectColor;
                     if (AppState.searchQuery) text += ` + 關鍵字 "${AppState.searchQuery}"`;
                 } else if (AppState.searchQuery) {
                     text = `正在搜尋: "${AppState.searchQuery}"`;
-                    dotColor = "bg-primary";
+                    dotColorClass = "";
+                    dotStyleColor = searchColor;
+                } else if (AppState.focusedRackId) {
+                    text = "顯示所有藥品 (已於圖中標示所在儲位)";
+                    dotColorClass = "";
+                    dotStyleColor = selectColor;
                 }
 
                 this.statusText.textContent = text;
-                this.statusDot.className = `w-2 h-2 rounded-full inline-block ${dotColor}`;
+                this.statusDot.className = `w-2 h-2 rounded-full inline-block ${dotColorClass}`;
+                this.statusDot.style.backgroundColor = dotStyleColor;
             }
         };
 
@@ -877,26 +1009,23 @@
         let searchDebounceTimer;
 
         const Controllers = {
-            // 動態防抖搜尋 (根據資料量調整延遲，並顯示 Loading)
             handleInput(e) {
                 clearTimeout(searchDebounceTimer);
-                
-                // 顯示 Loading 狀態
                 DOM.searchLoader.classList.remove('hidden');
                 DOM.clearSearchBtn.classList.add('hidden');
                 
-                // 動態計算防抖時間：資料量越多，延遲越長避免卡頓 (範圍 200ms ~ 800ms)
                 const dynamicDelay = Math.min(800, Math.max(200, AppState.medicines.length * 0.1));
 
                 searchDebounceTimer = setTimeout(() => {
                     const query = e.target.value.trim();
                     AppState.searchQuery = query;
+                    AppState.focusedRackId = null;
+                    AppState.keyboardSelectedIndex = query.length > 0 ? 0 : -1; // 修正：輸入文字後預設立刻選中第一項
                     if (query.length > 0 && AppState.selectedRackId) {
                         AppState.selectedRackId = null; 
                     }
                     this.refreshUI();
                     
-                    // 恢復 UI 狀態
                     DOM.searchLoader.classList.add('hidden');
                     if(query) DOM.clearSearchBtn.classList.remove('hidden');
                 }, dynamicDelay);
@@ -905,24 +1034,33 @@
             clearSearch() {
                 DOM.searchInput.value = '';
                 AppState.searchQuery = '';
+                AppState.focusedRackId = null;
+                AppState.keyboardSelectedIndex = -1;
                 DOM.clearSearchBtn.classList.add('hidden');
                 DOM.searchInput.focus();
                 this.refreshUI();
+                if (typeof ThreeApp !== 'undefined') ThreeApp.resetCamera(); 
             },
 
             resetAll() {
                 DOM.searchInput.value = '';
                 AppState.searchQuery = '';
                 AppState.selectedRackId = null;
+                AppState.focusedRackId = null;
+                AppState.keyboardSelectedIndex = -1;
                 DOM.clearSearchBtn.classList.add('hidden');
                 this.refreshUI();
+                if (typeof ThreeApp !== 'undefined') ThreeApp.resetCamera(); 
             },
 
             handleRackClick(rackId) {
                 if (AppState.selectedRackId === rackId) {
                     AppState.selectedRackId = null;
+                    AppState.focusedRackId = null;
                 } else {
                     AppState.selectedRackId = rackId;
+                    AppState.focusedRackId = null;
+                    AppState.keyboardSelectedIndex = -1;
                     AppState.searchQuery = '';
                     DOM.searchInput.value = '';
                     DOM.clearSearchBtn.classList.add('hidden');
@@ -930,12 +1068,32 @@
                 this.refreshUI();
             },
 
-            focusOnRack(rackId) {
-                AppState.selectedRackId = rackId;
-                AppState.searchQuery = '';
-                DOM.searchInput.value = '';
-                DOM.clearSearchBtn.classList.add('hidden');
+            viewRackIn3D(rackId) {
+                AppState.focusedRackId = rackId;
+                if (typeof ThreeApp !== 'undefined') {
+                    ThreeApp.focusOnRack(rackId);
+                }
                 this.refreshUI();
+            },
+
+            // --- 新增：鍵盤導航畫面更新邏輯 ---
+            updateKeyboardSelection() {
+                const itemHeight = DOM.itemHeight || 78; 
+                const container = DOM.medicineListContainer;
+                const selectedTop = AppState.keyboardSelectedIndex * itemHeight;
+                const selectedBottom = selectedTop + itemHeight;
+
+                // 讓滾動條自動追蹤選中的項目，確保其始終在可視範圍內
+                if (selectedTop < container.scrollTop) {
+                    container.scrollTop = selectedTop;
+                } else if (selectedBottom > container.scrollTop + container.clientHeight) {
+                    container.scrollTop = selectedBottom - container.clientHeight;
+                }
+
+                // 強制更新虛擬清單以渲染高亮樣式
+                if (DOM.updateVirtualList) {
+                    DOM.updateVirtualList();
+                }
             },
 
             refreshUI() {
@@ -943,12 +1101,11 @@
                 const highlightedRacks = AppState.getHighlightedRackIds();
                 
                 DOM.renderList(filteredList);
-                DOM.updateRacksVisuals(highlightedRacks, AppState.selectedRackId);
+                DOM.updateRacksVisuals(highlightedRacks, AppState.focusedRackId || AppState.selectedRackId);
                 DOM.updateStatusText();
                 DOM.totalItemsCount.textContent = AppState.medicines.length; 
             },
 
-            // --- 登入/登出 控制邏輯 ---
             toggleAuth() {
                 if (AppState.isLoggedIn) {
                     AppState.isLoggedIn = false;
@@ -1029,7 +1186,6 @@
                 this.refreshUI(); 
             },
 
-            // --- 設定 Modal ---
             openSettingsModal() {
                 if (!AppState.isLoggedIn) {
                     this.openLoginModal();
@@ -1050,12 +1206,122 @@
                 }, 300);
             },
 
-            // --- 列印自訂篩選 Modal ---
+            exportBackup() {
+                const data = {
+                    medicines: AppState.medicines,
+                    racks: RACKS_CONFIG,
+                    exportDate: new Date().toISOString()
+                };
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `藥品庫存備份_${new Date().toLocaleDateString('zh-TW').replace(/\//g, '')}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+
+            triggerImportBackup() {
+                if (confirm('警告：匯入還原檔將會完全蓋掉目前的所有資料且無法復原！\n請問是否仍要繼續選擇還原檔？')) {
+                    const fileInput = document.getElementById('backupFileInput');
+                    fileInput.value = ''; 
+                    fileInput.click();
+                }
+            },
+
+            async importBackup(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.medicines && data.racks) {
+                            AppState.medicines = data.medicines;
+                            RACKS_CONFIG = data.racks;
+                            
+                            localStorage.setItem('drugSysRealMedicines', JSON.stringify(AppState.medicines));
+                            localStorage.setItem('drugSysRacksConfig', JSON.stringify(RACKS_CONFIG));
+                            
+                            alert('備份已成功還原至本機！\n(若需覆蓋至雲端，可能需確認後端是否支援或需手動更新)');
+                            
+                            DOM.renderRackOptions();
+                            DOM.renderRacks();
+                            if (typeof ThreeApp !== 'undefined') {
+                                ThreeApp.rebuildAllRacks();
+                            }
+                            this.refreshUI();
+                            this.closeSettingsModal();
+                        } else {
+                            alert('備份檔案格式不正確！');
+                        }
+                    } catch (err) {
+                        alert('讀取檔案失敗！');
+                    }
+                    event.target.value = ''; 
+                };
+                reader.readAsText(file);
+            },
+
+            openAppearanceModal() {
+                DOM.appearanceModal.classList.remove('hidden');
+                setTimeout(() => {
+                    DOM.appearanceModal.classList.remove('opacity-0');
+                    DOM.appearanceModalContent.classList.remove('scale-95');
+                }, 10);
+                if (typeof ThreeApp !== 'undefined') {
+                    ThreeApp.loadAppearanceConfig();
+                }
+            },
+
+            closeAppearanceModal() {
+                DOM.appearanceModal.classList.add('opacity-0');
+                DOM.appearanceModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    DOM.appearanceModal.classList.add('hidden');
+                }, 300);
+            },
+
+            resetAppearance() {
+                if (confirm('確定要還原所有 3D 外觀與顏色設定至系統預設值嗎？')) {
+                    window.AppearanceConfig = {
+                        floorColor: 'white',
+                        aisleColor: 'gray',
+                        searchColor: '#ac0606',
+                        selectColor: '#35a207',
+                        glowIntensity: 0.2
+                    };
+                    localStorage.setItem('drugSysAppearance', JSON.stringify(window.AppearanceConfig));
+                    if (typeof ThreeApp !== 'undefined') {
+                        ThreeApp.loadAppearanceConfig();
+                    }
+                    this.refreshUI(); 
+                }
+            },
+
+            updateAppearance() {
+                const config = {
+                    floorColor: document.getElementById('settingFloorColor').value,
+                    aisleColor: document.getElementById('settingAisleColor').value,
+                    searchColor: document.getElementById('settingSearchColor').value,
+                    selectColor: document.getElementById('settingSelectColor').value,
+                    glowIntensity: parseFloat(document.getElementById('settingGlowIntensity').value)
+                };
+                
+                window.AppearanceConfig = config;
+                localStorage.setItem('drugSysAppearance', JSON.stringify(config));
+                
+                if (typeof ThreeApp !== 'undefined') {
+                    ThreeApp.applyAppearance(config);
+                }
+                this.refreshUI(); 
+            },
+
             openPrintFilterModal(mode) {
                 document.getElementById('printModeInput').value = mode;
                 document.getElementById('printModalTitle').textContent = mode === 'label' ? '匯出藥品標籤' : '匯出藥品清單';
                 
-                // 動態控制內部代碼選項的顯示與否
                 const codeOption = document.getElementById('printCodeOptionContainer');
                 if (codeOption) {
                     if (mode === 'list') {
@@ -1065,7 +1331,6 @@
                     }
                 }
                 
-                // 動態產生層架 Checkbox
                 const racksContainer = document.getElementById('printRacksContainer');
                 racksContainer.innerHTML = RACKS_CONFIG.map(rack => `
                     <label class="flex items-center gap-2 p-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors">
@@ -1074,7 +1339,6 @@
                     </label>
                 `).join('');
 
-                // 顯示當前搜尋條件提示
                 const hintEl = document.getElementById('printSearchTextHint');
                 const cbSearch = document.getElementById('printApplySearch');
                 if (AppState.searchQuery) {
@@ -1119,7 +1383,6 @@
                 this.exportMedicineLabels(mode, checkedRacks, applySearch, includeCode);
             },
 
-            // --- 其他編輯 Modal ---
             openEditModal(id, name, rackId, chName = '') {
                 DOM.editMedId.value = id || '';
                 DOM.editMedName.value = name || '';
@@ -1171,7 +1434,6 @@
                 }
             },
 
-            // --- 層架編輯控制邏輯 ---
             openRackEditModal() {
                 DOM.rackEditListContainer.innerHTML = RACKS_CONFIG.map(rack => `
                     <div class="flex flex-col gap-3 bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl border border-slate-200 dark:border-slate-600 transition-colors">
@@ -1298,7 +1560,6 @@
                 printWindow.document.close();
             },
 
-            // 支援自訂篩選的匯出功能
             exportMedicineLabels(mode = 'label', filterRacks = [], applySearch = false, includeCode = true) {
                 const printWindow = window.open('', '_blank');
                 if (!printWindow) {
@@ -1311,7 +1572,6 @@
                 
                 let targetMedicines = AppState.medicines;
 
-                // 若套用搜尋條件，則以當前搜尋結果為基底
                 if (applySearch && AppState.searchQuery) {
                     const q = AppState.searchQuery.toLowerCase();
                     targetMedicines = targetMedicines.filter(med => 
@@ -1362,7 +1622,6 @@
                 let totalExported = 0;
 
                 RACKS_CONFIG.forEach(rack => {
-                    // 只處理使用者有勾選的層架
                     if (!filterRacks.includes(rack.id)) return;
 
                     const rackMeds = targetMedicines.filter(m => m.rackId === rack.id);
@@ -1453,7 +1712,8 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            isResetting: false, defaultCamPos: new THREE.Vector3(0, 18, 14), defaultTarget: new THREE.Vector3(0, 0, 0),
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 18, 14), defaultTarget: new THREE.Vector3(0, 0, 0),
+            targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
                 const container = document.getElementById(containerId);
@@ -1484,7 +1744,8 @@
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
                 this.scene.add(ambientLight);
                 
-                const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+                // 調整頂光強度至 0.4，避免白紙箱看起來過於灰暗，同時維持柔和度
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
                 dirLight.position.set(10, 20, 10);
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
@@ -1495,9 +1756,10 @@
                 dirLight.shadow.camera.bottom = -15;
                 this.scene.add(dirLight);
 
+                // 修正：為地板加入 emissive 自發光補償，讓地板維持原本 0.6 頂光時的白淨度
+                this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
                 const floorGeo = new THREE.PlaneGeometry(28, 20);
-                const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1 });
-                const floor = new THREE.Mesh(floorGeo, floorMat);
+                const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
                 floor.receiveShadow = true;
                 this.scene.add(floor);
@@ -1506,27 +1768,138 @@
                 this.grid.position.y = 0.01;
                 this.scene.add(this.grid);
 
+                // 修正：走道顏色套用為圖中的粉藍灰系
+                this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
                 const aisleGeo = new THREE.PlaneGeometry(28, 3.2);
-                const aisleMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
-                const aisle = new THREE.Mesh(aisleGeo, aisleMat);
+                const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
                 this.scene.add(aisle);
 
-                // 建構實例化鐵架與紙箱模型 (大幅優化效能)
+                this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
+
+                this.loadAppearanceConfig();
+
                 this.buildRacks();
 
-                // 綁定事件
                 window.addEventListener('resize', () => this.onResize(container));
                 this.renderer.domElement.addEventListener('pointerdown', (e) => this.onClick(e, container));
-                this.renderer.domElement.addEventListener('pointermove', (e) => this.onMouseMove(e, container)); // Hover Tooltip
+                this.renderer.domElement.addEventListener('pointermove', (e) => this.onMouseMove(e, container)); 
+                
+                this.controls.addEventListener('start', () => {
+                    this.isLerpingCam = false; 
+                });
 
                 this.animate();
             },
 
-            // 觸發視角平滑重置
+            loadAppearanceConfig() {
+                const saved = localStorage.getItem('drugSysAppearance');
+                if (saved) {
+                    try {
+                        const config = JSON.parse(saved);
+                        window.AppearanceConfig = { ...window.AppearanceConfig, ...config };
+                    } catch(e){}
+                }
+                
+                const config = window.AppearanceConfig;
+                
+                const selFloor = document.getElementById('settingFloorColor');
+                const selAisle = document.getElementById('settingAisleColor');
+                const inpSearch = document.getElementById('settingSearchColor');
+                const inpSelect = document.getElementById('settingSelectColor');
+                const inpGlow = document.getElementById('settingGlowIntensity');
+                
+                if(selFloor) selFloor.value = config.floorColor;
+                if(selAisle) selAisle.value = config.aisleColor;
+                if(inpSearch) inpSearch.value = config.searchColor;
+                if(inpSelect) inpSelect.value = config.selectColor;
+                if(inpGlow) {
+                    inpGlow.value = config.glowIntensity;
+                    const valEl = document.getElementById('glowIntensityVal');
+                    if (valEl) valEl.textContent = config.glowIntensity;
+                }
+                
+                this.applyAppearance(config);
+            },
+
+            applyAppearance(config) {
+                let boxHex = 0xf8fafc; let boxRough = 0.9;
+                if (config.boxColor === 'brown') { boxHex = 0x9c7a54; boxRough = 1.0; } 
+                else if (config.boxColor === 'blue') { boxHex = 0x3b82f6; boxRough = 0.7; }
+                
+                this.boxBaseMat.color.setHex(boxHex);
+                this.boxBaseMat.roughness = boxRough;
+                
+                let floorHex = 0xffffff;
+                let floorEmissive = 0x333333; // 補償頂光調弱後的地板亮度
+                if (config.floorColor === 'dark') {
+                    floorHex = 0x334155;
+                    floorEmissive = 0x000000; // 深色地板不需要亮度補償
+                }
+                this.floorMat.color.setHex(floorHex);
+                this.floorMat.emissive.setHex(floorEmissive);
+
+                // 修正：預設走道顏色套用粉藍灰系
+                let aisleHex = 0xabc2d8; let aisleRough = 0.9;
+                if (config.aisleColor === 'red') { aisleHex = 0xb91c1c; aisleRough = 0.95; }
+                else if (config.aisleColor === 'green') { aisleHex = 0x10b981; aisleRough = 0.85; }
+                
+                this.aisleMat.color.setHex(aisleHex);
+                this.aisleMat.roughness = aisleRough;
+                
+                if (config.aisleColor === 'red') {
+                    if (!this.carpetBorders) {
+                        const borderGeo = new THREE.BoxGeometry(28, 0.1, 0.2);
+                        const borderMat = new THREE.MeshStandardMaterial({color: 0xffd700, metalness: 0.8, roughness: 0.2});
+                        const border1 = new THREE.Mesh(borderGeo, borderMat);
+                        border1.position.set(0, 0.05, 1.5); 
+                        const border2 = new THREE.Mesh(borderGeo, borderMat);
+                        border2.position.set(0, 0.05, -1.5);
+                        this.carpetBorders = new THREE.Group();
+                        this.carpetBorders.add(border1, border2);
+                        this.scene.add(this.carpetBorders);
+                    }
+                    this.carpetBorders.visible = true;
+                } else {
+                    if (this.carpetBorders) this.carpetBorders.visible = false;
+                }
+                
+                Object.values(this.rackMeshes).forEach(rm => {
+                    if (rm.boxInstanced) {
+                        rm.boxInstanced.material.needsUpdate = true;
+                    }
+                });
+            },
+
+            moveToCamera(pos, target) {
+                this.isLerpingCam = true;
+                this.targetCamPos.copy(pos);
+                this.targetCamLookAt.copy(target);
+            },
+
             resetCamera() {
-                this.isResetting = true;
+                this.moveToCamera(this.defaultCamPos, this.defaultTarget);
+            },
+
+            focusOnRack(rackId) {
+                const rack = this.rackMeshes[rackId];
+                if (rack) {
+                    const targetPos = rack.group.position.clone().add(new THREE.Vector3(0, 8, 8));
+                    this.moveToCamera(targetPos, rack.group.position);
+                }
+            },
+
+            rebuildAllRacks() {
+                Object.values(this.rackMeshes).forEach(rm => {
+                    this.scene.remove(rm.group);
+                });
+                if(this.easterEggBoxes) {
+                    this.easterEggBoxes.forEach(box => this.scene.remove(box));
+                }
+                this.rackMeshes = {};
+                this.easterEggBoxes = [];
+                this.buildRacks();
             },
 
             buildRacks() {
@@ -1534,16 +1907,16 @@
                 const roomD = 20;
                 const rackHeight = 4.5; 
 
-                // 共用材質設定
                 const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
                 const clipMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
                 const shelfMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.7, roughness: 0.4, transparent: true, opacity: 0.8 });
-                const boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
 
                 const postRadius = 0.05;
                 const postGeo = new THREE.CylinderGeometry(postRadius, postRadius, rackHeight, 8);
                 const clipGeo = new THREE.CylinderGeometry(postRadius * 1.3, postRadius * 1.3, 0.12, 8);
-                const unitBoxGeo = new THREE.BoxGeometry(1, 1, 1); // 1x1x1 的基準幾何體供 InstancedMesh 縮放
+                const unitBoxGeo = new THREE.BoxGeometry(1, 1, 1); 
+
+                this.easterEggBoxes = []; 
 
                 RACKS_CONFIG.forEach((rack, index) => {
                     const top = parseFloat(rack.top) / 100;
@@ -1566,7 +1939,6 @@
                         [w/2 - postRadius, d/2 - postRadius]
                     ];
                     
-                    // 使用 InstancedMesh 繪製支柱 (4根)
                     const postInstanced = new THREE.InstancedMesh(postGeo, postMat, 4);
                     postInstanced.castShadow = true;
                     const matrix = new THREE.Matrix4();
@@ -1585,7 +1957,6 @@
                     const wireframes = []; 
                     const shelfYs = [-1.6, -0.5, 0.6, 1.7]; 
 
-                    // 準備 InstancedMesh 的資料收集
                     const clipTransforms = [];
                     const boxTransforms = [];
 
@@ -1600,14 +1971,12 @@
                         group.add(wireframe);
                         wireframes.push(wireframe);
 
-                        // 收集夾片位置矩陣
                         postPositions.forEach(pos => {
                             const cMat = new THREE.Matrix4();
                             cMat.setPosition(pos[0], sy, pos[1]);
                             clipTransforms.push(cMat);
                         });
 
-                        // 產生紙箱大小與位置邏輯 (固定比例放大，盡量塞滿)
                         let seed = index * 100 + Math.abs(sy * 10); 
                         const pseudoRandom = () => {
                             const val = Math.sin(seed++) * 10000;
@@ -1640,7 +2009,6 @@
                                 const actualD = rowDepth - 0.04;
 
                                 if (actualW > 0.4 && actualD > 0.4) {
-                                    // 將每個紙箱轉化為矩陣存放 (平移 + 縮放)
                                     const bMat = new THREE.Matrix4();
                                     const posVec = new THREE.Vector3(currentX + boxW/2, sy + shelfThickness/2 + boxH/2, currentZ + rowDepth/2);
                                     const quat = new THREE.Quaternion();
@@ -1656,24 +2024,22 @@
                         }
                     });
 
-                    // 使用 InstancedMesh 繪製黑色夾片
                     if (clipTransforms.length > 0) {
                         const clipInstanced = new THREE.InstancedMesh(clipGeo, clipMat, clipTransforms.length);
                         clipTransforms.forEach((mat, idx) => clipInstanced.setMatrixAt(idx, mat));
                         group.add(clipInstanced);
                     }
 
-                    // 使用 InstancedMesh 繪製所有紙箱 (大幅降低 Draw calls)
                     let boxInstanced = null;
+                    let rackBoxMat = this.boxBaseMat.clone(); 
                     if (boxTransforms.length > 0) {
-                        boxInstanced = new THREE.InstancedMesh(unitBoxGeo, boxBaseMat.clone(), boxTransforms.length);
+                        boxInstanced = new THREE.InstancedMesh(unitBoxGeo, rackBoxMat, boxTransforms.length);
                         boxTransforms.forEach((mat, idx) => boxInstanced.setMatrixAt(idx, mat));
                         boxInstanced.castShadow = true;
                         boxInstanced.receiveShadow = true;
                         group.add(boxInstanced);
                     }
 
-                    // 隱形的射線測試命中區塊 (用於精準判斷點擊與 Hover)
                     const hitGeo = new THREE.BoxGeometry(w, rackHeight, d);
                     const hitMat = new THREE.MeshBasicMaterial({ visible: false });
                     const hitBox = new THREE.Mesh(hitGeo, hitMat);
@@ -1681,14 +2047,9 @@
                     group.add(hitBox);
 
                     this.scene.add(group);
-                    this.rackMeshes[rack.id] = { hitBox, group, wireframes, boxInstanced, originalY: rackHeight / 2 };
+                    this.rackMeshes[rack.id] = { hitBox, group, wireframes, boxInstanced, boxMat: rackBoxMat, originalY: rackHeight / 2 };
                 });
 
-                this.easterEggBoxes = []; // 準備存放彩蛋判定框
-
-                // ==========================================
-                // 隱藏彩蛋 1：A 區鐵架下方的地板磁磚簽名 (改粗黑手寫、往內放、調整角度)
-                // ==========================================
                 const rackA = RACKS_CONFIG.find(r => r.id === 'Rack-A');
                 if (rackA) {
                     const ax = (parseFloat(rackA.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackA.width) / 100 * roomW / 2);
@@ -1699,7 +2060,7 @@
                     canvas.height = 128;
                     const ctx = canvas.getContext('2d');
                     ctx.font = 'bold 44px "Caveat", "Comic Sans MS", "Bradley Hand", cursive, "Noto Sans TC", sans-serif';
-                    ctx.fillStyle = '#0f172a'; // 粗黑字體
+                    ctx.fillStyle = '#0f172a';
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
                     ctx.fillText('製作者 : 其仁藥師 2026.05.08', 512, 64);
@@ -1709,10 +2070,9 @@
                     const signMesh = new THREE.Mesh(new THREE.PlaneGeometry(6, 0.75), signMat);
                     
                     signMesh.rotation.x = -Math.PI / 2;
-                    signMesh.rotation.z = -Math.PI / 6; // 換一個書寫傾斜角度
-                    signMesh.position.set(ax + 0.8, 0.03, az + 0.8); // 往裡面放一點，避免太靠邊緣
+                    signMesh.rotation.z = -Math.PI / 6;
+                    signMesh.position.set(ax + 0.8, 0.03, az + 0.8);
                     
-                    // 獨立的點擊判定框
                     const signHitBox = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 1), new THREE.MeshBasicMaterial({ visible: false }));
                     signHitBox.position.copy(signMesh.position);
                     signHitBox.rotation.copy(signMesh.rotation);
@@ -1723,21 +2083,15 @@
                     this.easterEggBoxes.push(signHitBox);
                 }
 
-                // ==========================================
-                // 隱藏彩蛋 2：D 區鐵架下方橫躺的紅黃色小膠囊
-                // ==========================================
                 const rackD = RACKS_CONFIG.find(r => r.id === 'Rack-D');
                 if (rackD) {
                     const dx = (parseFloat(rackD.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackD.width) / 100 * roomW / 2);
                     const dz = (parseFloat(rackD.top) / 100 * roomD) - (roomD / 2) + (parseFloat(rackD.height) / 100 * roomD / 2);
                     
                     const capsuleGroup = new THREE.Group();
-                    
-                    // 膠囊半徑與長度 (與層架比例相符的微小尺寸)
                     const capRadius = 0.06;
                     const capHeight = 0.15;
                     
-                    // 紅色半邊
                     const redMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 });
                     const redGeo = new THREE.CylinderGeometry(capRadius, capRadius, capHeight, 16);
                     const redPart = new THREE.Mesh(redGeo, redMat);
@@ -1745,7 +2099,6 @@
                     const redCap = new THREE.Mesh(new THREE.SphereGeometry(capRadius, 16, 16), redMat);
                     redCap.position.y = capHeight;
                     
-                    // 黃色半邊
                     const yellowMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.4 });
                     const yellowGeo = new THREE.CylinderGeometry(capRadius, capRadius, capHeight, 16);
                     const yellowPart = new THREE.Mesh(yellowGeo, yellowMat);
@@ -1755,12 +2108,10 @@
                     
                     capsuleGroup.add(redPart, redCap, yellowPart, yellowCap);
                     
-                    // 讓膠囊橫著倒在地板上
                     capsuleGroup.position.set(dx, capRadius, dz);
                     capsuleGroup.rotation.x = Math.PI / 2;
                     capsuleGroup.rotation.z = Math.PI / 3;
                     
-                    // 點擊判定隱藏區塊 (稍微放大判定範圍以便輕鬆點擊)
                     const capHitBox = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.8, 0.8), new THREE.MeshBasicMaterial({ visible: false }));
                     capHitBox.position.copy(capsuleGroup.position);
                     capHitBox.userData = { isEasterEgg: true, message: '掉地板的藥不要撿起來XD' };
@@ -1774,14 +2125,19 @@
             updateVisuals(highlightedIds, selectedId) {
                 if(!this.scene) return;
                 
+                const searchColorHex = parseInt(window.AppearanceConfig.searchColor.replace('#', '0x'));
+                const selectColorHex = parseInt(window.AppearanceConfig.selectColor.replace('#', '0x'));
+                const glowIntensity = window.AppearanceConfig.glowIntensity;
+
                 Object.values(this.rackMeshes).forEach(meshObj => {
                     meshObj.wireframes.forEach(wf => {
                         wf.material.color.setHex(0x64748b);
                         wf.material.opacity = 0.5;
                         wf.material.transparent = true;
                     });
-                    if (meshObj.boxInstanced) {
-                        meshObj.boxInstanced.material.emissive.setHex(0x000000);
+                    if (meshObj.boxMat) {
+                        meshObj.boxMat.emissive.setHex(0x000000);
+                        meshObj.boxMat.emissiveIntensity = 1.0;
                     }
                     meshObj.group.position.y = meshObj.originalY;
                 });
@@ -1789,22 +2145,24 @@
                 highlightedIds.forEach(id => {
                     if (this.rackMeshes[id]) {
                         this.rackMeshes[id].wireframes.forEach(wf => {
-                            wf.material.color.setHex(0x0ea5e9);
-                            wf.material.opacity = 1.0;
+                            wf.material.color.setHex(searchColorHex);
+                            wf.material.opacity = 0.8;
                         });
-                        if (this.rackMeshes[id].boxInstanced) {
-                            this.rackMeshes[id].boxInstanced.material.emissive.setHex(0x0284c7);
+                        if (this.rackMeshes[id].boxMat) {
+                            this.rackMeshes[id].boxMat.emissive.setHex(searchColorHex);
+                            this.rackMeshes[id].boxMat.emissiveIntensity = glowIntensity * 0.8; 
                         }
                     }
                 });
 
                 if (selectedId && this.rackMeshes[selectedId]) {
                     this.rackMeshes[selectedId].wireframes.forEach(wf => {
-                        wf.material.color.setHex(0x10b981);
+                        wf.material.color.setHex(selectColorHex);
                         wf.material.opacity = 1.0;
                     });
-                    if (this.rackMeshes[selectedId].boxInstanced) {
-                        this.rackMeshes[selectedId].boxInstanced.material.emissive.setHex(0x059669);
+                    if (this.rackMeshes[selectedId].boxMat) {
+                        this.rackMeshes[selectedId].boxMat.emissive.setHex(selectColorHex);
+                        this.rackMeshes[selectedId].boxMat.emissiveIntensity = glowIntensity; 
                     }
                     this.rackMeshes[selectedId].group.position.y = this.rackMeshes[selectedId].originalY + 0.5;
                 }
@@ -1817,19 +2175,17 @@
 
                 this.raycaster.setFromCamera(this.mouse, this.camera);
                 const hitBoxes = Object.values(this.rackMeshes).map(r => r.hitBox);
-                if (this.easterEggBoxes) hitBoxes.push(...this.easterEggBoxes); // 加入多個彩蛋的判定框
+                if (this.easterEggBoxes) hitBoxes.push(...this.easterEggBoxes); 
                 
                 const intersects = this.raycaster.intersectObjects(hitBoxes, false);
                 
                 if (intersects.length > 0) {
                     const obj = intersects[0].object;
                     
-                    // 若點擊到彩蛋物件 (包含簽名或膠囊)
                     if (obj.userData && obj.userData.isEasterEgg) {
                         const modal = document.getElementById('easterEggModal');
                         const msgEl = document.getElementById('easterEggMessage');
                         
-                        // 動態寫入該彩蛋專屬的訊息
                         if (msgEl) msgEl.textContent = obj.userData.message;
                         
                         modal.classList.remove('hidden');
@@ -1843,7 +2199,6 @@
                 }
             },
 
-            // 滑鼠懸停時觸發 3D 浮動提示框 (Tooltip)
             onMouseMove(event, container) {
                 const rect = container.getBoundingClientRect();
                 this.mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
@@ -1851,7 +2206,6 @@
 
                 this.raycaster.setFromCamera(this.mouse, this.camera);
                 
-                // 只偵測 hitBox 實體
                 const hitBoxes = Object.values(this.rackMeshes).map(r => r.hitBox);
                 const intersects = this.raycaster.intersectObjects(hitBoxes, false);
                 
@@ -1860,13 +2214,11 @@
                 if (intersects.length > 0) {
                     const rackId = intersects[0].object.userData.id;
                     
-                    // 游標指標變化
                     container.style.cursor = 'pointer';
 
                     const rackName = RACKS_CONFIG.find(r => r.id === rackId)?.name || '未知層架';
                     const meds = AppState.medicines.filter(m => m.rackId === rackId);
                     
-                    // 取前 3 個藥品名稱
                     const topMeds = meds.slice(0, 3).map(m => `• ${m.name}`).join('<br>');
                     const moreInfo = meds.length > 3 ? `<div class="mt-1 pt-1 border-t border-slate-700/50 text-slate-400">...等共 ${meds.length} 項藥品</div>` : '';
 
@@ -1896,12 +2248,11 @@
             animate() {
                 requestAnimationFrame(() => this.animate());
                 
-                // 執行攝影機重置動畫 (Lerp)
-                if (this.isResetting) {
-                    this.camera.position.lerp(this.defaultCamPos, 0.08);
-                    this.controls.target.lerp(this.defaultTarget, 0.08);
-                    if (this.camera.position.distanceTo(this.defaultCamPos) < 0.1) {
-                        this.isResetting = false;
+                if (this.isLerpingCam) {
+                    this.camera.position.lerp(this.targetCamPos, 0.08);
+                    this.controls.target.lerp(this.targetCamLookAt, 0.08);
+                    if (this.camera.position.distanceTo(this.targetCamPos) < 0.1) {
+                        this.isLerpingCam = false;
                     }
                 }
 
@@ -1947,8 +2298,60 @@
                     if (!DOM.editModal.classList.contains('hidden')) Controllers.closeEditModal();
                     if (!DOM.rackEditModal.classList.contains('hidden')) Controllers.closeRackEditModal();
                     if (!DOM.settingsModal.classList.contains('hidden')) Controllers.closeSettingsModal();
+                    if (!DOM.appearanceModal.classList.contains('hidden')) Controllers.closeAppearanceModal();
                     if (!DOM.loginModal.classList.contains('hidden')) Controllers.closeLoginModal();
                     if (!DOM.printFilterModal.classList.contains('hidden')) Controllers.closePrintFilterModal();
+                }
+            });
+
+            // --- 新增：搜尋框的全鍵盤導航支援 ---
+            DOM.searchInput.addEventListener('keydown', (e) => {
+                // 修正：忽略輸入法 (IME) 的選字與確認 Enter，避免攔截中文輸入導致失效或需連按
+                if (e.isComposing || e.keyCode === 229) return;
+
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+                    const currentQuery = e.target.value.trim();
+                    if (currentQuery !== AppState.searchQuery) {
+                        clearTimeout(searchDebounceTimer);
+                        AppState.searchQuery = currentQuery;
+                        AppState.focusedRackId = null;
+                        AppState.keyboardSelectedIndex = currentQuery.length > 0 ? 0 : -1; // 修正：自動選中第一項
+                        DOM.searchLoader.classList.add('hidden');
+                        if (currentQuery) DOM.clearSearchBtn.classList.remove('hidden');
+                        Controllers.refreshUI();
+                    } else {
+                        clearTimeout(searchDebounceTimer);
+                        DOM.searchLoader.classList.add('hidden');
+                    }
+                }
+
+                const filteredList = AppState.getFilteredMedicines();
+                if (filteredList.length === 0) return;
+
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    if (AppState.keyboardSelectedIndex < filteredList.length - 1) {
+                        AppState.keyboardSelectedIndex++;
+                    } else if (AppState.keyboardSelectedIndex === -1) {
+                        AppState.keyboardSelectedIndex = 0;
+                    }
+                    Controllers.updateKeyboardSelection();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    if (AppState.keyboardSelectedIndex > 0) {
+                        AppState.keyboardSelectedIndex--;
+                    }
+                    Controllers.updateKeyboardSelection();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    // 預設 Enter 至少選取第一項
+                    const idx = AppState.keyboardSelectedIndex >= 0 ? AppState.keyboardSelectedIndex : 0;
+                    if (filteredList[idx]) {
+                        AppState.keyboardSelectedIndex = idx;
+                        Controllers.updateKeyboardSelection();
+                        Controllers.viewRackIn3D(filteredList[idx].rackId);
+                        DOM.searchInput.blur(); // 按下 Enter 後取消輸入框焦點，讓使用者更專注於 3D 畫面
+                    }
                 }
             });
 
