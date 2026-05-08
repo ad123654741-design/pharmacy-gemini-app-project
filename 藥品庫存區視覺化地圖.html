@@ -258,6 +258,14 @@
                     </label>
                     <p class="text-xs text-slate-500 mt-1 pl-6" id="printSearchTextHint">目前無搜尋條件</p>
                 </div>
+                
+                <!-- 新增：是否列印內部代碼的選項 (僅清單模式顯示) -->
+                <div class="mt-2 hidden" id="printCodeOptionContainer">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="printIncludeCode" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:bg-slate-700 dark:border-slate-600" checked>
+                        <span class="text-sm text-slate-700 dark:text-slate-300">列印時包含「內部代碼」欄位</span>
+                    </label>
+                </div>
             </div>
             <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
                 <button onclick="Controllers.closePrintFilterModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
@@ -1047,6 +1055,16 @@
                 document.getElementById('printModeInput').value = mode;
                 document.getElementById('printModalTitle').textContent = mode === 'label' ? '匯出藥品標籤' : '匯出藥品清單';
                 
+                // 動態控制內部代碼選項的顯示與否
+                const codeOption = document.getElementById('printCodeOptionContainer');
+                if (codeOption) {
+                    if (mode === 'list') {
+                        codeOption.classList.remove('hidden');
+                    } else {
+                        codeOption.classList.add('hidden');
+                    }
+                }
+                
                 // 動態產生層架 Checkbox
                 const racksContainer = document.getElementById('printRacksContainer');
                 racksContainer.innerHTML = RACKS_CONFIG.map(rack => `
@@ -1089,6 +1107,7 @@
             confirmPrint() {
                 const mode = document.getElementById('printModeInput').value;
                 const applySearch = document.getElementById('printApplySearch').checked;
+                const includeCode = document.getElementById('printIncludeCode').checked;
                 const checkedRacks = Array.from(document.querySelectorAll('.print-rack-cb:checked')).map(cb => cb.value);
                 
                 if (checkedRacks.length === 0) {
@@ -1097,7 +1116,7 @@
                 }
 
                 this.closePrintFilterModal();
-                this.exportMedicineLabels(mode, checkedRacks, applySearch);
+                this.exportMedicineLabels(mode, checkedRacks, applySearch, includeCode);
             },
 
             // --- 其他編輯 Modal ---
@@ -1280,7 +1299,7 @@
             },
 
             // 支援自訂篩選的匯出功能
-            exportMedicineLabels(mode = 'label', filterRacks = [], applySearch = false) {
+            exportMedicineLabels(mode = 'label', filterRacks = [], applySearch = false, includeCode = true) {
                 const printWindow = window.open('', '_blank');
                 if (!printWindow) {
                     alert('請允許瀏覽器開啟彈出視窗以進行列印！');
@@ -1373,9 +1392,9 @@
                             <table class="med-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 15%;">內部代碼</th>
-                                        <th style="width: 45%;">英文藥品名稱</th>
-                                        <th style="width: 40%;">中文商品名稱</th>
+                                        ${includeCode ? '<th style="width: 15%;">內部代碼</th>' : ''}
+                                        <th style="${includeCode ? 'width: 45%;' : 'width: 50%;'}">英文藥品名稱</th>
+                                        <th style="${includeCode ? 'width: 40%;' : 'width: 50%;'}">中文商品名稱</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -1383,7 +1402,7 @@
                             rackMeds.forEach(med => {
                                 htmlContent += `
                                     <tr>
-                                        <td style="color: #64748b; font-size: 14px;">${med.id}</td>
+                                        ${includeCode ? `<td style="color: #64748b; font-size: 14px;">${med.id}</td>` : ''}
                                         <td style="font-weight: bold; color: #0f172a;">${med.name}</td>
                                         <td style="color: #475569;">${med.chName || '-'}</td>
                                     </tr>
