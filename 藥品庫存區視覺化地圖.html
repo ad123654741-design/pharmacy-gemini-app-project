@@ -14,6 +14,10 @@
     <!-- 引入 Google Fonts: Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- 引入 Three.js 及其控制模組 (3D視覺化主視覺用) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
     <!-- 自訂 Tailwind 設定與 CSS 動畫 -->
     <script>
         tailwind.config = {
@@ -145,7 +149,7 @@
                     </div>
                     <input type="text" id="searchInput" 
                         class="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:shadow-sm"
-                        placeholder="請輸入藥品名稱或縮寫 (Ctrl+F)">
+                        placeholder="請輸入英文或中文藥品名稱">
                     <button id="clearSearchBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                         <i data-lucide="x-circle" class="w-5 h-5"></i>
                     </button>
@@ -170,30 +174,28 @@
         <!-- 右側面板：庫存視覺化 -->
         <section class="flex-1 bg-slate-100/50 dark:bg-slate-900/50 relative overflow-hidden flex flex-col transition-colors duration-300">
             
-            <div class="p-6 pb-0 shrink-0 flex justify-between items-start z-10">
-                <div class="pr-4">
-                    <p class="text-slate-500 dark:text-slate-400 text-sm">搜尋左側藥品，系統將自動為您標示儲位。點擊鐵架可檢視單一儲位內容。</p>
+            <!-- 頂部說明區與右上角俯視小圖 -->
+            <div class="p-6 pb-0 shrink-0 flex justify-between items-start z-10 relative pointer-events-none">
+                <div class="pr-4 pointer-events-auto">
+                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-3">搜尋左側藥品，系統將自動為您標示儲位。點擊俯視圖或 3D 模型中的層架可篩選顯示內容。</p>
+                    <!-- 鐵架名稱與種類說明區 -->
+                    <div id="rackInfoContainer" class="flex flex-wrap gap-2">
+                        <!-- JS 動態渲染種類標籤 -->
+                    </div>
                 </div>
                 
-                <div class="hidden sm:flex flex-col items-center gap-1 shrink-0">
-                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest">空間俯視圖</span>
-                    <div class="relative w-28 h-32 border-[3px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-sm p-2 transition-colors duration-300">
-                        <div id="minimap-Rack-A" class="absolute top-[15%] left-[10%] w-[35%] h-[12%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
-                        <div id="minimap-Rack-B" class="absolute top-[25%] left-[55%] w-[25%] h-[20%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
-                        <div id="minimap-Rack-C" class="absolute top-[50%] left-[55%] w-[18%] h-[30%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
-                        <div id="minimap-Rack-D" class="absolute top-[50%] left-[75%] w-[18%] h-[30%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
-                        <div id="minimap-Rack-E" class="absolute top-[82%] left-[55%] w-[38%] h-[12%] border-2 border-slate-800 dark:border-slate-400 bg-slate-100 dark:bg-slate-700 transition-all duration-300"></div>
+                <!-- 恢復並修改右上角俯視圖 (僅保留名稱) -->
+                <div class="hidden sm:flex flex-col items-center gap-1 shrink-0 pointer-events-auto z-20">
+                    <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-700">空間俯視圖</span>
+                    <div class="relative w-40 h-[100px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
+                        <!-- JS 動態渲染小俯視圖 -->
                     </div>
                 </div>
             </div>
 
-            <!-- 5個鐵架視覺化容器 -->
-            <div class="flex-1 w-full overflow-x-auto no-scrollbar">
-                <div class="flex w-max min-w-full h-full items-center justify-center px-6 md:px-12 py-8">
-                    <div class="flex flex-row gap-4 md:gap-8 lg:gap-12" id="racksContainer">
-                        <!-- JS 動態渲染 -->
-                    </div>
-                </div>
+            <!-- 3D 視覺化主容器 -->
+            <div class="absolute inset-0 z-0 overflow-hidden outline-none cursor-grab active:cursor-grabbing" id="canvas-container">
+                <!-- Three.js Canvas 將渲染於此 -->
             </div>
         </section>
     </main>
@@ -230,6 +232,10 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">藥品名稱</label>
                     <input type="text" id="editMedName" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="請輸入藥品名稱">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">中文商品名稱 (列印標籤用)</label>
+                    <input type="text" id="editMedChName" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="請輸入中文商品名稱 (選填)">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">存放儲位 (鐵架)</label>
@@ -344,11 +350,11 @@
         
         // 定義5個鐵架的基礎資料 (新增 category 屬性與底層編號 no)
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 A', label: 'A區', theme: 'border-slate-300', category: '' },
-            { no: 2, id: 'Rack-B', name: '鐵架 B', label: 'B區', theme: 'border-slate-300', category: '' },
-            { no: 3, id: 'Rack-C', name: '鐵架 C', label: 'C區', theme: 'border-slate-300', category: '' },
-            { no: 4, id: 'Rack-D', name: '鐵架 D', label: 'D區', theme: 'border-slate-300', category: '' },
-            { no: 5, id: 'Rack-E', name: '鐵架 E', label: 'E區', theme: 'border-slate-300', category: '' }
+            { no: 1, id: 'Rack-A', name: '鐵架 A', label: 'A區', theme: 'border-slate-800', category: '', top: '25%', left: '42%', width: '14%', height: '18%' },
+            { no: 2, id: 'Rack-B', name: '鐵架 B', label: 'B區', theme: 'border-slate-800', category: '', top: '5%', left: '57%', width: '20%', height: '19%' },
+            { no: 3, id: 'Rack-C', name: '鐵架 C', label: 'C區', theme: 'border-slate-800', category: '', top: '25%', left: '57%', width: '20%', height: '18%' },
+            { no: 4, id: 'Rack-D', name: '鐵架 D', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '38%' },
+            { no: 5, id: 'Rack-E', name: '鐵架 E', label: 'E區', theme: 'border-slate-800', category: '', top: '63%', left: '26%', width: '9%', height: '32%' }
         ];
 
         const AppState = {
@@ -423,7 +429,8 @@
                         return {
                             id: row.c[0]?.v || '',
                             name: row.c[1]?.v || '',
-                            rackId: rawRackId
+                            rackId: rawRackId,
+                            chName: row.c[3]?.v || '' // 新增中文品名對應 Google Sheet D欄
                         };
                     }).filter(m => m.name !== ''); 
 
@@ -448,7 +455,9 @@
 
             getFilteredMedicines() {
                 return this.medicines.filter(med => {
-                    const matchSearch = med.name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                    const q = this.searchQuery.toLowerCase();
+                    const matchSearch = med.name.toLowerCase().includes(q) || 
+                                        (med.chName && med.chName.toLowerCase().includes(q));
                     const matchRack = this.selectedRackId ? (med.rackId === this.selectedRackId) : true;
                     return matchSearch && matchRack;
                 });
@@ -456,8 +465,10 @@
 
             getHighlightedRackIds() {
                 if (!this.searchQuery) return new Set(); 
+                const q = this.searchQuery.toLowerCase();
                 const matchedMeds = this.medicines.filter(med => 
-                    med.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    med.name.toLowerCase().includes(q) || 
+                    (med.chName && med.chName.toLowerCase().includes(q))
                 );
                 return new Set(matchedMeds.map(m => m.rackId));
             },
@@ -479,16 +490,16 @@
                 }
             },
 
-            async syncToServer(id, name, rackId) {
+            async syncToServer(id, name, rackId, chName) {
                 if (!this.WEB_APP_URL) {
-                    this._updateLocalState(id, name, rackId);
+                    this._updateLocalState(id, name, rackId, chName);
                     this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
                     DOM.updateLastUpdateTime();
                     return true;
                 }
 
                 try {
-                    const payload = { action: 'saveMedicine', id, name, rackId };
+                    const payload = { action: 'saveMedicine', id, name, rackId, chName };
                     const response = await fetch(this.WEB_APP_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -497,7 +508,7 @@
                     const result = await response.json();
                     
                     if (result.status === 'success') {
-                        this._updateLocalState(result.id, result.name, result.rackId);
+                        this._updateLocalState(result.id, result.name, result.rackId, result.chName);
                         this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
                         DOM.updateLastUpdateTime();
                         return true;
@@ -507,20 +518,20 @@
                     }
                 } catch (error) {
                     alert("網路連線錯誤，無法同步至後端！將暫時更新於本地端預覽。");
-                    this._updateLocalState(id, name, rackId);
+                    this._updateLocalState(id, name, rackId, chName);
                     this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false }) + " (本地更新)";
                     DOM.updateLastUpdateTime();
                     return true;
                 }
             },
 
-            _updateLocalState(id, name, rackId) {
+            _updateLocalState(id, name, rackId, chName) {
                 const existIndex = this.medicines.findIndex(m => m.id === id);
                 if (existIndex >= 0) {
-                    this.medicines[existIndex] = { id, name, rackId };
+                    this.medicines[existIndex] = { id, name, rackId, chName };
                 } else {
                     const newId = id || ('m' + Date.now()); 
-                    this.medicines.push({ id: newId, name, rackId }); 
+                    this.medicines.push({ id: newId, name, rackId, chName }); 
                 }
                 
                 // 同步更新本地快取，確保離線作業不遺失
@@ -546,6 +557,7 @@
             modalTitle: document.getElementById('modalTitle'),
             editMedId: document.getElementById('editMedId'),
             editMedName: document.getElementById('editMedName'),
+            editMedChName: document.getElementById('editMedChName'),
             editMedRack: document.getElementById('editMedRack'),
             saveMedBtn: document.getElementById('saveMedBtn'),
             
@@ -575,48 +587,36 @@
             },
 
             renderRacks() {
-                this.racksContainer.innerHTML = RACKS_CONFIG.map(rack => {
-                    const rackMeds = AppState.medicines.filter(m => m.rackId === rack.id);
-                    const displayName = rack.category ? rack.category : 'RACK'; // 顯示編輯的分類名稱
-                    
-                    return `
-                    <div id="rack-el-${rack.id}" 
-                         class="rack-base cursor-pointer relative flex flex-col items-center justify-between
-                                w-32 md:w-44 h-[28rem] bg-white dark:bg-slate-800 border-2 dark:border-slate-600 rounded-xl shadow-lg dark:shadow-slate-900/50
-                                hover:shadow-2xl dark:hover:shadow-slate-900 hover:-translate-y-1 group ${rack.theme} transition-all duration-300"
-                         onclick="Controllers.handleRackClick('${rack.id}')">
-                         
-                        <!-- 鐵架頂部裝飾 -->
-                        <div class="w-full h-10 bg-slate-100 dark:bg-slate-700 rounded-t-xl border-b-2 border-slate-200 dark:border-slate-600 flex items-center justify-center shrink-0 transition-colors px-2">
-                            <span class="text-xs font-bold text-slate-500 dark:text-slate-300 truncate w-full text-center" title="${displayName}">${displayName}</span>
-                        </div>
-                        
-                        <!-- 鐵架內容 -->
-                        <div class="flex-1 w-full px-2.5 py-3 flex flex-col gap-2 overflow-y-auto no-scrollbar content-start">
-                            ${rackMeds.length > 0 
-                                ? rackMeds.map(m => `
-                                    <div class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600/50 rounded px-2 py-1.5 text-center text-[11px] text-slate-600 dark:text-slate-300 truncate group-hover:border-primary/50 dark:group-hover:border-primary/50 transition-colors shadow-sm">
-                                        ${m.name}
-                                    </div>
-                                  `).join('')
-                                : `<div class="w-full h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 text-xs gap-2"><i data-lucide="package-x" class="w-6 h-6"></i>空儲位</div>`
-                            }
-                        </div>
+                // 1. 渲染文字下方的鐵架名稱與種類說明標籤
+                const rackInfoContainer = document.getElementById('rackInfoContainer');
+                if (rackInfoContainer) {
+                    rackInfoContainer.innerHTML = RACKS_CONFIG.map(rack => {
+                        const displayName = rack.category ? rack.category : '未分類';
+                        return `
+                            <div id="rack-tag-${rack.id}" class="flex items-center gap-1.5 bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm cursor-pointer hover:-translate-y-0.5 transition-all duration-300" onclick="Controllers.handleRackClick('${rack.id}')">
+                                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 transition-colors" id="legend-dot-${rack.id}"></div>
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors" id="legend-name-${rack.id}">${rack.name}</span>
+                                <span class="text-[10px] text-slate-500 dark:text-slate-400 font-medium transition-colors" id="legend-cat-${rack.id}">(${displayName})</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
 
-                        <!-- 鐵架標籤 -->
-                        <div class="absolute -bottom-6 w-full text-center shrink-0">
-                            <span class="bg-slate-800 dark:bg-slate-700 text-white text-sm font-bold px-5 py-1.5 rounded-full shadow-md border border-transparent dark:border-slate-600 transition-colors">
-                                ${rack.name}
-                            </span>
+                // 2. 渲染右上角的純粹版俯視小圖 (移除類別說明，僅保留名稱)
+                const minimapContainer = document.getElementById('minimapContainer');
+                if (minimapContainer) {
+                    minimapContainer.innerHTML = `
+                        <!-- 灰色走道區塊 -->
+                        <div class="absolute bg-[#c0c0c0] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
+                    ` + RACKS_CONFIG.map(rack => `
+                        <div id="minimap-rack-${rack.id}" 
+                             class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
+                             style="top: ${rack.top}; left: ${rack.left}; width: ${rack.width}; height: ${rack.height};"
+                             onclick="Controllers.handleRackClick('${rack.id}')">
+                            <span class="text-[8px] md:text-[9px] font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap tracking-tighter">${rack.name}</span>
                         </div>
-                        
-                        <!-- 選擇指示器圖示 -->
-                        <div class="absolute -top-4 right-[-10px] hidden select-icon bg-emerald-500 text-white rounded-full p-1 shadow-md">
-                            <i data-lucide="check" class="w-4 h-4"></i>
-                        </div>
-                    </div>
-                `}).join('');
-                lucide.createIcons();
+                    `).join('');
+                }
             },
 
             renderList(medicines) {
@@ -634,8 +634,9 @@
 
                 this.medicineListContainer.innerHTML = medicines.map(med => {
                     const rackName = RACKS_CONFIG.find(r => r.id === med.rackId)?.name || med.rackId;
+                    const chNameParam = med.chName ? med.chName.replace(/'/g, "\\'") : '';
                     const editBtnHTML = AppState.isLoggedIn ? `
-                                <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${med.id}', '${med.name}', '${med.rackId}')">
+                                <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${med.id}', '${med.name}', '${med.rackId}', '${chNameParam}')">
                                     <i data-lucide="edit-3" class="w-4 h-4"></i>
                                 </button>
                     ` : '';
@@ -644,6 +645,7 @@
                         <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-3 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md dark:hover:shadow-slate-900/50 transition-all duration-200 hover:-translate-y-1 cursor-pointer group flex justify-between items-center" onclick="Controllers.focusOnRack('${med.rackId}')">
                             <div class="flex-1 pr-3 overflow-hidden">
                                 <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-primary dark:group-hover:text-primary transition-colors leading-tight truncate">${med.name}</h3>
+                                ${med.chName ? `<p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">${med.chName}</p>` : ''}
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
                                 <span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] px-2.5 py-1 rounded-md font-medium border border-slate-200 dark:border-slate-600 transition-colors">
@@ -659,50 +661,61 @@
 
             updateRacksVisuals(highlightedIds, selectedId) {
                 RACKS_CONFIG.forEach(rack => {
-                    const el = document.getElementById(`rack-el-${rack.id}`);
-                    const minimapEl = document.getElementById(`minimap-${rack.id}`); 
+                    const mapEl = document.getElementById(`minimap-rack-${rack.id}`);
+                    const legendDot = document.getElementById(`legend-dot-${rack.id}`);
+                    const tagEl = document.getElementById(`rack-tag-${rack.id}`);
+                    const nameEl = document.getElementById(`legend-name-${rack.id}`);
+                    const catEl = document.getElementById(`legend-cat-${rack.id}`);
                     
-                    if (!el) return;
-
-                    if (highlightedIds.has(rack.id) && !selectedId) {
-                        el.classList.add('rack-highlighted');
-                        if (minimapEl) {
-                            minimapEl.classList.remove('bg-slate-100', 'border-slate-800', 'dark:bg-slate-700', 'dark:border-slate-400');
-                            minimapEl.classList.add('bg-primary', 'border-primaryDark', 'shadow-[0_0_8px_rgba(14,165,233,0.6)]');
-                        }
-                    } else {
-                        el.classList.remove('rack-highlighted');
-                        if (minimapEl) {
-                            minimapEl.classList.add('bg-slate-100', 'border-slate-800', 'dark:bg-slate-700', 'dark:border-slate-400');
-                            minimapEl.classList.remove('bg-primary', 'border-primaryDark', 'shadow-[0_0_8px_rgba(14,165,233,0.6)]');
-                        }
-                    }
-
-                    const iconEl = el.querySelector('.select-icon');
-                    if (selectedId === rack.id) {
-                        el.classList.add('rack-selected');
-                        el.classList.remove('opacity-40', 'scale-95'); 
-                        iconEl.classList.remove('hidden');
-                        if (minimapEl) {
-                            minimapEl.classList.remove('bg-slate-100', 'border-slate-800', 'dark:bg-slate-700', 'dark:border-slate-400', 'opacity-30'); 
-                            minimapEl.classList.add('bg-emerald-400', 'border-emerald-600');
-                        }
-                    } else {
-                        el.classList.remove('rack-selected');
-                        iconEl.classList.add('hidden');
-                        if (minimapEl) {
-                            minimapEl.classList.remove('bg-emerald-400', 'border-emerald-600');
-                        }
+                    if (mapEl) {
+                        // 狀態重置
+                        mapEl.classList.remove('border-primary', 'dark:border-primaryDark', 'border-emerald-500', 'opacity-40');
+                        mapEl.classList.add('border-slate-800', 'dark:border-slate-400');
                         
-                        if (selectedId) {
-                            el.classList.add('opacity-40', 'scale-95');
-                            if (minimapEl) minimapEl.classList.add('opacity-30');
-                        } else {
-                            el.classList.remove('opacity-40', 'scale-95');
-                            if (minimapEl) minimapEl.classList.remove('opacity-30');
+                        if (legendDot) {
+                            legendDot.className = "w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 transition-colors";
+                        }
+                        if (tagEl) {
+                            tagEl.className = "flex items-center gap-1.5 bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm cursor-pointer hover:-translate-y-0.5 transition-all duration-300";
+                            nameEl.className = "text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors";
+                            catEl.className = "text-[10px] text-slate-500 dark:text-slate-400 font-medium transition-colors";
+                        }
+
+                        // 處理高亮邏輯
+                        if (highlightedIds.has(rack.id) && !selectedId) {
+                            mapEl.classList.add('border-primary', 'dark:border-primaryDark');
+                            mapEl.classList.remove('border-slate-800', 'dark:border-slate-400');
+                            if(legendDot) legendDot.classList.replace('bg-slate-300', 'bg-primary');
+                            if(legendDot) legendDot.classList.replace('dark:bg-slate-600', 'dark:bg-primaryDark');
+                            if(tagEl) tagEl.classList.replace('border-slate-200', 'border-primary/50');
+                            if(tagEl) tagEl.classList.replace('dark:border-slate-700', 'dark:border-primary/50');
+                        }
+
+                        // 處理選中邏輯
+                        if (selectedId === rack.id) {
+                            mapEl.classList.add('border-emerald-500');
+                            mapEl.classList.remove('border-slate-800', 'dark:border-slate-400');
+                            if(legendDot) legendDot.classList.replace('bg-slate-300', 'bg-emerald-500');
+                            if(legendDot) legendDot.classList.replace('dark:bg-slate-600', 'dark:bg-emerald-600');
+                            
+                            // 高度辨識的標籤樣式
+                            if(tagEl) {
+                                tagEl.className = "flex items-center gap-1.5 bg-emerald-50 dark:bg-emerald-900/30 border-2 border-emerald-500 px-3 py-1.5 rounded-lg shadow-md backdrop-blur-sm cursor-pointer transform -translate-y-1 transition-all duration-300";
+                                nameEl.className = "text-xs font-bold text-emerald-700 dark:text-emerald-300 transition-colors";
+                                catEl.className = "text-[10px] text-emerald-600 dark:text-emerald-400 font-medium transition-colors";
+                            }
+                        } else if (selectedId) {
+                            mapEl.classList.add('opacity-40');
+                            // 未選中的標籤稍微淡化與縮小
+                            if(tagEl) tagEl.classList.add('opacity-50', 'scale-95');
                         }
                     }
                 });
+
+                // 連動更新 3D 視覺化
+                if (typeof ThreeApp !== 'undefined') {
+                    ThreeApp.updateVisuals(highlightedIds, selectedId);
+                }
             },
 
             updateStatusText() {
@@ -895,9 +908,10 @@
                 }, 300);
             },
 
-            openEditModal(id, name, rackId) {
+            openEditModal(id, name, rackId, chName = '') {
                 DOM.editMedId.value = id || '';
                 DOM.editMedName.value = name || '';
+                if(DOM.editMedChName) DOM.editMedChName.value = chName || '';
                 DOM.editMedRack.value = rackId || 'Rack-A';
                 DOM.modalTitle.textContent = id ? '編輯藥品資訊' : '新增藥品';
                 
@@ -920,6 +934,7 @@
                 const id = DOM.editMedId.value.trim();
                 const name = DOM.editMedName.value.trim();
                 const rackId = DOM.editMedRack.value;
+                const chName = DOM.editMedChName ? DOM.editMedChName.value.trim() : '';
 
                 if (!name) {
                     alert("請務必輸入藥品名稱！");
@@ -931,7 +946,7 @@
                 DOM.saveMedBtn.disabled = true;
                 lucide.createIcons();
 
-                const success = await AppState.syncToServer(id, name, rackId);
+                const success = await AppState.syncToServer(id, name, rackId, chName);
                 
                 DOM.saveMedBtn.innerHTML = originalText;
                 DOM.saveMedBtn.disabled = false;
@@ -1037,14 +1052,14 @@
                     <title>層架標籤列印 - ${today}</title>
                     <style>
                         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; background: #f8fafc; }
-                        .label-card { width: 340px; height: 180px; border: 3px dashed #cbd5e1; border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px; box-sizing: border-box; text-align: center; background: #fff; page-break-inside: avoid; }
-                        .label-no { font-size: 16px; font-weight: bold; color: #64748b; margin-bottom: 8px; letter-spacing: 2px; }
-                        .label-name { font-size: 38px; font-weight: 900; color: #0f172a; margin-bottom: 12px; }
-                        .label-category { font-size: 18px; color: #0284c7; background: #f0f9ff; border: 2px solid #bae6fd; padding: 6px 20px; border-radius: 30px; font-weight: bold; }
+                        .label-card { width: 380px; height: 220px; border: 4px dashed #cbd5e1; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; background: #fff; page-break-inside: avoid; }
+                        .label-no { font-size: 20px; font-weight: bold; color: #64748b; margin-bottom: 12px; letter-spacing: 2px; }
+                        .label-name { font-size: 52px; font-weight: 900; color: #0f172a; margin-bottom: 16px; }
+                        .label-category { font-size: 24px; color: #0284c7; background: #f0f9ff; border: 3px solid #bae6fd; padding: 8px 24px; border-radius: 40px; font-weight: bold; }
                         @media print {
                             body { padding: 0; background: #fff; display: block; }
-                            .label-card { border: 2px solid #000; break-inside: avoid; margin: 0 auto 30px auto; width: 80%; height: 250px; }
-                            .label-category { border: 2px solid #000; color: #000; background: #fff; }
+                            .label-card { border: 3px solid #000; break-inside: avoid; margin: 0 auto 30px auto; width: 85%; height: 280px; }
+                            .label-category { border: 3px solid #000; color: #000; background: #fff; }
                             .label-no { color: #000; }
                         }
                     </style>
@@ -1115,7 +1130,7 @@
                             background: #fafafa;
                         }
                         .med-name { font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 4px; }
-                        .med-id { font-size: 12px; color: #64748b; }
+                        .med-chName { font-size: 14px; color: #475569; font-weight: 500; }
                         @media print {
                             body { padding: 0; background: #fff; }
                             .rack-section { box-shadow: none; padding: 0; margin-bottom: 30px; }
@@ -1151,7 +1166,7 @@
                             htmlContent += `
                                 <div class="med-label">
                                     <div class="med-name">${med.name}</div>
-                                    <div class="med-id">代碼：${med.id}</div>
+                                    ${med.chName ? `<div class="med-chName">中文品名：${med.chName}</div>` : ''}
                                 </div>
                             `;
                         });
@@ -1182,11 +1197,224 @@
                 document.documentElement.classList.toggle('dark');
                 const isDark = document.documentElement.classList.contains('dark');
                 localStorage.setItem('drugSysDarkMode', isDark ? 'dark' : 'light');
+
+                // 觸發 3D 背景色與格線更新
+                if (typeof ThreeApp !== 'undefined' && ThreeApp.scene) {
+                    ThreeApp.scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf1f5f9);
+                    if(ThreeApp.grid) ThreeApp.grid.material.color.setHex(isDark ? 0x334155 : 0xe2e8f0);
+                }
             }
         };
 
         /**
-         * 4. 系統初始化
+         * 4. 3D 模擬視覺化模組 (Three.js)
+         */
+        const ThreeApp = {
+            scene: null, camera: null, renderer: null, controls: null, grid: null,
+            rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
+            
+            init(containerId) {
+                const container = document.getElementById(containerId);
+                if (!container || typeof THREE === 'undefined') return;
+
+                const isDark = document.documentElement.classList.contains('dark');
+
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf1f5f9);
+
+                // 攝影機設定 (模擬您提供的高質感俯視視角)
+                this.camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+                this.camera.position.set(0, 18, 14); 
+
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                container.appendChild(this.renderer.domElement);
+
+                this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+                this.controls.enableDamping = true;
+                this.controls.dampingFactor = 0.05;
+                this.controls.maxPolarAngle = Math.PI / 2 - 0.1; // 避免穿透地板看到地下
+                this.controls.minDistance = 5;
+                this.controls.maxDistance = 40;
+
+                // 燈光設定 (打出素描質感陰影)
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+                this.scene.add(ambientLight);
+                
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+                dirLight.position.set(10, 20, 10);
+                dirLight.castShadow = true;
+                dirLight.shadow.mapSize.width = 2048;
+                dirLight.shadow.mapSize.height = 2048;
+                dirLight.shadow.camera.left = -15;
+                dirLight.shadow.camera.right = 15;
+                dirLight.shadow.camera.top = 15;
+                dirLight.shadow.camera.bottom = -15;
+                this.scene.add(dirLight);
+
+                // 地板設計 (素描/簡約白材質)
+                const floorGeo = new THREE.PlaneGeometry(28, 20);
+                const floorMat = new THREE.MeshStandardMaterial({ 
+                    color: 0xffffff, 
+                    roughness: 0.8,
+                    metalness: 0.1
+                });
+                const floor = new THREE.Mesh(floorGeo, floorMat);
+                floor.rotation.x = -Math.PI / 2;
+                floor.receiveShadow = true;
+                this.scene.add(floor);
+
+                // 網格線 (增加科技感對齊)
+                this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
+                this.grid.position.y = 0.01;
+                this.scene.add(this.grid);
+
+                // 灰色主走道
+                const aisleGeo = new THREE.PlaneGeometry(28, 3.2);
+                const aisleMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
+                const aisle = new THREE.Mesh(aisleGeo, aisleMat);
+                aisle.rotation.x = -Math.PI / 2;
+                aisle.position.y = 0.02;
+                this.scene.add(aisle);
+
+                // 建立鐵架與紙箱模型
+                this.buildRacks();
+
+                // 事件綁定
+                window.addEventListener('resize', () => this.onResize(container));
+                this.renderer.domElement.addEventListener('pointerdown', (e) => this.onClick(e, container));
+
+                this.animate();
+            },
+
+            buildRacks() {
+                const roomW = 28;
+                const roomD = 20;
+
+                RACKS_CONFIG.forEach(rack => {
+                    // 自動將設定好的百分比座標系統無縫轉換為 3D 世界座標
+                    const top = parseFloat(rack.top) / 100;
+                    const left = parseFloat(rack.left) / 100;
+                    const width = parseFloat(rack.width) / 100;
+                    const height = parseFloat(rack.height) / 100;
+
+                    const w = width * roomW;
+                    const d = height * roomD;
+                    const x = (left * roomW) - (roomW / 2) + (w / 2);
+                    const z = (top * roomD) - (roomD / 2) + (d / 2);
+
+                    const group = new THREE.Group();
+                    // 為了容納三層，將鐵架整體抬高
+                    group.position.set(x, 2.25, z); 
+
+                    // 1. 鐵架外框 (銀灰色 Wireframe 線條) - 高度改為 4.5
+                    const shelfGeo = new THREE.BoxGeometry(w, 4.5, d);
+                    const edges = new THREE.EdgesGeometry(shelfGeo);
+                    const lineMat = new THREE.LineBasicMaterial({ color: 0x64748b, linewidth: 2 });
+                    const wireframe = new THREE.LineSegments(edges, lineMat);
+                    group.add(wireframe);
+
+                    // 2. 內部白色紙箱 (模擬庫存箱體) - 三層
+                    const boxGeo = new THREE.BoxGeometry(w * 0.8, 0.8, d * 0.8);
+                    const boxMat = new THREE.MeshStandardMaterial({ 
+                        color: 0xffffff,
+                        roughness: 0.5,
+                        metalness: 0.1
+                    });
+                    
+                    const box1 = new THREE.Mesh(boxGeo, boxMat);
+                    box1.position.y = -1.5; // 底層
+                    box1.castShadow = true;
+                    box1.receiveShadow = true;
+                    
+                    const box2 = new THREE.Mesh(boxGeo, boxMat);
+                    box2.position.y = 0; // 中層
+                    box2.castShadow = true;
+                    box2.receiveShadow = true;
+                    
+                    const box3 = new THREE.Mesh(boxGeo, boxMat);
+                    box3.position.y = 1.5; // 頂層
+                    box3.castShadow = true;
+                    box3.receiveShadow = true;
+                    
+                    group.add(box1, box2, box3);
+
+                    // 3. 隱形的射線測試命中區塊 (用於精準判斷點擊)
+                    const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+                    const hitBox = new THREE.Mesh(shelfGeo, hitMat);
+                    hitBox.userData = { id: rack.id };
+                    group.add(hitBox);
+
+                    this.scene.add(group);
+                    this.rackMeshes[rack.id] = { group, wireframe, boxes: [box1, box2, box3], originalY: 2.25 };
+                });
+            },
+
+            updateVisuals(highlightedIds, selectedId) {
+                if(!this.scene) return;
+                
+                Object.values(this.rackMeshes).forEach(meshObj => {
+                    // 重置顏色與發光狀態
+                    meshObj.wireframe.material.color.setHex(0x64748b); // 預設銀灰
+                    meshObj.boxes.forEach(b => b.material.emissive.setHex(0x000000));
+                    // 平滑重置物理位置
+                    meshObj.group.position.y = meshObj.originalY;
+                });
+
+                // 處理搜尋關鍵字高亮 (發出科技淺藍光)
+                highlightedIds.forEach(id => {
+                    if (this.rackMeshes[id]) {
+                        this.rackMeshes[id].wireframe.material.color.setHex(0x0ea5e9);
+                        this.rackMeshes[id].boxes.forEach(b => b.material.emissive.setHex(0x0284c7));
+                    }
+                });
+
+                // 處理點擊選取鎖定 (發出翡翠綠光並加入浮動感)
+                if (selectedId && this.rackMeshes[selectedId]) {
+                    this.rackMeshes[selectedId].wireframe.material.color.setHex(0x10b981);
+                    this.rackMeshes[selectedId].boxes.forEach(b => b.material.emissive.setHex(0x059669));
+                    this.rackMeshes[selectedId].group.position.y = this.rackMeshes[selectedId].originalY + 0.5; // Z軸微升營造選中感
+                }
+            },
+
+            onClick(event, container) {
+                // 將滑鼠螢幕座標轉化為 3D 場景空間的射線
+                const rect = container.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+                
+                for (let i = 0; i < intersects.length; i++) {
+                    const obj = intersects[i].object;
+                    if (obj.userData && obj.userData.id) {
+                        Controllers.handleRackClick(obj.userData.id);
+                        break; // 點到即觸發，避免穿透到底下物件
+                    }
+                }
+            },
+
+            onResize(container) {
+                if (!this.camera || !this.renderer) return;
+                this.camera.aspect = container.clientWidth / container.clientHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+            },
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                if (this.controls) this.controls.update();
+                if (this.renderer && this.scene && this.camera) {
+                    this.renderer.render(this.scene, this.camera);
+                }
+            }
+        };
+
+        /**
+         * 5. 系統初始化
          */
         async function initApp() {
             // 讀取深色模式偏好設定
@@ -1243,6 +1471,9 @@
             DOM.totalItemsCount.textContent = AppState.medicines.length;
 
             DOM.renderRacks();
+            
+            // 啟動 3D 環境與模組
+            ThreeApp.init('canvas-container');
 
             DOM.searchInput.addEventListener('input', (e) => Controllers.handleInput(e));
             DOM.clearSearchBtn.addEventListener('click', () => Controllers.clearSearch());
