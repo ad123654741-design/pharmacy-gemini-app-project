@@ -1745,7 +1745,7 @@
                 this.scene.add(ambientLight);
                 
                 // 調整頂光強度至 0.4，避免白紙箱看起來過於灰暗，同時維持柔和度
-                const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
                 dirLight.position.set(10, 20, 10);
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
