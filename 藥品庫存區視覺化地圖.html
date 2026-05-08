@@ -150,6 +150,10 @@
                     <input type="text" id="searchInput" 
                         class="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:shadow-sm"
                         placeholder="請輸入英文或中文藥品名稱">
+                    <!-- Loading 動畫與清除按鈕 -->
+                    <div id="searchLoader" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden pointer-events-none">
+                        <i data-lucide="loader-2" class="w-5 h-5 text-primary animate-spin"></i>
+                    </div>
                     <button id="clearSearchBtn" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
                         <i data-lucide="x-circle" class="w-5 h-5"></i>
                     </button>
@@ -161,9 +165,9 @@
                 </div>
             </div>
 
-            <!-- 藥品列表區塊 -->
-            <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-50/50 dark:bg-slate-900/20" id="medicineListContainer">
-                <!-- JS 動態渲染 -->
+            <!-- 藥品列表區塊 (加入 Virtual Scrolling 優化) -->
+            <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-50/50 dark:bg-slate-900/20 relative" id="medicineListContainer">
+                <!-- JS 動態渲染虛擬捲動內容 -->
             </div>
             
             <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center text-slate-400 dark:text-slate-500 shrink-0 transition-colors duration-300">
@@ -197,6 +201,16 @@
             <div class="absolute inset-0 z-0 overflow-hidden outline-none cursor-grab active:cursor-grabbing" id="canvas-container">
                 <!-- Three.js Canvas 將渲染於此 -->
             </div>
+
+            <!-- 3D 重置視角按鈕 -->
+            <button onclick="ThreeApp.resetCamera()" class="absolute bottom-6 right-6 p-3 bg-white/90 dark:bg-slate-800/90 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-all duration-300 hover:scale-110 z-20 focus:outline-none" title="重置 3D 視角">
+                <i data-lucide="focus" class="w-6 h-6"></i>
+            </button>
+
+            <!-- 3D 紙箱 Hover 浮動提示框 -->
+            <div id="tooltip3d" class="fixed hidden bg-slate-900/95 text-white p-3 rounded-lg shadow-2xl z-50 pointer-events-none transform -translate-x-1/2 -translate-y-[calc(100%+15px)] backdrop-blur-sm border border-slate-700 whitespace-nowrap transition-opacity duration-200">
+                <!-- JS 動態插入 -->
+            </div>
         </section>
     </main>
 
@@ -217,6 +231,42 @@
             <span class="text-[10px] font-medium">重置</span>
         </button>
     </nav>
+
+    <!-- 列印篩選 Modal -->
+    <div id="printFilterModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[70] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="printFilterModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
+                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg" id="printModalTitle">自訂列印篩選</h3>
+                <button onclick="Controllers.closePrintFilterModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col gap-4">
+                <input type="hidden" id="printModeInput">
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">請選擇要匯出的層架範圍：</label>
+                    <div class="grid grid-cols-2 gap-2" id="printRacksContainer">
+                        <!-- JS 動態生成 Checkbox -->
+                    </div>
+                </div>
+
+                <div class="mt-2 border-t border-slate-100 dark:border-slate-700 pt-4">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" id="printApplySearch" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:bg-slate-700 dark:border-slate-600">
+                        <span class="text-sm text-slate-700 dark:text-slate-300">套用當前搜尋條件篩選</span>
+                    </label>
+                    <p class="text-xs text-slate-500 mt-1 pl-6" id="printSearchTextHint">目前無搜尋條件</p>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
+                <button onclick="Controllers.closePrintFilterModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
+                <button onclick="Controllers.confirmPrint()" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center gap-2">
+                    <i data-lucide="printer" class="w-4 h-4"></i> 確認列印
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- 新增/編輯藥品 Modal -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
@@ -303,14 +353,24 @@
                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">產生適合列印的儲位標籤，方便黏貼對照</div>
                     </div>
                 </button>
-                <!-- 匯出藥品標籤功能 -->
-                <button onclick="Controllers.closeSettingsModal(); Controllers.exportMedicineLabels()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
+                <!-- 匯出藥品標籤功能 (卡片模式) -->
+                <button onclick="Controllers.closeSettingsModal(); Controllers.openPrintFilterModal('label')" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="tags" class="w-5 h-5"></i>
                     </div>
                     <div>
                         <div class="font-bold text-slate-800 dark:text-slate-100">匯出藥品標籤</div>
                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">依層架分類匯出藥品標籤，橫向雙排方便剪貼</div>
+                    </div>
+                </button>
+                <!-- 匯出藥品清單功能 (表單模式) -->
+                <button onclick="Controllers.closeSettingsModal(); Controllers.openPrintFilterModal('list')" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="list" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">匯出藥品清單</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">以 A4 滿版表格列印，方便整體盤點與檢視</div>
                     </div>
                 </button>
             </div>
@@ -447,9 +507,6 @@
                     
                     this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false }) + " (連線失敗/離線模式)";
                     DOM.updateLastUpdateTime();
-                    
-                    // 彈出強烈警告提示權限問題
-                    alert("連線失敗 (Failed to fetch)！\n\n如果這是您第一次設定，請務必開啟您的 Google Sheet：\n1. 點擊右上角的「共用」\n2. 將權限設為「知道連結的任何人」皆可「檢視」\n\n否則系統將被瀏覽器阻擋無法讀取資料喔！");
                 }
             },
 
@@ -545,6 +602,7 @@
         const DOM = {
             searchInput: document.getElementById('searchInput'),
             clearSearchBtn: document.getElementById('clearSearchBtn'),
+            searchLoader: document.getElementById('searchLoader'),
             medicineListContainer: document.getElementById('medicineListContainer'),
             racksContainer: document.getElementById('racksContainer'),
             statusText: document.getElementById('statusText'),
@@ -568,6 +626,9 @@
             settingsModal: document.getElementById('settingsModal'),
             settingsModalContent: document.getElementById('settingsModalContent'),
 
+            printFilterModal: document.getElementById('printFilterModal'),
+            printFilterModalContent: document.getElementById('printFilterModalContent'),
+
             loginModal: document.getElementById('loginModal'),
             loginModalContent: document.getElementById('loginModalContent'),
 
@@ -579,7 +640,6 @@
 
             renderRackOptions() {
                 if (this.editMedRack) {
-                    // 動態將當前的層架設定渲染至 <select> 之中，確保名稱一致
                     this.editMedRack.innerHTML = RACKS_CONFIG.map(rack => 
                         `<option value="${rack.id}">${rack.no}號儲位 - ${rack.name}</option>`
                     ).join('');
@@ -602,7 +662,7 @@
                     }).join('');
                 }
 
-                // 2. 渲染右上角的純粹版俯視小圖 (移除類別說明，僅保留名稱)
+                // 2. 渲染右上角的純粹版俯視小圖 (移除文字減少干擾，僅依據選擇層架亮顏色)
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
                     minimapContainer.innerHTML = `
@@ -613,50 +673,101 @@
                              class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
                              style="top: ${rack.top}; left: ${rack.left}; width: ${rack.width}; height: ${rack.height};"
                              onclick="Controllers.handleRackClick('${rack.id}')">
-                            <span class="text-[8px] md:text-[9px] font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap tracking-tighter">${rack.name}</span>
                         </div>
                     `).join('');
                 }
             },
 
+            // 虛擬滾動 (Virtual Scrolling) 列表渲染引擎
             renderList(medicines) {
+                this.filteredMeds = medicines;
+                this.itemHeight = 78; // 每個藥品項目的約略固定高度 (px)
+
+                // 初始化虛擬滾動容器
+                if (!this.virtualScrollWrapper) {
+                    this.medicineListContainer.innerHTML = '';
+                    
+                    this.virtualScrollWrapper = document.createElement('div');
+                    this.virtualScrollWrapper.style.position = 'relative';
+                    this.virtualScrollWrapper.style.width = '100%';
+                    
+                    this.virtualScrollNode = document.createElement('div');
+                    this.virtualScrollNode.style.position = 'absolute';
+                    this.virtualScrollNode.style.top = '0';
+                    this.virtualScrollNode.style.left = '0';
+                    this.virtualScrollNode.style.right = '0';
+                    
+                    this.virtualScrollWrapper.appendChild(this.virtualScrollNode);
+                    this.medicineListContainer.appendChild(this.virtualScrollWrapper);
+                    
+                    this.updateVirtualList = () => {
+                        if (!this.filteredMeds || this.filteredMeds.length === 0) return;
+                        
+                        const scrollTop = this.medicineListContainer.scrollTop;
+                        const containerHeight = this.medicineListContainer.clientHeight;
+                        
+                        // 計算可視範圍，加上前後緩衝區以確保平滑
+                        const startIdx = Math.max(0, Math.floor(scrollTop / this.itemHeight) - 3);
+                        const endIdx = Math.min(this.filteredMeds.length, startIdx + Math.ceil(containerHeight / this.itemHeight) + 6);
+                        
+                        this.virtualScrollNode.style.transform = `translateY(${startIdx * this.itemHeight}px)`;
+                        
+                        // 只渲染可視範圍內的 HTML
+                        this.virtualScrollNode.innerHTML = this.filteredMeds.slice(startIdx, endIdx).map(med => {
+                            const rackName = RACKS_CONFIG.find(r => r.id === med.rackId)?.name || med.rackId;
+                            const chNameParam = med.chName ? med.chName.replace(/'/g, "\\'") : '';
+                            const editBtnHTML = AppState.isLoggedIn ? `
+                                        <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${med.id}', '${med.name}', '${med.rackId}', '${chNameParam}')">
+                                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                        </button>
+                            ` : '';
+
+                            return `
+                                <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-3 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md dark:hover:shadow-slate-900/50 transition-all duration-200 hover:-translate-y-1 cursor-pointer group flex justify-between items-center h-[66px]" onclick="Controllers.focusOnRack('${med.rackId}')">
+                                    <div class="flex-1 pr-3 overflow-hidden">
+                                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-primary dark:group-hover:text-primary transition-colors leading-tight truncate">${med.name}</h3>
+                                        ${med.chName ? `<p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">${med.chName}</p>` : ''}
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] px-2.5 py-1 rounded-md font-medium border border-slate-200 dark:border-slate-600 transition-colors">
+                                            ${rackName}
+                                        </span>
+                                        ${editBtnHTML}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                        lucide.createIcons({root: this.virtualScrollNode});
+                    };
+                    
+                    this.medicineListContainer.addEventListener('scroll', () => {
+                        requestAnimationFrame(this.updateVirtualList);
+                    });
+                }
+
+                // 處理無資料狀態
                 if (medicines.length === 0) {
-                    this.medicineListContainer.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 py-10">
-                            <i data-lucide="package-open" class="w-12 h-12 mb-3 opacity-50"></i>
-                            <p class="text-center font-medium">找不到符合條件的藥品</p>
-                            <p class="text-xs mt-1">請嘗試其他關鍵字或清除鐵架篩選</p>
-                        </div>
+                    this.virtualScrollWrapper.style.display = 'none';
+                    if (!this.emptyStateNode) {
+                        this.emptyStateNode = document.createElement('div');
+                        this.emptyStateNode.className = "flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 py-10";
+                        this.medicineListContainer.appendChild(this.emptyStateNode);
+                    }
+                    this.emptyStateNode.innerHTML = `
+                        <i data-lucide="package-open" class="w-12 h-12 mb-3 opacity-50"></i>
+                        <p class="text-center font-medium">找不到符合條件的藥品</p>
+                        <p class="text-xs mt-1">請嘗試其他關鍵字或清除鐵架篩選</p>
                     `;
-                    lucide.createIcons();
+                    this.emptyStateNode.style.display = 'flex';
+                    lucide.createIcons({root: this.emptyStateNode});
                     return;
                 }
 
-                this.medicineListContainer.innerHTML = medicines.map(med => {
-                    const rackName = RACKS_CONFIG.find(r => r.id === med.rackId)?.name || med.rackId;
-                    const chNameParam = med.chName ? med.chName.replace(/'/g, "\\'") : '';
-                    const editBtnHTML = AppState.isLoggedIn ? `
-                                <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${med.id}', '${med.name}', '${med.rackId}', '${chNameParam}')">
-                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                </button>
-                    ` : '';
-
-                    return `
-                        <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 mb-3 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md dark:hover:shadow-slate-900/50 transition-all duration-200 hover:-translate-y-1 cursor-pointer group flex justify-between items-center" onclick="Controllers.focusOnRack('${med.rackId}')">
-                            <div class="flex-1 pr-3 overflow-hidden">
-                                <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-primary dark:group-hover:text-primary transition-colors leading-tight truncate">${med.name}</h3>
-                                ${med.chName ? `<p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">${med.chName}</p>` : ''}
-                            </div>
-                            <div class="flex items-center gap-2 shrink-0">
-                                <span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] px-2.5 py-1 rounded-md font-medium border border-slate-200 dark:border-slate-600 transition-colors">
-                                    ${rackName}
-                                </span>
-                                ${editBtnHTML}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-                lucide.createIcons();
+                // 套用有資料狀態並設定總高度，觸發捲軸
+                if (this.emptyStateNode) this.emptyStateNode.style.display = 'none';
+                this.virtualScrollWrapper.style.display = 'block';
+                this.virtualScrollWrapper.style.height = `${medicines.length * this.itemHeight}px`;
+                this.updateVirtualList(); // 強制更新當下畫面
             },
 
             updateRacksVisuals(highlightedIds, selectedId) {
@@ -669,8 +780,8 @@
                     
                     if (mapEl) {
                         // 狀態重置
-                        mapEl.classList.remove('border-primary', 'dark:border-primaryDark', 'border-emerald-500', 'opacity-40');
-                        mapEl.classList.add('border-slate-800', 'dark:border-slate-400');
+                        mapEl.classList.remove('border-primary', 'dark:border-primaryDark', 'border-emerald-500', 'opacity-40', 'bg-emerald-500', 'bg-primary/30');
+                        mapEl.classList.add('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
                         
                         if (legendDot) {
                             legendDot.className = "w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-600 transition-colors";
@@ -683,8 +794,8 @@
 
                         // 處理高亮邏輯
                         if (highlightedIds.has(rack.id) && !selectedId) {
-                            mapEl.classList.add('border-primary', 'dark:border-primaryDark');
-                            mapEl.classList.remove('border-slate-800', 'dark:border-slate-400');
+                            mapEl.classList.add('border-primary', 'dark:border-primaryDark', 'bg-primary/30');
+                            mapEl.classList.remove('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
                             if(legendDot) legendDot.classList.replace('bg-slate-300', 'bg-primary');
                             if(legendDot) legendDot.classList.replace('dark:bg-slate-600', 'dark:bg-primaryDark');
                             if(tagEl) tagEl.classList.replace('border-slate-200', 'border-primary/50');
@@ -693,8 +804,8 @@
 
                         // 處理選中邏輯
                         if (selectedId === rack.id) {
-                            mapEl.classList.add('border-emerald-500');
-                            mapEl.classList.remove('border-slate-800', 'dark:border-slate-400');
+                            mapEl.classList.add('bg-emerald-500', 'border-emerald-600');
+                            mapEl.classList.remove('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
                             if(legendDot) legendDot.classList.replace('bg-slate-300', 'bg-emerald-500');
                             if(legendDot) legendDot.classList.replace('dark:bg-slate-600', 'dark:bg-emerald-600');
                             
@@ -734,24 +845,26 @@
 
                 this.statusText.textContent = text;
                 this.statusDot.className = `w-2 h-2 rounded-full inline-block ${dotColor}`;
-                
-                if (AppState.searchQuery) {
-                    this.clearSearchBtn.classList.remove('hidden');
-                } else {
-                    this.clearSearchBtn.classList.add('hidden');
-                }
             }
         };
 
         /**
          * 3. 互動邏輯控制器
          */
-        let searchDebounceTimer; // 搜尋防抖計時器
+        let searchDebounceTimer;
 
         const Controllers = {
-            // 防抖搜尋：延遲 300 毫秒
+            // 動態防抖搜尋 (根據資料量調整延遲，並顯示 Loading)
             handleInput(e) {
                 clearTimeout(searchDebounceTimer);
+                
+                // 顯示 Loading 狀態
+                DOM.searchLoader.classList.remove('hidden');
+                DOM.clearSearchBtn.classList.add('hidden');
+                
+                // 動態計算防抖時間：資料量越多，延遲越長避免卡頓 (範圍 200ms ~ 800ms)
+                const dynamicDelay = Math.min(800, Math.max(200, AppState.medicines.length * 0.1));
+
                 searchDebounceTimer = setTimeout(() => {
                     const query = e.target.value.trim();
                     AppState.searchQuery = query;
@@ -759,12 +872,17 @@
                         AppState.selectedRackId = null; 
                     }
                     this.refreshUI();
-                }, 300);
+                    
+                    // 恢復 UI 狀態
+                    DOM.searchLoader.classList.add('hidden');
+                    if(query) DOM.clearSearchBtn.classList.remove('hidden');
+                }, dynamicDelay);
             },
 
             clearSearch() {
                 DOM.searchInput.value = '';
                 AppState.searchQuery = '';
+                DOM.clearSearchBtn.classList.add('hidden');
                 DOM.searchInput.focus();
                 this.refreshUI();
             },
@@ -773,6 +891,7 @@
                 DOM.searchInput.value = '';
                 AppState.searchQuery = '';
                 AppState.selectedRackId = null;
+                DOM.clearSearchBtn.classList.add('hidden');
                 this.refreshUI();
             },
 
@@ -783,6 +902,7 @@
                     AppState.selectedRackId = rackId;
                     AppState.searchQuery = '';
                     DOM.searchInput.value = '';
+                    DOM.clearSearchBtn.classList.add('hidden');
                 }
                 this.refreshUI();
             },
@@ -791,6 +911,7 @@
                 AppState.selectedRackId = rackId;
                 AppState.searchQuery = '';
                 DOM.searchInput.value = '';
+                DOM.clearSearchBtn.classList.add('hidden');
                 this.refreshUI();
             },
 
@@ -830,7 +951,6 @@
                 setTimeout(() => {
                     DOM.loginModal.classList.add('hidden');
                     document.getElementById('loginPwd').value = '';
-                    // 關閉時清除錯誤狀態
                     const errorMsg = document.getElementById('loginErrorMsg');
                     if (errorMsg) errorMsg.classList.add('hidden');
                     const pwdInput = document.getElementById('loginPwd');
@@ -853,7 +973,6 @@
                     
                     this.closeLoginModal();
                 } else {
-                    // UI 錯誤提示與震動效果
                     if (errorMsg) {
                         errorMsg.classList.remove('hidden');
                         lucide.createIcons();
@@ -887,7 +1006,7 @@
                 this.refreshUI(); 
             },
 
-            // --- 設定 Modal 控制邏輯 ---
+            // --- 設定 Modal ---
             openSettingsModal() {
                 if (!AppState.isLoggedIn) {
                     this.openLoginModal();
@@ -908,6 +1027,65 @@
                 }, 300);
             },
 
+            // --- 列印自訂篩選 Modal ---
+            openPrintFilterModal(mode) {
+                document.getElementById('printModeInput').value = mode;
+                document.getElementById('printModalTitle').textContent = mode === 'label' ? '匯出藥品標籤' : '匯出藥品清單';
+                
+                // 動態產生層架 Checkbox
+                const racksContainer = document.getElementById('printRacksContainer');
+                racksContainer.innerHTML = RACKS_CONFIG.map(rack => `
+                    <label class="flex items-center gap-2 p-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors">
+                        <input type="checkbox" value="${rack.id}" class="print-rack-cb w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:bg-slate-700 dark:border-slate-600" checked>
+                        <span class="text-sm text-slate-700 dark:text-slate-300">${rack.name}</span>
+                    </label>
+                `).join('');
+
+                // 顯示當前搜尋條件提示
+                const hintEl = document.getElementById('printSearchTextHint');
+                const cbSearch = document.getElementById('printApplySearch');
+                if (AppState.searchQuery) {
+                    hintEl.textContent = `關鍵字: "${AppState.searchQuery}"`;
+                    hintEl.classList.replace('text-slate-500', 'text-primary');
+                    cbSearch.checked = true;
+                    cbSearch.disabled = false;
+                } else {
+                    hintEl.textContent = "目前無搜尋關鍵字";
+                    hintEl.classList.replace('text-primary', 'text-slate-500');
+                    cbSearch.checked = false;
+                    cbSearch.disabled = true;
+                }
+
+                DOM.printFilterModal.classList.remove('hidden');
+                setTimeout(() => {
+                    DOM.printFilterModal.classList.remove('opacity-0');
+                    DOM.printFilterModalContent.classList.remove('scale-95');
+                }, 10);
+            },
+
+            closePrintFilterModal() {
+                DOM.printFilterModal.classList.add('opacity-0');
+                DOM.printFilterModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    DOM.printFilterModal.classList.add('hidden');
+                }, 300);
+            },
+
+            confirmPrint() {
+                const mode = document.getElementById('printModeInput').value;
+                const applySearch = document.getElementById('printApplySearch').checked;
+                const checkedRacks = Array.from(document.querySelectorAll('.print-rack-cb:checked')).map(cb => cb.value);
+                
+                if (checkedRacks.length === 0) {
+                    alert("請至少選擇一個要匯出的層架！");
+                    return;
+                }
+
+                this.closePrintFilterModal();
+                this.exportMedicineLabels(mode, checkedRacks, applySearch);
+            },
+
+            // --- 其他編輯 Modal ---
             openEditModal(id, name, rackId, chName = '') {
                 DOM.editMedId.value = id || '';
                 DOM.editMedName.value = name || '';
@@ -993,7 +1171,6 @@
             },
 
             async saveRackEditForm() {
-                // UI 載入狀態
                 const saveBtn = document.getElementById('saveRackBtn');
                 if(saveBtn) {
                     saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 同步中...';
@@ -1001,7 +1178,6 @@
                     lucide.createIcons();
                 }
 
-                // 儲存輸入的新層架名稱與類別
                 RACKS_CONFIG.forEach(rack => {
                     const nameEl = document.getElementById(`rack-name-input-${rack.id}`);
                     const catEl = document.getElementById(`rack-cat-input-${rack.id}`);
@@ -1013,18 +1189,16 @@
                     }
                 });
 
-                // 呼叫 AppState 同步至 Google Sheet
                 const success = await AppState.syncRacksToServer(RACKS_CONFIG);
                 if (!success && AppState.WEB_APP_URL) {
                     alert("層架設定同步至後端失敗，將暫時儲存於本機。請檢查權限或網路。");
                 }
 
-                // 寫入 localStorage 作為備用與加速本地體驗
                 localStorage.setItem('drugSysRacksConfig', JSON.stringify(RACKS_CONFIG));
 
                 this.closeRackEditModal();
-                DOM.renderRacks(); // 重新渲染鐵架更新標題
-                DOM.renderRackOptions(); // 同步更新藥品編輯視窗內的選單
+                DOM.renderRacks(); 
+                DOM.renderRackOptions(); 
                 this.refreshUI();
                 
                 if(saveBtn) {
@@ -1034,7 +1208,6 @@
                 }
             },
 
-            // --- 匯出層架標籤 ---
             exportRackLabels() {
                 const printWindow = window.open('', '_blank');
                 if (!printWindow) {
@@ -1091,8 +1264,8 @@
                 printWindow.document.close();
             },
 
-            // --- 匯出藥品標籤 ---
-            exportMedicineLabels() {
+            // 支援自訂篩選的匯出功能
+            exportMedicineLabels(mode = 'label', filterRacks = [], applySearch = false) {
                 const printWindow = window.open('', '_blank');
                 if (!printWindow) {
                     alert('請允許瀏覽器開啟彈出視窗以進行列印！');
@@ -1100,83 +1273,119 @@
                 }
 
                 const today = new Date().toLocaleDateString('zh-TW');
+                const titleText = mode === 'label' ? '藥品標籤列印' : '藥品庫存清單';
                 
+                let targetMedicines = AppState.medicines;
+
+                // 若套用搜尋條件，則以當前搜尋結果為基底
+                if (applySearch && AppState.searchQuery) {
+                    const q = AppState.searchQuery.toLowerCase();
+                    targetMedicines = targetMedicines.filter(med => 
+                        med.name.toLowerCase().includes(q) || 
+                        (med.chName && med.chName.toLowerCase().includes(q))
+                    );
+                }
+
                 let htmlContent = `
                 <!DOCTYPE html>
                 <html lang="zh-TW">
                 <head>
                     <meta charset="UTF-8">
-                    <title>藥品標籤列印 - ${today}</title>
+                    <title>${titleText} - ${today}</title>
                     <style>
                         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; background: #f8fafc; color: #0f172a; }
                         .rack-section { margin-bottom: 40px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
                         .rack-title { font-size: 20px; font-weight: bold; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
                         .rack-title-badge { background: #0ea5e9; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
-                        .labels-container { 
-                            display: grid; 
-                            grid-template-columns: repeat(2, 1fr); /* 左右共兩列橫向排列 */
-                            gap: 15px; 
-                        }
-                        .med-label { 
-                            border: 2px dashed #cbd5e1; 
-                            border-radius: 8px; 
-                            padding: 15px; 
-                            display: flex; 
-                            flex-direction: column; 
-                            justify-content: center; 
-                            align-items: flex-start;
-                            min-height: 70px;
-                            page-break-inside: avoid;
-                            background: #fafafa;
-                        }
+                        
+                        /* 標籤模式 CSS */
+                        .labels-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+                        .med-label { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; page-break-inside: avoid; background: #fafafa; }
                         .med-name { font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 4px; }
                         .med-chName { font-size: 14px; color: #475569; font-weight: 500; }
+                        
+                        /* 清單模式 CSS */
+                        .med-table { w-full; border-collapse: collapse; width: 100%; margin-top: 10px; page-break-inside: auto; }
+                        .med-table th, .med-table td { border: 1px solid #cbd5e1; padding: 10px 15px; text-align: left; }
+                        .med-table th { background-color: #f1f5f9; font-weight: bold; color: #475569; }
+                        .med-table tr:nth-child(even) { background-color: #f8fafc; }
+                        .med-table tr { page-break-inside: avoid; page-break-after: auto; }
+
                         @media print {
                             body { padding: 0; background: #fff; }
                             .rack-section { box-shadow: none; padding: 0; margin-bottom: 30px; }
                             .med-label { border: 1px solid #000; background: #fff; }
                             .rack-title { border-bottom: 2px solid #000; }
                             .rack-title-badge { background: #000; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            .med-table th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
                         }
                     </style>
                 </head>
                 <body>
+                    <h1 style="text-align: center; margin-bottom: 30px;">${titleText} (${today})</h1>
                 `;
 
-                if (AppState.medicines.length === 0) {
-                    htmlContent += '<h3>目前系統中沒有任何藥品可供匯出。</h3></body></html>';
-                    printWindow.document.write(htmlContent);
-                    printWindow.document.close();
-                    return;
-                }
+                let totalExported = 0;
 
                 RACKS_CONFIG.forEach(rack => {
-                    const rackMeds = AppState.medicines.filter(m => m.rackId === rack.id);
+                    // 只處理使用者有勾選的層架
+                    if (!filterRacks.includes(rack.id)) return;
+
+                    const rackMeds = targetMedicines.filter(m => m.rackId === rack.id);
                     if (rackMeds.length > 0) {
+                        totalExported += rackMeds.length;
                         htmlContent += `
                         <div class="rack-section">
                             <div class="rack-title">
                                 <span class="rack-title-badge">No.${rack.no}</span>
                                 ${rack.name} ${rack.category ? `(${rack.category})` : ''}
                             </div>
-                            <div class="labels-container">
                         `;
 
-                        rackMeds.forEach(med => {
+                        if (mode === 'label') {
+                            htmlContent += `<div class="labels-container">`;
+                            rackMeds.forEach(med => {
+                                htmlContent += `
+                                    <div class="med-label">
+                                        <div class="med-name">${med.name}</div>
+                                        ${med.chName ? `<div class="med-chName">中文品名：${med.chName}</div>` : ''}
+                                    </div>
+                                `;
+                            });
+                            htmlContent += `</div>`;
+                        } else if (mode === 'list') {
                             htmlContent += `
-                                <div class="med-label">
-                                    <div class="med-name">${med.name}</div>
-                                    ${med.chName ? `<div class="med-chName">中文品名：${med.chName}</div>` : ''}
-                                </div>
+                            <table class="med-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 15%;">內部代碼</th>
+                                        <th style="width: 45%;">英文藥品名稱</th>
+                                        <th style="width: 40%;">中文商品名稱</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
                             `;
-                        });
+                            rackMeds.forEach(med => {
+                                htmlContent += `
+                                    <tr>
+                                        <td style="color: #64748b; font-size: 14px;">${med.id}</td>
+                                        <td style="font-weight: bold; color: #0f172a;">${med.name}</td>
+                                        <td style="color: #475569;">${med.chName || '-'}</td>
+                                    </tr>
+                                `;
+                            });
+                            htmlContent += `</tbody></table>`;
+                        }
 
                         htmlContent += `
-                            </div>
                         </div>
                         `;
                     }
                 });
+
+                if (totalExported === 0) {
+                    htmlContent += '<h3>符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</h3>';
+                }
 
                 htmlContent += `
                 </body>
@@ -1192,13 +1401,11 @@
                 printWindow.document.close();
             },
 
-            // --- 深淺色模式切換 ---
             toggleDarkMode() {
                 document.documentElement.classList.toggle('dark');
                 const isDark = document.documentElement.classList.contains('dark');
                 localStorage.setItem('drugSysDarkMode', isDark ? 'dark' : 'light');
 
-                // 觸發 3D 背景色與格線更新
                 if (typeof ThreeApp !== 'undefined' && ThreeApp.scene) {
                     ThreeApp.scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf1f5f9);
                     if(ThreeApp.grid) ThreeApp.grid.material.color.setHex(isDark ? 0x334155 : 0xe2e8f0);
@@ -1207,11 +1414,12 @@
         };
 
         /**
-         * 4. 3D 模擬視覺化模組 (Three.js)
+         * 4. 3D 模擬視覺化模組 (Three.js) - 引入 InstancedMesh 優化效能
          */
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
+            isResetting: false, defaultCamPos: new THREE.Vector3(0, 18, 14), defaultTarget: new THREE.Vector3(0, 0, 0),
             
             init(containerId) {
                 const container = document.getElementById(containerId);
@@ -1222,9 +1430,8 @@
                 this.scene = new THREE.Scene();
                 this.scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf1f5f9);
 
-                // 攝影機設定 (模擬您提供的高質感俯視視角)
                 this.camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
-                this.camera.position.set(0, 18, 14); 
+                this.camera.position.copy(this.defaultCamPos);
 
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
                 this.renderer.setSize(container.clientWidth, container.clientHeight);
@@ -1235,11 +1442,11 @@
                 this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
                 this.controls.enableDamping = true;
                 this.controls.dampingFactor = 0.05;
-                this.controls.maxPolarAngle = Math.PI / 2 - 0.1; // 避免穿透地板看到地下
+                this.controls.maxPolarAngle = Math.PI / 2 - 0.1;
                 this.controls.minDistance = 5;
                 this.controls.maxDistance = 40;
+                this.controls.target.copy(this.defaultTarget);
 
-                // 燈光設定 (打出素描質感陰影)
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
                 this.scene.add(ambientLight);
                 
@@ -1254,24 +1461,17 @@
                 dirLight.shadow.camera.bottom = -15;
                 this.scene.add(dirLight);
 
-                // 地板設計 (素描/簡約白材質)
                 const floorGeo = new THREE.PlaneGeometry(28, 20);
-                const floorMat = new THREE.MeshStandardMaterial({ 
-                    color: 0xffffff, 
-                    roughness: 0.8,
-                    metalness: 0.1
-                });
+                const floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1 });
                 const floor = new THREE.Mesh(floorGeo, floorMat);
                 floor.rotation.x = -Math.PI / 2;
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                // 網格線 (增加科技感對齊)
                 this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
                 this.scene.add(this.grid);
 
-                // 灰色主走道
                 const aisleGeo = new THREE.PlaneGeometry(28, 3.2);
                 const aisleMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
                 const aisle = new THREE.Mesh(aisleGeo, aisleMat);
@@ -1279,22 +1479,39 @@
                 aisle.position.y = 0.02;
                 this.scene.add(aisle);
 
-                // 建立鐵架與紙箱模型
+                // 建構實例化鐵架與紙箱模型 (大幅優化效能)
                 this.buildRacks();
 
-                // 事件綁定
+                // 綁定事件
                 window.addEventListener('resize', () => this.onResize(container));
                 this.renderer.domElement.addEventListener('pointerdown', (e) => this.onClick(e, container));
+                this.renderer.domElement.addEventListener('pointermove', (e) => this.onMouseMove(e, container)); // Hover Tooltip
 
                 this.animate();
+            },
+
+            // 觸發視角平滑重置
+            resetCamera() {
+                this.isResetting = true;
             },
 
             buildRacks() {
                 const roomW = 28;
                 const roomD = 20;
+                const rackHeight = 4.5; 
 
-                RACKS_CONFIG.forEach(rack => {
-                    // 自動將設定好的百分比座標系統無縫轉換為 3D 世界座標
+                // 共用材質設定
+                const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
+                const clipMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 });
+                const shelfMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.7, roughness: 0.4, transparent: true, opacity: 0.8 });
+                const boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
+
+                const postRadius = 0.05;
+                const postGeo = new THREE.CylinderGeometry(postRadius, postRadius, rackHeight, 8);
+                const clipGeo = new THREE.CylinderGeometry(postRadius * 1.3, postRadius * 1.3, 0.12, 8);
+                const unitBoxGeo = new THREE.BoxGeometry(1, 1, 1); // 1x1x1 的基準幾何體供 InstancedMesh 縮放
+
+                RACKS_CONFIG.forEach((rack, index) => {
                     const top = parseFloat(rack.top) / 100;
                     const left = parseFloat(rack.left) / 100;
                     const width = parseFloat(rack.width) / 100;
@@ -1306,49 +1523,131 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
-                    // 為了容納三層，將鐵架整體抬高
-                    group.position.set(x, 2.25, z); 
+                    group.position.set(x, rackHeight / 2, z); 
 
-                    // 1. 鐵架外框 (銀灰色 Wireframe 線條) - 高度改為 4.5
-                    const shelfGeo = new THREE.BoxGeometry(w, 4.5, d);
-                    const edges = new THREE.EdgesGeometry(shelfGeo);
-                    const lineMat = new THREE.LineBasicMaterial({ color: 0x64748b, linewidth: 2 });
-                    const wireframe = new THREE.LineSegments(edges, lineMat);
-                    group.add(wireframe);
-
-                    // 2. 內部白色紙箱 (模擬庫存箱體) - 三層
-                    const boxGeo = new THREE.BoxGeometry(w * 0.8, 0.8, d * 0.8);
-                    const boxMat = new THREE.MeshStandardMaterial({ 
-                        color: 0xffffff,
-                        roughness: 0.5,
-                        metalness: 0.1
+                    const postPositions = [
+                        [-w/2 + postRadius, -d/2 + postRadius],
+                        [w/2 - postRadius, -d/2 + postRadius],
+                        [-w/2 + postRadius, d/2 - postRadius],
+                        [w/2 - postRadius, d/2 - postRadius]
+                    ];
+                    
+                    // 使用 InstancedMesh 繪製支柱 (4根)
+                    const postInstanced = new THREE.InstancedMesh(postGeo, postMat, 4);
+                    postInstanced.castShadow = true;
+                    const matrix = new THREE.Matrix4();
+                    postPositions.forEach((pos, idx) => {
+                        matrix.setPosition(pos[0], 0, pos[1]);
+                        postInstanced.setMatrixAt(idx, matrix);
                     });
-                    
-                    const box1 = new THREE.Mesh(boxGeo, boxMat);
-                    box1.position.y = -1.5; // 底層
-                    box1.castShadow = true;
-                    box1.receiveShadow = true;
-                    
-                    const box2 = new THREE.Mesh(boxGeo, boxMat);
-                    box2.position.y = 0; // 中層
-                    box2.castShadow = true;
-                    box2.receiveShadow = true;
-                    
-                    const box3 = new THREE.Mesh(boxGeo, boxMat);
-                    box3.position.y = 1.5; // 頂層
-                    box3.castShadow = true;
-                    box3.receiveShadow = true;
-                    
-                    group.add(box1, box2, box3);
+                    group.add(postInstanced);
 
-                    // 3. 隱形的射線測試命中區塊 (用於精準判斷點擊)
+                    const shelfThickness = 0.02;
+                    const shelfGeo = new THREE.BoxGeometry(w, shelfThickness, d);
+                    const rimGeo = new THREE.BoxGeometry(w, 0.12, d);
+                    const edges = new THREE.EdgesGeometry(rimGeo);
+                    const lineMat = new THREE.LineBasicMaterial({ color: 0x64748b, linewidth: 2 }); 
+
+                    const wireframes = []; 
+                    const shelfYs = [-1.6, -0.5, 0.6, 1.7]; 
+
+                    // 準備 InstancedMesh 的資料收集
+                    const clipTransforms = [];
+                    const boxTransforms = [];
+
+                    shelfYs.forEach((sy) => {
+                        const shelf = new THREE.Mesh(shelfGeo, shelfMat);
+                        shelf.position.y = sy;
+                        shelf.receiveShadow = true;
+                        group.add(shelf);
+
+                        const wireframe = new THREE.LineSegments(edges, lineMat.clone());
+                        wireframe.position.y = sy;
+                        group.add(wireframe);
+                        wireframes.push(wireframe);
+
+                        // 收集夾片位置矩陣
+                        postPositions.forEach(pos => {
+                            const cMat = new THREE.Matrix4();
+                            cMat.setPosition(pos[0], sy, pos[1]);
+                            clipTransforms.push(cMat);
+                        });
+
+                        // 產生紙箱大小與位置邏輯 (固定比例放大，盡量塞滿)
+                        let seed = index * 100 + Math.abs(sy * 10); 
+                        const pseudoRandom = () => {
+                            const val = Math.sin(seed++) * 10000;
+                            return val - Math.floor(val);
+                        };
+
+                        const depthOptions = [0.8, 1.0, 1.2];
+                        const widthOptions = [0.8, 1.1, 1.4];
+                        const heightOptions = [0.6, 0.75, 0.9];
+
+                        let currentZ = -d/2 + postRadius * 2.5;
+                        while (currentZ < d/2 - postRadius * 2.5) {
+                            let rowDepth = depthOptions[Math.floor(pseudoRandom() * depthOptions.length)]; 
+                            if (currentZ + rowDepth > d/2 - postRadius * 2.5) {
+                                rowDepth = (d/2 - postRadius * 2.5) - currentZ;
+                            }
+                            if (rowDepth < 0.5) break; 
+
+                            let currentX = -w/2 + postRadius * 2.5;
+                            while (currentX < w/2 - postRadius * 2.5) {
+                                let boxW = widthOptions[Math.floor(pseudoRandom() * widthOptions.length)]; 
+                                if (currentX + boxW > w/2 - postRadius * 2.5) {
+                                    boxW = (w/2 - postRadius * 2.5) - currentX;
+                                }
+                                if (boxW < 0.5) break;
+
+                                let boxH = heightOptions[Math.floor(pseudoRandom() * heightOptions.length)]; 
+
+                                const actualW = boxW - 0.04;
+                                const actualD = rowDepth - 0.04;
+
+                                if (actualW > 0.4 && actualD > 0.4) {
+                                    // 將每個紙箱轉化為矩陣存放 (平移 + 縮放)
+                                    const bMat = new THREE.Matrix4();
+                                    const posVec = new THREE.Vector3(currentX + boxW/2, sy + shelfThickness/2 + boxH/2, currentZ + rowDepth/2);
+                                    const quat = new THREE.Quaternion();
+                                    const scaleVec = new THREE.Vector3(actualW, boxH, actualD);
+                                    bMat.compose(posVec, quat, scaleVec);
+                                    boxTransforms.push(bMat);
+                                }
+                                
+                                currentX += boxW;
+                                if (pseudoRandom() > 0.95) currentX += 0.4 + pseudoRandom() * 0.4;
+                            }
+                            currentZ += rowDepth;
+                        }
+                    });
+
+                    // 使用 InstancedMesh 繪製黑色夾片
+                    if (clipTransforms.length > 0) {
+                        const clipInstanced = new THREE.InstancedMesh(clipGeo, clipMat, clipTransforms.length);
+                        clipTransforms.forEach((mat, idx) => clipInstanced.setMatrixAt(idx, mat));
+                        group.add(clipInstanced);
+                    }
+
+                    // 使用 InstancedMesh 繪製所有紙箱 (大幅降低 Draw calls)
+                    let boxInstanced = null;
+                    if (boxTransforms.length > 0) {
+                        boxInstanced = new THREE.InstancedMesh(unitBoxGeo, boxBaseMat.clone(), boxTransforms.length);
+                        boxTransforms.forEach((mat, idx) => boxInstanced.setMatrixAt(idx, mat));
+                        boxInstanced.castShadow = true;
+                        boxInstanced.receiveShadow = true;
+                        group.add(boxInstanced);
+                    }
+
+                    // 隱形的射線測試命中區塊 (用於精準判斷點擊與 Hover)
+                    const hitGeo = new THREE.BoxGeometry(w, rackHeight, d);
                     const hitMat = new THREE.MeshBasicMaterial({ visible: false });
-                    const hitBox = new THREE.Mesh(shelfGeo, hitMat);
+                    const hitBox = new THREE.Mesh(hitGeo, hitMat);
                     hitBox.userData = { id: rack.id };
                     group.add(hitBox);
 
                     this.scene.add(group);
-                    this.rackMeshes[rack.id] = { group, wireframe, boxes: [box1, box2, box3], originalY: 2.25 };
+                    this.rackMeshes[rack.id] = { hitBox, group, wireframes, boxInstanced, originalY: rackHeight / 2 };
                 });
             },
 
@@ -1356,44 +1655,98 @@
                 if(!this.scene) return;
                 
                 Object.values(this.rackMeshes).forEach(meshObj => {
-                    // 重置顏色與發光狀態
-                    meshObj.wireframe.material.color.setHex(0x64748b); // 預設銀灰
-                    meshObj.boxes.forEach(b => b.material.emissive.setHex(0x000000));
-                    // 平滑重置物理位置
+                    meshObj.wireframes.forEach(wf => {
+                        wf.material.color.setHex(0x64748b);
+                        wf.material.opacity = 0.5;
+                        wf.material.transparent = true;
+                    });
+                    if (meshObj.boxInstanced) {
+                        meshObj.boxInstanced.material.emissive.setHex(0x000000);
+                    }
                     meshObj.group.position.y = meshObj.originalY;
                 });
 
-                // 處理搜尋關鍵字高亮 (發出科技淺藍光)
                 highlightedIds.forEach(id => {
                     if (this.rackMeshes[id]) {
-                        this.rackMeshes[id].wireframe.material.color.setHex(0x0ea5e9);
-                        this.rackMeshes[id].boxes.forEach(b => b.material.emissive.setHex(0x0284c7));
+                        this.rackMeshes[id].wireframes.forEach(wf => {
+                            wf.material.color.setHex(0x0ea5e9);
+                            wf.material.opacity = 1.0;
+                        });
+                        if (this.rackMeshes[id].boxInstanced) {
+                            this.rackMeshes[id].boxInstanced.material.emissive.setHex(0x0284c7);
+                        }
                     }
                 });
 
-                // 處理點擊選取鎖定 (發出翡翠綠光並加入浮動感)
                 if (selectedId && this.rackMeshes[selectedId]) {
-                    this.rackMeshes[selectedId].wireframe.material.color.setHex(0x10b981);
-                    this.rackMeshes[selectedId].boxes.forEach(b => b.material.emissive.setHex(0x059669));
-                    this.rackMeshes[selectedId].group.position.y = this.rackMeshes[selectedId].originalY + 0.5; // Z軸微升營造選中感
+                    this.rackMeshes[selectedId].wireframes.forEach(wf => {
+                        wf.material.color.setHex(0x10b981);
+                        wf.material.opacity = 1.0;
+                    });
+                    if (this.rackMeshes[selectedId].boxInstanced) {
+                        this.rackMeshes[selectedId].boxInstanced.material.emissive.setHex(0x059669);
+                    }
+                    this.rackMeshes[selectedId].group.position.y = this.rackMeshes[selectedId].originalY + 0.5;
                 }
             },
 
             onClick(event, container) {
-                // 將滑鼠螢幕座標轉化為 3D 場景空間的射線
                 const rect = container.getBoundingClientRect();
                 this.mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
                 this.mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
 
                 this.raycaster.setFromCamera(this.mouse, this.camera);
-                const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+                const hitBoxes = Object.values(this.rackMeshes).map(r => r.hitBox);
+                const intersects = this.raycaster.intersectObjects(hitBoxes, false);
                 
-                for (let i = 0; i < intersects.length; i++) {
-                    const obj = intersects[i].object;
+                if (intersects.length > 0) {
+                    const obj = intersects[0].object;
                     if (obj.userData && obj.userData.id) {
                         Controllers.handleRackClick(obj.userData.id);
-                        break; // 點到即觸發，避免穿透到底下物件
                     }
+                }
+            },
+
+            // 滑鼠懸停時觸發 3D 浮動提示框 (Tooltip)
+            onMouseMove(event, container) {
+                const rect = container.getBoundingClientRect();
+                this.mouse.x = ((event.clientX - rect.left) / container.clientWidth) * 2 - 1;
+                this.mouse.y = -((event.clientY - rect.top) / container.clientHeight) * 2 + 1;
+
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+                
+                // 只偵測 hitBox 實體
+                const hitBoxes = Object.values(this.rackMeshes).map(r => r.hitBox);
+                const intersects = this.raycaster.intersectObjects(hitBoxes, false);
+                
+                const tooltip = document.getElementById('tooltip3d');
+
+                if (intersects.length > 0) {
+                    const rackId = intersects[0].object.userData.id;
+                    
+                    // 游標指標變化
+                    container.style.cursor = 'pointer';
+
+                    const rackName = RACKS_CONFIG.find(r => r.id === rackId)?.name || '未知層架';
+                    const meds = AppState.medicines.filter(m => m.rackId === rackId);
+                    
+                    // 取前 3 個藥品名稱
+                    const topMeds = meds.slice(0, 3).map(m => `• ${m.name}`).join('<br>');
+                    const moreInfo = meds.length > 3 ? `<div class="mt-1 pt-1 border-t border-slate-700/50 text-slate-400">...等共 ${meds.length} 項藥品</div>` : '';
+
+                    tooltip.innerHTML = `
+                        <div class="font-bold text-sm text-primary mb-1 pb-1 border-b border-slate-700">${rackName}</div>
+                        <div class="text-xs text-slate-200">${topMeds || '<span class="text-slate-500">目前為空</span>'}</div>
+                        ${moreInfo}
+                    `;
+                    
+                    tooltip.style.left = `${event.clientX}px`;
+                    tooltip.style.top = `${event.clientY - 15}px`;
+                    tooltip.classList.remove('hidden', 'opacity-0');
+                } else {
+                    container.style.cursor = 'grab';
+                    tooltip.classList.add('opacity-0');
+                    setTimeout(() => { if (tooltip.classList.contains('opacity-0')) tooltip.classList.add('hidden'); }, 200);
                 }
             },
 
@@ -1406,6 +1759,16 @@
 
             animate() {
                 requestAnimationFrame(() => this.animate());
+                
+                // 執行攝影機重置動畫 (Lerp)
+                if (this.isResetting) {
+                    this.camera.position.lerp(this.defaultCamPos, 0.08);
+                    this.controls.target.lerp(this.defaultTarget, 0.08);
+                    if (this.camera.position.distanceTo(this.defaultCamPos) < 0.1) {
+                        this.isResetting = false;
+                    }
+                }
+
                 if (this.controls) this.controls.update();
                 if (this.renderer && this.scene && this.camera) {
                     this.renderer.render(this.scene, this.camera);
@@ -1417,62 +1780,50 @@
          * 5. 系統初始化
          */
         async function initApp() {
-            // 讀取深色模式偏好設定
             if (localStorage.getItem('drugSysDarkMode') === 'dark' || (!('drugSysDarkMode' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             } else {
                 document.documentElement.classList.remove('dark');
             }
 
-            // 讀取儲存的層架設定 (LocalStorage)
             const savedRacks = localStorage.getItem('drugSysRacksConfig');
             if (savedRacks) {
                 const parsedRacks = JSON.parse(savedRacks);
                 RACKS_CONFIG.forEach(rack => {
                     const saved = parsedRacks.find(r => r.id === rack.id);
                     if (saved) {
-                        rack.name = saved.name || rack.name; // 還原自訂名稱
+                        rack.name = saved.name || rack.name;
                         rack.category = saved.category;
                     }
                 });
             }
 
-            // 讀取登入狀態 (SessionStorage)
             if (sessionStorage.getItem('drugSysAuth') === 'true') {
                 AppState.isLoggedIn = true;
             }
 
-            // 綁定全域快捷鍵 (Ctrl+F: 搜尋, Esc: 關閉彈窗)
             document.addEventListener('keydown', (e) => {
-                // Ctrl + F
                 if (e.ctrlKey && e.key.toLowerCase() === 'f') {
-                    e.preventDefault(); // 防止瀏覽器原生搜尋框跳出
+                    e.preventDefault(); 
                     DOM.searchInput.focus();
                 }
-                // Esc
                 if (e.key === 'Escape') {
                     if (!DOM.editModal.classList.contains('hidden')) Controllers.closeEditModal();
                     if (!DOM.rackEditModal.classList.contains('hidden')) Controllers.closeRackEditModal();
                     if (!DOM.settingsModal.classList.contains('hidden')) Controllers.closeSettingsModal();
                     if (!DOM.loginModal.classList.contains('hidden')) Controllers.closeLoginModal();
+                    if (!DOM.printFilterModal.classList.contains('hidden')) Controllers.closePrintFilterModal();
                 }
             });
 
-            // 初始化圖示
             lucide.createIcons();
-            
-            // 初始化驗證 UI
             Controllers.updateAuthUI();
-            
-            // 預先產生預設的下拉選單
             DOM.renderRackOptions();
 
             await AppState.initData();
             DOM.totalItemsCount.textContent = AppState.medicines.length;
 
             DOM.renderRacks();
-            
-            // 啟動 3D 環境與模組
             ThreeApp.init('canvas-container');
 
             DOM.searchInput.addEventListener('input', (e) => Controllers.handleInput(e));
