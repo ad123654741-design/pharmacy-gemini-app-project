@@ -215,8 +215,8 @@
                                 <th class="py-3 px-4 w-12 text-center">#</th>
                                 <th class="py-3 px-4 w-1/5">商品名</th>
                                 <th class="py-3 px-4 w-1/5">學名/成分</th>
-                                <th class="py-3 px-4 w-32">用法用量</th>
-                                <th class="py-3 px-4 w-1/5">外觀描述</th>
+                                <th class="py-3 px-4 w-[25%]">用法用量</th>
+                                <th class="py-3 px-4 w-[15%]">外觀描述</th>
                                 <th class="py-3 px-4 w-1/5">替代品項 / 備註</th>
                                 <th class="py-3 px-4 w-16 text-center">操作</th>
                             </tr>
@@ -489,8 +489,8 @@
                             let usage = '';
 
                             // 2. 擷取後方的用法用量 (例: 1TABBID -> 1 TAB BID)
-                            // 支援您提供的劑量與單位: TAB, PILL, AMP, BOT, CAP, ML, VIAL 等
-                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|MG|MCG)\s*([A-Z0-9]+)?$/i);
+                            // 支援您提供的劑量與單位: TAB, PILL, AMP, BOT, CAP, ML, VIAL, U, TUB, TUBE, DROPS, DROP, EA, GM, PUFF, PAK, PKG 等
+                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PKG)\s*([A-Z0-9]+)?$/i);
                             
                             if (usageMatch) {
                                 brandName = usageMatch[1].trim(); // 商品名
