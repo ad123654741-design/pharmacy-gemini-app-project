@@ -82,7 +82,22 @@
             tr { page-break-inside: avoid; break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
-            .label-box { page-break-inside: avoid; break-inside: avoid; }
+            
+            /* 標籤列印排版優化：模擬 Word 標籤貼紙，加入固定間距與大小 */
+            #label-container {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important; /* 預設一排 3 張 */
+                gap: 0.5cm 0.5cm !important; /* 每個藥品中間有間隔 */
+            }
+            .label-box { 
+                page-break-inside: avoid; 
+                break-inside: avoid; 
+                border: 1px solid #000 !important; 
+                height: 3.8cm !important; /* 固定高度以符合一般標籤紙 */
+                padding: 0.4cm !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
         }
 
         /* 順滑進場與 Toast 動畫 */
@@ -348,7 +363,7 @@
             </button>
         </div>
         <div class="max-w-5xl mx-auto">
-            <div id="label-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 print:grid-cols-4 print:gap-2">
+            <div id="label-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 <!-- 列印標籤內容動態生成 -->
             </div>
         </div>
@@ -490,7 +505,7 @@
 
                             // 2. 擷取後方的用法用量 (例: 1TABBID -> 1 TAB BID)
                             // 支援您提供的劑量與單位: TAB, PILL, AMP, BOT, CAP, ML, VIAL, U, TUB, TUBE, DROPS, DROP, EA, GM, PUFF, PAK, PKG 等
-                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PKG)\s*([A-Z0-9]+)?$/i);
+                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PKG|SYRI)\s*([A-Z0-9&]+)?$/i);
                             
                             if (usageMatch) {
                                 brandName = usageMatch[1].trim(); // 商品名
@@ -500,7 +515,7 @@
                                 usage = `${dose} ${unit} ${freq}`.trim(); // 組合成新的用法格式 (加空格)
                             } else {
                                 // 增強：如果沒有常見單位，嘗試抓取結尾的頻率 (例如 1 BID)
-                                const fallbackMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(QD|BID|TID|QID|Q\d+H|PRN|HS|AC|PC|QW)$/i);
+                                const fallbackMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(QD|BID&HS|BID|TID|QID|Q\d+H|PRN|HS|AC|PC|QW)$/i);
                                 if(fallbackMatch) {
                                     brandName = fallbackMatch[1].trim();
                                     usage = `${fallbackMatch[2]} ${fallbackMatch[3].toUpperCase()}`.trim();
@@ -568,7 +583,7 @@
                             
                             // 狀況B: 雲端表格內的換行無 Tab 雜訊 (如："門診"、"主診斷"文字被擠到下一行)
                             if (isCloudTableData && !isParsedByCloudFormat) {
-                                const hasUsageKeyword = /(Q[DI]D|BID|TID|Q\d+H|PRN|ST|PO|mg|ml|mcg|\d+[顆錠粒包瓶次滴])/i.test(str);
+                                const hasUsageKeyword = /(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|mg|ml|mcg|\d+[顆錠粒包瓶次滴])/i.test(str);
                                 const hasGenericPattern = /\([^)]+\)|\[[^\]]+\]/.test(str);
                                 // 如果連基本的用法關鍵字或學名括號特徵都沒有，判定為雜訊直接過濾
                                 if (!hasUsageKeyword && !hasGenericPattern) return; 
@@ -578,7 +593,7 @@
                             if (!isParsedByCloudFormat) {
                                 const genericMatch = str.match(/\(([^)]+)\)|\[([^\]]+)\]/);
                                 if (genericMatch) genericName = genericMatch[1] || genericMatch[2];
-                                const usageMatches = str.match(/(Q[DI]D|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴]|[早中晚]?[飯餐][前後]|睡前)/ig);
+                                const usageMatches = str.match(/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴]|[早中晚]?[飯餐][前後]|睡前)/ig);
                                 if (usageMatches) usage = usageMatches.join(' ');
                                 
                                 let remainStr = str;
