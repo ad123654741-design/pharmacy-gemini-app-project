@@ -78,7 +78,8 @@
     <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex items-center px-6 shrink-0 z-30 relative transition-colors duration-300">
         <div class="flex items-center gap-3 text-primary">
             <i data-lucide="cross" class="w-6 h-6"></i>
-            <h1 class="text-xl font-bold tracking-wide">藥品庫存區視覺化地圖</h1>
+            <!-- 修改 2：程式標題改成藥品庫存區地圖 -->
+            <h1 class="text-xl font-bold tracking-wide">藥品庫存區地圖</h1>
         </div>
         <div class="ml-auto flex items-center gap-4">
             <div class="hidden sm:flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
@@ -112,8 +113,10 @@
         <aside class="w-full md:w-[400px] bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-[40vh] md:h-auto transition-colors duration-300">
             
             <!-- 搜尋區塊 -->
-            <div class="p-6 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 shrink-0 transition-colors duration-300">
-                <div class="flex justify-between items-center mb-4">
+            <!-- 優化：手機版縮減 Padding 讓畫面更緊湊 -->
+            <div class="p-4 md:p-6 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 shrink-0 transition-colors duration-300">
+                <!-- 優化 1：手機版隱藏「尋找藥品」標題與按鈕列 -->
+                <div class="hidden md:flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">尋找藥品</h2>
                     <div class="hidden md:flex items-center gap-2">
                         <button onclick="Controllers.resetAll()" class="flex items-center gap-1 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5 shadow-sm border border-slate-200 dark:border-slate-600" title="清除搜尋與選取狀態">
@@ -140,7 +143,8 @@
                     </button>
                 </div>
                 
-                <div id="statusMessage" class="mt-4 text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                <!-- 優化 1：手機版隱藏「顯示所有藥品」狀態列 -->
+                <div id="statusMessage" class="mt-4 text-sm text-slate-500 dark:text-slate-400 hidden md:flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 inline-block" id="statusDot"></span>
                     <span id="statusText">顯示所有藥品清單</span>
                 </div>
@@ -151,7 +155,8 @@
                 <!-- JS 動態渲染虛擬捲動內容 -->
             </div>
             
-            <div class="p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center text-slate-400 dark:text-slate-500 shrink-0 transition-colors duration-300">
+            <!-- 優化 1：手機版隱藏「系統中共有 ? 項藥品」統計列 -->
+            <div class="hidden md:block p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center text-slate-400 dark:text-slate-500 shrink-0 transition-colors duration-300">
                 系統中共有 <span id="totalItemsCount" class="font-bold text-slate-600 dark:text-slate-300">0</span> 項藥品
             </div>
         </aside>
@@ -162,7 +167,8 @@
             <!-- 頂部說明區與右上角俯視小圖 -->
             <div class="p-6 pb-0 shrink-0 flex justify-between items-start z-10 relative pointer-events-none">
                 <div class="pr-4 pointer-events-auto">
-                    <p class="text-slate-500 dark:text-slate-400 text-sm mb-3">搜尋左側藥品，系統將自動為您標示儲位。點擊俯視圖或 3D 模型中的層架可篩選顯示內容。</p>
+                    <!-- 優化 1：手機版隱藏「搜尋左側藥品...」提示文字 -->
+                    <p class="hidden md:block text-slate-500 dark:text-slate-400 text-sm mb-3">搜尋左側藥品，系統將自動為您標示儲位。點擊俯視圖或 3D 模型中的層架可篩選顯示內容。</p>
                     <!-- 鐵架名稱與種類說明區 -->
                     <div id="rackInfoContainer" class="flex flex-wrap gap-2">
                         <!-- JS 動態渲染種類標籤 -->
@@ -283,11 +289,18 @@
                     </select>
                 </div>
             </div>
-            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
-                <button onclick="Controllers.closeEditModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
-                <button onclick="Controllers.saveEditForm()" id="saveMedBtn" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 flex items-center gap-2">
-                    <i data-lucide="save" class="w-4 h-4 hidden" id="saveIcon"></i> 儲存
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                <!-- 新增：刪除按鈕 (預設隱藏) -->
+                <button onclick="Controllers.deleteMedicine()" id="deleteMedBtn" class="hidden px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-all duration-200 flex items-center gap-2">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i> 刪除
                 </button>
+                <!-- 原有：取消與儲存按鈕 -->
+                <div class="flex gap-3 ml-auto">
+                    <button onclick="Controllers.closeEditModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
+                    <button onclick="Controllers.saveEditForm()" id="saveMedBtn" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 flex items-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4 hidden" id="saveIcon"></i> 儲存
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -699,6 +712,48 @@
                 }
                 
                 // 同步更新本地快取，確保離線作業不遺失
+                localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
+            },
+
+            // 新增：向後端發送刪除請求
+            async deleteFromServer(id) {
+                if (!this.WEB_APP_URL) {
+                    this._deleteLocalState(id);
+                    this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
+                    DOM.updateLastUpdateTime();
+                    return true;
+                }
+
+                try {
+                    const payload = { action: 'deleteMedicine', id: id };
+                    const response = await fetch(this.WEB_APP_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    
+                    if (result.status === 'success') {
+                        this._deleteLocalState(id);
+                        this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
+                        DOM.updateLastUpdateTime();
+                        return true;
+                    } else {
+                        alert("刪除失敗：" + result.message);
+                        return false;
+                    }
+                } catch (error) {
+                    alert("網路連線錯誤，無法同步至後端！將暫時從本地端刪除。");
+                    this._deleteLocalState(id);
+                    this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false }) + " (本地更新)";
+                    DOM.updateLastUpdateTime();
+                    return true;
+                }
+            },
+            
+            // 新增：從本地快取移除藥品
+            _deleteLocalState(id) {
+                this.medicines = this.medicines.filter(m => m.id !== id);
                 localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
             }
         };
@@ -1390,6 +1445,16 @@
                 DOM.editMedRack.value = rackId || 'Rack-A';
                 DOM.modalTitle.textContent = id ? '編輯藥品資訊' : '新增藥品';
                 
+                // 動態判斷是否顯示刪除按鈕 (有 id 代表編輯，才顯示刪除)
+                const deleteBtn = document.getElementById('deleteMedBtn');
+                if (deleteBtn) {
+                    if (id) {
+                        deleteBtn.classList.remove('hidden');
+                    } else {
+                        deleteBtn.classList.add('hidden');
+                    }
+                }
+
                 DOM.editModal.classList.remove('hidden');
                 setTimeout(() => {
                     DOM.editModal.classList.remove('opacity-0');
@@ -1431,6 +1496,32 @@
                     this.closeEditModal();
                     DOM.renderRacks(); 
                     this.refreshUI();  
+                }
+            },
+
+            // 新增：刪除藥品的控制器邏輯
+            async deleteMedicine() {
+                const id = DOM.editMedId.value.trim();
+                if (!id) return;
+                
+                if (confirm('警告：確定要刪除此藥品嗎？此操作無法復原！')) {
+                    const deleteBtn = document.getElementById('deleteMedBtn');
+                    const originalText = deleteBtn.innerHTML;
+                    deleteBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> 刪除中...';
+                    deleteBtn.disabled = true;
+                    lucide.createIcons();
+
+                    const success = await AppState.deleteFromServer(id);
+                    
+                    deleteBtn.innerHTML = originalText;
+                    deleteBtn.disabled = false;
+                    lucide.createIcons();
+
+                    if (success) {
+                        this.closeEditModal();
+                        DOM.renderRacks(); 
+                        this.refreshUI();  
+                    }
                 }
             },
 
@@ -1522,14 +1613,14 @@
                     <style>
                         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; background: #f8fafc; }
                         .label-card { width: 380px; height: 220px; border: 4px dashed #cbd5e1; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; background: #fff; page-break-inside: avoid; }
-                        .label-no { font-size: 20px; font-weight: bold; color: #64748b; margin-bottom: 12px; letter-spacing: 2px; }
-                        .label-name { font-size: 52px; font-weight: 900; color: #0f172a; margin-bottom: 16px; }
-                        .label-category { font-size: 24px; color: #0284c7; background: #f0f9ff; border: 3px solid #bae6fd; padding: 8px 24px; border-radius: 40px; font-weight: bold; }
+                        /* 增加醒目色彩 */
+                        .label-no { font-size: 20px; font-weight: bold; color: #ef4444; margin-bottom: 12px; letter-spacing: 2px; }
+                        .label-name { font-size: 52px; font-weight: 900; color: #1d4ed8; margin-bottom: 16px; }
+                        .label-category { font-size: 24px; color: #059669; background: #ecfdf5; border: 3px solid #6ee7b7; padding: 8px 24px; border-radius: 40px; font-weight: bold; }
+                        
                         @media print {
-                            body { padding: 0; background: #fff; display: block; }
-                            .label-card { border: 3px solid #000; break-inside: avoid; margin: 0 auto 30px auto; width: 85%; height: 280px; }
-                            .label-category { border: 3px solid #000; color: #000; background: #fff; }
-                            .label-no { color: #000; }
+                            body { padding: 0; background: #fff; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            .label-card { border: 3px solid #cbd5e1; break-inside: avoid; margin: 0 auto 30px auto; width: 85%; height: 280px; }
                         }
                     </style>
                 </head>
@@ -1589,29 +1680,30 @@
                     <style>
                         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; background: #f8fafc; color: #0f172a; }
                         .rack-section { margin-bottom: 40px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-                        .rack-title { font-size: 20px; font-weight: bold; border-bottom: 2px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
-                        .rack-title-badge { background: #0ea5e9; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
+                        
+                        /* 增加醒目色彩 */
+                        .rack-title { font-size: 20px; font-weight: bold; color: #1d4ed8; border-bottom: 2px solid #93c5fd; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
+                        .rack-title-badge { background: #3b82f6; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
                         
                         /* 標籤模式 CSS */
                         .labels-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-                        .med-label { border: 2px dashed #cbd5e1; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; page-break-inside: avoid; background: #fafafa; }
-                        .med-name { font-size: 18px; font-weight: bold; color: #1e293b; margin-bottom: 4px; }
-                        .med-chName { font-size: 14px; color: #475569; font-weight: 500; }
+                        .med-label { border: 2px solid #bfdbfe; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; page-break-inside: avoid; background: #eff6ff; }
+                        .med-name { font-size: 18px; font-weight: bold; color: #1e40af; margin-bottom: 4px; }
+                        .med-chName { font-size: 14px; color: #047857; font-weight: bold; }
                         
                         /* 清單模式 CSS */
-                        .med-table { w-full; border-collapse: collapse; width: 100%; margin-top: 10px; page-break-inside: auto; }
-                        .med-table th, .med-table td { border: 1px solid #cbd5e1; padding: 10px 15px; text-align: left; }
-                        .med-table th { background-color: #f1f5f9; font-weight: bold; color: #475569; }
+                        .med-table { border-collapse: collapse; width: 100%; margin-top: 10px; page-break-inside: auto; }
+                        .med-table th, .med-table td { border: 1px solid #93c5fd; padding: 10px 15px; text-align: left; }
+                        .med-table th { background-color: #dbeafe; font-weight: bold; color: #1e40af; }
                         .med-table tr:nth-child(even) { background-color: #f8fafc; }
                         .med-table tr { page-break-inside: avoid; page-break-after: auto; }
+                        .med-table td:nth-child(1) { color: #ef4444; font-size: 14px; } /* 內部代碼以紅色顯示 */
+                        .med-table td:nth-child(2) { font-weight: bold; color: #1d4ed8; } /* 英文名以藍色顯示 */
+                        .med-table td:nth-child(3) { color: #047857; font-weight: bold; } /* 中文名以深綠色顯示 */
 
                         @media print {
-                            body { padding: 0; background: #fff; }
+                            body { padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                             .rack-section { box-shadow: none; padding: 0; margin-bottom: 30px; }
-                            .med-label { border: 1px solid #000; background: #fff; }
-                            .rack-title { border-bottom: 2px solid #000; }
-                            .rack-title-badge { background: #000; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                            .med-table th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact;}
                         }
                     </style>
                 </head>
@@ -1745,7 +1837,7 @@
                 this.scene.add(ambientLight);
                 
                 // 調整頂光強度至 0.4，避免白紙箱看起來過於灰暗，同時維持柔和度
-                const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
                 dirLight.position.set(10, 20, 10);
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
