@@ -67,8 +67,8 @@
              * (註: Chrome/Edge 原生不支援分開隱藏網址與保留頁碼，此為 W3C 標準語法，Safari/Firefox 適用)
              */
             @page { 
-                margin: 1.5cm; 
-                size: portrait; 
+                margin: 10mm; /* 將邊界設為精準的 10mm (1公分)，確保標籤定位絕對準確 */
+                size: A4 portrait; 
                 @bottom-left {
                     content: ""; /* 隱藏左下角的網址 */
                 }
@@ -83,21 +83,34 @@
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
             
-            /* 標籤列印排版優化：模擬 Word 標籤貼紙，加入固定間距與大小 */
+            /* 標籤列印排版優化：嚴格對齊 3x10 A4 標籤紙 */
             #label-container {
                 display: grid !important;
-                grid-template-columns: repeat(3, 1fr) !important; /* 預設一排 3 張 */
-                gap: 0.5cm 0.5cm !important; /* 每個藥品中間有間隔 */
+                /* 寬度計算: A4寬(210mm) - 左右邊界(20mm) = 190mm。 3欄x60mm + 2間距x5mm = 190mm */
+                grid-template-columns: repeat(3, 60mm) !important; 
+                /* 高度計算: A4高(297mm) - 上下邊界(20mm) = 277mm。 10列x25mm + 9間距x3mm = 277mm */
+                grid-auto-rows: 25mm !important; 
+                gap: 3mm 5mm !important; /* 上下間距 3mm，左右間距 5mm */
+                justify-content: center !important;
+                align-content: start !important;
             }
             .label-box { 
                 page-break-inside: avoid; 
                 break-inside: avoid; 
-                border: 1px solid #000 !important; 
-                height: 3.8cm !important; /* 固定高度以符合一般標籤紙 */
-                padding: 0.4cm !important;
+                border: 1px solid #000 !important; /* 實線框線，如不需列印框線可改為 border: none !important; */
+                width: 60mm !important;
+                height: 25mm !important; /* 嚴格固定高度 25mm */
+                padding: 2mm !important; /* 縮小內距保留文字空間 */
                 display: flex !important;
                 flex-direction: column !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important; /* 絕對防止文字過多撐開版型，破壞 10 排設定 */
+                gap: 2px !important;
             }
+            /* 優化標籤內的文字大小以適應小尺寸，防止溢出 */
+            .label-box .text-sm { font-size: 11px !important; line-height: 1.2 !important; }
+            .label-box .text-xs { font-size: 10px !important; line-height: 1.2 !important; }
+            .label-box .text-\\[9px\\] { font-size: 8px !important; }
         }
 
         /* 順滑進場與 Toast 動畫 */
