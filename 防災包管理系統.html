@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>防災包效期與庫存管理系統</title>
   
-  <!-- === 載入 React 與 Tailwind 等核心套件 === -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- === 載入 React 與 Tailwind 等核心套件 (已鎖定穩定版本) === -->
+  <script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com?version=3.4.3"></script>
   <script>
     tailwind.config = { darkMode: 'class' };
   </script>
@@ -153,7 +153,8 @@
 <body>
   <div id="root"></div>
 
-  <script type="text/babel">
+  <!-- === 加上 data-type="module" 修正 Babel 解析衝突問題 === -->
+  <script type="text/babel" data-type="module">
     const { useState, useEffect, useRef } = React;
     
     // === 預設防災物資字典 (供自動完成使用) ===
