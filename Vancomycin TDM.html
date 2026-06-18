@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vancomycin TDM Calculator</title>
     
-    <!-- React & ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- React & ReactDOM (Locked to 18.2.0) -->
+    <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
     
-    <!-- Babel for JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Babel for JSX (Locked to 7.23.6) -->
+    <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS (Locked to 3.4.3) -->
+    <script src="https://cdn.tailwindcss.com?version=3.4.3"></script>
     
     <!-- Tailwind Config -->
     <script>
@@ -82,7 +82,8 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
+    <!-- 加入 data-type="module" 防止 Babel 新版 import 衝突 -->
+    <script type="text/babel" data-type="module">
         const { useState, useEffect, useCallback, memo } = React;
         
         // --- Inline Icons to avoid UMD dependency issues ---
