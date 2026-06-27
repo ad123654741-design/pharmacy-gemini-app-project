@@ -490,6 +490,7 @@
 
         const handleExport = () => {
              const printWindow = window.open('', '_blank');
+             document.activeElement?.blur();
              printWindow.document.write(`
                 <html>
                   <head>
@@ -551,7 +552,14 @@
 
                         <div style="margin-top: 30px; color: #666; font-size: 12px; text-align: right;">列印時間: ${new Date().toLocaleString()}</div>
                     </div>
-                    <script>setTimeout(() => window.print(), 500);<\/script>
+                    <script>
+                        window.onload = function() {
+                            setTimeout(function() {
+                                window.focus();
+                                window.print();
+                            }, 500);
+                        };
+                    <\/script>
                   </body>
                 </html>
              `);
@@ -655,6 +663,7 @@
     // === 主應用程式 ===
     const App = () => {
       const [mode, setMode] = useState('view');
+      const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(() => sessionStorage.getItem('ecart_admin_logged_in') === 'true');
       const GRID_COLS = 40;
       const GRID_ROWS = 30;
       const DEFAULT_GS_URL = "https://script.google.com/macros/s/AKfycbw9P7K5tSHkAI-KOQKEuEqyIYszLUVfLiUOZDcZSTMZr9k96ME2r_NHETo1RgNSpbQZjA/exec";
@@ -674,21 +683,23 @@
       const [modalConfig, setModalConfig] = useState(null);
       const [isLoading, setIsLoading] = useState(true);
       const [reportMode, setReportMode] = useState('current');
+      const [listSortBy, setListSortBy] = useState('tray'); // 新增排序狀態：'tray' 依藥車 / 'drug' 依藥品
       const [expiryTextSize, setExpiryTextSize] = useState(() => {
         const saved = localStorage.getItem('ecart_expiry_text_size');
         return saved ? parseInt(saved, 10) : 100;
       });
       const [showTextSizeModal, setShowTextSizeModal] = useState(false);
       
-      // 新增：設定模式下的手機版專用「畫格/滾動」切換狀態 (預設電腦版為 true，手機版為 false 以便先滾動尋找位置)
-      const [adminDrawMode, setAdminDrawMode] = useState(window.innerWidth >= 768);
+      // 修正：預設皆開啟畫格模式，並讓所有裝置都能看到切換按鈕，避免大螢幕卡在滑動模式無法繪製
+      const [adminDrawMode, setAdminDrawMode] = useState(true);
 
       // Feature: Paste Mode & Clipboard
       const [clipboard, setClipboard] = useState(null); 
       const [pasteMode, setPasteMode] = useState(false);
       
-      // Feature: Analysis Modal
+      // Feature: Analysis Modal & Order Modal
       const [showAnalysis, setShowAnalysis] = useState(false);
+      const [showTrayOrderModal, setShowTrayOrderModal] = useState(false);
 
       const [trays, setTrays] = useState(() => {
         const saved = localStorage.getItem('ecart_data_cache');
@@ -760,9 +771,24 @@
       useEffect(() => { if (gsUrl) fetchFromSheet(); else setIsLoading(false); }, []);
 
       // ... existing Auth & Helper functions ...
-      const handleAdminAccess = () => { setPasscodeInput(''); setShowPasscodeModal(true); };
+      const handleAdminAccess = () => { 
+          if (isAdminLoggedIn) {
+              setIsAdminLoggedIn(false);
+              sessionStorage.removeItem('ecart_admin_logged_in');
+              if (mode === 'admin') setMode('view');
+          } else {
+              setPasscodeInput(''); 
+              setShowPasscodeModal(true); 
+          }
+      };
       const verifyPasscode = () => {
-        if (passcodeInput === '789') { setMode('admin'); setShowPasscodeModal(false); setSelectedSlot(null); } 
+        if (passcodeInput === '789') { 
+            setIsAdminLoggedIn(true);
+            sessionStorage.setItem('ecart_admin_logged_in', 'true');
+            setMode('admin'); 
+            setShowPasscodeModal(false); 
+            setSelectedSlot(null); 
+        } 
         else { setModalConfig({ title: "錯誤", message: "通行碼錯誤", type: 'error' }); }
       };
 
@@ -954,7 +980,13 @@
             }); 
           }); 
         });
-        return items.sort((a, b) => { if (a.trayName !== b.trayName) return a.trayName.localeCompare(b.trayName); return (a.expiry || '9999').localeCompare(b.expiry || '9999'); });
+        return items.sort((a, b) => { 
+           if (listSortBy === 'drug') {
+               return a.slotName.localeCompare(b.slotName) || a.trayName.localeCompare(b.trayName) || (a.expiry || '9999').localeCompare(b.expiry || '9999');
+           }
+           if (a.trayName !== b.trayName) return a.trayName.localeCompare(b.trayName); 
+           return (a.expiry || '9999').localeCompare(b.expiry || '9999'); 
+        });
       };
       
       const handleExportReport = () => {
@@ -1002,35 +1034,46 @@
             <tbody>`;
         
         if (reportMode === 'current' || reportMode === 'all_data') {
-            const targetTrays = reportMode === 'current' ? [activeTray] : [...trays].sort((a,b) => a.name.localeCompare(b.name));
-            
+            const targetTrays = reportMode === 'current' ? [activeTray] : [...trays];
+            let displaySlots = [];
             targetTrays.forEach(tray => {
-                const sortedSlots = tray.slots ? [...tray.slots].sort((a,b) => a.name.localeCompare(b.name)) : [];
-                sortedSlots.forEach(slot => {
-                    const sortedBatches = getSortedBatches(slot.batches);
-                    const totalQty = getTotalQty(slot.batches);
-                    const requiredQty = slot.requiredQty || 0;
-                    const rowSpan = sortedBatches.length > 0 ? sortedBatches.length : 1;
-                    
-                    const trayNameCell = (reportMode === 'all_data') ? `<td rowspan="${rowSpan}" class="font-bold text-blue-600">${tray.name}</td>` : '';
-                    const nameCell = `<td rowspan="${rowSpan}">${slot.name}</td>`;
-                    const reqCell = `<td rowspan="${rowSpan}" class="text-right">${requiredQty}</td>`;
-                    const isQtyMismatch = totalQty !== requiredQty;
-                    const totalStyle = isQtyMismatch ? 'color: #e11d48;' : 'color: #059669;';
-                    const totalCell = `<td rowspan="${rowSpan}" class="text-right total-col" style="${totalStyle}">${totalQty}</td>`;
-                    
-                    if (!sortedBatches || sortedBatches.length === 0) {
-                        htmlContent += `<tr>${trayNameCell}${nameCell} ${reqCell} ${totalCell}<td class="text-right">0</td> <td>-</td> <td class="text-center">無庫存</td></tr>`;
-                    } else {
-                        sortedBatches.forEach((batch, idx) => {
-                            const s = getStatus(batch.expiry);
-                            const statusClass = s.type === 'expired' ? 'expired' : (s.type === 'warning' ? 'warning' : '');
-                            htmlContent += `<tr>`;
-                            if (idx === 0) htmlContent += trayNameCell + nameCell + reqCell + totalCell;
-                            htmlContent += `<td class="text-right">${batch.qty}</td><td class="${statusClass}">${batch.expiry || '未設定'}</td><td class="text-center ${statusClass}">${s.label}</td></tr>`;
-                        });
-                    }
-                });
+                if (tray.slots) {
+                    tray.slots.forEach(slot => {
+                        displaySlots.push({ tray, slot });
+                    });
+                }
+            });
+
+            if (listSortBy === 'drug') {
+                displaySlots.sort((a, b) => a.slot.name.localeCompare(b.slot.name) || a.tray.name.localeCompare(b.tray.name));
+            } else {
+                displaySlots.sort((a, b) => a.tray.name.localeCompare(b.tray.name) || a.slot.name.localeCompare(b.slot.name));
+            }
+            
+            displaySlots.forEach(({tray, slot}) => {
+                const sortedBatches = getSortedBatches(slot.batches);
+                const totalQty = getTotalQty(slot.batches);
+                const requiredQty = slot.requiredQty || 0;
+                const rowSpan = sortedBatches.length > 0 ? sortedBatches.length : 1;
+                
+                const trayNameCell = (reportMode === 'all_data') ? `<td rowspan="${rowSpan}" class="font-bold text-blue-600">${tray.name}</td>` : '';
+                const nameCell = `<td rowspan="${rowSpan}">${slot.name}</td>`;
+                const reqCell = `<td rowspan="${rowSpan}" class="text-right">${requiredQty}</td>`;
+                const isQtyMismatch = totalQty !== requiredQty;
+                const totalStyle = isQtyMismatch ? 'color: #e11d48;' : 'color: #059669;';
+                const totalCell = `<td rowspan="${rowSpan}" class="text-right total-col" style="${totalStyle}">${totalQty}</td>`;
+                
+                if (!sortedBatches || sortedBatches.length === 0) {
+                    htmlContent += `<tr>${trayNameCell}${nameCell} ${reqCell} ${totalCell}<td class="text-right">0</td> <td>-</td> <td class="text-center">無庫存</td></tr>`;
+                } else {
+                    sortedBatches.forEach((batch, idx) => {
+                        const s = getStatus(batch.expiry);
+                        const statusClass = s.type === 'expired' ? 'expired' : (s.type === 'warning' ? 'warning' : '');
+                        htmlContent += `<tr>`;
+                        if (idx === 0) htmlContent += trayNameCell + nameCell + reqCell + totalCell;
+                        htmlContent += `<td class="text-right">${batch.qty}</td><td class="${statusClass}">${batch.expiry || '未設定'}</td><td class="text-center ${statusClass}">${s.label}</td></tr>`;
+                    });
+                }
             });
         } else { 
             const items = getAllAbnormalItems();
@@ -1051,9 +1094,21 @@
               <span>核對日期: _______________</span>
             </div>
           </div>
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.focus();
+                window.print();
+              }, 500);
+            };
+          <\/script>
         </body></html>`;
         
-        const printWindow = window.open('', '_blank'); if (!printWindow) { alert('請允許彈出式視窗以匯出報表'); return; } printWindow.document.write(htmlContent); printWindow.document.close(); printWindow.focus(); setTimeout(() => { printWindow.print(); }, 500);
+        const printWindow = window.open('', '_blank'); 
+        if (!printWindow) { alert('請允許彈出式視窗以匯出報表'); return; } 
+        document.activeElement?.blur();
+        printWindow.document.write(htmlContent); 
+        printWindow.document.close(); 
       };
 
       // === 郵件處理邏輯 ===
@@ -1247,6 +1302,7 @@
                      {/* Advanced Menu Dropdown */}
                      {showAdvancedMenu && (
                         <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+                             <button onClick={() => { setShowTrayOrderModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Layers /> 管理藥車順序</button>
                              <button onClick={() => { setShowMailModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Mail /> 郵件通知設定</button>
                              <button onClick={() => { setShowTextSizeModal(true); setShowAdvancedMenu(false); }} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Settings /> 調整效期文字大小</button>
                              <button onClick={handleExportJSON} className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-slate-50 border-b border-gray-100 flex items-center gap-2"><Icons.Download /> 資料備份 (匯出)</button>
@@ -1262,8 +1318,14 @@
                <div className="flex bg-black/40 rounded p-0.5 border border-slate-700 gap-0.5">
                 <button onClick={()=>{setMode('view');setSelectedSlot(null);}} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='view'?'bg-blue-600 text-white':'text-slate-400 hover:text-white'}`} title="盤點"><Icons.Layout /> <span className="hidden md:inline">盤點</span></button>
                 <button onClick={()=>{setMode('list');setSelectedSlot(null);}} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='list'?'bg-purple-600 text-white':'text-slate-400 hover:text-white'}`} title="清單"><Icons.List /> <span className="hidden md:inline">清單</span></button>
-                {/* 移除最外面多餘的統計選單 */}
-                <button onClick={handleAdminAccess} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='admin'?'bg-amber-600 text-white':'text-slate-400 hover:text-white'}`} title="設定"><Icons.Settings /> <span className="hidden md:inline">設定</span></button>
+                
+                {isAdminLoggedIn && (
+                   <button onClick={()=>{setMode('admin');setSelectedSlot(null);}} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${mode==='admin'?'bg-amber-600 text-white':'text-slate-400 hover:text-white'}`} title="編輯模式"><Icons.Edit /> <span className="hidden md:inline">編輯</span></button>
+                )}
+
+                <button onClick={handleAdminAccess} className={`px-2 md:px-3 py-1.5 rounded text-xs font-bold flex items-center gap-1 transition ${isAdminLoggedIn ? 'bg-rose-600 text-white' : 'text-slate-400 hover:text-white'}`} title={isAdminLoggedIn ? "登出" : "設定"}>
+                  {isAdminLoggedIn ? <Icons.Lock /> : <Icons.Settings />} <span className="hidden md:inline">{isAdminLoggedIn ? "登出" : "設定"}</span>
+                </button>
               </div>
             </div>
 
@@ -1299,9 +1361,9 @@
           {/* Workspace */}
           <div className="flex-1 overflow-auto bg-slate-950 relative cursor-grab active:cursor-grabbing p-2 md:p-4 pb-24 md:pb-4">
             
-            {/* 手機板設定模式專用：畫格與滾動切換懸浮按鈕 */}
+            {/* 設定模式專用：畫格與滾動切換懸浮按鈕 (移除 md:hidden 讓電腦版也能隨時切換) */}
             {mode === 'admin' && (
-               <div className="fixed bottom-6 right-4 z-50 md:hidden">
+               <div className="fixed bottom-6 right-4 z-50">
                   <button
                     onClick={() => setAdminDrawMode(!adminDrawMode)}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.6)] font-bold text-white transition-all border-2 ${
@@ -1328,6 +1390,14 @@
                         <button onClick={() => setReportMode('current')} className={`px-3 py-1 text-xs font-bold rounded transition-colors ${reportMode === 'current' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}>當前藥車</button>
                         <button onClick={() => setReportMode('all_data')} className={`px-3 py-1 text-xs font-bold rounded transition-colors ${reportMode === 'all_data' ? 'bg-emerald-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}>全院資料</button>
                         <button onClick={() => setReportMode('all_abnormal')} className={`px-3 py-1 text-xs font-bold rounded transition-colors flex items-center gap-1 ${reportMode === 'all_abnormal' ? 'bg-rose-600 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}><Icons.AlertTriangle /> 全院異常</button>
+                        </div>
+                    </div>
+                    {/* 新增：排序選項 */}
+                    <div className="flex items-center gap-2 border-l border-slate-700 pl-4 ml-2">
+                        <span className="text-slate-300 font-bold text-sm hidden md:inline">排序:</span>
+                        <div className="flex bg-slate-700 rounded-lg p-1 gap-1">
+                            <button onClick={() => setListSortBy('tray')} className={`px-3 py-1 text-xs font-bold rounded transition-colors ${listSortBy === 'tray' ? 'bg-slate-500 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}>依藥車</button>
+                            <button onClick={() => setListSortBy('drug')} className={`px-3 py-1 text-xs font-bold rounded transition-colors ${listSortBy === 'drug' ? 'bg-slate-500 text-white' : 'text-slate-300 hover:text-white hover:bg-slate-600'}`}>依藥品</button>
                         </div>
                     </div>
                   </div>
@@ -1368,16 +1438,27 @@
                     </thead>
                     <tbody className="">
                       {reportMode === 'current' || reportMode === 'all_data' ? (
-                        // ... logic for current tray AND all data (now grouped) ...
                         (() => {
-                            const targetTrays = reportMode === 'current' ? [activeTray] : [...trays].sort((a,b) => a.name.localeCompare(b.name));
+                            const targetTrays = reportMode === 'current' ? [activeTray] : [...trays];
+                            let displaySlots = [];
+                            targetTrays.forEach(tray => {
+                                if (tray.slots) {
+                                    tray.slots.forEach(slot => {
+                                        displaySlots.push({ tray, slot });
+                                    });
+                                }
+                            });
                             
-                            return targetTrays.map(tray => {
-                                const sortedSlots = tray.slots ? [...tray.slots].sort((a,b) => a.name.localeCompare(b.name)) : [];
-                                
-                                if (reportMode === 'current' && sortedSlots.length === 0) return null; // Handled by empty state below
+                            // 套用排序邏輯
+                            if (listSortBy === 'drug') {
+                                displaySlots.sort((a, b) => a.slot.name.localeCompare(b.slot.name) || a.tray.name.localeCompare(b.tray.name));
+                            } else {
+                                displaySlots.sort((a, b) => a.tray.name.localeCompare(b.tray.name) || a.slot.name.localeCompare(b.slot.name));
+                            }
+                            
+                            if (reportMode === 'current' && displaySlots.length === 0) return null;
 
-                                return sortedSlots.map(slot => {
+                            return displaySlots.map(({tray, slot}) => {
                                   const sortedBatches = getSortedBatches(slot.batches);
                                   const totalQty = getTotalQty(slot.batches);
                                   const requiredQty = slot.requiredQty || 0;
@@ -1419,11 +1500,10 @@
                                       </tr>
                                     );
                                   });
-                                });
                             });
                         })()
                       ) : (
-                        // === All Abnormal Logic (Keep as list for now as likely intended for quick scan) ===
+                        // === All Abnormal Logic ===
                         (() => {
                            const items = getAllAbnormalItems();
                            if (items.length === 0) {
@@ -1524,6 +1604,7 @@
 
           {/* System Message Modal */}
           <SystemModal config={modalConfig} onClose={() => setModalConfig(null)} />
+          
           {/* Analysis Modal */}
           {showAnalysis && (
             <AnalysisModal 
@@ -1533,6 +1614,59 @@
                 reportMode={reportMode}
             />
           )}
+
+          {/* Tray Order Management Modal */}
+          {showTrayOrderModal && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+                <div className="px-5 py-4 bg-slate-100 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="font-bold text-lg text-slate-800 flex items-center gap-2"><Icons.Layers /> 管理藥車順序</h3>
+                  <button onClick={() => setShowTrayOrderModal(false)} className="text-gray-400 hover:text-gray-600"><Icons.XCircle /></button>
+                </div>
+                <div className="p-4 overflow-y-auto space-y-2">
+                  {trays.map((tray, index) => (
+                    <div key={tray.id} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg transition-colors hover:bg-gray-100">
+                        <span className="font-bold text-gray-700 truncate">{tray.name}</span>
+                        <div className="flex gap-1">
+                            <button 
+                                onClick={() => {
+                                    if (index > 0) {
+                                        const newTrays = [...trays];
+                                        [newTrays[index - 1], newTrays[index]] = [newTrays[index], newTrays[index - 1]];
+                                        saveToSheet(newTrays);
+                                    }
+                                }}
+                                disabled={index === 0}
+                                className={`p-1.5 rounded transition-colors ${index === 0 ? 'text-gray-300' : 'text-blue-600 hover:bg-blue-200'}`}
+                                title="上移"
+                            >
+                                ▲
+                            </button>
+                            <button 
+                                onClick={() => {
+                                    if (index < trays.length - 1) {
+                                        const newTrays = [...trays];
+                                        [newTrays[index + 1], newTrays[index]] = [newTrays[index], newTrays[index + 1]];
+                                        saveToSheet(newTrays);
+                                    }
+                                }}
+                                disabled={index === trays.length - 1}
+                                className={`p-1.5 rounded transition-colors ${index === trays.length - 1 ? 'text-gray-300' : 'text-blue-600 hover:bg-blue-200'}`}
+                                title="下移"
+                            >
+                                ▼
+                            </button>
+                        </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-4 border-t bg-gray-50 text-center text-xs text-gray-500">
+                    藥車排序變更將會立即儲存。
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Passcode Modal */}
           {showPasscodeModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
