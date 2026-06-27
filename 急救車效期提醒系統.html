@@ -1170,17 +1170,49 @@
                slot.batches.forEach(batch => {
                  // 修正關鍵：如果 batch 本身是 null/undefined，直接跳過，防止存取屬性時崩潰
                  if (!batch) return;
-                 // 檢查是否被設定為忽略通知
-                 if (batch.ignoreAlert) return;
 
                  const s = getStatus(batch.expiry);
+                 
+                 // 檢查是否為強制提醒狀態 (剩餘 <= 3 天 或 已過期)
+                 let isCritical = false;
+                 const strExpiry = String(batch.expiry || '').trim();
+                 if (strExpiry) {
+                     const parts = strExpiry.split('-');
+                     if (parts.length >= 2) {
+                         const expY = parseInt(parts[0], 10);
+                         const expM = parseInt(parts[1], 10);
+                         const expD = parts[2] ? parseInt(parts[2], 10) : null;
+                         const today = new Date();
+                         today.setHours(0, 0, 0, 0);
+                         
+                         let expiryDate;
+                         if (expD !== null && !isNaN(expD)) {
+                             expiryDate = new Date(expY, expM - 1, expD);
+                         } else {
+                             // 若只有 YYYY-MM，以該月最後一天做計算
+                             expiryDate = new Date(expY, expM, 0); 
+                         }
+                         
+                         const diffTime = expiryDate.getTime() - today.getTime();
+                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                         
+                         if (diffDays <= 3) {
+                             isCritical = true;
+                         }
+                     }
+                 }
+
+                 // 如果被設定為忽略通知，且不是強制提醒狀態 (<=3天)，才跳過
+                 if (batch.ignoreAlert && !isCritical) return;
+
                  if (s.type === 'warning' || s.type === 'expired') {
                    alertItems.push({
                      trayName: tray.name || '未命名藥車',
                      name: slot.name || '未命名藥品',
                      expiry: batch.expiry || '未知效期',
                      qty: batch.qty || 0,
-                     status: s.label
+                     // 若是因強制提醒拉出的忽略項目，加上標示
+                     status: (batch.ignoreAlert && isCritical) ? `${s.label}(剩餘≤3天強制提醒)` : s.label
                    });
                  }
                });
