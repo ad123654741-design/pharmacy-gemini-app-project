@@ -511,14 +511,17 @@
 
                             // 1. 過濾掉最前方的日期 (例: 115/05/06, 1150506, 115-05-06)
                             str = str.replace(/^\d{2,3}[/\\-]?\d{2}[/\\-]?\d{2}\s*/, '');
+                            
+                            // 新增：過濾掉最前方的括號數字雜訊 (例: (48), (24))
+                            str = str.replace(/^\(\d+\)\s*/, '');
 
                             let brandName = str;
                             let genericName = '';
                             let usage = '';
 
                             // 2. 擷取後方的用法用量 (例: 1TABBID -> 1 TAB BID)
-                            // 支援您提供的劑量與單位: TAB, PILL, AMP, BOT, CAP, ML, VIAL, U, TUB, TUBE, DROPS, DROP, EA, GM, PUFF, PAK, PKG 等
-                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PKG|SYRI)\s*([A-Z0-9&]+)?$/i);
+                            // 支援您提供的劑量與單位: TAB, PILL, AMP, BOT, CAP, ML, VIAL, U, TUB, TUBE, DROPS, DROP, EA, GM, PUFF, PAK, PKG 等，新增 PACK
+                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PACK|PKG|SYRI)\s*([A-Z0-9&]+)?$/i);
                             
                             if (usageMatch) {
                                 brandName = usageMatch[1].trim(); // 商品名
