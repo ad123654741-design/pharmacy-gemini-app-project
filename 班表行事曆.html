@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="班表行事曆｜Google Calendar 風格的輪班、休假、補休與四週彈性工時檢核工具">
+<title>班表行事曆｜Shift Calendar</title>
+<style>
+/* =========================================================
+   01. DESIGN TOKENS / 全站設計變數
+   ========================================================= */
+:root{
+  --bg:#f5f7fb; --surface:#fff; --surface-2:#f8fafc; --line:#e5e7eb;
+  --text:#172033; --muted:#667085; --primary:#4f46e5; --primary-2:#eef2ff;
+  --success:#16a34a; --success-bg:#ecfdf3; --warning:#d97706; --warning-bg:#fff7ed;
+  --danger:#dc2626; --danger-bg:#fef2f2; --info:#0284c7; --info-bg:#eff6ff;
+  --radius:16px; --radius-sm:11px; --shadow:0 8px 30px rgba(15,23,42,.07);
+  --shadow-sm:0 2px 10px rgba(15,23,42,.05);
+  --header-h:68px; --sidebar-w:190px; --right-w:300px;
+  --font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:var(--font);color:var(--text);background:var(--bg)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid rgba(79,70,229,.18);outline-offset:2px}
+.app{min-height:100vh;display:grid;grid-template-rows:var(--header-h) 1fr}
+.topbar{height:var(--header-h);display:flex;align-items:center;gap:14px;padding:0 20px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;font-weight:800}
+.logo{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#6366f1,#4338ca);display:grid;place-items:center;color:#fff;box-shadow:0 5px 15px rgba(79,70,229,.25)}
+.brand small{display:block;color:var(--muted);font-size:11px;font-weight:600}
+.icon-btn,.ghost-btn,.primary-btn{border:0;background:transparent;border-radius:10px;min-height:38px;padding:0 11px;color:var(--text)}
+.icon-btn:hover,.ghost-btn:hover{background:#f1f5f9}
+.primary-btn{background:var(--primary);color:#fff;font-weight:700;box-shadow:0 5px 14px rgba(79,70,229,.2)}
+.primary-btn:hover{filter:brightness(.96)}
+.top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.mobile-only{display:none}
+.workspace{display:grid;grid-template-columns:var(--sidebar-w) minmax(0,1fr) var(--right-w);min-height:calc(100vh - var(--header-h))}
+.sidebar,.insights{padding:16px;background:#fff}
+.sidebar{border-right:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.insights{border-left:1px solid var(--line)}
+.section-title{font-size:12px;font-weight:800;letter-spacing:.04em;color:#98a2b3;margin:10px 8px}
+.main{min-width:0;padding:16px;display:flex;flex-direction:column;gap:12px}
+.calendar-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:calc(100vh - 102px)}
+.calendar-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.calendar-title{font-size:20px;font-weight:800;min-width:170px}
+.nav-group{display:flex;align-items:center;gap:4px;padding:3px;background:#f8fafc;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-sm)}
+.nav-group button{border:0;background:transparent;width:36px;height:36px;border-radius:9px;font-size:17px;font-weight:700;color:#475467;white-space:nowrap}
+.nav-group button:hover{background:#eef2ff;color:var(--primary)}
+.nav-group .ghost-btn{width:auto;min-width:48px;padding:0 10px;font-size:12px;font-weight:800;white-space:nowrap}
+.view-badge{font-size:11px;font-weight:800;background:#f1f5f9;color:#475467;border-radius:999px;padding:6px 9px}.view-switch{display:flex;align-items:center;gap:3px;padding:3px;background:#f1f5f9;border:1px solid var(--line);border-radius:11px}.view-mode-btn{border:0;background:transparent;color:#667085;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:800;white-space:nowrap}.view-mode-btn:hover{background:#e8edff;color:var(--primary)}.view-mode-btn.active{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm)}.cycle-range{margin-left:auto;font-size:12px;font-weight:800;color:#475467;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:7px 11px;white-space:nowrap}
+.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));flex:1;min-height:0}.calendar-grid.period-view .day-cell{min-height:118px}.calendar-grid.period-view .day-number{color:#475467}.calendar-grid.period-view .outside-period{background:#f8fafc;color:#98a2b3}.calendar-grid.period-view .outside-period .event{opacity:.72}.mobile-agenda.period-view .outside-period{opacity:.65}
+.weekday{height:34px;display:grid;place-items:center;border-bottom:1px solid var(--line);font-size:11px;font-weight:800;color:#98a2b3;background:#fcfcfd}
+.day-cell{min-width:0;min-height:100px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:7px;position:relative;cursor:pointer;background:#fff;transition:background .12s;touch-action:none;user-select:none;-webkit-user-select:none}
+.day-cell:nth-child(7n){border-right:0}
+.day-cell:hover{background:#fafbff}.day-cell.range-selected{background:#eef2ff;box-shadow:inset 0 0 0 2px rgba(79,70,229,.28)}.day-cell.range-anchor{box-shadow:inset 0 0 0 2px var(--primary);background:#eef2ff}.selection-hint{font-size:11px;color:var(--muted);background:#f8fafc;border:1px dashed #d9dee8;border-radius:10px;padding:8px 10px;line-height:1.45}
+.day-cell.other-month{background:#fafafa;color:#b7bec9}
+.day-number{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:5px}
+.today-ring{background:var(--primary);color:#fff;border-radius:50%;width:25px;height:25px;display:grid;place-items:center}
+.events{display:grid;gap:4px}
+.event{border-radius:7px;padding:4px 6px;font-size:11px;line-height:1.25;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.event-sub{font-weight:600;opacity:.78;font-size:10px}
+.empty-note{color:#c3c9d3;font-size:10px;margin-top:7px}
+.event-work{background:#eef2ff;color:#4338ca}.event-night{background:#ede9fe;color:#6d28d9}
+.event-off{background:#f1f5f9;color:#475467}.event-rest{background:#ecfdf3;color:#15803d}
+.event-leave{background:#fff7ed;color:#c2410c}.event-holiday{background:#eff6ff;color:#0369a1}
+.event-overtime{background:#fef2f2;color:#b91c1c}.event-comp{background:#f0fdf4;color:#166534}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px}
+.card h3{margin:0 0 11px;font-size:14px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.metric{background:var(--surface-2);border-radius:12px;padding:11px}
+.metric .label{font-size:10px;color:var(--muted);font-weight:700}.metric .value{font-size:20px;font-weight:850;margin-top:3px}
+.metric.good .value{color:var(--success)}.metric.warn .value{color:var(--warning)}.metric.bad .value{color:var(--danger)}
+.progress{height:7px;background:#edf0f4;border-radius:999px;overflow:hidden;margin-top:7px}.progress i{display:block;height:100%;background:var(--primary);border-radius:999px}
+.status{display:flex;align-items:flex-start;gap:9px;padding:10px;border-radius:12px;font-size:12px;line-height:1.5;margin-top:10px}
+.status.ok{background:var(--success-bg);color:#166534}.status.warn{background:var(--warning-bg);color:#9a3412}.status.bad{background:var(--danger-bg);color:#991b1b}.status.info{background:var(--info-bg);color:#075985}
+.status-icon{font-weight:900;flex:none}
+.small{font-size:11px;color:var(--muted);line-height:1.5}
+.divider{height:1px;background:var(--line);margin:12px 0}
+.balance-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f2f5;font-size:12px}.balance-row:last-child{border-bottom:0}
+.balance-value{font-weight:850}
+.modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.4);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal-backdrop.show{display:flex}
+.modal{width:min(560px,100%);max-height:min(760px,92vh);overflow:auto;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(15,23,42,.22);padding:20px}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.modal h2{margin:0;font-size:19px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;font-weight:800;color:#475467}.field input,.field select{width:100%;height:40px;border:1px solid #d0d5dd;border-radius:10px;padding:0 10px;background:#fff;color:var(--text)}
+.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.tabs{display:flex;background:#f1f5f9;border-radius:11px;padding:3px;gap:3px}.tab{border:0;background:transparent;padding:7px 10px;border-radius:8px;font-size:11px;font-weight:750;color:var(--muted)}.tab.active{background:#fff;color:var(--text);box-shadow:var(--shadow-sm)}
+.audit-list{display:grid;gap:7px}.audit-item{display:flex;gap:9px;padding:9px;border-radius:11px;background:#f8fafc;font-size:11px;line-height:1.45}.audit-item b{display:block;font-size:12px}.audit-ok{color:#166534}.audit-bad{color:#991b1b}.audit-warn{color:#9a3412}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#111827;color:#fff;padding:10px 14px;border-radius:999px;font-size:12px;z-index:80;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+.mobile-agenda{display:none}.mobile-agenda.is-selecting{touch-action:none}.agenda-row.range-selected{background:#eef2ff;border-color:rgba(79,70,229,.28);box-shadow:inset 0 0 0 1.5px rgba(79,70,229,.22)}
+.calendar-grid.is-selecting .day-cell,.mobile-agenda.is-selecting .agenda-row{cursor:grabbing}
+.help{font-size:11px;color:var(--muted);background:#f8fafc;padding:10px;border-radius:10px;line-height:1.55}
+@media(max-width:1150px){
+  :root{--sidebar-w:210px;--right-w:260px}
+  .brand{min-width:0}.day-cell{min-height:92px}
+}
+@media(max-width:900px){
+  :root{--right-w:0px}.insights{display:none}
+}
+@media(max-width:700px){
+  :root{--header-h:58px}
+  .topbar{padding:0 10px}.brand{min-width:0}.brand span:last-child{display:none}.logo{width:34px;height:34px}
+  .top-actions .hide-mobile{display:none}.mobile-only{display:block}
+  .workspace{display:block}.sidebar{display:none}.main{padding:9px;gap:9px}
+  .calendar-card{min-height:0;border-radius:14px}.calendar-head{padding:10px}.calendar-title{font-size:17px;min-width:auto;flex:1}
+  .calendar-grid{display:none}.mobile-agenda{display:grid;padding:8px;gap:7px;max-height:calc(100vh - 130px);overflow:auto}
+  .agenda-row{display:grid;grid-template-columns:46px 1fr;gap:10px;align-items:stretch;padding:8px;border-radius:11px;border:1px solid #eef0f3;background:#fff}
+  .agenda-date{text-align:center;border-right:1px solid var(--line);padding-right:8px}.agenda-date b{font-size:18px;display:block}.agenda-date span{font-size:10px;color:var(--muted)}
+  .agenda-events{display:grid;gap:4px}.agenda-empty{font-size:11px;color:#a0a7b3;align-self:center}
+  .day-cell{min-height:auto}.top-actions{gap:5px}.top-actions .primary-btn{font-size:12px;padding:0 9px}.top-actions .overtime-query-btn{font-size:0;width:38px;padding:0}.top-actions .overtime-query-btn::before{content:"⌕";font-size:18px}.calendar-head{position:sticky;top:0;z-index:3;background:#fff}.selection-hint{margin:0 2px}.mobile-agenda{touch-action:pan-y}.agenda-row{touch-action:none}
+}
+@media(max-width:420px){
+  .calendar-head{gap:6px}.view-badge{display:none}.nav-group button{width:33px}
+  .calendar-title{font-size:16px}.modal{padding:15px}.topbar .nav-group button{min-height:34px}.top-actions .primary-btn{min-height:36px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- =====================================================
+       02. TOP BAR / 頂部工具列
+       ===================================================== -->
+  <header class="topbar">
+    <button class="icon-btn mobile-only" id="mobileToday" aria-label="回到今天">⌂</button>
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 2v4M16 2v4M3 9h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 13h3M8 17h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </div>
+      <div>班表行事曆<small>Shift Calendar · Local Storage</small></div>
+    </div>
+    <div class="nav-group">
+      <button id="prevMonth" aria-label="上一個月">‹</button>
+      <button id="todayBtn" class="ghost-btn hide-mobile">今天</button>
+      <button id="nextMonth" aria-label="下一個月">›</button>
+    </div>
+    <div id="monthTitle" class="calendar-title"></div>
+    <div class="view-switch" role="group" aria-label="檢視模式"><button type="button" class="view-mode-btn active" id="monthViewBtn">月檢視</button><button type="button" class="view-mode-btn" id="periodViewBtn">週期檢視</button></div>
+    <div class="top-actions">
+      <button class="ghost-btn overtime-query-btn" id="overtimeQueryBtn">⌕ 加班紀錄</button>
+      <button class="ghost-btn hide-mobile" id="settingsBtn">⚙ 設定</button>
+      <button class="primary-btn" id="addBtn">＋ 新增班次</button>
+    </div>
+  </header>
+
+  <!-- =====================================================
+       03. MAIN LAYOUT / 三區主版面
+       ===================================================== -->
+  <div class="workspace">
+    <!-- 左側：快速導覽、資料工具（已移除班別圖例） -->
+    <aside class="sidebar">
+      <div class="section-title">快速操作</div>
+      <div class="selection-hint">在大行事曆上按住滑鼠／觸控拖曳，可複數選取日期並一次套用相同班別。</div>
+      <div class="section-title">資料</div>
+      <button class="ghost-btn" style="width:100%;text-align:left" id="overtimeQueryBtnSide">⌕ 查詢加班紀錄</button>
+      <button class="ghost-btn" style="width:100%;text-align:left" id="leaveQueryBtnSide">⌕ 查詢特休紀錄</button>
+      <button class="ghost-btn" style="width:100%;text-align:left" id="compQueryBtnSide">⌕ 查詢補休紀錄</button>
+       <button class="ghost-btn" style="width:100%;text-align:left" id="compSettlementQueryBtnSide">⌕ 查詢結清補休</button>
+       <button class="ghost-btn" style="width:100%;text-align:left" id="compSettlementBtnSide">⇩ 結清特定年度補休</button>
+      <button class="ghost-btn" style="width:100%;text-align:left" id="exportBtn">⇩ 匯出 JSON 備份</button>
+      <button class="ghost-btn" style="width:100%;text-align:left" id="importBtn">⇧ 匯入 JSON 備份</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+      <button class="ghost-btn" style="width:100%;text-align:left;color:#b42318" id="resetBtn">↺ 清除所有資料</button>
+    </aside>
+
+    <!-- 中央：Google Calendar 風格月曆 -->
+    <main class="main">
+      <section class="calendar-card">
+        <div class="calendar-head">
+          <div id="desktopMonthTitle" class="calendar-title"></div>
+          <div class="cycle-range" id="cycleRange"></div>
+        </div>
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="mobile-agenda" id="mobileAgenda"></div>
+      </section>
+    </main>
+
+    <!-- 右側：休假餘額＋法規檢核 -->
+    <aside class="insights">
+      <div class="card">
+        <h3>本年度休假餘額</h3>
+        <div id="balancePanel"></div>
+      </div>
+      <div class="card">
+        <h3>四週工時健檢</h3>
+        <div id="auditPanel"></div>
+      </div>
+      <div class="card">
+        <h3>目前週期</h3>
+        <div id="periodPanel"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- =======================================================
+     04. EVENT EDITOR / 班次編輯視窗
+     ======================================================= -->
+<div class="modal-backdrop" id="eventModal" role="dialog" aria-modal="true" aria-labelledby="eventTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="eventTitle">新增班次</h2><button class="icon-btn" data-close="eventModal">✕</button></div>
+    <form id="eventForm">
+      <div class="form-grid">
+        <div class="field"><label for="eventDate">日期</label><input id="eventDate" type="date" required></div>
+        <div class="field"><label for="eventType">班別／狀態</label><select id="eventType" required></select></div>
+        <div class="field"><label for="eventStart">開始時間</label><input id="eventStart" type="time"></div>
+        <div class="field"><label for="eventEnd">結束時間</label><input id="eventEnd" type="time"></div>
+        <div class="field"><label for="eventHours">正常工時（小時）</label><input id="eventHours" type="number" min="0" max="10" step="0.5" value="8"></div>
+        <div class="field"><label for="eventOvertime">加班／補休新增（時:分）</label><input id="eventOvertime" type="text" inputmode="numeric" placeholder="例如 2:20" value="0:00"></div>
+        <div class="field full"><label for="eventLeave">消耗休假時數（依假別自動計算）</label><input id="eventLeave" type="text" value="0" readonly aria-readonly="true"></div>
+        <div class="field full"><label for="eventNote">備註</label><input id="eventNote" type="text" maxlength="80" placeholder="例如：夜班、特休、臨時調班…"></div>
+      </div>
+      <div class="help" style="margin-top:12px">
+        「正常工時」用於四週工時檢核；「加班／補休新增」會增加補休餘額；「使用休假／補休」會扣除對應餘額；補休精確至分鐘，特休維持以小時為單位。
+        休息日加班與平日延長工時的補休，依法以實際工作時數計算；本工具不會把加班費加成誤算成補休時數。
+      </div>
+      <div class="form-actions">
+        <button type="button" class="ghost-btn" data-close="eventModal">取消</button>
+        <button type="button" class="ghost-btn" id="deleteEventBtn" style="color:#b42318;display:none">刪除</button>
+        <button class="primary-btn" type="submit">儲存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =======================================================
+     05. BULK EVENT EDITOR / 多日班次設定
+     ======================================================= -->
+<div class="modal-backdrop" id="bulkModal" role="dialog" aria-modal="true" aria-labelledby="bulkTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="bulkTitle">多日設定班次</h2><button class="icon-btn" data-close="bulkModal">✕</button></div>
+    <form id="bulkForm">
+      <div class="help" id="bulkSelectionSummary" style="margin-bottom:12px"></div>
+      <div class="form-grid">
+        <div class="field full"><label for="bulkType">班別／狀態</label><select id="bulkType" required></select></div>
+        <div class="field"><label for="bulkStart">開始時間</label><input id="bulkStart" type="time"></div>
+        <div class="field"><label for="bulkEnd">結束時間</label><input id="bulkEnd" type="time"></div>
+        <div class="field"><label for="bulkHours">正常工時（小時）</label><input id="bulkHours" type="number" min="0" max="10" step="0.5" value="8"></div>
+        <div class="field"><label for="bulkOvertime">加班／補休新增（時:分）</label><input id="bulkOvertime" type="text" inputmode="numeric" placeholder="例如 2:20" value="0:00"></div>
+        <div class="field full"><label for="bulkNote">備註</label><input id="bulkNote" type="text" maxlength="80" placeholder="套用至所有選取日期"></div>
+      </div>
+      <div class="help" style="margin-top:12px">套用多日班次時，每一天會建立／覆蓋該日期原有班次；不會影響未選取日期。</div>
+      <div class="form-actions"><button type="button" class="ghost-btn" data-close="bulkModal">取消</button><button class="primary-btn" type="submit">套用至選取日期</button></div>
+    </form>
+  </div>
+</div>
+
+<!-- =======================================================
+     06. OVERTIME QUERY / 加班紀錄查詢
+     ======================================================= -->
+<div class="modal-backdrop" id="overtimeModal" role="dialog" aria-modal="true" aria-labelledby="overtimeTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="overtimeTitle">加班紀錄</h2><button class="icon-btn" data-close="overtimeModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="overtimeFrom">起始日期</label><input id="overtimeFrom" type="date"></div>
+      <div class="field"><label for="overtimeTo">結束日期</label><input id="overtimeTo" type="date"></div>
+      <div class="field full"><label for="overtimeSearch">關鍵字</label><input id="overtimeSearch" type="search" placeholder="搜尋班別、備註或日期"></div>
+    </div>
+    <div id="overtimeSummary" class="status info" style="margin-top:12px"></div>
+    <div id="overtimeList" class="audit-list" style="margin-top:10px;max-height:52vh;overflow:auto"></div>
+  </div>
+</div>
+
+<!-- =======================================================
+     07. SETTINGS / 設定視窗
+     ======================================================= -->
+<div class="modal-backdrop" id="leaveQueryModal" role="dialog" aria-modal="true" aria-labelledby="leaveQueryTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="leaveQueryTitle">特休紀錄</h2><button class="icon-btn" data-close="leaveQueryModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="leaveQueryFrom">起始日期</label><input id="leaveQueryFrom" type="date"></div>
+      <div class="field"><label for="leaveQueryTo">結束日期</label><input id="leaveQueryTo" type="date"></div>
+      <div class="field full"><label for="leaveQuerySearch">關鍵字</label><input id="leaveQuerySearch" type="search" placeholder="搜尋特休日期或備註"></div>
+    </div>
+    <div id="leaveQuerySummary" class="status info" style="margin-top:12px"></div>
+    <div id="leaveQueryList" class="audit-list" style="margin-top:10px;max-height:52vh;overflow:auto"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="compQueryModal" role="dialog" aria-modal="true" aria-labelledby="compQueryTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="compQueryTitle">補休紀錄</h2><button class="icon-btn" data-close="compQueryModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="compQueryFrom">起始日期</label><input id="compQueryFrom" type="date"></div>
+      <div class="field"><label for="compQueryTo">結束日期</label><input id="compQueryTo" type="date"></div>
+      <div class="field full"><label for="compQuerySearch">關鍵字</label><input id="compQuerySearch" type="search" placeholder="搜尋補休日期或備註"></div>
+    </div>
+    <div id="compQuerySummary" class="status info" style="margin-top:12px"></div>
+    <div id="compQueryList" class="audit-list" style="margin-top:10px;max-height:52vh;overflow:auto"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="compSettlementModal" role="dialog" aria-modal="true" aria-labelledby="compSettlementTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="compSettlementTitle">結清特定年度補休</h2><button class="icon-btn" data-close="compSettlementModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="compSettlementYear">結清年度</label><input id="compSettlementYear" type="number" min="2000" max="2100" step="1"></div>
+      <div class="field"><label>該年度目前剩餘可結清補休</label><div id="compSettlementAmount" class="status info" style="min-height:40px;display:flex;align-items:center"></div></div>
+    </div>
+    <div id="compSettlementStatus" class="help" style="margin-top:12px"></div>
+    <div class="form-actions"><button type="button" class="ghost-btn" data-close="compSettlementModal">取消</button><button type="button" class="primary-btn" id="confirmCompSettlementBtn">結清並歸零</button></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="compSettlementQueryModal" role="dialog" aria-modal="true" aria-labelledby="compSettlementQueryTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="compSettlementQueryTitle">結清補休紀錄</h2><button class="icon-btn" data-close="compSettlementQueryModal">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label for="compSettlementQueryFrom">起始年度</label><input id="compSettlementQueryFrom" type="number" min="2000" max="2100"></div>
+      <div class="field"><label for="compSettlementQueryTo">結束年度</label><input id="compSettlementQueryTo" type="number" min="2000" max="2100"></div>
+      <div class="field full"><label for="compSettlementQuerySearch">關鍵字</label><input id="compSettlementQuerySearch" type="search" placeholder="搜尋年度或結清時數"></div>
+    </div>
+    <div id="compSettlementQuerySummary" class="status info" style="margin-top:12px"></div>
+    <div id="compSettlementQueryList" class="audit-list" style="margin-top:10px;max-height:52vh;overflow:auto"></div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-head"><h2>班表與工時設定</h2><button class="icon-btn" data-close="settingsModal">✕</button></div>
+    <form id="settingsForm">
+      <div class="form-grid">
+        <div class="field"><label for="annualLeave">本年度特休額度（小時）</label><input id="annualLeave" type="number" min="0" step="0.5"></div>
+        <div class="field"><label for="reservedLeave">保留假累積餘額（小時）</label><input id="reservedLeave" type="number" min="0" step="0.5"></div>
+        <div class="field"><label for="compLeave">補休目前餘額（時:分）</label><input id="compLeave" type="text" inputmode="numeric" placeholder="例如 22:20"></div>
+        <div class="field full"><label for="periodStart">四週週期起始日</label><input id="periodStart" type="date" required></div>
+        <div class="field full"><label for="normalHours">每日基準正常工時</label><input id="normalHours" type="number" min="1" max="8" step="0.5"></div>
+      </div>
+      <div class="field full" style="margin-top:4px"><label>年度結算</label><div class="status info" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span id="settlementSummary"></span><button type="button" class="ghost-btn" id="settlePrevYearBtn">將前一年度剩餘特休轉入保留假</button><button type="button" class="ghost-btn" id="settlePrevYearCompBtn">結清前一年度補休</button></div></div>
+      <div class="help" style="margin-top:12px">
+        本版以「四週彈性工時」為檢核模型：四週正常工時上限 160 小時（以每日 8 小時基準）、
+        每四週至少 8 日「例假＋休息日」、每兩週至少 2 日例假；單日正常工時原則不超過 10 小時。
+        實際適用仍須先確認事業單位是否屬勞動部指定行業及完成工會／勞資會議程序。
+      </div>
+      <div class="form-actions"><button type="button" class="ghost-btn" data-close="settingsModal">取消</button><button class="primary-btn" type="submit">儲存設定</button></div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   06. APP CONFIG / 設計與法規常數
+   ========================================================= */
+const APP = {
+  storageKey: "shift-calendar-v1",
+  version: 2,
+  // 四週彈性工時的法規檢核常數（以每日8小時基準）
+  law: { periodDays: 28, normalHours: 8, maxNormalHours: 160, minStatutoryRest: 8, minLeavePer14: 2, maxDailyNormal: 10, maxDailyNormalStandard: 8 },
+  // 預設班別。可在此集中維護，避免散落在各處。
+  eventTypes: {
+    day84m:   {label:"84中", short:"84中", cls:"event-work", hours:8, start:"08:00", end:"16:00", color:"#4f46e5", category:"work"},
+    day84f:   {label:"84發", short:"84發", cls:"event-work", hours:8, start:"08:00", end:"16:00", color:"#4f46e5", category:"work"},
+    day84d:   {label:"84門", short:"84門", cls:"event-work", hours:8, start:"08:00", end:"16:00", color:"#4f46e5", category:"work"},
+    day84ud:  {label:"84UD", short:"84UD", cls:"event-work", hours:8, start:"08:00", end:"16:00", color:"#4f46e5", category:"work"},
+    day95z:   {label:"95針", short:"95針", cls:"event-work", hours:8, start:"09:00", end:"17:00", color:"#4f46e5", category:"work"},
+    day95g:   {label:"95公", short:"95公", cls:"event-work", hours:8, start:"09:00", end:"17:00", color:"#4f46e5", category:"work"},
+    chinese:  {label:"中藥", short:"中藥", cls:"event-work", hours:8, start:"11:00", end:"19:00", color:"#7c3aed", category:"work"},
+    shiftA:   {label:"A班", short:"A班", cls:"event-work", hours:8, start:"14:00", end:"22:00", color:"#7c3aed", category:"work"},
+    shiftE:   {label:"E班", short:"E班", cls:"event-work", hours:8, start:"16:00", end:"00:00", color:"#7c3aed", category:"work"},
+    night:    {label:"大夜", short:"大夜", cls:"event-night", hours:8, start:"00:00", end:"08:00", color:"#6d28d9", category:"work"},
+    day85:    {label:"85班", short:"85班", cls:"event-work", hours:9.5, start:"08:00", end:"17:30", color:"#4f46e5", category:"work"},
+    rest:     {label:"休息日", short:"休息日", cls:"event-rest", hours:0, color:"#16a34a", category:"rest"},
+    regular:  {label:"例假日", short:"例假日", cls:"event-off", hours:0, color:"#64748b", category:"statutory"},
+    leave:    {label:"特休", short:"特休", cls:"event-leave", hours:8, start:"08:00", end:"16:00", color:"#ea580c", category:"leave"},
+    reservedLeave: {label:"保留假", short:"保留假", cls:"event-leave", hours:8, start:"08:00", end:"16:00", color:"#b45309", category:"reservedLeave"},
+    holiday:  {label:"國定假日", short:"國定假日", cls:"event-holiday", hours:0, color:"#0284c7", category:"holiday"},
+    off:      {label:"空班", short:"空班", cls:"event-off", hours:0, color:"#94a3b8", category:"off"},
+    overtime: {label:"加班", short:"加班", cls:"event-overtime", hours:0, color:"#dc2626", category:"overtime"},
+    comp:     {label:"補休", short:"補休", cls:"event-comp", hours:8, start:"08:00", end:"16:00", color:"#15803d", category:"comp"}
+  },
+  weekdays:["日","一","二","三","四","五","六"]
+};
+
+/* =========================================================
+   07. STATE / 單一狀態來源
+   ========================================================= */
+const defaultState = {
+  viewDate: new Date().toISOString().slice(0,7) + "-01",
+  selectedDate: new Date().toISOString().slice(0,10),
+  settings: {
+    annualLeave: 120, // 相容舊資料；實際以 annualLeaveByYear 為年度額度
+    annualLeaveByYear: {[new Date().getFullYear()]:120},
+    reservedLeave: 0, // 保留假目前餘額（小時）
+    reservedLeaveByYear: {}, // 年度結算轉入保留假的累積紀錄
+    compLeave: 0, // 以分鐘儲存
+    periodStart: "",
+    normalHours: 8
+  },
+  durationMinutesVersion: 1,
+  events: []
+};
+let state = loadState();
+let editingId = null;
+let rangeSelection = new Set();
+let rangePointerActive = false;
+let rangeStartDate = null;
+let rangeLastDate = null;
+let suppressNextDayClick = false;
+let viewMode = "month";
+
+/* =========================================================
+   08. STORAGE / LocalStorage，只有資料變更時才寫入
+   ========================================================= */
+function loadState(){
+  try{
+    const raw = localStorage.getItem(APP.storageKey);
+    if(!raw) return structuredClone(defaultState);
+    const parsed = JSON.parse(raw);
+    const settings={...defaultState.settings,...(parsed.settings||{})};
+    const currentYear=new Date().getFullYear();
+    settings.annualLeaveByYear={...(defaultState.settings.annualLeaveByYear||{}),...(parsed.settings?.annualLeaveByYear||{})};
+    if(!Object.prototype.hasOwnProperty.call(settings.annualLeaveByYear,currentYear)){
+      settings.annualLeaveByYear[currentYear]=Number(parsed.settings?.annualLeave)||Number(defaultState.settings.annualLeave)||0;
+    }
+    settings.reservedLeave=Number(settings.reservedLeave)||0;
+    settings.reservedLeaveByYear={...(parsed.settings?.reservedLeaveByYear||{})};
+    // v1 舊資料的補休／加班以「小時」儲存；只在尚未完成遷移時轉換一次。
+    const needsDurationMigration=parsed.durationMinutesVersion!==1;
+    if(needsDurationMigration && parsed.settings && Object.prototype.hasOwnProperty.call(parsed.settings,"compLeave")){
+      settings.compLeave=legacyHoursToMinutes(parsed.settings.compLeave);
+    }
+    const events=Array.isArray(parsed.events)?parsed.events.map(e=>({
+      ...e,
+      overtime:needsDurationMigration?legacyHoursToMinutes(e.overtime):Math.round(Number(e.overtime)||0)
+    })):[];
+    return {
+      ...structuredClone(defaultState),
+      ...parsed,
+      settings,
+      durationMinutesVersion:1,
+      events
+    };
+  }catch(e){
+    console.warn("資料讀取失敗，改用預設值",e);
+    return structuredClone(defaultState);
+  }
+}
+function saveState(){
+  localStorage.setItem(APP.storageKey, JSON.stringify(state));
+}
+
+/* =========================================================
+   09. DATE UTILITIES / 日期工具
+   ========================================================= */
+const pad = n => String(n).padStart(2,"0");
+function isoDate(y,m,d){return `${y}-${pad(m+1)}-${pad(d)}`}
+function parseDate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function dateKey(d){return isoDate(d.getFullYear(),d.getMonth(),d.getDate())}
+function monthKey(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-01`}
+function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
+function addMonths(d,n){return new Date(d.getFullYear(),d.getMonth()+n,1)}
+function monthLabel(d){return `${d.getFullYear()}年 ${d.getMonth()+1}月`}
+function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}
+function isToday(k){return k===dateKey(new Date())}
+function diffDays(a,b){return Math.round((parseDate(b)-parseDate(a))/86400000)}
+function formatHours(n){return Number.isInteger(n)?String(n):n.toFixed(1)}
+function formatDurationMinutes(minutes){
+  const m=Math.max(0,Math.round(Number(minutes)||0));
+  return `${Math.floor(m/60)}小時${pad(m%60)}分鐘`;
+}
+function durationToMinutes(value){
+  const raw=String(value??"").trim();
+  if(!raw) return 0;
+  if(/^\d+$/.test(raw)) return Number(raw)*60;
+  const match=raw.match(/^(\d+)\s*[:：]\s*(\d{1,2})$/);
+  if(!match) throw new Error("時間格式請輸入 H:MM，例如 22:20");
+  const h=Number(match[1]), m=Number(match[2]);
+  if(m>59) throw new Error("分鐘必須介於 0～59");
+  return h*60+m;
+}
+function minutesToDuration(minutes){
+  const m=Math.max(0,Math.round(Number(minutes)||0));
+  return `${Math.floor(m/60)}:${pad(m%60)}`;
+}
+function legacyHoursToMinutes(value){
+  const n=Number(value);
+  return Number.isFinite(n)?Math.round(n*60):0;
+}
+function startOfPeriod(){
+  if(state.settings.periodStart) return parseDate(state.settings.periodStart);
+  const d=new Date(); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d;
+}
+function periodStartForDate(date=state.selectedDate){
+  const base=startOfPeriod();
+  const target=parseDate(date);
+  const offset=diffDays(dateKey(base),date);
+  return addDays(base,Math.floor(offset/APP.law.periodDays)*APP.law.periodDays);
+}
+function eventFor(k){return state.events.find(e=>e.date===k)}
+function eventsFor(k){return state.events.filter(e=>e.date===k)}
+function escapeHtml(s){
+  return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* =========================================================
+   10. LEGAL AUDIT ENGINE / 四週工時檢核核心
+   ========================================================= */
+function getPeriodStats(start=periodStartForDate()){
+  const days=Array.from({length:APP.law.periodDays},(_,i)=>addDays(start,i));
+  const rows=days.map(d=>({date:d,key:dateKey(d),event:eventFor(dateKey(d))}));
+  const normalHours=rows.reduce((sum,r)=>sum+(Number(r.event?.hours)||0),0);
+  const statutoryRest=rows.filter(r=>["regular","rest"].includes(r.event?.type)).length;
+  const regularBy2Weeks=[0,1].map(block=>{
+    return rows.slice(block*14,block*14+14).filter(r=>r.event?.type==="regular").length;
+  });
+  const maxDaily=Math.max(0,...rows.map(r=>Number(r.event?.hours)||0));
+  const consecutive=(() => {
+    let max=0,cur=0;
+    rows.forEach(r=>{
+      const works=(Number(r.event?.hours)||0)>0;
+      cur=works?cur+1:0; max=Math.max(max,cur);
+    }); return max;
+  })();
+  return {start,days,rows,normalHours,statutoryRest,regularBy2Weeks,maxDaily,consecutive};
+}
+function getAudit(){
+  const s=getPeriodStats();
+  const checks=[
+    {ok:s.normalHours<=APP.law.maxNormalHours,label:`四週正常工時 ${formatHours(s.normalHours)} / ${APP.law.maxNormalHours} 小時`,
+      detail:s.normalHours<=APP.law.maxNormalHours?"符合四週正常工時上限。":"超過四週正常工時上限，需調整班表。"},
+    {ok:s.statutoryRest>=APP.law.minStatutoryRest,label:`例假＋休息日 ${s.statutoryRest} / ${APP.law.minStatutoryRest} 日`,
+      detail:s.statutoryRest>=8?"四週內法定休息日數量達標。":"不足 8 日，請補足例假／休息日。"},
+    {ok:s.regularBy2Weeks.every(n=>n>=2),label:`兩週例假 ${s.regularBy2Weeks[0]}＋${s.regularBy2Weeks[1]} 日`,
+      detail:s.regularBy2Weeks.every(n=>n>=2)?"兩個14日區段皆達至少2日例假。":"至少有一個14日區段的例假不足2日。"},
+    {ok:s.maxDaily<=APP.law.maxDaily,label:`單日最高正常工時 ${formatHours(s.maxDaily)} 小時（基準 ${APP.law.normalHours} 小時）`,
+      detail:s.maxDaily<=APP.law.maxDailyNormal?"未發現超過10小時的正常工時。":"發現單日正常工時超過10小時，需檢視排班。"}
+  ];
+  return {stats:s,checks,ok:checks.every(c=>c.ok)};
+}
+
+/* =========================================================
+   11. LEAVE BALANCE ENGINE / 休假與補休餘額
+   ========================================================= */
+function currentYear(){return parseDate(state.selectedDate||dateKey(new Date())).getFullYear();}
+function annualEntitlement(year=currentYear()){
+  const map=state.settings.annualLeaveByYear||{};
+  if(Object.prototype.hasOwnProperty.call(map,year)) return Number(map[year])||0;
+  return year===new Date().getFullYear()?Number(state.settings.annualLeave)||0:0;
+}
+function getLeaveUsage(year){
+  let annual=0,reserved=0;
+  state.events.forEach(e=>{
+    if(parseDate(e.date).getFullYear()!==year)return;
+    const use=Number(e.leave)||0;
+    if(e.type==="leave") annual+=use>0?use:calcShiftMinutes(e.start,e.end)/60;
+    else if(e.type==="reservedLeave") reserved+=use>0?use:calcShiftMinutes(e.start,e.end)/60;
+  });
+  return {annual,reserved};
+}
+function getYearEndSettlement(year=currentYear()){
+  const usage=getLeaveUsage(year);
+  const entitlement=annualEntitlement(year);
+  return {year,entitlement,usedAnnual:usage.annual,remainingAnnual:Math.max(0,entitlement-usage.annual),usedReserved:usage.reserved};
+}
+function settleAnnualLeave(year){
+  const settlement=getYearEndSettlement(year);
+  const transferred=Math.max(0,settlement.remainingAnnual);
+  const key=String(year);
+  state.settings.reservedLeave=Number(state.settings.reservedLeave)||0;
+  state.settings.reservedLeave+=transferred;
+  state.settings.reservedLeaveByYear={...(state.settings.reservedLeaveByYear||{}),[key]:transferred};
+  if(!state.settings.annualLeaveByYear)state.settings.annualLeaveByYear={};
+  if(!Object.prototype.hasOwnProperty.call(state.settings.annualLeaveByYear,key))state.settings.annualLeaveByYear[key]=settlement.entitlement;
+  saveState();
+  return transferred;
+}
+function getBalance(){
+  let usedLeave=0, generatedComp=0, usedComp=0, usedReserved=0;
+  state.events.forEach(e=>{
+    const type=e.type;
+    const use=Number(e.leave)||0;
+    const autoMinutes=calcShiftMinutes(e.start,e.end)||Math.round((Number(e.hours)||0)*60);
+    if(type==="comp") usedComp+=use>0?use:autoMinutes;
+    else if(type==="leave") usedLeave+=use>0?use:autoMinutes/60;
+    else if(type==="reservedLeave") usedReserved+=use>0?use:autoMinutes/60;
+    else if(use>0) usedLeave+=use;
+    generatedComp+=Number(e.overtime)||0;
+  });
+  // compLeave 是使用者在設定中輸入的期初餘額；再加本工具登錄的新增補休。
+  const settledComp=Object.values(state.settings.compSettlementByYear||{}).reduce((sum,v)=>sum+(Number(v)||0),0);
+  const compRemain=Math.max(0,Number(state.settings.compLeave||0)+generatedComp-usedComp-settledComp);
+  const year=currentYear();
+  const annualTotal=annualEntitlement(year);
+  const yearUsage=getLeaveUsage(year);
+  const reservedUsage=state.events.reduce((sum,e)=>e.type==="reservedLeave"?(sum+(Number(e.leave)||calcShiftMinutes(e.start,e.end)/60)):sum,0);
+  const leaveRemain=Math.max(0,annualTotal-yearUsage.annual);
+  const reservedRemain=Math.max(0,Number(state.settings.reservedLeave||0)-reservedUsage);
+  return {leaveRemain,reservedRemain,compRemain,usedLeave:yearUsage.annual,usedReserved:reservedUsage,generatedComp,usedComp,annualTotal,year};
+}
+
+/* =========================================================
+   12. RENDER / 只在必要時更新區塊
+   ========================================================= */
+function render(){
+  renderHeader();
+  renderCalendar();
+  renderBalance();
+  renderAudit();
+  renderPeriod();
+}
+function renderHeader(){
+  const d=parseDate(state.viewDate);
+  const label=viewMode==="period"?"四週週期檢視":monthLabel(d);
+  document.getElementById("monthTitle").textContent=label;
+  document.getElementById("desktopMonthTitle").textContent=label;
+  renderViewModeButtons();
+}
+function formatCycleRange(start,end){
+  const s=parseDate(start), e=parseDate(end);
+  const sameYear=s.getFullYear()===e.getFullYear();
+  return sameYear?`${s.getFullYear()}/${s.getMonth()+1}/${s.getDate()} ～ ${e.getMonth()+1}/${e.getDate()}`:`${s.getFullYear()}/${s.getMonth()+1}/${s.getDate()} ～ ${e.getFullYear()}/${e.getMonth()+1}/${e.getDate()}`;
+}
+function mondayOf(d){
+  const x=new Date(d);
+  x.setDate(x.getDate()-((x.getDay()+6)%7));
+  return x;
+}
+function periodViewStart(){
+  const actual=periodStartForDate(state.selectedDate);
+  return mondayOf(actual);
+}
+function periodViewRange(){
+  const actualStart=periodStartForDate(state.selectedDate);
+  const actualEnd=addDays(actualStart,27);
+  const visualStart=mondayOf(actualStart);
+  const visualEnd=new Date(actualEnd); visualEnd.setDate(visualEnd.getDate()+((7-visualEnd.getDay())%7));
+  return {actualStart,actualEnd,visualStart,visualEnd};
+}
+function renderViewModeButtons(){
+  document.getElementById("monthViewBtn")?.classList.toggle("active",viewMode==="month");
+  document.getElementById("periodViewBtn")?.classList.toggle("active",viewMode==="period");
+}
+function renderCalendar(){
+  const grid=document.getElementById("calendarGrid");
+  const agenda=document.getElementById("mobileAgenda");
+  let html="", agendaRows=[];
+  if(viewMode==="period"){
+    const r=periodViewRange();
+    document.getElementById("cycleRange").textContent=`四週週期：${formatCycleRange(dateKey(r.actualStart),dateKey(r.actualEnd))}`;
+    const weekdays=["一","二","三","四","五","六","日"];
+    html=weekdays.map(x=>`<div class="weekday">${x}</div>`).join("");
+    for(let day= new Date(r.visualStart), i=0; day<=r.visualEnd; day=addDays(day,1),i++){
+      const day=addDays(r.visualStart,i), k=dateKey(day), ev=eventFor(k);
+      const inCycle=day>=r.actualStart&&day<=r.actualEnd;
+      const classes=`day-cell period-day ${inCycle?"":"outside-period"} ${rangeSelection.has(k)?"range-selected":""} ${rangeStartDate===k?"range-anchor":""}`;
+      const num=isToday(k)?`<span class="today-ring">${day.getDate()}</span>`:`<span>${day.getDate()}</span>`;
+      let eventHtml="";
+      if(ev){
+        const t=APP.eventTypes[ev.type]||APP.eventTypes.off;
+        eventHtml=`<div class="event ${t.cls}" data-edit="${ev.id}" title="${escapeHtml(ev.note||t.label)}">${escapeHtml(ev.label||t.short)}${Number(ev.hours)>0?`<span class="event-sub"> ${formatHours(ev.hours)}h</span>`:""}</div>`;
+      }else eventHtml=`<div class="empty-note">＋ 點擊排班</div>`;
+      html+=`<div class="${classes}" data-date="${k}" aria-label="${k}"><div class="day-number"><span>${APP.weekdays[(day.getDay())]}</span>${num}</div><div class="events">${eventHtml}</div></div>`;
+      agendaRows.push(`<div class="agenda-row ${inCycle?"":"outside-period"} ${rangeSelection.has(k)?"range-selected":""}" data-date="${k}"><div class="agenda-date"><b>${day.getDate()}</b><span>${APP.weekdays[day.getDay()]}</span></div><div class="agenda-events">${ev?`<div class="event ${(APP.eventTypes[ev.type]||APP.eventTypes.off).cls}" data-edit="${ev.id}">${escapeHtml(ev.label||APP.eventTypes[ev.type]?.short||"班次")}${Number(ev.hours)>0?` · ${formatHours(ev.hours)}h`:""}</div><div class="small">${escapeHtml(ev.note||"")}</div>`:`<div class="agenda-empty">休息／尚未排班 · 點擊可新增</div>`}</div></div>`);
+    }
+  }else{
+    document.getElementById("cycleRange").textContent="";
+    const d=parseDate(state.viewDate), y=d.getFullYear(), m=d.getMonth();
+    const first=new Date(y,m,1), start=addDays(first,-first.getDay());
+    html=APP.weekdays.map(x=>`<div class="weekday">${x}</div>`).join("");
+    for(let i=0;i<42;i++){
+      const day=addDays(start,i), k=dateKey(day), ev=eventFor(k);
+      const other=day.getMonth()!==m;
+      const classes=`day-cell ${other?"other-month":""} ${rangeSelection.has(k)?"range-selected":""} ${rangeStartDate===k?"range-anchor":""}`;
+      const num=isToday(k)?`<span class="today-ring">${day.getDate()}</span>`:`<span>${day.getDate()}</span>`;
+      let eventHtml="";
+      if(ev){const t=APP.eventTypes[ev.type]||APP.eventTypes.off;eventHtml=`<div class="event ${t.cls}" data-edit="${ev.id}" title="${escapeHtml(ev.note||t.label)}">${escapeHtml(ev.label||t.short)}${Number(ev.hours)>0?`<span class="event-sub"> ${formatHours(ev.hours)}h</span>`:""}</div>`;}
+      else eventHtml=`<div class="empty-note">＋ 點擊排班</div>`;
+      html+=`<div class="${classes}" data-date="${k}" aria-label="${k}"><div class="day-number">${num}</div><div class="events">${eventHtml}</div></div>`;
+      agendaRows.push(`<div class="agenda-row ${rangeSelection.has(k)?"range-selected":""}" data-date="${k}"><div class="agenda-date"><b>${day.getDate()}</b><span>${APP.weekdays[day.getDay()]}</span></div><div class="agenda-events">${ev?`<div class="event ${(APP.eventTypes[ev.type]||APP.eventTypes.off).cls}" data-edit="${ev.id}">${escapeHtml(ev.label||APP.eventTypes[ev.type]?.short||"班次")}${Number(ev.hours)>0?` · ${formatHours(ev.hours)}h`:""}</div><div class="small">${escapeHtml(ev.note||"")}</div>`:`<div class="agenda-empty">休息／尚未排班 · 點擊可新增</div>`}</div></div>`);
+    }
+  }
+  grid.innerHTML=html; agenda.innerHTML=agendaRows.join("");
+  grid.classList.toggle("period-view",viewMode==="period");
+  agenda.classList.toggle("period-view",viewMode==="period");
+  renderViewModeButtons();
+}
+function renderBalance(){
+  const b=getBalance();
+  document.getElementById("balancePanel").innerHTML=`
+    <div class="balance-row"><span>${b.year} 年特休</span><span class="balance-value">${formatHours(b.leaveRemain)} h</span></div>
+    <div class="balance-row"><span>保留假</span><span class="balance-value">${formatHours(b.reservedRemain)} h</span></div>
+    <div class="balance-row"><span>加班補休</span><span class="balance-value">${formatDurationMinutes(b.compRemain)}</span></div>
+    <div class="divider"></div>
+    <div class="small">特休已用 ${formatHours(b.usedLeave)}h · 保留假已用 ${formatHours(b.usedReserved)}h · 新增補休 ${formatDurationMinutes(b.generatedComp)}</div>
+    <div class="progress"><i style="width:${Math.min(100,(b.leaveRemain/Math.max(1,b.annualTotal))*100)}%"></i></div>`;
+}
+function renderAudit(){
+  const a=getAudit();
+  document.getElementById("auditPanel").innerHTML=a.checks.map(c=>`
+    <div class="audit-item ${c.ok?"audit-ok":"audit-bad"}"><span>${c.ok?"✓":"!"}</span><div><b>${c.label}</b>${c.detail}</div></div>`).join("")
+    +`<div class="status ${a.ok?"ok":"bad"}"><span class="status-icon">${a.ok?"✓":"!"}</span><span>${a.ok?"目前班表通過本工具的四週基本檢核。":"目前班表有需要處理的項目，請先修正再作為正式排班依據。"}</span></div>`;
+}
+function renderPeriod(){
+  const a=getAudit(), end=addDays(a.stats.start,27);
+  document.getElementById("periodPanel").innerHTML=`
+    <div class="small"><b>${dateKey(a.stats.start)}</b> ～ <b>${dateKey(end)}</b></div>
+    <div class="status info"><span class="status-icon">i</span><span>週期起日可於「設定」修改。四週週期不應因跨月而重新起算。</span></div>`;
+}
+
+/* =========================================================
+   13. MODAL / EVENT CRUD
+   ========================================================= */
+function openModal(id){document.getElementById(id).classList.add("show")}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+function fillEventTypes(){
+  document.getElementById("eventType").innerHTML=Object.entries(APP.eventTypes).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
+}
+function openEvent(date=state.selectedDate,id=null){
+  editingId=id;
+  const form=document.getElementById("eventForm");
+  form.reset();
+  document.getElementById("eventDate").value=date;
+  document.getElementById("eventTitle").textContent=id?"編輯班次":"新增班次";
+  document.getElementById("deleteEventBtn").style.display=id?"inline-block":"none";
+  const e=id?state.events.find(x=>x.id===id):null;
+  const t=e?.type||"day";
+  document.getElementById("eventType").value=t;
+  const preset=APP.eventTypes[t]||{};
+  document.getElementById("eventStart").value=e?.start||preset.start||"08:00";
+  document.getElementById("eventEnd").value=e?.end||preset.end||"17:00";
+  document.getElementById("eventHours").value=e?.hours??(preset.hours||0);
+  document.getElementById("eventOvertime").value=minutesToDuration(e?.overtime||0);
+  document.getElementById("eventLeave").value="0";
+  document.getElementById("eventNote").value=e?.note||"";
+  syncAutoLeave();
+  openModal("eventModal");
+}
+function saveEvent(){
+  const date=document.getElementById("eventDate").value;
+  const type=document.getElementById("eventType").value;
+  let overtimeMinutes, leaveValue;
+  try{
+    overtimeMinutes=durationToMinutes(document.getElementById("eventOvertime").value);
+    if(type==="comp"){
+      const autoMinutes=calcShiftMinutes(document.getElementById("eventStart").value,document.getElementById("eventEnd").value)||Math.round((Number(document.getElementById("eventHours").value)||0)*60);
+      leaveValue=autoMinutes;
+    }else if(type==="leave"||type==="reservedLeave"){
+      const autoMinutes=calcShiftMinutes(document.getElementById("eventStart").value,document.getElementById("eventEnd").value)||Math.round((Number(document.getElementById("eventHours").value)||0)*60);
+      leaveValue=autoMinutes/60;
+    }else{
+      leaveValue=0;
+    }
+  }catch(err){alert(err.message);return}
+  const obj={
+    id:editingId||crypto.randomUUID(),
+    date,type,
+    label:APP.eventTypes[type]?.short||"班次",
+    start:document.getElementById("eventStart").value,
+    end:document.getElementById("eventEnd").value,
+    hours:Number(document.getElementById("eventHours").value)||0,
+    overtime:overtimeMinutes,
+    leave:leaveValue,
+    note:document.getElementById("eventNote").value.trim()
+  };
+  if(editingId){
+    const i=state.events.findIndex(e=>e.id===editingId); if(i>=0) state.events[i]=obj;
+  }else state.events.push(obj);
+  state.selectedDate=date; saveState(); closeModal("eventModal"); render(); toast("班次已儲存");
+}
+function deleteEvent(){
+  if(!editingId)return;
+  state.events=state.events.filter(e=>e.id!==editingId); saveState(); closeModal("eventModal"); render(); toast("班次已刪除");
+}
+
+/* =========================================================
+   14. MULTI-DATE SELECTION / 多日拖曳選取
+   ========================================================= */
+function datesBetween(a,b){
+  const start=parseDate(a), end=parseDate(b);
+  const from=start<=end?start:end, to=start<=end?end:start;
+  const out=[];
+  for(let d=new Date(from);d<=to;d=addDays(d,1)) out.push(dateKey(d));
+  return out;
+}
+function updateRangeVisuals(){
+  document.querySelectorAll(".day-cell[data-date], .agenda-row[data-date]").forEach(el=>{
+    const selected=rangeSelection.has(el.dataset.date);
+    el.classList.toggle("range-selected",selected);
+    if(el.classList.contains("day-cell")) el.classList.toggle("range-anchor",el.dataset.date===rangeStartDate);
+  });
+}
+function setRangeSelection(start,end){
+  if(!start||!end)return;
+  rangeStartDate=start; rangeLastDate=end;
+  rangeSelection=new Set(datesBetween(start,end));
+  updateRangeVisuals();
+}
+function clearRangeSelection(){
+  rangeSelection.clear(); rangeStartDate=null; rangeLastDate=null; updateRangeVisuals();
+}
+function fillBulkTypes(){
+  document.getElementById("bulkType").innerHTML=Object.entries(APP.eventTypes).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
+}
+function openBulkEvent(){
+  if(!rangeSelection.size)return;
+  const dates=[...rangeSelection].sort();
+  document.getElementById("bulkSelectionSummary").innerHTML=`已選取 <b>${dates.length}</b> 天：${escapeHtml(dates[0])} ～ ${escapeHtml(dates[dates.length-1])}`;
+  document.getElementById("bulkType").value="day84m";
+  applyBulkPreset();
+  document.getElementById("bulkNote").value="";
+  document.getElementById("bulkOvertime").value="0:00";
+  openModal("bulkModal");
+}
+function applyBulkPreset(){
+  const t=APP.eventTypes[document.getElementById("bulkType").value];
+  if(!t)return;
+  document.getElementById("bulkStart").value=t.start||"";
+  document.getElementById("bulkEnd").value=t.end||"";
+  document.getElementById("bulkHours").value=typeof t.hours==="number"?t.hours:0;
+}
+function saveBulkEvents(){
+  let overtimeMinutes=0;
+  try{overtimeMinutes=durationToMinutes(document.getElementById("bulkOvertime").value)}catch(err){alert(err.message);return}
+  const type=document.getElementById("bulkType").value;
+  const label=APP.eventTypes[type]?.short||"班次";
+  const selected=[...rangeSelection].sort();
+  const start=document.getElementById("bulkStart").value;
+  const end=document.getElementById("bulkEnd").value;
+  const hours=Number(document.getElementById("bulkHours").value)||0;
+  const autoMinutes=calcShiftMinutes(start,end)||Math.round(hours*60);
+  const leaveValue=type==="comp"?autoMinutes:(type==="leave"||type==="reservedLeave")?autoMinutes/60:0;
+  selected.forEach(date=>{
+    const existing=state.events.find(e=>e.date===date);
+    const obj={
+      id:existing?.id||crypto.randomUUID(), date,type,label,
+      start,
+      end,
+      hours,
+      overtime:overtimeMinutes, leave:leaveValue,
+      note:document.getElementById("bulkNote").value.trim()
+    };
+    if(existing) Object.assign(existing,obj); else state.events.push(obj);
+  });
+  state.selectedDate=selected[selected.length-1]||state.selectedDate;
+  saveState(); closeModal("bulkModal"); clearRangeSelection(); render(); toast(`已套用 ${selected.length} 天班次`);
+}
+
+/* =========================================================
+   15. OVERTIME QUERY / 加班紀錄查詢
+   ========================================================= */
+function getOvertimeRecords(){
+  return state.events.filter(e=>Number(e.overtime)>0).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function renderOvertimeRecords(){
+  const from=document.getElementById("overtimeFrom").value;
+  const to=document.getElementById("overtimeTo").value;
+  const q=document.getElementById("overtimeSearch").value.trim().toLowerCase();
+  const records=getOvertimeRecords().filter(e=>{
+    if(from&&e.date<from)return false; if(to&&e.date>to)return false;
+    if(q){
+      const type=APP.eventTypes[e.type]?.label||e.label||"";
+      const text=`${e.date} ${type} ${e.note||""}`.toLowerCase();
+      if(!text.includes(q))return false;
+    }
+    return true;
+  });
+  const total=records.reduce((sum,e)=>sum+(Number(e.overtime)||0),0);
+  document.getElementById("overtimeSummary").innerHTML=`<span class="status-icon">✓</span><span>共 <b>${records.length}</b> 筆加班紀錄，新增補休合計 <b>${formatDurationMinutes(total)}</b>。</span>`;
+  document.getElementById("overtimeList").innerHTML=records.length?records.map(e=>{
+    const t=APP.eventTypes[e.type]||APP.eventTypes.off;
+    return `<div class="audit-item"><span>＋</span><div style="min-width:0;flex:1"><b>${escapeHtml(e.date)} · ${escapeHtml(t.label)}</b><div>新增補休：<strong>${formatDurationMinutes(e.overtime)}</strong>${e.start&&e.end?` · ${escapeHtml(e.start)}～${escapeHtml(e.end)}`:""}</div>${e.note?`<div class="small">${escapeHtml(e.note)}</div>`:""}</div></div>`;
+  }).join(""):`<div class="help">目前沒有符合條件的加班／新增補休紀錄。</div>`;
+}
+function openOvertimeQuery(){
+  document.getElementById("overtimeFrom").value="";
+  document.getElementById("overtimeTo").value="";
+  document.getElementById("overtimeSearch").value="";
+  renderOvertimeRecords(); openModal("overtimeModal");
+}
+
+function getLeaveRecords(){
+  return state.events.filter(e=>e.type==="leave").sort((a,b)=>a.date.localeCompare(b.date));
+}
+function renderLeaveRecords(){
+  const from=document.getElementById("leaveQueryFrom").value;
+  const to=document.getElementById("leaveQueryTo").value;
+  const q=document.getElementById("leaveQuerySearch").value.trim().toLowerCase();
+  const records=getLeaveRecords().filter(e=>{
+    if(from&&e.date<from)return false; if(to&&e.date>to)return false;
+    if(q){
+      const text=`${e.date} 特休 ${e.note||""}`.toLowerCase();
+      if(!text.includes(q))return false;
+    }
+    return true;
+  });
+  const total=records.reduce((sum,e)=>sum+(Number(e.leave)||calcShiftMinutes(e.start,e.end)/60||0),0);
+  document.getElementById("leaveQuerySummary").innerHTML=`<span class="status-icon">✓</span><span>共 <b>${records.length}</b> 筆特休紀錄，使用特休合計 <b>${formatHours(total)} 小時</b>。</span>`;
+  document.getElementById("leaveQueryList").innerHTML=records.length?records.map(e=>{
+    return `<div class="audit-item"><span>－</span><div style="min-width:0;flex:1"><b>${escapeHtml(e.date)} · 特休</b><div>使用特休：<strong>${formatHours(Number(e.leave)||calcShiftMinutes(e.start,e.end)/60||0)} 小時</strong>${e.start&&e.end?` · ${escapeHtml(e.start)}～${escapeHtml(e.end)}`:""}</div>${e.note?`<div class="small">${escapeHtml(e.note)}</div>`:""}</div></div>`;
+  }).join(""):`<div class="help">目前沒有符合條件的特休紀錄。</div>`;
+}
+function openLeaveQuery(){
+  document.getElementById("leaveQueryFrom").value="";
+  document.getElementById("leaveQueryTo").value="";
+  document.getElementById("leaveQuerySearch").value="";
+  renderLeaveRecords(); openModal("leaveQueryModal");
+}
+
+function getCompRecords(){
+  return state.events.filter(e=>e.type==="comp"&&((Number(e.leave)||0)>0||calcShiftMinutes(e.start,e.end)>0)).sort((a,b)=>a.date.localeCompare(b.date));
+}
+function renderCompRecords(){
+  const from=document.getElementById("compQueryFrom").value;
+  const to=document.getElementById("compQueryTo").value;
+  const q=document.getElementById("compQuerySearch").value.trim().toLowerCase();
+  const records=getCompRecords().filter(e=>{
+    if(from&&e.date<from)return false; if(to&&e.date>to)return false;
+    if(q&&!`${e.date} 補休 ${e.note||""}`.toLowerCase().includes(q))return false;
+    return true;
+  });
+  const total=records.reduce((sum,e)=>sum+(Number(e.leave)||calcShiftMinutes(e.start,e.end)||0),0);
+  document.getElementById("compQuerySummary").innerHTML=`<span class="status-icon">✓</span><span>共 <b>${records.length}</b> 筆補休紀錄，使用補休合計 <b>${formatDurationMinutes(total)}</b>。</span>`;
+  document.getElementById("compQueryList").innerHTML=records.length?records.map(e=>{
+    const minutes=Number(e.leave)||calcShiftMinutes(e.start,e.end)||0;
+    return `<div class="audit-item"><span>－</span><div style="min-width:0;flex:1"><b>${escapeHtml(e.date)} · 補休</b><div>使用補休：<strong>${formatDurationMinutes(minutes)}</strong>${e.start&&e.end?` · ${escapeHtml(e.start)}～${escapeHtml(e.end)}`:""}</div>${e.note?`<div class="small">${escapeHtml(e.note)}</div>`:""}</div></div>`;
+  }).join(""):`<div class="help">目前沒有符合條件的補休紀錄。</div>`;
+}
+function openCompQuery(){
+  document.getElementById("compQueryFrom").value="";
+  document.getElementById("compQueryTo").value="";
+  document.getElementById("compQuerySearch").value="";
+  renderCompRecords(); openModal("compQueryModal");
+}
+
+/* =========================================================
+   16. COMP SETTLEMENT / 補休年度結清
+   ========================================================= */
+function getYearCompSettlement(year){
+  const y=Number(year);
+  let generated=0,used=0;
+  state.events.forEach(e=>{
+    if(parseDate(e.date).getFullYear()!==y)return;
+    generated+=Number(e.overtime)||0;
+    if(e.type==="comp") used+=Number(e.leave)||calcShiftMinutes(e.start,e.end)||0;
+  });
+  const already=Number(state.settings.compSettlementByYear?.[String(y)]||0);
+  return {year:y,generated,used,remaining:Math.max(0,generated-used),settled:already};
+}
+function settleCompYear(year){
+  const stats=getYearCompSettlement(year);
+  if(stats.settled>0) return {ok:false,amount:stats.settled,reason:"already"};
+  const amount=Math.max(0,stats.remaining);
+  if(amount<=0)return {ok:false,amount:0,reason:"empty"};
+  state.settings.compSettlementByYear={
+    ...(state.settings.compSettlementByYear||{}),
+    [String(stats.year)]:amount
+  };
+  saveState();
+  return {ok:true,amount};
+}
+function openCompSettlement(year=currentYear()-1){
+  const input=document.getElementById("compSettlementYear");
+  input.value=year;
+  renderCompSettlementPreview();
+  openModal("compSettlementModal");
+}
+function renderCompSettlementPreview(){
+  const year=Number(document.getElementById("compSettlementYear").value)||currentYear()-1;
+  const stats=getYearCompSettlement(year);
+  const amount=stats.remaining;
+  const settled=stats.settled;
+  document.getElementById("compSettlementAmount").innerHTML=settled>0
+    ? `<span class="status-icon">✓</span><span>${year} 年已結清 <b>${formatDurationMinutes(settled)}</b></span>`
+    : `<span class="status-icon">→</span><span>可結清 <b>${formatDurationMinutes(amount)}</b></span>`;
+  document.getElementById("compSettlementStatus").textContent=
+    `該年度新增補休 ${formatDurationMinutes(stats.generated)}，已使用 ${formatDurationMinutes(stats.used)}；結清後該年度累積補休歸零，並保留本次結清紀錄。`;
+  document.getElementById("confirmCompSettlementBtn").disabled=settled>0||amount<=0;
+}
+function confirmCompSettlement(){
+  const year=Number(document.getElementById("compSettlementYear").value);
+  if(!Number.isInteger(year)||year<2000||year>2100){alert("請輸入有效年度。");return;}
+  const stats=getYearCompSettlement(year);
+  if(stats.settled>0){alert(`${year} 年已結清 ${formatDurationMinutes(stats.settled)}，不重複結清。`);return;}
+  if(stats.remaining<=0){alert(`${year} 年沒有可結清的剩餘補休。`);return;}
+  if(!confirm(`確定結清 ${year} 年剩餘 ${formatDurationMinutes(stats.remaining)} 補休嗎？結清後該年度補休餘額將歸零。`))return;
+  const result=settleCompYear(year);
+  if(result.ok){
+    closeModal("compSettlementModal");
+    render();
+    toast(`已結清 ${year} 年補休 ${formatDurationMinutes(result.amount)}`);
+  }
+}
+function getCompSettlementRecords(){
+  return Object.entries(state.settings.compSettlementByYear||{})
+    .map(([year,minutes])=>({year:Number(year),minutes:Number(minutes)||0}))
+    .filter(e=>e.minutes>0)
+    .sort((a,b)=>b.year-a.year);
+}
+function renderCompSettlementRecords(){
+  const from=Number(document.getElementById("compSettlementQueryFrom").value)||0;
+  const to=Number(document.getElementById("compSettlementQueryTo").value)||9999;
+  const q=document.getElementById("compSettlementQuerySearch").value.trim().toLowerCase();
+  const records=getCompSettlementRecords().filter(e=>{
+    if(e.year<from||e.year>to)return false;
+    return !q||`${e.year} 結清補休 ${formatDurationMinutes(e.minutes)}`.toLowerCase().includes(q);
+  });
+  const total=records.reduce((sum,e)=>sum+e.minutes,0);
+  document.getElementById("compSettlementQuerySummary").innerHTML=`<span class="status-icon">✓</span><span>共 <b>${records.length}</b> 筆結清紀錄，結清補休合計 <b>${formatDurationMinutes(total)}</b>。</span>`;
+  document.getElementById("compSettlementQueryList").innerHTML=records.length?records.map(e=>
+    `<div class="audit-item"><span>✓</span><div style="min-width:0;flex:1"><b>${e.year} 年 · 補休結清</b><div>結清時數：<strong>${formatDurationMinutes(e.minutes)}</strong></div><div class="small">結清後該年度累積補休歸零。</div></div></div>`
+  ).join(""):`<div class="help">目前沒有符合條件的結清補休紀錄。</div>`;
+}
+function openCompSettlementQuery(){
+  document.getElementById("compSettlementQueryFrom").value="";
+  document.getElementById("compSettlementQueryTo").value="";
+  document.getElementById("compSettlementQuerySearch").value="";
+  renderCompSettlementRecords(); openModal("compSettlementQueryModal");
+}
+
+/* =========================================================
+   16. SETTINGS / 設定
+   ========================================================= */
+function openSettings(){
+  const year=currentYear();
+  document.getElementById("annualLeave").value=annualEntitlement(year);
+  document.getElementById("reservedLeave").value=Number(state.settings.reservedLeave)||0;
+  document.getElementById("compLeave").value=minutesToDuration(state.settings.compLeave);
+  document.getElementById("periodStart").value=state.settings.periodStart||dateKey(startOfPeriod());
+  document.getElementById("normalHours").value=state.settings.normalHours;
+  const prev=getYearEndSettlement(year-1);
+  document.getElementById("settlementSummary").textContent=`${year-1} 年特休剩餘 ${formatHours(prev.remainingAnnual)} 小時；已轉入 ${formatHours(state.settings.reservedLeaveByYear?.[String(year-1)]||0)} 小時。`;
+  openModal("settingsModal");
+}
+function saveSettings(){
+  let compLeaveMinutes;
+  try{compLeaveMinutes=durationToMinutes(document.getElementById("compLeave").value)}
+  catch(err){alert(err.message);return}
+  const year=currentYear();
+  const annual=Number(document.getElementById("annualLeave").value)||0;
+  state.settings={
+    ...state.settings,
+    annualLeave:annual,
+    annualLeaveByYear:{...(state.settings.annualLeaveByYear||{}),[year]:annual},
+    reservedLeave:Number(document.getElementById("reservedLeave").value)||0,
+    compLeave:compLeaveMinutes,
+    periodStart:document.getElementById("periodStart").value,
+    normalHours:Number(document.getElementById("normalHours").value)||8
+  };
+  saveState();closeModal("settingsModal");render();toast("設定已更新");
+}
+
+/* =========================================================
+   15. BACKUP / 匯出與匯入
+   ========================================================= */
+function exportData(){
+  const blob=new Blob([JSON.stringify({app:"Shift Calendar",version:APP.version,data:state},null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`shift-calendar-${dateKey(new Date())}.json`;a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+function importData(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const p=JSON.parse(reader.result);
+      const incoming=p.data||p;
+      if(!incoming.events||!incoming.settings) throw new Error("格式錯誤");
+      const importedSettings={...defaultState.settings,...incoming.settings};
+      const needsDurationMigration=incoming.durationMinutesVersion!==1;
+      if(needsDurationMigration) importedSettings.compLeave=legacyHoursToMinutes(importedSettings.compLeave);
+      state={...structuredClone(defaultState),...incoming,settings:importedSettings,durationMinutesVersion:1,
+        events:Array.isArray(incoming.events)?incoming.events.map(e=>({...e,overtime:needsDurationMigration?legacyHoursToMinutes(e.overtime):Math.round(Number(e.overtime)||0)})):[]};
+      saveState();render();toast("資料匯入成功");
+    }catch(e){alert("匯入失敗：JSON 格式不正確。")}
+  };
+  reader.readAsText(file);
+}
+
+/* =========================================================
+   16. EVENT LISTENERS / 事件委派，避免大量 listener
+   ========================================================= */
+document.getElementById("prevMonth").onclick=()=>{if(viewMode==="period"){state.selectedDate=dateKey(addDays(periodStartForDate(state.selectedDate),-28));state.viewDate=monthKey(parseDate(state.selectedDate));}else{state.viewDate=monthKey(addMonths(parseDate(state.viewDate),-1));}render()};
+document.getElementById("nextMonth").onclick=()=>{if(viewMode==="period"){state.selectedDate=dateKey(addDays(periodStartForDate(state.selectedDate),28));state.viewDate=monthKey(parseDate(state.selectedDate));}else{state.viewDate=monthKey(addMonths(parseDate(state.viewDate),1));}render()};
+document.getElementById("todayBtn").onclick=()=>{const d=new Date();state.viewDate=monthKey(d);state.selectedDate=dateKey(d);render()};
+document.getElementById("mobileToday").onclick=()=>{const d=new Date();state.viewDate=monthKey(d);state.selectedDate=dateKey(d);render()};
+document.getElementById("monthViewBtn").onclick=()=>{viewMode="month";state.viewDate=monthKey(parseDate(state.selectedDate||dateKey(new Date())));render();};
+document.getElementById("periodViewBtn").onclick=()=>{viewMode="period";state.viewDate=monthKey(parseDate(state.selectedDate||dateKey(new Date())));render();};
+document.getElementById("addBtn").onclick=()=>openEvent(state.selectedDate);
+function calcShiftMinutes(start,end){
+  if(!start||!end)return 0;
+  const [sh,sm]=start.split(":").map(Number), [eh,em]=end.split(":").map(Number);
+  if([sh,sm,eh,em].some(Number.isNaN))return 0;
+  let minutes=(eh*60+em)-(sh*60+sm);
+  if(minutes<0)minutes+=1440;
+  return minutes;
+}
+function syncAutoLeave(){
+  const type=document.getElementById("eventType").value;
+  const t=APP.eventTypes[type]||{};
+  const leave=document.getElementById("eventLeave");
+  if(type!=="leave"&&type!=="reservedLeave"&&type!=="comp"){
+    leave.value="0";
+    return;
+  }
+  const start=document.getElementById("eventStart").value;
+  const end=document.getElementById("eventEnd").value;
+  const fallbackHours=Number(document.getElementById("eventHours").value)||Number(t.hours)||0;
+  const minutes=calcShiftMinutes(start,end)||Math.round(fallbackHours*60);
+  leave.value=type==="comp"?minutesToDuration(minutes):formatHours(minutes/60);
+}
+document.getElementById("eventType").onchange=()=>{
+  const t=APP.eventTypes[document.getElementById("eventType").value];
+  if(!t)return;
+  if(t.start)document.getElementById("eventStart").value=t.start;
+  if(t.end)document.getElementById("eventEnd").value=t.end;
+  if(typeof t.hours==="number")document.getElementById("eventHours").value=t.hours;
+  syncAutoLeave();
+};
+document.getElementById("eventStart").onchange=syncAutoLeave;
+document.getElementById("eventEnd").onchange=syncAutoLeave;
+document.getElementById("eventHours").oninput=syncAutoLeave;
+document.getElementById("settingsBtn").onclick=openSettings;
+document.getElementById("compSettlementBtnSide").onclick=()=>openCompSettlement();
+document.getElementById("compSettlementQueryBtnSide").onclick=openCompSettlementQuery;
+document.getElementById("settlePrevYearCompBtn").onclick=()=>openCompSettlement(currentYear()-1);
+document.getElementById("compSettlementYear").oninput=renderCompSettlementPreview;
+document.getElementById("compSettlementYear").onchange=renderCompSettlementPreview;
+document.getElementById("confirmCompSettlementBtn").onclick=confirmCompSettlement;
+document.getElementById("compSettlementQueryFrom").oninput=renderCompSettlementRecords;
+document.getElementById("compSettlementQueryTo").oninput=renderCompSettlementRecords;
+document.getElementById("compSettlementQuerySearch").oninput=renderCompSettlementRecords;
+document.getElementById("settlePrevYearBtn").onclick=()=>{
+  const year=currentYear()-1;
+  const amount=getYearEndSettlement(year).remainingAnnual;
+  const already=Number(state.settings.reservedLeaveByYear?.[String(year)]||0);
+  if(already>0){alert(`${year} 年已結算 ${formatHours(already)} 小時，不重複轉入。`);return;}
+  if(amount<=0){alert(`${year} 年沒有可轉入保留假的剩餘特休。`);return;}
+  if(!confirm(`確定將 ${year} 年剩餘 ${formatHours(amount)} 小時特休轉入保留假嗎？`))return;
+  settleAnnualLeave(year);
+  openSettings(); render(); toast(`已將 ${year} 年剩餘特休 ${formatHours(amount)} 小時轉入保留假`);
+};
+document.getElementById("overtimeQueryBtn").onclick=openOvertimeQuery;
+document.getElementById("overtimeQueryBtnSide").onclick=openOvertimeQuery;
+document.getElementById("leaveQueryBtnSide").onclick=openLeaveQuery;
+document.getElementById("compQueryBtnSide").onclick=openCompQuery;
+document.getElementById("compQueryFrom").oninput=renderCompRecords;
+document.getElementById("compQueryTo").oninput=renderCompRecords;
+document.getElementById("compQuerySearch").oninput=renderCompRecords;
+document.getElementById("leaveQueryFrom").oninput=renderLeaveRecords;
+document.getElementById("leaveQueryTo").oninput=renderLeaveRecords;
+document.getElementById("leaveQuerySearch").oninput=renderLeaveRecords;
+document.getElementById("bulkType").onchange=applyBulkPreset;
+document.getElementById("bulkForm").onsubmit=e=>{e.preventDefault();saveBulkEvents()};
+document.getElementById("overtimeFrom").oninput=renderOvertimeRecords;
+document.getElementById("overtimeTo").oninput=renderOvertimeRecords;
+document.getElementById("overtimeSearch").oninput=renderOvertimeRecords;
+
+const calendarSurface=document.getElementById("calendarGrid");
+function cellFromPointer(e,root){
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  return el?.closest(".day-cell[data-date]")||null;
+}
+function beginRange(e,root){
+  if(e.button!==undefined&&e.button!==0)return;
+  const cell=e.target.closest(".day-cell[data-date]");
+  if(!cell||e.target.closest("[data-edit]"))return;
+  e.preventDefault();
+  rangePointerActive=true;
+  rangeStartDate=cell.dataset.date;
+  rangeLastDate=cell.dataset.date;
+  rangeSelection=new Set([rangeStartDate]);
+  root.classList.add("is-selecting");
+  root.setPointerCapture?.(e.pointerId);
+  updateRangeVisuals();
+}
+function moveRange(e,root){
+  if(!rangePointerActive)return;
+  e.preventDefault();
+  const cell=cellFromPointer(e,root);
+  if(cell&&cell.dataset.date!==rangeLastDate)setRangeSelection(rangeStartDate,cell.dataset.date);
+}
+function finishRange(e,root){
+  if(!rangePointerActive)return;
+  e.preventDefault();
+  const cell=cellFromPointer(e,root);
+  if(cell)setRangeSelection(rangeStartDate,cell.dataset.date);
+  rangePointerActive=false;
+  root.classList.remove("is-selecting");
+  if(rangeSelection.size>1){
+    suppressNextDayClick=true;
+    openBulkEvent();
+  }else{
+    const selectedDate=rangeStartDate;
+    clearRangeSelection();
+    suppressNextDayClick=true;
+    state.selectedDate=selectedDate;
+    renderCalendar();
+    renderAudit();
+    renderPeriod();
+    const selectedEvent=eventFor(selectedDate);
+    openEvent(selectedDate,selectedEvent?.id||null);
+  }
+}
+calendarSurface.addEventListener("pointerdown",e=>beginRange(e,calendarSurface));
+calendarSurface.addEventListener("pointermove",e=>moveRange(e,calendarSurface));
+calendarSurface.addEventListener("pointerup",e=>finishRange(e,calendarSurface));
+calendarSurface.addEventListener("pointercancel",e=>{rangePointerActive=false;calendarSurface.classList.remove("is-selecting");clearRangeSelection()});
+document.getElementById("eventForm").onsubmit=e=>{e.preventDefault();saveEvent()};
+document.getElementById("settingsForm").onsubmit=e=>{e.preventDefault();saveSettings()};
+document.getElementById("deleteEventBtn").onclick=deleteEvent;
+document.getElementById("exportBtn").onclick=exportData;
+document.getElementById("importBtn").onclick=()=>document.getElementById("importFile").click();
+document.getElementById("importFile").onchange=e=>e.target.files[0]&&importData(e.target.files[0]);
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("確定要刪除全部班表、休假與設定嗎？此動作無法復原。")){
+    state=structuredClone(defaultState);saveState();render();toast("已清除所有資料");
+  }
+};
+
+document.addEventListener("click",e=>{
+  const close=e.target.closest("[data-close]"); if(close) closeModal(close.dataset.close);
+  const edit=e.target.closest("[data-edit]");
+  const day=e.target.closest("[data-date]");
+  if(edit){
+    e.stopPropagation();
+    const targetDate=day?.dataset.date||state.selectedDate;
+    state.selectedDate=targetDate;
+    renderPeriod();
+    openEvent(targetDate,edit.dataset.edit);
+    return;
+  }
+  if(day){
+    if(suppressNextDayClick){suppressNextDayClick=false;return;}
+    if(rangePointerActive)return;
+    state.selectedDate=day.dataset.date;
+    renderCalendar();
+    renderAudit();
+    renderPeriod();
+    const selectedEvent=eventFor(state.selectedDate);
+    openEvent(state.selectedDate,selectedEvent?.id||null);
+    return;
+  }
+  if(e.target.classList.contains("modal-backdrop")) e.target.classList.remove("show");
+});
+
+/* =========================================================
+   17. MOBILE RANGE SELECTION / 手機多日選取
+   ========================================================= */
+const mobileAgenda=document.getElementById("mobileAgenda");
+function agendaFromPointer(e){
+  const el=document.elementFromPoint(e.clientX,e.clientY);
+  return el?.closest(".agenda-row[data-date]")||null;
+}
+mobileAgenda.addEventListener("pointerdown",e=>{
+  if(e.button!==undefined&&e.button!==0)return;
+  const row=e.target.closest(".agenda-row[data-date]");
+  if(!row||e.target.closest("[data-edit]"))return;
+  e.preventDefault();
+  rangePointerActive=true; rangeStartDate=row.dataset.date; rangeLastDate=row.dataset.date; rangeSelection=new Set([rangeStartDate]);
+  mobileAgenda.classList.add("is-selecting");
+  mobileAgenda.setPointerCapture?.(e.pointerId); updateRangeVisuals();
+});
+mobileAgenda.addEventListener("pointermove",e=>{
+  if(!rangePointerActive)return;
+  e.preventDefault();
+  const row=agendaFromPointer(e); if(row&&row.dataset.date!==rangeLastDate)setRangeSelection(rangeStartDate,row.dataset.date);
+});
+mobileAgenda.addEventListener("pointerup",e=>{
+  if(!rangePointerActive)return;
+  e.preventDefault();
+  const row=agendaFromPointer(e); if(row)setRangeSelection(rangeStartDate,row.dataset.date);
+  rangePointerActive=false; mobileAgenda.classList.remove("is-selecting");
+  if(rangeSelection.size>1){
+    suppressNextDayClick=true;
+    openBulkEvent();
+  } else {
+    const selectedDate=rangeStartDate;
+    clearRangeSelection();
+    suppressNextDayClick=true;
+    state.selectedDate=selectedDate;
+    renderCalendar();
+    renderAudit();
+    renderPeriod();
+    const selectedEvent=eventFor(selectedDate);
+    openEvent(selectedDate,selectedEvent?.id||null);
+  }
+});
+mobileAgenda.addEventListener("pointercancel",()=>{rangePointerActive=false;mobileAgenda.classList.remove("is-selecting");clearRangeSelection()});
+
+/* =========================================================
+   18. TOAST / 非阻塞提示
+   ========================================================= */
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),1800);
+}
+
+/* =========================================================
+   18. INIT / 初始化：只執行一次，不建立背景計時器
+   ========================================================= */
+fillEventTypes();
+fillBulkTypes();
+render();
+</script>
+</body>
+</html>
