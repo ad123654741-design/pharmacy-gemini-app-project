@@ -176,6 +176,42 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
    ========================================================= */
 body.modal-open{overflow:hidden;overscroll-behavior:none}
 @media(max-width:700px){
+  /* 第十版追加：所有手機 Modal 避開底部功能列，並保留完整操作區 */
+  .modal-backdrop{
+    z-index:80;
+    padding:8px 8px calc(78px + env(safe-area-inset-bottom));
+    align-items:center;
+  }
+  .modal{
+    width:100%;
+    max-height:calc(100svh - 94px - env(safe-area-inset-bottom));
+    overflow:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .modal .form-actions{
+    position:sticky;
+    bottom:0;
+    z-index:2;
+    padding:8px 0 2px;
+    background:linear-gradient(to bottom, rgba(255,255,255,.82), #fff 35%);
+  }
+  #eventModal .modal{
+    height:min(520px,calc(100svh - 94px - env(safe-area-inset-bottom)));
+    max-height:calc(100svh - 94px - env(safe-area-inset-bottom));
+  }
+  #bulkModal .modal,
+  #settingsModal .modal,
+  #overtimeModal .modal,
+  #leaveQueryModal .modal,
+  #compQueryModal .modal,
+  #compSettlementModal .modal,
+  #compSettlementQueryModal .modal{
+    max-height:calc(100svh - 94px - env(safe-area-inset-bottom));
+  }
+  .mobile-bottom-nav{z-index:65}
+  .mobile-drawer-backdrop{z-index:69}
+
   html,body{width:100%;overflow-x:hidden}
   body.modal-open{position:fixed;left:0;right:0;width:100%;touch-action:none}
   .topbar{overflow:hidden}
@@ -194,9 +230,9 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
   .calendar-head{flex-wrap:wrap}
   .calendar-head .calendar-title{max-width:45vw}
   .cycle-range{max-width:42vw}
-  .modal-backdrop{padding:8px;overscroll-behavior:contain;touch-action:none}
-  .modal{max-height:calc(100svh - 16px);overscroll-behavior:contain;touch-action:auto}
-  #eventModal .modal{height:min(520px,calc(100svh - 16px));max-height:calc(100svh - 16px);overflow:hidden;padding:12px}
+  .modal-backdrop{padding:8px 8px calc(78px + env(safe-area-inset-bottom));overscroll-behavior:contain;touch-action:none}
+  .modal{max-height:calc(100svh - 94px - env(safe-area-inset-bottom));overscroll-behavior:contain;touch-action:auto}
+  #eventModal .modal{height:min(520px,calc(100svh - 94px - env(safe-area-inset-bottom)));max-height:calc(100svh - 94px - env(safe-area-inset-bottom));overflow:hidden;padding:12px}
   #eventModal .modal-head{margin-bottom:8px}
   #eventModal .modal h2{font-size:17px}
   #eventModal .form-grid{grid-template-columns:1fr 1fr;gap:7px}
