@@ -190,13 +190,13 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
   .calendar-grid .event{white-space:normal;overflow:hidden;text-overflow:clip;word-break:break-word;overflow-wrap:anywhere}
   .agenda-events,.agenda-row,.balance-row,.audit-item{min-width:0;overflow-wrap:anywhere}
   .main{padding-bottom:2px}
-  .calendar-card{height:calc(100dvh - 136px);min-height:0}
+  .calendar-card{height:calc((100svh - 136px) * .7);min-height:0}
   .calendar-head{flex-wrap:wrap}
   .calendar-head .calendar-title{max-width:45vw}
   .cycle-range{max-width:42vw}
   .modal-backdrop{padding:8px;overscroll-behavior:contain;touch-action:none}
-  .modal{max-height:calc(100dvh - 16px);overscroll-behavior:contain;touch-action:auto}
-  #eventModal .modal{height:min(520px,calc(100dvh - 16px));max-height:calc(100dvh - 16px);overflow:hidden;padding:12px}
+  .modal{max-height:calc(100svh - 16px);overscroll-behavior:contain;touch-action:auto}
+  #eventModal .modal{height:min(520px,calc(100svh - 16px));max-height:calc(100svh - 16px);overflow:hidden;padding:12px}
   #eventModal .modal-head{margin-bottom:8px}
   #eventModal .modal h2{font-size:17px}
   #eventModal .form-grid{grid-template-columns:1fr 1fr;gap:7px}
@@ -1281,6 +1281,7 @@ function cellFromPointer(e,root){
   return el?.closest(".day-cell[data-date]")||null;
 }
 function beginRange(e,root){
+  if(window.innerWidth<=700 && !mobileEditMode)return;
   if(e.button!==undefined&&e.button!==0)return;
   const cell=e.target.closest(".day-cell[data-date]");
   if(!cell||e.target.closest("[data-edit]"))return;
@@ -1343,6 +1344,10 @@ document.addEventListener("click",e=>{
   const day=e.target.closest("[data-date]");
   if(edit){
     e.stopPropagation();
+    if(window.innerWidth<=700 && !mobileEditMode){
+      toast("目前為檢視模式；開啟「編輯」後才能修改班表");
+      return;
+    }
     const targetDate=day?.dataset.date||state.selectedDate;
     state.selectedDate=targetDate;
     renderPeriod();
