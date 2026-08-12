@@ -170,6 +170,47 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   .day-number{font-size:8px}.event{font-size:7px;padding:1px 2px}
   .view-mode-btn{padding:5px 5px;font-size:8px}.cycle-range{max-width:120px}
 }
+
+/* =========================================================
+   第九版：手機編輯模式、Modal 鎖定與單畫面班次表單
+   ========================================================= */
+body.modal-open{overflow:hidden;overscroll-behavior:none}
+@media(max-width:700px){
+  html,body{width:100%;overflow-x:hidden}
+  body.modal-open{position:fixed;left:0;right:0;width:100%;touch-action:none}
+  .topbar{overflow:hidden}
+  .brand{min-width:0}.brand>div:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .topbar .nav-group{flex:0 0 auto}
+  .mobile-bottom-nav{grid-template-columns:repeat(5,1fr);height:70px;padding-left:6px;padding-right:6px}
+  .mobile-bottom-nav button{min-width:0;padding:2px 1px}
+  .mobile-bottom-nav button:disabled{opacity:.38;cursor:not-allowed}
+  .mobile-bottom-nav small{white-space:nowrap;line-height:1.1}
+  .mobile-bottom-nav .requires-edit:not(.edit-enabled){opacity:.38}
+  .mobile-bottom-nav #mobileEditBtn.active{background:#eef2ff;color:var(--primary);box-shadow:inset 0 0 0 1px #c7d2fe}
+  .calendar-grid .event{white-space:normal;overflow:hidden;text-overflow:clip;word-break:break-word;overflow-wrap:anywhere}
+  .agenda-events,.agenda-row,.balance-row,.audit-item{min-width:0;overflow-wrap:anywhere}
+  .main{padding-bottom:2px}
+  .calendar-card{height:calc(100dvh - 136px);min-height:0}
+  .calendar-head{flex-wrap:wrap}
+  .calendar-head .calendar-title{max-width:45vw}
+  .cycle-range{max-width:42vw}
+  .modal-backdrop{padding:8px;overscroll-behavior:contain;touch-action:none}
+  .modal{max-height:calc(100dvh - 16px);overscroll-behavior:contain;touch-action:auto}
+  #eventModal .modal{height:min(520px,calc(100dvh - 16px));max-height:calc(100dvh - 16px);overflow:hidden;padding:12px}
+  #eventModal .modal-head{margin-bottom:8px}
+  #eventModal .modal h2{font-size:17px}
+  #eventModal .form-grid{grid-template-columns:1fr 1fr;gap:7px}
+  #eventModal .field.full{grid-column:1/-1}
+  #eventModal .field{gap:3px}
+  #eventModal .field label{font-size:9px;line-height:1.2}
+  #eventModal .field input,#eventModal .field select{height:34px;padding:0 8px;font-size:12px}
+  #eventModal #eventLeave{height:32px}
+  #eventModal .help{display:none}
+  #eventModal .form-actions{margin-top:9px;gap:6px}
+  #eventModal .form-actions button{min-height:34px;padding:0 10px;font-size:11px}
+  #eventModal #eventNote{height:34px}
+  #eventModal .icon-btn{min-height:32px}
+}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
@@ -179,7 +220,6 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
        02. TOP BAR / 頂部工具列
        ===================================================== -->
   <header class="topbar">
-    <button class="icon-btn mobile-only" id="mobileToday" aria-label="回到今天">⌂</button>
     <div class="brand">
       <div class="logo" aria-hidden="true">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="2"/><path d="M8 2v4M16 2v4M3 9h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 13h3M8 17h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -256,9 +296,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 <!-- 手機版底部功能列 -->
 <nav class="mobile-bottom-nav" aria-label="手機功能列">
   <button type="button" id="mobileCalendarBtn"><span>▦</span><small>月曆</small></button>
-  <button type="button" id="mobileAddBtn"><span>＋</span><small>新增</small></button>
+  <button type="button" id="mobileAddBtn" class="requires-edit"><span>＋</span><small>新增</small></button>
   <button type="button" id="mobileQueryBtn"><span>⌕</span><small>查詢</small></button>
-  <button type="button" id="mobileMenuBtn"><span>☰</span><small>更多</small></button>
+  <button type="button" id="mobileSettingsBtn" class="requires-edit"><span>⚙</span><small>設定</small></button>
+  <button type="button" id="mobileEditBtn"><span>✎</span><small>編輯</small></button>
 </nav>
 
 <!-- =======================================================
@@ -467,6 +508,7 @@ let rangeStartDate = null;
 let rangeLastDate = null;
 let suppressNextDayClick = false;
 let viewMode = "month";
+let mobileEditMode = false;
 
 /* =========================================================
    08. STORAGE / LocalStorage，只有資料變更時才寫入
@@ -770,8 +812,8 @@ function renderPeriod(){
 /* =========================================================
    13. MODAL / EVENT CRUD
    ========================================================= */
-function openModal(id){document.getElementById(id).classList.add("show")}
-function closeModal(id){document.getElementById(id).classList.remove("show")}
+function openModal(id){document.getElementById(id).classList.add("show");document.body.classList.add("modal-open")}
+function closeModal(id){document.getElementById(id).classList.remove("show");if(!document.querySelector(".modal-backdrop.show"))document.body.classList.remove("modal-open")}
 function fillEventTypes(){
   document.getElementById("eventType").innerHTML=Object.entries(APP.eventTypes).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join("");
 }
@@ -1141,7 +1183,6 @@ function importData(file){
 document.getElementById("prevMonth").onclick=()=>{if(viewMode==="period"){state.selectedDate=dateKey(addDays(periodStartForDate(state.selectedDate),-28));state.viewDate=monthKey(parseDate(state.selectedDate));}else{state.viewDate=monthKey(addMonths(parseDate(state.viewDate),-1));}render()};
 document.getElementById("nextMonth").onclick=()=>{if(viewMode==="period"){state.selectedDate=dateKey(addDays(periodStartForDate(state.selectedDate),28));state.viewDate=monthKey(parseDate(state.selectedDate));}else{state.viewDate=monthKey(addMonths(parseDate(state.viewDate),1));}render()};
 document.getElementById("todayBtn").onclick=()=>{const d=new Date();state.viewDate=monthKey(d);state.selectedDate=dateKey(d);render()};
-document.getElementById("mobileToday").onclick=()=>{const d=new Date();state.viewDate=monthKey(d);state.selectedDate=dateKey(d);render()};
 document.getElementById("monthViewBtn").onclick=()=>{viewMode="month";state.viewDate=monthKey(parseDate(state.selectedDate||dateKey(new Date())));render();};
 document.getElementById("periodViewBtn").onclick=()=>{viewMode="period";state.viewDate=monthKey(parseDate(state.selectedDate||dateKey(new Date())));render();};
 document.getElementById("addBtn").onclick=()=>openEvent(state.selectedDate);
@@ -1153,8 +1194,17 @@ function openMobileMenu(){mobileSidebar?.classList.add("mobile-open");mobileBack
 document.getElementById("mobileMenuBtn")?.addEventListener("click",openMobileMenu);
 mobileBackdrop?.addEventListener("click",closeMobileMenu);
 document.getElementById("mobileCalendarBtn")?.addEventListener("click",()=>{closeMobileMenu();document.querySelector(".main")?.scrollIntoView({block:"start"});});
-document.getElementById("mobileAddBtn")?.addEventListener("click",()=>{closeMobileMenu();openEvent(state.selectedDate);});
+document.getElementById("mobileAddBtn")?.addEventListener("click",()=>{if(!mobileEditMode){toast("請先開啟編輯模式");return;}closeMobileMenu();openEvent(state.selectedDate);});
 document.getElementById("mobileQueryBtn")?.addEventListener("click",()=>{closeMobileMenu();openCompQuery();});
+function syncMobileEditMode(){
+  const editBtn=document.getElementById("mobileEditBtn");
+  editBtn?.classList.toggle("active",mobileEditMode);
+  const label=editBtn?.querySelector("small");
+  if(label)label.textContent=mobileEditMode?"完成":"編輯";
+  document.querySelectorAll(".requires-edit").forEach(btn=>{btn.classList.toggle("edit-enabled",mobileEditMode);btn.disabled=!mobileEditMode;});
+}
+document.getElementById("mobileEditBtn")?.addEventListener("click",()=>{mobileEditMode=!mobileEditMode;syncMobileEditMode();toast(mobileEditMode?"已進入編輯模式":"已回到檢視模式");});
+document.getElementById("mobileSettingsBtn")?.addEventListener("click",()=>{if(!mobileEditMode){toast("請先開啟編輯模式");return;}openSettings();});
 mobileSidebar?.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{if(window.innerWidth<=700)closeMobileMenu();}));
 function calcShiftMinutes(start,end){
   if(!start||!end)return 0;
@@ -1306,11 +1356,12 @@ document.addEventListener("click",e=>{
     renderCalendar();
     renderAudit();
     renderPeriod();
+    if(window.innerWidth<=700 && !mobileEditMode){toast("目前為檢視模式；開啟「編輯」後才能修改班表");return;}
     const selectedEvent=eventFor(state.selectedDate);
     openEvent(state.selectedDate,selectedEvent?.id||null);
     return;
   }
-  if(e.target.classList.contains("modal-backdrop")) e.target.classList.remove("show");
+  if(e.target.classList.contains("modal-backdrop")){e.target.classList.remove("show");if(!document.querySelector(".modal-backdrop.show"))document.body.classList.remove("modal-open");}
 });
 
 /* =========================================================
@@ -1322,6 +1373,7 @@ function agendaFromPointer(e){
   return el?.closest(".agenda-row[data-date]")||null;
 }
 mobileAgenda.addEventListener("pointerdown",e=>{
+  if(window.innerWidth<=700 && !mobileEditMode)return;
   if(e.button!==undefined&&e.button!==0)return;
   const row=e.target.closest(".agenda-row[data-date]");
   if(!row||e.target.closest("[data-edit]"))return;
@@ -1365,6 +1417,8 @@ function toast(msg){
   const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
   clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),1800);
 }
+
+syncMobileEditMode();
 
 /* =========================================================
    18. INIT / 初始化：只執行一次，不建立背景計時器
