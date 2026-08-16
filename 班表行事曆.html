@@ -457,6 +457,15 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 }
 </style>
 
+
+<style id="v20-mobile-settings-safe-css">
+@media (max-width:768px){
+  #settingsModal{z-index:2147483005 !important;pointer-events:auto !important}
+  #settingsModal.open{display:flex !important}
+  #settingsModal .modal{pointer-events:auto !important;max-height:calc(100dvh - 24px) !important;overflow:auto !important}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -1486,7 +1495,15 @@ function syncMobileEditMode(){
   document.querySelectorAll(".requires-edit").forEach(btn=>{btn.classList.toggle("edit-enabled",mobileEditMode);btn.disabled=!mobileEditMode;});
 }
 document.getElementById("mobileEditBtn")?.addEventListener("click",()=>{mobileEditMode=!mobileEditMode;syncMobileEditMode();toast(mobileEditMode?"已進入編輯模式":"已回到檢視模式");});
-document.getElementById("mobileSettingsBtn")?.addEventListener("click",()=>{closeMobileMenu();openSettings();});
+document.getElementById("mobileSettingsBtn")?.addEventListener("click",(e)=>{
+  e.preventDefault();
+  e.stopPropagation();
+  closeMobileMenu();
+  const modal=document.getElementById("settingsModal");
+  if(!modal) return;
+  modal.classList.add("open");
+  document.body.classList.add("modal-open");
+});
 mobileSidebar?.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{if(window.innerWidth<=700)closeMobileMenu();}));
 function calcShiftMinutes(start,end){
   if(!start||!end)return 0;
@@ -1972,6 +1989,25 @@ render();
         return;
       }
     });
+  });
+})();
+</script>
+
+
+<script id="v20-mobile-settings-safe-open">
+(function(){
+  const btn=document.getElementById("mobileSettingsBtn");
+  const modal=document.getElementById("settingsModal");
+  if(!btn || !modal) return;
+  const clean=btn.cloneNode(true);
+  btn.replaceWith(clean);
+  clean.addEventListener("click",function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    const menu=document.getElementById("mobileMenu");
+    if(menu) menu.classList.remove("open");
+    modal.classList.add("open");
+    document.body.classList.add("modal-open");
   });
 })();
 </script>
