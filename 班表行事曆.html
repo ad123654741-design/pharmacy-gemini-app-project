@@ -258,6 +258,45 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
+
+<style id="mobile-settings-query-polish">
+@media (max-width: 768px){
+  /* Advanced settings button in the settings popup header */
+  #settingsModal .modal-head, #settingsModal .modal-header{
+    display:flex;align-items:center;gap:8px;
+  }
+  #settingsModal .modal-head .advanced-settings-btn,
+  #settingsModal .modal-header .advanced-settings-btn{
+    margin-left:auto;white-space:nowrap;
+  }
+  .advanced-settings-btn{
+    border:1px solid #d1d5db;background:#fff;border-radius:10px;
+    padding:7px 10px;font-size:13px;font-weight:700;color:#374151;
+  }
+  .advanced-settings-panel{
+    display:none;margin-top:10px;padding:10px;border:1px solid #e5e7eb;
+    border-radius:14px;background:#f8fafc;
+  }
+  .advanced-settings-panel.open{display:grid;gap:8px}
+  .advanced-settings-panel button{
+    width:100%;min-height:42px;border:1px solid #e5e7eb;border-radius:11px;
+    background:#fff;text-align:left;padding:9px 12px;font-weight:650;
+  }
+
+  /* Query menu */
+  .mobile-query-menu{
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:4px 0;
+  }
+  .mobile-query-menu button{
+    min-height:74px;border:1px solid #e5e7eb;border-radius:16px;
+    background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.05);
+    font-size:15px;font-weight:700;color:#1f2937;
+  }
+  .mobile-query-menu button:active{transform:scale(.98)}
+  .query-empty{padding:20px 12px;text-align:center;color:#6b7280}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -486,6 +525,13 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 </div>
 
 <div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true">
+<button type="button" class="advanced-settings-btn" id="mobileAdvancedSettingsBtn">進階設定</button>
+<div class="advanced-settings-panel" id="mobileAdvancedSettingsPanel">
+  <button type="button" data-advanced-action="export">⇩ 匯出 JSON 備份</button>
+  <button type="button" data-advanced-action="import">⇧ 匯入 JSON 備份</button>
+  <button type="button" data-advanced-action="clear">↺ 清除所有資料</button>
+</div>
+
   <div class="modal">
     <div class="modal-head"><h2>班表與工時設定</h2><button class="icon-btn" data-close="settingsModal">✕</button></div>
     <form id="settingsForm">
@@ -1527,5 +1573,91 @@ fillEventTypes();
 fillBulkTypes();
 render();
 </script>
+
+<div class="mobile-query-overlay" id="mobileQueryOverlay" aria-hidden="true">
+  <div class="mobile-query-sheet" role="dialog" aria-modal="true" aria-label="查詢">
+    <div class="mobile-query-sheet-head"><strong>查詢紀錄</strong><button type="button" id="mobileQueryClose">關閉</button></div>
+    <div class="mobile-query-menu">
+      <button type="button" data-query-target="overtime">加班紀錄</button>
+      <button type="button" data-query-target="leave">特休紀錄</button>
+      <button type="button" data-query-target="comp">補休紀錄</button>
+      <button type="button" data-query-target="settled">結清補休</button>
+    </div>
+  </div>
+</div>
+<style id="mobile-query-sheet-style">
+@media (max-width:768px){
+.mobile-query-overlay{position:fixed;inset:0;z-index:10050;background:rgba(15,23,42,.38);display:none;align-items:flex-end}
+.mobile-query-overlay.open{display:flex}
+.mobile-query-sheet{width:100%;background:#fff;border-radius:22px 22px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -10px 30px rgba(15,23,42,.18)}
+.mobile-query-sheet-head{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 12px}
+.mobile-query-sheet-head button{border:0;background:#f3f4f6;border-radius:10px;padding:7px 10px}
+}
+</style>
+
+
+<script id="mobile-settings-query-logic">
+(function(){
+  const $ = (q, r=document)=>r.querySelector(q);
+  const $$ = (q, r=document)=>Array.from(r.querySelectorAll(q));
+  function clickExisting(selectors){
+    for(const sel of selectors){
+      const el=$(sel);
+      if(el){ el.click(); return true; }
+    }
+    return false;
+  }
+  const advBtn=$('#mobileAdvancedSettingsBtn');
+  const advPanel=$('#mobileAdvancedSettingsPanel');
+  if(advBtn && advPanel){
+    advBtn.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      advPanel.classList.toggle('open');
+    });
+  }
+  $$('.advanced-settings-panel [data-advanced-action]').forEach(btn=>{
+    btn.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      const a=this.dataset.advancedAction;
+      if(a==='export') clickExisting(['#exportJsonBtn','[onclick*="export"][id]','button[data-action="export"]']);
+      if(a==='import') clickExisting(['#importJsonBtn','[onclick*="import"][id]','button[data-action="import"]']);
+      if(a==='clear') clickExisting(['#clearAllBtn','[onclick*="clear"][id]','button[data-action="clear"]']);
+    });
+  });
+
+  const overlay=$('#mobileQueryOverlay');
+  const close=()=>{if(overlay){overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');}};
+  const open=()=>{if(overlay){overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');}};
+  $('#mobileQueryClose')?.addEventListener('click',close);
+  overlay?.addEventListener('click',e=>{if(e.target===overlay)close();});
+
+  // Make the existing bottom query button open the category chooser.
+  const candidates=['#mobileQueryBtn','#mobileQuery','#bottomQueryBtn','[data-mobile-action="query"]'];
+  candidates.forEach(sel=>{
+    const el=$(sel);
+    if(el && !el.dataset.queryPatched){
+      el.dataset.queryPatched='1';
+      el.addEventListener('click',function(e){
+        e.preventDefault(); e.stopImmediatePropagation(); open();
+      },true);
+    }
+  });
+
+  $$('#mobileQueryOverlay [data-query-target]').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      const t=this.dataset.queryTarget;
+      close();
+      const map={
+        overtime:['#overtimeRecordsBtn','#queryOvertimeBtn','[data-query="overtime"]'],
+        leave:['#leaveRecordsBtn','#queryLeaveBtn','[data-query="leave"]'],
+        comp:['#compRecordsBtn','#queryCompBtn','[data-query="comp"]'],
+        settled:['#settledCompBtn','#querySettledCompBtn','[data-query="settled"]']
+      };
+      clickExisting(map[t]||[]);
+    });
+  });
+})();
+</script>
+
 </body>
 </html>
