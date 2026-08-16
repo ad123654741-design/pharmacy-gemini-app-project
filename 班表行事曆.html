@@ -385,6 +385,33 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 }
 </style>
 
+
+<style id="v18-advanced-settings-fix">
+@media (max-width:768px){
+  #settingsModal{
+    position:relative !important;
+  }
+  #settingsModal #mobileAdvancedSettingsBtn{
+    position:absolute !important;
+    top:12px !important;
+    right:48px !important;
+    left:auto !important;
+    bottom:auto !important;
+    z-index:2147483646 !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    min-height:34px !important;
+    padding:6px 9px !important;
+    margin:0 !important;
+    width:auto !important;
+    max-width:calc(100% - 100px) !important;
+    white-space:nowrap !important;
+    transform:none !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -614,6 +641,8 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 
 <div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true">
 <button type="button" class="advanced-settings-btn" id="mobileAdvancedSettingsBtn">進階設定</button>
+
+
 <div class="advanced-settings-panel" id="mobileAdvancedSettingsPanel">
   <button type="button" data-advanced-action="export">⇩ 匯出 JSON 備份</button>
   <button type="button" data-advanced-action="import">⇧ 匯入 JSON 備份</button>
@@ -1817,6 +1846,56 @@ render();
         },true);
       }
     });
+})();
+</script>
+
+
+<script id="v18-advanced-settings-actions">
+(function(){
+  function findByText(words){
+    const els=[...document.querySelectorAll('button,[role="button"],a,input[type="button"],input[type="file"]')];
+    return els.find(el=>{
+      const t=(el.innerText||el.textContent||el.value||'').replace(/\s+/g,'').trim();
+      const vis=getComputedStyle(el).display!=='none' && getComputedStyle(el).visibility!=='hidden';
+      return vis && words.some(w=>t.includes(w));
+    })||null;
+  }
+  function invokeExport(){
+    const el=findByText(['匯出JSON備份','匯出JSON','ExportJSON']);
+    if(el){ el.click(); return true; }
+    if(typeof window.exportJSON==='function'){ window.exportJSON(); return true; }
+    if(typeof window.exportJson==='function'){ window.exportJson(); return true; }
+    return false;
+  }
+  function invokeImport(){
+    const input=document.querySelector('#importJsonInput,input[type="file"][accept*="json"],input[type="file"]');
+    if(input){ input.click(); return true; }
+    const el=findByText(['匯入JSON備份','匯入JSON','ImportJSON']);
+    if(el){ el.click(); return true; }
+    if(typeof window.importJSON==='function'){ window.importJSON(); return true; }
+    if(typeof window.importJson==='function'){ window.importJson(); return true; }
+    return false;
+  }
+  function invokeClear(){
+    const el=findByText(['清除所有資料','清除全部資料','ClearAll']);
+    if(el){ el.click(); return true; }
+    if(typeof window.clearAllData==='function'){ window.clearAllData(); return true; }
+    if(typeof window.clearAll==='function'){ window.clearAll(); return true; }
+    return false;
+  }
+
+  document.querySelectorAll('#mobileAdvancedSettingsPanel [data-advanced-action]').forEach(btn=>{
+    if(btn.dataset.v18Bound) return;
+    btn.dataset.v18Bound='1';
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      const a=this.dataset.advancedAction;
+      if(a==='export') invokeExport();
+      else if(a==='import') invokeImport();
+      else if(a==='clear') invokeClear();
+    }, true);
+  });
 })();
 </script>
 
