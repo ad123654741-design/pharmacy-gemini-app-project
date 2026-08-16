@@ -297,6 +297,94 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 }
 </style>
 
+
+<style id="v16-advanced-settings-position-fix">
+@media (max-width: 768px){
+  /* Keep the advanced-settings control inside the settings dialog header. */
+  #settingsModal .modal-head,
+  #settingsModal .modal-header{
+    position:relative;
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    width:100% !important;
+    min-width:0 !important;
+    box-sizing:border-box !important;
+    padding-right:0 !important;
+  }
+
+  #settingsModal .modal-head .advanced-settings-btn,
+  #settingsModal .modal-header .advanced-settings-btn,
+  #settingsModal #mobileAdvancedSettingsBtn{
+    position:static !important;
+    inset:auto !important;
+    float:none !important;
+    margin:0 0 0 auto !important;
+    transform:none !important;
+    flex:0 0 auto !important;
+    width:auto !important;
+    max-width:42% !important;
+    box-sizing:border-box !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+  }
+
+  #settingsModal #mobileAdvancedSettingsPanel{
+    position:static !important;
+    left:auto !important;
+    right:auto !important;
+    top:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    margin:8px 0 0 !important;
+  }
+}
+</style>
+
+
+<style id="v17-settings-query-fix">
+@media (max-width:768px){
+  #settingsModal{
+    overflow:visible !important;
+  }
+  #settingsModal .advanced-settings-btn,
+  #settingsModal #mobileAdvancedSettingsBtn{
+    position:absolute !important;
+    top:12px !important;
+    right:12px !important;
+    left:auto !important;
+    bottom:auto !important;
+    z-index:20 !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    width:auto !important;
+    max-width:calc(100% - 24px) !important;
+    margin:0 !important;
+    transform:none !important;
+  }
+  #settingsModal .modal-head,
+  #settingsModal .modal-header{
+    position:relative !important;
+    padding-right:100px !important;
+    box-sizing:border-box !important;
+    width:100% !important;
+  }
+  #settingsModal #mobileAdvancedSettingsPanel{
+    position:relative !important;
+    inset:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+
+  .mobile-query-overlay{z-index:2147483000 !important}
+  .mobile-query-sheet{position:relative;z-index:2147483001}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -1656,6 +1744,79 @@ render();
       clickExisting(map[t]||[]);
     });
   });
+})();
+</script>
+
+
+<script id="v17-query-dispatch-fix">
+(function(){
+  const root=document;
+  function visible(el){
+    if(!el) return false;
+    const st=getComputedStyle(el), r=el.getBoundingClientRect();
+    return st.display!=='none' && st.visibility!=='hidden' && r.width>0 && r.height>0;
+  }
+  function text(el){
+    return (el.innerText || el.textContent || '').replace(/\s+/g,'').trim();
+  }
+  function findQueryButton(words){
+    const els=[...root.querySelectorAll('button,[role="button"],a')];
+    return els.find(el=>{
+      if(!visible(el)) return false;
+      const t=text(el);
+      return words.some(w=>t.includes(w));
+    }) || null;
+  }
+  function openTarget(target){
+    const map={
+      overtime:['加班紀錄','查詢加班紀錄'],
+      leave:['特休紀錄','查詢特休紀錄'],
+      comp:['補休紀錄','查詢補休紀錄'],
+      settled:['結清補休','結清補休查詢']
+    };
+    const el=findQueryButton(map[target]||[]);
+    if(!el) return false;
+    el.click();
+    return true;
+  }
+
+  const overlay=document.getElementById('mobileQueryOverlay');
+  const close=()=>{
+    if(overlay){
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden','true');
+    }
+  };
+
+  if(overlay){
+    overlay.querySelectorAll('[data-query-target]').forEach(btn=>{
+      btn.addEventListener('click',function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        const target=this.dataset.queryTarget;
+        close();
+        /* Let the existing modal stack settle before opening the target. */
+        setTimeout(()=>openTarget(target),80);
+      });
+    });
+  }
+
+  /* Prevent the bottom query button's old handler from opening a partial query directly. */
+  ['#mobileQueryBtn','#mobileQuery','#bottomQueryBtn','[data-mobile-action="query"]']
+    .forEach(sel=>{
+      const el=document.querySelector(sel);
+      if(el && !el.dataset.v17QueryPatched){
+        el.dataset.v17QueryPatched='1';
+        el.addEventListener('click',function(e){
+          if(overlay){
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            overlay.classList.add('open');
+            overlay.setAttribute('aria-hidden','false');
+          }
+        },true);
+      }
+    });
 })();
 </script>
 
