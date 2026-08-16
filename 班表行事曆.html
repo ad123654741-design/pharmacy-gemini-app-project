@@ -297,52 +297,6 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 }
 </style>
 
-
-<style id="v16-advanced-settings-position-fix">
-@media (max-width: 768px){
-  /* Keep the advanced-settings control inside the settings dialog header. */
-  #settingsModal .modal-head,
-  #settingsModal .modal-header{
-    position:relative;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:space-between !important;
-    width:100% !important;
-    min-width:0 !important;
-    box-sizing:border-box !important;
-    padding-right:0 !important;
-  }
-
-  #settingsModal .modal-head .advanced-settings-btn,
-  #settingsModal .modal-header .advanced-settings-btn,
-  #settingsModal #mobileAdvancedSettingsBtn{
-    position:static !important;
-    inset:auto !important;
-    float:none !important;
-    margin:0 0 0 auto !important;
-    transform:none !important;
-    flex:0 0 auto !important;
-    width:auto !important;
-    max-width:42% !important;
-    box-sizing:border-box !important;
-    white-space:nowrap !important;
-    overflow:hidden !important;
-    text-overflow:ellipsis !important;
-  }
-
-  #settingsModal #mobileAdvancedSettingsPanel{
-    position:static !important;
-    left:auto !important;
-    right:auto !important;
-    top:auto !important;
-    width:100% !important;
-    max-width:100% !important;
-    box-sizing:border-box !important;
-    margin:8px 0 0 !important;
-  }
-}
-</style>
-
 </head>
 <body>
 <div class="app">
