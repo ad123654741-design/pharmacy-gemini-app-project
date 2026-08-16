@@ -141,7 +141,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   .calendar-card{border-radius:13px;min-height:calc(100vh - 142px);height:calc(100vh - 142px);box-shadow:var(--shadow-sm)}
   .calendar-head{padding:7px 8px;gap:5px;min-height:43px;position:relative;top:auto}
   .calendar-head .calendar-title{font-size:15px;min-width:0;white-space:normal;line-height:1.15;width:58px;flex:0 0 58px;text-align:center}
-  .calendar-head .calendar-title .month-year,.calendar-head .calendar-title .month-month{display:block}
+  /* 手機上方月份：只針對按鈕旁的 monthTitle 換行，避免影響下方週期區間 */
+  #monthTitle .month-year,#monthTitle .month-month{display:block;white-space:nowrap}
+  #monthTitle .month-year{line-height:1.05}
+  #monthTitle .month-month{line-height:1.05}
   .mobile-query-grid{grid-template-columns:1fr 1fr!important;gap:8px}
   .mobile-query-grid button{min-height:44px}
   .calendar-head .cycle-range{font-size:9px;padding:5px 6px;overflow:hidden;text-overflow:ellipsis}
@@ -629,16 +632,20 @@ function renderCalendarDurationNotice(ev){
   const notices=[];
   const overtimeMinutes=Math.max(0,Math.round(Number(ev.overtime)||0));
   if(overtimeMinutes>0) notices.push(`<div class="calendar-duration calendar-overtime">${formatDurationMinutes(overtimeMinutes)}</div>`);
-  const leaveHours=Number(ev.leave)||0;
-  if(leaveHours>0 && ["leave","reservedLeave","comp"].includes(ev.type)){
-    const leaveMinutes=Math.round(leaveHours*60);
+  const leaveValue=Number(ev.leave)||0;
+  if(leaveValue>0 && ["leave","reservedLeave","comp"].includes(ev.type)){
+    /* 特休／保留假以小時儲存；補休以分鐘儲存，避免再次乘以 60。 */
+    const leaveMinutes=ev.type==="comp"?Math.round(leaveValue):Math.round(leaveValue*60);
     notices.push(`<div class="calendar-duration calendar-leave">${formatDurationMinutes(leaveMinutes)}</div>`);
   }
   return notices.join("");
 }
 function formatDurationMinutes(minutes){
   const m=Math.max(0,Math.round(Number(minutes)||0));
-  return `${Math.floor(m/60)}小時${pad(m%60)}分鐘`;
+  const h=Math.floor(m/60), min=m%60;
+  if(h>0&&min>0)return `${h}小時${min}分鐘`;
+  if(h>0)return `${h}小時`;
+  return `${min}分鐘`;
 }
 function durationToMinutes(value){
   const raw=String(value??"").trim();
@@ -1346,6 +1353,15 @@ document.getElementById("overtimeFrom").oninput=renderOvertimeRecords;
 document.getElementById("overtimeTo").oninput=renderOvertimeRecords;
 document.getElementById("overtimeSearch").oninput=renderOvertimeRecords;
 
+let suppressNextClickAfterCalendarOpen=false;
+// 月曆觸控在 pointerup 開啟視窗後，瀏覽器可能再送出一次 click；攔截該次 click，避免點擊穿透到新開啟視窗的同位置控制項。
+document.addEventListener("click",e=>{
+  if(!suppressNextClickAfterCalendarOpen)return;
+  suppressNextClickAfterCalendarOpen=false;
+  e.preventDefault();
+  e.stopImmediatePropagation();
+},true);
+
 const calendarSurface=document.getElementById("calendarGrid");
 function cellFromPointer(e,root){
   const el=document.elementFromPoint(e.clientX,e.clientY);
@@ -1380,11 +1396,15 @@ function finishRange(e,root){
   root.classList.remove("is-selecting");
   if(rangeSelection.size>1){
     suppressNextDayClick=true;
+    suppressNextClickAfterCalendarOpen=true;
+    setTimeout(()=>{suppressNextClickAfterCalendarOpen=false},0);
     openBulkEvent();
   }else{
     const selectedDate=rangeStartDate;
     clearRangeSelection();
     suppressNextDayClick=true;
+    suppressNextClickAfterCalendarOpen=true;
+    setTimeout(()=>{suppressNextClickAfterCalendarOpen=false},0);
     state.selectedDate=selectedDate;
     renderCalendar();
     renderAudit();
@@ -1470,11 +1490,15 @@ mobileAgenda.addEventListener("pointerup",e=>{
   rangePointerActive=false; mobileAgenda.classList.remove("is-selecting");
   if(rangeSelection.size>1){
     suppressNextDayClick=true;
+    suppressNextClickAfterCalendarOpen=true;
+    setTimeout(()=>{suppressNextClickAfterCalendarOpen=false},0);
     openBulkEvent();
   } else {
     const selectedDate=rangeStartDate;
     clearRangeSelection();
     suppressNextDayClick=true;
+    suppressNextClickAfterCalendarOpen=true;
+    setTimeout(()=>{suppressNextClickAfterCalendarOpen=false},0);
     state.selectedDate=selectedDate;
     renderCalendar();
     renderAudit();
