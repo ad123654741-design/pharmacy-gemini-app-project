@@ -137,7 +137,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   .main{padding:7px;gap:7px;order:1}
   .calendar-card{border-radius:13px;min-height:calc(100vh - 142px);height:calc(100vh - 142px);box-shadow:var(--shadow-sm)}
   .calendar-head{padding:7px 8px;gap:5px;min-height:43px;position:relative;top:auto}
-  .calendar-head .calendar-title{font-size:15px;min-width:0;white-space:nowrap}
+  .calendar-head .calendar-title{font-size:15px;min-width:0;white-space:normal;line-height:1.15;width:58px;flex:0 0 58px;text-align:center}
+  .calendar-head .calendar-title .month-year,.calendar-head .calendar-title .month-month{display:block}
+  .mobile-query-grid{grid-template-columns:1fr 1fr!important;gap:8px}
+  .mobile-query-grid button{min-height:44px}
   .calendar-head .cycle-range{font-size:9px;padding:5px 6px;overflow:hidden;text-overflow:ellipsis}
   .view-switch{padding:2px;gap:1px}.view-mode-btn{padding:5px 6px;font-size:9px}
   .calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-template-rows:34px repeat(6,minmax(0,1fr));height:100%;min-height:0;overflow:hidden}
@@ -337,6 +340,22 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
   <button type="button" id="mobileSettingsBtn" class="requires-edit"><span>⚙</span><small>設定</small></button>
   <button type="button" id="mobileEditBtn"><span>✎</span><small>編輯</small></button>
 </nav>
+
+<!-- =======================================================
+     04.1 MOBILE QUERY / 手機完整查詢分類
+     ======================================================= -->
+<div class="modal-backdrop" id="mobileQueryModal" role="dialog" aria-modal="true" aria-labelledby="mobileQueryTitle">
+  <div class="modal">
+    <div class="modal-head"><h2 id="mobileQueryTitle">查詢紀錄</h2><button class="icon-btn" data-close="mobileQueryModal">✕</button></div>
+    <div class="form-grid mobile-query-grid">
+      <button type="button" class="ghost-btn" id="mobileQueryOvertime">⌕ 加班紀錄</button>
+      <button type="button" class="ghost-btn" id="mobileQueryLeave">⌕ 特休紀錄</button>
+      <button type="button" class="ghost-btn" id="mobileQueryComp">⌕ 補休紀錄</button>
+      <button type="button" class="ghost-btn" id="mobileQuerySettlement">⌕ 結清補休</button>
+    </div>
+    <div class="form-actions"><button type="button" class="ghost-btn" data-close="mobileQueryModal">關閉</button></div>
+  </div>
+</div>
 
 <!-- =======================================================
      04. EVENT EDITOR / 班次編輯視窗
@@ -597,7 +616,7 @@ function dateKey(d){return isoDate(d.getFullYear(),d.getMonth(),d.getDate())}
 function monthKey(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-01`}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
 function addMonths(d,n){return new Date(d.getFullYear(),d.getMonth()+n,1)}
-function monthLabel(d){return `${d.getFullYear()}年 ${d.getMonth()+1}月`}
+function monthLabel(d){return `<span class="month-year">${d.getFullYear()}年</span><span class="month-month">${d.getMonth()+1}月</span>`}
 function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}
 function isToday(k){return k===dateKey(new Date())}
 function diffDays(a,b){return Math.round((parseDate(b)-parseDate(a))/86400000)}
@@ -651,7 +670,6 @@ function getPeriodStats(start=periodStartForDate()){
   const regularBy2Weeks=[0,1].map(block=>{
     return rows.slice(block*14,block*14+14).filter(r=>r.event?.type==="regular").length;
   });
-  const maxDaily=Math.max(0,...rows.map(r=>Number(r.event?.hours)||0));
   const consecutive=(() => {
     let max=0,cur=0;
     rows.forEach(r=>{
@@ -659,7 +677,7 @@ function getPeriodStats(start=periodStartForDate()){
       cur=works?cur+1:0; max=Math.max(max,cur);
     }); return max;
   })();
-  return {start,days,rows,normalHours,statutoryRest,regularBy2Weeks,maxDaily,consecutive};
+  return {start,days,rows,normalHours,statutoryRest,regularBy2Weeks,consecutive};
 }
 function getAudit(){
   const s=getPeriodStats();
@@ -670,8 +688,6 @@ function getAudit(){
       detail:s.statutoryRest>=8?"四週內法定休息日數量達標。":"不足 8 日，請補足例假／休息日。"},
     {ok:s.regularBy2Weeks.every(n=>n>=2),label:`兩週例假 ${s.regularBy2Weeks[0]}＋${s.regularBy2Weeks[1]} 日`,
       detail:s.regularBy2Weeks.every(n=>n>=2)?"兩個14日區段皆達至少2日例假。":"至少有一個14日區段的例假不足2日。"},
-    {ok:s.maxDaily<=APP.law.maxDaily,label:`單日最高正常工時 ${formatHours(s.maxDaily)} 小時（基準 ${APP.law.normalHours} 小時）`,
-      detail:s.maxDaily<=APP.law.maxDailyNormal?"未發現超過10小時的正常工時。":"發現單日正常工時超過10小時，需檢視排班。"}
   ];
   return {stats:s,checks,ok:checks.every(c=>c.ok)};
 }
@@ -749,8 +765,8 @@ function render(){
 function renderHeader(){
   const d=parseDate(state.viewDate);
   const label=viewMode==="period"?"四週週期檢視":monthLabel(d);
-  document.getElementById("monthTitle").textContent=label;
-  document.getElementById("desktopMonthTitle").textContent=label;
+  document.getElementById("monthTitle").innerHTML=label;
+  document.getElementById("desktopMonthTitle").innerHTML=label;
   renderViewModeButtons();
 }
 function formatCycleRange(start,end){
@@ -1231,7 +1247,11 @@ document.getElementById("mobileMenuBtn")?.addEventListener("click",openMobileMen
 mobileBackdrop?.addEventListener("click",closeMobileMenu);
 document.getElementById("mobileCalendarBtn")?.addEventListener("click",()=>{closeMobileMenu();document.querySelector(".main")?.scrollIntoView({block:"start"});});
 document.getElementById("mobileAddBtn")?.addEventListener("click",()=>{if(!mobileEditMode){toast("請先開啟編輯模式");return;}closeMobileMenu();openEvent(state.selectedDate);});
-document.getElementById("mobileQueryBtn")?.addEventListener("click",()=>{closeMobileMenu();openCompQuery();});
+document.getElementById("mobileQueryBtn")?.addEventListener("click",()=>{closeMobileMenu();openModal("mobileQueryModal");});
+document.getElementById("mobileQueryOvertime")?.addEventListener("click",()=>{closeModal("mobileQueryModal");openOvertimeQuery();});
+document.getElementById("mobileQueryLeave")?.addEventListener("click",()=>{closeModal("mobileQueryModal");openLeaveQuery();});
+document.getElementById("mobileQueryComp")?.addEventListener("click",()=>{closeModal("mobileQueryModal");openCompQuery();});
+document.getElementById("mobileQuerySettlement")?.addEventListener("click",()=>{closeModal("mobileQueryModal");openCompSettlementQuery();});
 function syncMobileEditMode(){
   const editBtn=document.getElementById("mobileEditBtn");
   editBtn?.classList.toggle("active",mobileEditMode);
