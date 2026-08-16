@@ -413,36 +413,64 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 </style>
 
 
-<style id="v19-settings-final-position">
+
+<style id="v21-mobile-settings-final">
 @media (max-width:768px){
+  /* The modal is viewport-fixed, never positioned after page scroll. */
+  #settingsModal{
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+    margin:0 !important;
+    padding:12px !important;
+    box-sizing:border-box !important;
+    z-index:2147483640 !important;
+    display:none !important;
+    align-items:center !important;
+    justify-content:center !important;
+    overflow:hidden !important;
+    background:rgba(15,23,42,.45) !important;
+  }
+  #settingsModal.open{
+    display:flex !important;
+  }
   #settingsModal .modal{
     position:relative !important;
+    width:min(680px,100%) !important;
+    max-width:680px !important;
+    max-height:calc(100dvh - 24px) !important;
+    margin:0 auto !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    box-sizing:border-box !important;
+    -webkit-overflow-scrolling:touch !important;
   }
   #settingsModal .modal-head{
-    position:relative !important;
+    position:sticky !important;
+    top:0 !important;
+    z-index:5 !important;
     display:flex !important;
     align-items:center !important;
-    width:100% !important;
-    box-sizing:border-box !important;
-    padding-right:0 !important;
     gap:8px !important;
+    background:inherit !important;
   }
   #settingsModal .modal-head h2{
-    min-width:0 !important;
     flex:1 1 auto !important;
-    padding-right:4px !important;
+    min-width:0 !important;
   }
   #settingsModal #mobileAdvancedSettingsBtn{
     position:static !important;
     flex:0 0 auto !important;
     order:2 !important;
     width:auto !important;
-    max-width:34% !important;
+    max-width:32% !important;
     margin:0 !important;
     white-space:nowrap !important;
-    transform:none !important;
   }
   #settingsModal .modal-head .icon-btn{
+    position:static !important;
     order:3 !important;
     flex:0 0 auto !important;
   }
@@ -450,19 +478,12 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
     position:relative !important;
     inset:auto !important;
     width:100% !important;
+    box-sizing:border-box !important;
+  }
+  #settingsModal input,#settingsModal select,#settingsModal button{
     max-width:100% !important;
     box-sizing:border-box !important;
-    margin:8px 0 0 !important;
   }
-}
-</style>
-
-
-<style id="v20-mobile-settings-safe-css">
-@media (max-width:768px){
-  #settingsModal{z-index:2147483005 !important;pointer-events:auto !important}
-  #settingsModal.open{display:flex !important}
-  #settingsModal .modal{pointer-events:auto !important;max-height:calc(100dvh - 24px) !important;overflow:auto !important}
 }
 </style>
 
@@ -1495,15 +1516,7 @@ function syncMobileEditMode(){
   document.querySelectorAll(".requires-edit").forEach(btn=>{btn.classList.toggle("edit-enabled",mobileEditMode);btn.disabled=!mobileEditMode;});
 }
 document.getElementById("mobileEditBtn")?.addEventListener("click",()=>{mobileEditMode=!mobileEditMode;syncMobileEditMode();toast(mobileEditMode?"已進入編輯模式":"已回到檢視模式");});
-document.getElementById("mobileSettingsBtn")?.addEventListener("click",(e)=>{
-  e.preventDefault();
-  e.stopPropagation();
-  closeMobileMenu();
-  const modal=document.getElementById("settingsModal");
-  if(!modal) return;
-  modal.classList.add("open");
-  document.body.classList.add("modal-open");
-});
+
 mobileSidebar?.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{if(window.innerWidth<=700)closeMobileMenu();}));
 function calcShiftMinutes(start,end){
   if(!start||!end)return 0;
@@ -1994,21 +2007,47 @@ render();
 </script>
 
 
-<script id="v20-mobile-settings-safe-open">
+
+<script id="v21-mobile-settings-open">
 (function(){
-  const btn=document.getElementById("mobileSettingsBtn");
-  const modal=document.getElementById("settingsModal");
-  if(!btn || !modal) return;
-  const clean=btn.cloneNode(true);
-  btn.replaceWith(clean);
-  clean.addEventListener("click",function(e){
-    e.preventDefault();
-    e.stopPropagation();
+  function openMobileSettings(e){
+    if(e){ e.preventDefault(); e.stopPropagation(); }
+    const modal=document.getElementById("settingsModal");
+    if(!modal) return;
     const menu=document.getElementById("mobileMenu");
     if(menu) menu.classList.remove("open");
     modal.classList.add("open");
     document.body.classList.add("modal-open");
-  });
+    document.body.style.overflow="hidden";
+  }
+  const btn=document.getElementById("mobileSettingsBtn");
+  if(btn){
+    const clean=btn.cloneNode(true);
+    btn.replaceWith(clean);
+    clean.addEventListener("click",openMobileSettings);
+  }
+
+  const modal=document.getElementById("settingsModal");
+  if(modal){
+    modal.addEventListener("click",function(e){
+      if(e.target===modal){
+        modal.classList.remove("open");
+        document.body.classList.remove("modal-open");
+        document.body.style.overflow="";
+      }
+    });
+    const close=modal.querySelector('[data-close="settingsModal"]');
+    if(close){
+      const clean=close.cloneNode(true);
+      close.replaceWith(clean);
+      clean.addEventListener("click",function(e){
+        e.preventDefault(); e.stopPropagation();
+        modal.classList.remove("open");
+        document.body.classList.remove("modal-open");
+        document.body.style.overflow="";
+      });
+    }
+  }
 })();
 </script>
 
