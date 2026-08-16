@@ -61,6 +61,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .events{display:grid;gap:4px}
 .event{border-radius:7px;padding:4px 6px;font-size:11px;line-height:1.25;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .event-sub{font-weight:600;opacity:.78;font-size:10px}
+.calendar-duration{border-radius:7px;padding:4px 6px;font-size:11px;line-height:1.25;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.calendar-overtime{background:#fef2f2;color:#b91c1c}
+.calendar-leave{background:#f0fdf4;color:#15803d}
 .empty-note{color:#c3c9d3;font-size:10px;margin-top:7px}
 .event-work{background:#eef2ff;color:#4338ca}.event-night{background:#ede9fe;color:#6d28d9}
 .event-off{background:#f1f5f9;color:#475467}.event-rest{background:#ecfdf3;color:#15803d}
@@ -151,7 +154,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   .day-number{font-size:9px;margin-bottom:2px;line-height:1.1;min-height:16px}
   .today-ring{width:17px;height:17px}
   .events{gap:1px}.event{padding:2px 3px;border-radius:4px;font-size:8px;line-height:1.15}
-  .event-sub{display:none}.empty-note{font-size:7px;margin-top:2px;white-space:nowrap;overflow:hidden}
+  .event-sub{display:none}.calendar-duration{padding:2px 3px;border-radius:4px;font-size:8px;line-height:1.15}.empty-note{font-size:7px;margin-top:2px;white-space:nowrap;overflow:hidden}
   .mobile-agenda{display:none!important}
   .insights{display:grid;grid-template-columns:1fr 1fr;gap:7px;order:2;padding:0 7px 8px}
   .insights .card{padding:10px;border-radius:12px}.insights .card:last-child{grid-column:1/-1}
@@ -621,6 +624,18 @@ function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}
 function isToday(k){return k===dateKey(new Date())}
 function diffDays(a,b){return Math.round((parseDate(b)-parseDate(a))/86400000)}
 function formatHours(n){return Number.isInteger(n)?String(n):n.toFixed(1)}
+function renderCalendarDurationNotice(ev){
+  if(!ev) return "";
+  const notices=[];
+  const overtimeMinutes=Math.max(0,Math.round(Number(ev.overtime)||0));
+  if(overtimeMinutes>0) notices.push(`<div class="calendar-duration calendar-overtime">${formatDurationMinutes(overtimeMinutes)}</div>`);
+  const leaveHours=Number(ev.leave)||0;
+  if(leaveHours>0 && ["leave","reservedLeave","comp"].includes(ev.type)){
+    const leaveMinutes=Math.round(leaveHours*60);
+    notices.push(`<div class="calendar-duration calendar-leave">${formatDurationMinutes(leaveMinutes)}</div>`);
+  }
+  return notices.join("");
+}
 function formatDurationMinutes(minutes){
   const m=Math.max(0,Math.round(Number(minutes)||0));
   return `${Math.floor(m/60)}小時${pad(m%60)}分鐘`;
@@ -811,7 +826,7 @@ function renderCalendar(){
       let eventHtml="";
       if(ev){
         const t=APP.eventTypes[ev.type]||APP.eventTypes.off;
-        eventHtml=`<div class="event ${t.cls}" data-edit="${ev.id}" title="${escapeHtml(ev.note||t.label)}">${escapeHtml(ev.label||t.short)}${Number(ev.hours)>0?`<span class="event-sub"> ${formatHours(ev.hours)}h</span>`:""}</div>`;
+        eventHtml=`<div class="event ${t.cls}" data-edit="${ev.id}" title="${escapeHtml(ev.note||t.label)}">${escapeHtml(ev.label||t.short)}${Number(ev.hours)>0?`<span class="event-sub"> ${formatHours(ev.hours)}h</span>`:""}</div>${renderCalendarDurationNotice(ev)}`;
       }else eventHtml=`<div class="empty-note">＋ 點擊排班</div>`;
       html+=`<div class="${classes}" data-date="${k}" aria-label="${k}"><div class="day-number"><span>${APP.weekdays[(day.getDay())]}</span>${num}</div><div class="events">${eventHtml}</div></div>`;
       agendaRows.push(`<div class="agenda-row ${inCycle?"":"outside-period"} ${rangeSelection.has(k)?"range-selected":""}" data-date="${k}"><div class="agenda-date"><b>${day.getDate()}</b><span>${APP.weekdays[day.getDay()]}</span></div><div class="agenda-events">${ev?`<div class="event ${(APP.eventTypes[ev.type]||APP.eventTypes.off).cls}" data-edit="${ev.id}">${escapeHtml(ev.label||APP.eventTypes[ev.type]?.short||"班次")}${Number(ev.hours)>0?` · ${formatHours(ev.hours)}h`:""}</div><div class="small">${escapeHtml(ev.note||"")}</div>`:`<div class="agenda-empty">休息／尚未排班 · 點擊可新增</div>`}</div></div>`);
@@ -827,7 +842,7 @@ function renderCalendar(){
       const classes=`day-cell ${other?"other-month":""} ${rangeSelection.has(k)?"range-selected":""} ${rangeStartDate===k?"range-anchor":""}`;
       const num=isToday(k)?`<span class="today-ring">${day.getDate()}</span>`:`<span>${day.getDate()}</span>`;
       let eventHtml="";
-      if(ev){const t=APP.eventTypes[ev.type]||APP.eventTypes.off;eventHtml=`<div class="event ${t.cls}" data-edit="${ev.id}" title="${escapeHtml(ev.note||t.label)}">${escapeHtml(ev.label||t.short)}${Number(ev.hours)>0?`<span class="event-sub"> ${formatHours(ev.hours)}h</span>`:""}</div>`;}
+      if(ev){const t=APP.eventTypes[ev.type]||APP.eventTypes.off;eventHtml=`<div class="event ${t.cls}" data-edit="${ev.id}" title="${escapeHtml(ev.note||t.label)}">${escapeHtml(ev.label||t.short)}${Number(ev.hours)>0?`<span class="event-sub"> ${formatHours(ev.hours)}h</span>`:""}</div>${renderCalendarDurationNotice(ev)}`;}
       else eventHtml=`<div class="empty-note">＋ 點擊排班</div>`;
       html+=`<div class="${classes}" data-date="${k}" aria-label="${k}"><div class="day-number">${num}</div><div class="events">${eventHtml}</div></div>`;
       agendaRows.push(`<div class="agenda-row ${rangeSelection.has(k)?"range-selected":""}" data-date="${k}"><div class="agenda-date"><b>${day.getDate()}</b><span>${APP.weekdays[day.getDay()]}</span></div><div class="agenda-events">${ev?`<div class="event ${(APP.eventTypes[ev.type]||APP.eventTypes.off).cls}" data-edit="${ev.id}">${escapeHtml(ev.label||APP.eventTypes[ev.type]?.short||"班次")}${Number(ev.hours)>0?` · ${formatHours(ev.hours)}h`:""}</div><div class="small">${escapeHtml(ev.note||"")}</div>`:`<div class="agenda-empty">休息／尚未排班 · 點擊可新增</div>`}</div></div>`);
