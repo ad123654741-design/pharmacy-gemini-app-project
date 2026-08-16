@@ -412,6 +412,51 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 }
 </style>
 
+
+<style id="v19-settings-final-position">
+@media (max-width:768px){
+  #settingsModal .modal{
+    position:relative !important;
+  }
+  #settingsModal .modal-head{
+    position:relative !important;
+    display:flex !important;
+    align-items:center !important;
+    width:100% !important;
+    box-sizing:border-box !important;
+    padding-right:0 !important;
+    gap:8px !important;
+  }
+  #settingsModal .modal-head h2{
+    min-width:0 !important;
+    flex:1 1 auto !important;
+    padding-right:4px !important;
+  }
+  #settingsModal #mobileAdvancedSettingsBtn{
+    position:static !important;
+    flex:0 0 auto !important;
+    order:2 !important;
+    width:auto !important;
+    max-width:34% !important;
+    margin:0 !important;
+    white-space:nowrap !important;
+    transform:none !important;
+  }
+  #settingsModal .modal-head .icon-btn{
+    order:3 !important;
+    flex:0 0 auto !important;
+  }
+  #settingsModal #mobileAdvancedSettingsPanel{
+    position:relative !important;
+    inset:auto !important;
+    width:100% !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+    margin:8px 0 0 !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -640,17 +685,13 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 </div>
 
 <div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true">
-<button type="button" class="advanced-settings-btn" id="mobileAdvancedSettingsBtn">進階設定</button>
-
-
+<div class="modal">
+    <div class="modal-head"><h2>班表與工時設定</h2><button type="button" class="advanced-settings-btn" id="mobileAdvancedSettingsBtn">進階設定</button><button class="icon-btn" data-close="settingsModal">✕</button></div>
 <div class="advanced-settings-panel" id="mobileAdvancedSettingsPanel">
   <button type="button" data-advanced-action="export">⇩ 匯出 JSON 備份</button>
   <button type="button" data-advanced-action="import">⇧ 匯入 JSON 備份</button>
   <button type="button" data-advanced-action="clear">↺ 清除所有資料</button>
 </div>
-
-  <div class="modal">
-    <div class="modal-head"><h2>班表與工時設定</h2><button class="icon-btn" data-close="settingsModal">✕</button></div>
     <form id="settingsForm">
       <div class="form-grid">
         <div class="field"><label for="annualLeave">本年度特休額度（小時）</label><input id="annualLeave" type="number" min="0" step="0.5"></div>
@@ -1445,7 +1486,7 @@ function syncMobileEditMode(){
   document.querySelectorAll(".requires-edit").forEach(btn=>{btn.classList.toggle("edit-enabled",mobileEditMode);btn.disabled=!mobileEditMode;});
 }
 document.getElementById("mobileEditBtn")?.addEventListener("click",()=>{mobileEditMode=!mobileEditMode;syncMobileEditMode();toast(mobileEditMode?"已進入編輯模式":"已回到檢視模式");});
-document.getElementById("mobileSettingsBtn")?.addEventListener("click",()=>{if(!mobileEditMode){toast("請先開啟編輯模式");return;}openSettings();});
+document.getElementById("mobileSettingsBtn")?.addEventListener("click",()=>{closeMobileMenu();openSettings();});
 mobileSidebar?.querySelectorAll("button").forEach(btn=>btn.addEventListener("click",()=>{if(window.innerWidth<=700)closeMobileMenu();}));
 function calcShiftMinutes(start,end){
   if(!start||!end)return 0;
@@ -1895,6 +1936,42 @@ render();
       else if(a==='import') invokeImport();
       else if(a==='clear') invokeClear();
     }, true);
+  });
+})();
+</script>
+
+
+<script id="v19-advanced-actions-final">
+(function(){
+  const panel=document.getElementById("mobileAdvancedSettingsPanel");
+  if(!panel) return;
+
+  panel.querySelectorAll("[data-advanced-action]").forEach(btn=>{
+    if(btn.dataset.v19Bound) return;
+    btn.dataset.v19Bound="1";
+    btn.addEventListener("click",function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      const action=this.dataset.advancedAction;
+
+      if(action==="export"){
+        const el=document.getElementById("exportBtn");
+        if(el) el.click();
+        return;
+      }
+
+      if(action==="import"){
+        const el=document.getElementById("importBtn");
+        if(el) el.click();
+        return;
+      }
+
+      if(action==="clear"){
+        const el=document.getElementById("resetBtn");
+        if(el) el.click();
+        return;
+      }
+    });
   });
 })();
 </script>
