@@ -414,79 +414,33 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
 
 
 
-<style id="v21-mobile-settings-final">
+<style id="v22-mobile-settings-native-modal">
 @media (max-width:768px){
-  /* The modal is viewport-fixed, never positioned after page scroll. */
   #settingsModal{
-    position:fixed !important;
-    inset:0 !important;
-    width:100vw !important;
-    height:100dvh !important;
-    min-height:100dvh !important;
-    margin:0 !important;
-    padding:12px !important;
-    box-sizing:border-box !important;
-    z-index:2147483640 !important;
-    display:none !important;
-    align-items:center !important;
-    justify-content:center !important;
-    overflow:hidden !important;
-    background:rgba(15,23,42,.45) !important;
+    position:fixed !important; inset:0 !important; width:100vw !important; height:100dvh !important;
+    margin:0 !important; padding:12px 12px calc(82px + env(safe-area-inset-bottom)) !important;
+    box-sizing:border-box !important; z-index:2147483640 !important;
+    align-items:center !important; justify-content:center !important; overflow:hidden !important;
   }
-  #settingsModal.open{
-    display:flex !important;
-  }
+  #settingsModal.show{display:flex !important}
   #settingsModal .modal{
-    position:relative !important;
-    width:min(680px,100%) !important;
-    max-width:680px !important;
-    max-height:calc(100dvh - 24px) !important;
-    margin:0 auto !important;
-    overflow-y:auto !important;
-    overflow-x:hidden !important;
-    box-sizing:border-box !important;
+    position:relative !important; width:min(680px,100%) !important; max-width:680px !important;
+    max-height:calc(100dvh - 106px - env(safe-area-inset-bottom)) !important;
+    margin:0 auto !important; overflow-y:auto !important; overflow-x:hidden !important;
+    box-sizing:border-box !important; overscroll-behavior:contain !important;
     -webkit-overflow-scrolling:touch !important;
   }
-  #settingsModal .modal-head{
-    position:sticky !important;
-    top:0 !important;
-    z-index:5 !important;
-    display:flex !important;
-    align-items:center !important;
-    gap:8px !important;
-    background:inherit !important;
-  }
-  #settingsModal .modal-head h2{
-    flex:1 1 auto !important;
-    min-width:0 !important;
-  }
-  #settingsModal #mobileAdvancedSettingsBtn{
-    position:static !important;
-    flex:0 0 auto !important;
-    order:2 !important;
-    width:auto !important;
-    max-width:32% !important;
-    margin:0 !important;
-    white-space:nowrap !important;
-  }
-  #settingsModal .modal-head .icon-btn{
-    position:static !important;
-    order:3 !important;
-    flex:0 0 auto !important;
-  }
-  #settingsModal #mobileAdvancedSettingsPanel{
-    position:relative !important;
-    inset:auto !important;
-    width:100% !important;
-    box-sizing:border-box !important;
-  }
-  #settingsModal input,#settingsModal select,#settingsModal button{
-    max-width:100% !important;
-    box-sizing:border-box !important;
+  #settingsModal .modal-head{position:sticky !important;top:0 !important;z-index:5 !important;display:flex !important;align-items:center !important;gap:8px !important}
+  #settingsModal .modal-head h2{flex:1 1 auto !important;min-width:0 !important}
+  #settingsModal #mobileAdvancedSettingsBtn{position:static !important;flex:0 0 auto !important;order:2 !important;max-width:32% !important;margin:0 !important;white-space:nowrap !important}
+  #settingsModal .modal-head .icon-btn{position:static !important;order:3 !important;flex:0 0 auto !important}
+  #settingsModal .form-actions{
+    position:sticky !important;bottom:0 !important;z-index:6 !important;margin-top:12px !important;
+    padding:10px 0 calc(4px + env(safe-area-inset-bottom)) !important;
+    background:linear-gradient(to bottom,rgba(255,255,255,.88),#fff 35%) !important;
   }
 }
 </style>
-
 </head>
 <body>
 <div class="app">
@@ -727,7 +681,7 @@ body.modal-open{overflow:hidden;overscroll-behavior:none}
         <div class="field"><label for="annualLeave">本年度特休額度（小時）</label><input id="annualLeave" type="number" min="0" step="0.5"></div>
         <div class="field"><label for="reservedLeave">保留假累積餘額（小時）</label><input id="reservedLeave" type="number" min="0" step="0.5"></div>
         <div class="field"><label for="compLeave">補休目前餘額（時:分）</label><input id="compLeave" type="text" inputmode="numeric" placeholder="例如 22:20"></div>
-        <div class="field full"><label for="periodStart">四週週期起始日</label><input id="periodStart" type="date" required></div>
+        <div class="field full"><label for="periodStart">四週週期起始日</label><input id="periodStart" type="date" required></div><div class="field full"><label>目前休假餘額（依所選年度）</label><div id="settingsBalanceSummary" class="status info"></div></div>
         <div class="field full"><label for="normalHours">每日基準正常工時</label><input id="normalHours" type="number" min="1" max="8" step="0.5"></div>
       </div>
       <div class="field full" style="margin-top:4px"><label>年度結算</label><div class="status info" style="display:flex;align-items:center;justify-content:space-between;gap:10px"><span id="settlementSummary"></span><button type="button" class="ghost-btn" id="settlePrevYearBtn">將前一年度剩餘特休轉入保留假</button><button type="button" class="ghost-btn" id="settlePrevYearCompBtn">結清前一年度補休</button></div></div>
@@ -1439,6 +1393,8 @@ function openSettings(){
   document.getElementById("normalHours").value=state.settings.normalHours;
   const prev=getYearEndSettlement(year-1);
   document.getElementById("settlementSummary").textContent=`${year-1} 年特休剩餘 ${formatHours(prev.remainingAnnual)} 小時；已轉入 ${formatHours(state.settings.reservedLeaveByYear?.[String(year-1)]||0)} 小時。`;
+   const balance=getBalance();
+   document.getElementById("settingsBalanceSummary").innerHTML=`${year} 年特休剩餘 <b>${formatHours(balance.leaveRemain)} 小時</b>　保留假 <b>${formatHours(balance.reservedRemain)} 小時</b>　補休 <b>${formatDurationMinutes(balance.compRemain)}</b>`;
   openModal("settingsModal");
 }
 function saveSettings(){
@@ -2008,48 +1964,20 @@ render();
 
 
 
-<script id="v21-mobile-settings-open">
+<script id="v22-mobile-settings-native-open">
 (function(){
-  function openMobileSettings(e){
-    if(e){ e.preventDefault(); e.stopPropagation(); }
-    const modal=document.getElementById("settingsModal");
-    if(!modal) return;
-    const menu=document.getElementById("mobileMenu");
-    if(menu) menu.classList.remove("open");
-    modal.classList.add("open");
-    document.body.classList.add("modal-open");
-    document.body.style.overflow="hidden";
-  }
   const btn=document.getElementById("mobileSettingsBtn");
-  if(btn){
-    const clean=btn.cloneNode(true);
-    btn.replaceWith(clean);
-    clean.addEventListener("click",openMobileSettings);
-  }
-
-  const modal=document.getElementById("settingsModal");
-  if(modal){
-    modal.addEventListener("click",function(e){
-      if(e.target===modal){
-        modal.classList.remove("open");
-        document.body.classList.remove("modal-open");
-        document.body.style.overflow="";
-      }
-    });
-    const close=modal.querySelector('[data-close="settingsModal"]');
-    if(close){
-      const clean=close.cloneNode(true);
-      close.replaceWith(clean);
-      clean.addEventListener("click",function(e){
-        e.preventDefault(); e.stopPropagation();
-        modal.classList.remove("open");
-        document.body.classList.remove("modal-open");
-        document.body.style.overflow="";
-      });
-    }
-  }
+  if(!btn) return;
+  const clean=btn.cloneNode(true);
+  btn.replaceWith(clean);
+  clean.addEventListener("click",function(e){
+    e.preventDefault(); e.stopPropagation();
+    if(typeof closeMobileMenu==="function") closeMobileMenu();
+    if(typeof openSettings==="function"){ openSettings(); return; }
+    const modal=document.getElementById("settingsModal");
+    if(modal){ modal.classList.add("show"); document.body.classList.add("modal-open"); }
+  });
 })();
 </script>
-
 </body>
 </html>
