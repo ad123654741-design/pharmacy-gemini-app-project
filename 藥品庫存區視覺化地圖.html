@@ -1862,7 +1862,7 @@
                 this.grid.position.z = 2; 
                 this.scene.add(this.grid);
 
-                // 修改：外圍透明格線同步外推一格 (32 -> 34)
+                // 外圍透明格線 (34x34)
                 const outerGrid = new THREE.GridHelper(34, 34, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
                 outerGrid.position.y = 0.005;
                 outerGrid.position.z = 2; 
@@ -1870,9 +1870,9 @@
                 outerGrid.material.opacity = 0.4;
                 this.scene.add(outerGrid);
 
-                // 走道長度配合最外圍網格加長 (32 -> 34)
+                // 修正 1：灰色地毯長度縮回 30，只呈現在白色網格內，不延伸至透明網格
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
-                const aisleGeo = new THREE.PlaneGeometry(34, 3.2); 
+                const aisleGeo = new THREE.PlaneGeometry(30, 3.2); 
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
