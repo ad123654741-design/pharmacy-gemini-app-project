@@ -1806,8 +1806,8 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            // 修正：調整攝影機預設位置與注視點，確保完整看見 6 個層架
-            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 24, 22), defaultTarget: new THREE.Vector3(0, 0, 2),
+            // 修改：將視角拉高、往右上方移動 (22, 26, 22)，營造右上方 45 度俯瞰的全景視野
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(22, 26, 22), defaultTarget: new THREE.Vector3(0, 0, 2),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1844,39 +1844,39 @@
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
                 dirLight.shadow.mapSize.height = 2048;
-                dirLight.shadow.camera.left = -20;
-                dirLight.shadow.camera.right = 20;
-                dirLight.shadow.camera.top = 20;
-                dirLight.shadow.camera.bottom = -20;
+                dirLight.shadow.camera.bottom = -15;
                 this.scene.add(dirLight);
 
-                // 修正：實體地板直接擴大，不需偏移 Z 軸
+                // 修改：白色實體地板長寬外推一格 (28 -> 30)
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
-                const floorGeo = new THREE.PlaneGeometry(28, 28);
+                const floorGeo = new THREE.PlaneGeometry(30, 30);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
+                floor.position.z = 2; 
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                // 修正：單層主要格線
-                this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
+                // 修改：主要白色格線同步外推一格 (28 -> 30)
+                this.grid = new THREE.GridHelper(30, 30, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
+                this.grid.position.z = 2; 
                 this.scene.add(this.grid);
 
-                // 修正：向外擴充 2 格的透明格線 (總長 32)
-                const outerGrid = new THREE.GridHelper(32, 32, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
+                // 修改：外圍透明格線同步外推一格 (32 -> 34)
+                const outerGrid = new THREE.GridHelper(34, 34, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
                 outerGrid.position.y = 0.005;
+                outerGrid.position.z = 2; 
                 outerGrid.material.transparent = true;
                 outerGrid.material.opacity = 0.4;
                 this.scene.add(outerGrid);
 
-                // 修正：走道位置。配合全局空間拉長，Z 軸微調以對齊鐵架
+                // 走道長度配合最外圍網格加長 (32 -> 34)
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
-                const aisleGeo = new THREE.PlaneGeometry(32, 3.2); // 走道長度配合外擴網格
+                const aisleGeo = new THREE.PlaneGeometry(34, 3.2); 
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
-                aisle.position.z = -1.5; // 校正走道在 A, C 鐵架與 E 鐵架之間的精準位置
+                aisle.position.z = -1.5; 
                 this.scene.add(aisle);
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
