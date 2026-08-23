@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>藥品庫存視覺化查詢系統 | Pro UI</title>
+    <title>藥品庫存區地圖</title>
     
-    <!-- 引入 Tailwind CSS (用於快速且高質感的 UI 排版) -->
+    <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 引入 Lucide Icons (高質感開源圖示庫) -->
+    <!-- 引入 Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- 引入 Google Fonts: Noto Sans TC -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- 引入 Three.js 及其控制模組 (3D視覺化主視覺用) -->
+    <!-- 引入 Three.js 及其控制模組 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     
     <!-- 自訂 Tailwind 設定與 CSS 動畫 -->
     <script>
         tailwind.config = {
-            darkMode: 'class', // 支援深色模式切換
+            darkMode: 'class', 
             theme: {
                 extend: {
                     fontFamily: {
                         sans: ['"Noto Sans TC"', 'sans-serif'],
                     },
                     colors: {
-                        primary: '#0ea5e9', // 醫療科技感的藍色
+                        primary: '#0ea5e9', 
                         primaryDark: '#0284c7',
                     }
                 }
@@ -37,7 +37,6 @@
     </script>
     
     <style>
-        /* 隱藏捲軸但保持可捲動 */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -46,13 +45,11 @@
             scrollbar-width: none;
         }
 
-        /* 鐵架動態高光 Class */
         .rack-highlighted {
             z-index: 20;
             background-color: #f0f9ff;
         }
 
-        /* 點選鎖定時的樣式 */
         .rack-selected {
             border-color: #10b981 !important; 
             background-color: #ecfdf5 !important;
@@ -66,7 +63,6 @@
             box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2) !important;
         }
         
-        /* 鐵架基礎過渡動畫 */
         .rack-base {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -74,11 +70,9 @@
 </head>
 <body class="bg-slate-100 dark:bg-slate-900 h-screen w-full overflow-hidden flex flex-col text-slate-800 dark:text-slate-100 transition-colors duration-300">
 
-    <!-- 頂部導覽列 (Header) -->
     <header class="h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm flex items-center px-6 shrink-0 z-30 relative transition-colors duration-300">
         <div class="flex items-center gap-3 text-primary">
             <i data-lucide="cross" class="w-6 h-6"></i>
-            <!-- 修改 2：程式標題改成藥品庫存區地圖 -->
             <h1 class="text-xl font-bold tracking-wide">藥品庫存區地圖</h1>
         </div>
         <div class="ml-auto flex items-center gap-4">
@@ -87,18 +81,15 @@
                 <span id="lastUpdateTime">最後更新: 載入中...</span>
             </div>
             
-            <!-- 登入/登出切換按鈕 -->
             <button onclick="Controllers.toggleAuth()" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300 rounded-lg transition-all duration-200 hover:-translate-y-0.5 shadow-sm border border-transparent dark:border-slate-600" title="管理員登入">
                 <i data-lucide="log-in" id="authIcon" class="w-4 h-4"></i>
                 <span class="text-sm font-medium hidden md:block" id="authText">登入</span>
             </button>
 
-            <!-- 設定按鈕 (齒輪) -->
             <button onclick="Controllers.openSettingsModal()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all duration-300 hover:rotate-90 shadow-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600" title="系統設定">
                 <i data-lucide="settings" class="w-4 h-4"></i>
             </button>
 
-            <!-- 深淺色切換按鈕 -->
             <button onclick="Controllers.toggleDarkMode()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all duration-200 hover:-translate-y-0.5 shadow-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600" title="切換深淺色模式">
                 <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
                 <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
@@ -106,23 +97,18 @@
         </div>
     </header>
 
-    <!-- 主要內容區塊 -->
     <main class="flex-1 flex flex-col md:flex-row overflow-hidden relative pb-[70px] md:pb-0">
         
-        <!-- 左側面板：搜尋與列表 -->
         <aside class="w-full md:w-[400px] bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col shrink-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)] h-[40vh] md:h-auto transition-colors duration-300">
             
-            <!-- 搜尋區塊 -->
-            <!-- 優化：手機版縮減 Padding 讓畫面更緊湊 -->
             <div class="p-4 md:p-6 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 sticky top-0 shrink-0 transition-colors duration-300">
-                <!-- 優化 1：手機版隱藏「尋找藥品」標題與按鈕列 -->
                 <div class="hidden md:flex justify-between items-center mb-4">
                     <h2 class="text-lg font-bold text-slate-800 dark:text-slate-100">尋找藥品</h2>
                     <div class="hidden md:flex items-center gap-2">
                         <button onclick="Controllers.resetAll()" class="flex items-center gap-1 text-xs bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5 shadow-sm border border-slate-200 dark:border-slate-600" title="清除搜尋與選取狀態">
                             <i data-lucide="eraser" class="w-3.5 h-3.5"></i> 清除
                         </button>
-                        <button onclick="Controllers.openEditModal('', '', 'Rack-A')" class="auth-required hidden flex items-center gap-1 text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 shadow-sm hover:shadow-primary/30">
+                        <button onclick="Controllers.openEditModal('', '', 'Rack-A', 1)" class="auth-required hidden flex items-center gap-1 text-xs bg-primary text-white px-3 py-1.5 rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 shadow-sm hover:shadow-primary/30">
                             <i data-lucide="plus" class="w-3.5 h-3.5"></i> 新增
                         </button>
                     </div>
@@ -134,7 +120,6 @@
                     <input type="text" id="searchInput" 
                         class="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-300 hover:shadow-sm"
                         placeholder="請輸入英文或中文藥品名稱">
-                    <!-- Loading 動畫與清除按鈕 -->
                     <div id="searchLoader" class="absolute inset-y-0 right-0 pr-3 flex items-center hidden pointer-events-none">
                         <i data-lucide="loader-2" class="w-5 h-5 text-primary animate-spin"></i>
                     </div>
@@ -143,71 +128,60 @@
                     </button>
                 </div>
                 
-                <!-- 優化 1：手機版隱藏「顯示所有藥品」狀態列 -->
                 <div id="statusMessage" class="mt-4 text-sm text-slate-500 dark:text-slate-400 hidden md:flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600 inline-block" id="statusDot"></span>
                     <span id="statusText">顯示所有藥品清單</span>
                 </div>
+
+                <!-- 層架 4 層細部篩選按鈕列 -->
+                <div id="shelfFilterContainer" class="mt-3 flex items-center gap-2 overflow-x-auto no-scrollbar hidden transition-all duration-300 pb-1">
+                </div>
             </div>
 
-            <!-- 藥品列表區塊 (加入 Virtual Scrolling 優化) -->
             <div class="flex-1 overflow-y-auto p-4 no-scrollbar bg-slate-50/50 dark:bg-slate-900/20 relative" id="medicineListContainer">
-                <!-- JS 動態渲染虛擬捲動內容 -->
             </div>
             
-            <!-- 優化 1：手機版隱藏「系統中共有 ? 項藥品」統計列 -->
             <div class="hidden md:block p-4 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs text-center text-slate-400 dark:text-slate-500 shrink-0 transition-colors duration-300">
                 系統中共有 <span id="totalItemsCount" class="font-bold text-slate-600 dark:text-slate-300">0</span> 項藥品
             </div>
         </aside>
 
-        <!-- 右側面板：庫存視覺化 -->
         <section class="flex-1 bg-slate-100/50 dark:bg-slate-900/50 relative overflow-hidden flex flex-col transition-colors duration-300">
             
-            <!-- 頂部說明區與右上角俯視小圖 -->
             <div class="p-6 pb-0 shrink-0 flex justify-between items-start z-10 relative pointer-events-none">
                 <div class="pr-4 pointer-events-auto">
-                    <!-- 優化 1：手機版隱藏「搜尋左側藥品...」提示文字 -->
                     <p class="hidden md:block text-slate-500 dark:text-slate-400 text-sm mb-3">搜尋左側藥品，系統將自動為您標示儲位。點擊俯視圖或 3D 模型中的層架可篩選顯示內容。</p>
-                    <!-- 鐵架名稱與種類說明區 -->
                     <div id="rackInfoContainer" class="flex flex-wrap gap-2">
-                        <!-- JS 動態渲染種類標籤 -->
                     </div>
                 </div>
                 
-                <!-- 恢復並修改右上角俯視圖 (配合 F鐵架下移，將高度加長至 140px 以容納擴建區域) -->
+                <!-- 空間俯視圖 -->
                 <div class="hidden sm:flex flex-col items-center gap-1 shrink-0 pointer-events-auto z-20">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-700">空間俯視圖</span>
+                    <!-- 因應 F 鐵架外擴，將地圖容器高度從 100px 加大至 140px -->
                     <div class="relative w-40 h-[140px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
-                        <!-- JS 動態渲染小俯視圖 -->
                     </div>
                 </div>
             </div>
 
-            <!-- 3D 視覺化主容器 -->
             <div class="absolute inset-0 z-0 overflow-hidden outline-none cursor-grab active:cursor-grabbing" id="canvas-container">
-                <!-- Three.js Canvas 將渲染於此 -->
             </div>
 
-            <!-- 3D 重置視角按鈕 -->
             <button onclick="ThreeApp.resetCamera()" class="absolute bottom-6 right-6 p-3 bg-white/90 dark:bg-slate-800/90 rounded-full shadow-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-primary transition-all duration-300 hover:scale-110 z-20 focus:outline-none" title="重置 3D 視角">
                 <i data-lucide="focus" class="w-6 h-6"></i>
             </button>
 
-            <!-- 3D 紙箱 Hover 浮動提示框 -->
             <div id="tooltip3d" class="fixed hidden bg-slate-900/95 text-white p-3 rounded-lg shadow-2xl z-50 pointer-events-none transform -translate-x-1/2 -translate-y-[calc(100%+15px)] backdrop-blur-sm border border-slate-700 whitespace-nowrap transition-opacity duration-200">
-                <!-- JS 動態插入 -->
             </div>
         </section>
     </main>
 
-    <!-- 手機版底部導覽列 (僅小螢幕顯示) -->
     <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around p-2 z-40 transition-colors duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] pb-safe">
         <button onclick="document.getElementById('searchInput').focus()" class="flex flex-col items-center gap-1 p-2 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-all duration-200 hover:-translate-y-1">
             <i data-lucide="search" class="w-5 h-5"></i>
             <span class="text-[10px] font-medium">搜尋</span>
         </button>
-        <button onclick="Controllers.openEditModal('', '', 'Rack-A')" class="auth-required hidden flex flex-col items-center gap-1 p-2 text-primary hover:text-primaryDark transition-all duration-200 hover:-translate-y-1">
+        <button onclick="Controllers.openEditModal('', '', 'Rack-A', 1)" class="auth-required hidden flex flex-col items-center gap-1 p-2 text-primary hover:text-primaryDark transition-all duration-200 hover:-translate-y-1">
             <div class="bg-primary/10 p-1.5 rounded-full">
                 <i data-lucide="plus" class="w-5 h-5"></i>
             </div>
@@ -219,7 +193,6 @@
         </button>
     </nav>
 
-    <!-- 列印篩選 Modal -->
     <div id="printFilterModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[70] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="printFilterModalContent">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -234,7 +207,6 @@
                 <div>
                     <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">請選擇要匯出的層架範圍：</label>
                     <div class="grid grid-cols-2 gap-2" id="printRacksContainer">
-                        <!-- JS 動態生成 Checkbox -->
                     </div>
                 </div>
 
@@ -246,7 +218,6 @@
                     <p class="text-xs text-slate-500 mt-1 pl-6" id="printSearchTextHint">目前無搜尋條件</p>
                 </div>
                 
-                <!-- 新增：是否列印內部代碼的選項 (僅清單模式顯示) -->
                 <div class="mt-2 hidden" id="printCodeOptionContainer">
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" id="printIncludeCode" class="w-4 h-4 text-primary bg-slate-100 border-slate-300 rounded focus:ring-primary dark:bg-slate-700 dark:border-slate-600" checked>
@@ -263,7 +234,7 @@
         </div>
     </div>
 
-    <!-- 新增/編輯藥品 Modal -->
+    <!-- 編輯 Modal (支援層數) -->
     <div id="editModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-50 hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="editModalContent">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -283,18 +254,23 @@
                     <input type="text" id="editMedChName" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="請輸入中文商品名稱 (選填)">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">存放儲位 (鐵架)</label>
-                    <select id="editMedRack" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm">
-                        <!-- 選項由 JS 動態產生，以連動層架編輯 -->
-                    </select>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">存放儲位 (鐵架與層數)</label>
+                    <div class="flex gap-2">
+                        <select id="editMedRack" class="w-2/3 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm">
+                        </select>
+                        <select id="editMedShelf" class="w-1/3 px-3 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm">
+                            <option value="1">第 1 層</option>
+                            <option value="2">第 2 層</option>
+                            <option value="3">第 3 層</option>
+                            <option value="4">第 4 層</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                <!-- 新增：刪除按鈕 (預設隱藏) -->
                 <button onclick="Controllers.deleteMedicine()" id="deleteMedBtn" class="hidden px-4 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-all duration-200 flex items-center gap-2">
                     <i data-lucide="trash-2" class="w-4 h-4"></i> 刪除
                 </button>
-                <!-- 原有：取消與儲存按鈕 -->
                 <div class="flex gap-3 ml-auto">
                     <button onclick="Controllers.closeEditModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
                     <button onclick="Controllers.saveEditForm()" id="saveMedBtn" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/30 flex items-center gap-2">
@@ -315,7 +291,6 @@
                 </button>
             </div>
             <div class="p-6 flex flex-col gap-3 max-h-[60vh] overflow-y-auto no-scrollbar" id="rackEditListContainer">
-                <!-- JS 動態生成層架編輯清單 -->
             </div>
             <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-end gap-3">
                 <button onclick="Controllers.closeRackEditModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
@@ -345,7 +320,7 @@
                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">修改層架顯示名稱與庫存類別標籤</div>
                     </div>
                 </button>
-                <!-- 匯出層架標籤功能 -->
+                
                 <button onclick="Controllers.closeSettingsModal(); Controllers.exportRackLabels()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="printer" class="w-5 h-5"></i>
@@ -355,7 +330,7 @@
                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">產生適合列印的儲位標籤，方便黏貼對照</div>
                     </div>
                 </button>
-                <!-- 匯出藥品標籤功能 (卡片模式) -->
+                
                 <button onclick="Controllers.closeSettingsModal(); Controllers.openPrintFilterModal('label')" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="tags" class="w-5 h-5"></i>
@@ -365,7 +340,7 @@
                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">依層架分類匯出藥品標籤，橫向雙排方便剪貼</div>
                     </div>
                 </button>
-                <!-- 匯出藥品清單功能 (表單模式) -->
+                
                 <button onclick="Controllers.closeSettingsModal(); Controllers.openPrintFilterModal('list')" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-violet-500/10 text-violet-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="list" class="w-5 h-5"></i>
@@ -376,7 +351,6 @@
                     </div>
                 </button>
 
-                <!-- 新增：備份匯出與匯入功能 -->
                 <button onclick="Controllers.exportBackup()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="download-cloud" class="w-5 h-5"></i>
@@ -397,7 +371,7 @@
                     </div>
                 </button>
                 <input type="file" id="backupFileInput" accept=".json" class="hidden" onchange="Controllers.importBackup(event)">
-                
+
                 <button onclick="Controllers.closeSettingsModal(); Controllers.openAppearanceModal()" class="col-span-1 md:col-span-2 flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left mt-2">
                     <div class="w-10 h-10 rounded-full bg-teal-500/10 text-teal-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="palette" class="w-5 h-5"></i>
@@ -411,6 +385,7 @@
         </div>
     </div>
     
+    <!-- 3D 外觀與發光設定 Modal -->
     <div id="appearanceModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[70] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="appearanceModalContent">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -420,7 +395,6 @@
                 </button>
             </div>
             <div class="p-6">
-                <!-- 基本外觀：移除紙箱設定，保留雙欄位 -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">地板顏色</label>
@@ -432,13 +406,12 @@
                     <div>
                         <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">走道風格</label>
                         <select id="settingAisleColor" onchange="Controllers.updateAppearance()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-800 dark:text-slate-100">
-                            <option value="gray">灰藍走道</option>
+                            <option value="gray">粉藍灰系</option>
                             <option value="red">星光紅毯(金邊)</option>
                         </select>
                     </div>
                 </div>
                 
-                <!-- 發光顏色與亮度設定 -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
                     <div>
                         <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">搜尋高亮顏色</label>
@@ -483,7 +456,6 @@
             <div class="p-6">
                 <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">請輸入管理員密碼</label>
                 <input type="password" id="loginPwd" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="Password" onkeypress="if(event.key === 'Enter') Controllers.submitLogin()">
-                <!-- 密碼錯誤提示 -->
                 <p id="loginErrorMsg" class="text-red-500 dark:text-red-400 text-xs mt-2 hidden flex items-center gap-1">
                     <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> 密碼錯誤，請重新輸入
                 </p>
@@ -514,34 +486,34 @@
          * 1. 資料架構與狀態
          */
          
-        // 集中管理外觀與發光設定
         window.AppearanceConfig = {
             floorColor: 'white',
             aisleColor: 'gray',
-            searchColor: '#ac0606', // 附圖預設搜尋高亮色 (紅色)
-            selectColor: '#35a207', // 附圖預設選取發光色 (綠色)
-            glowIntensity: 0.2      // 附圖預設發光亮度
+            searchColor: '#ac0606', 
+            selectColor: '#35a207', 
+            glowIntensity: 0.2      
         };
 
-        // 定義6個鐵架的基礎資料 (新增 category 屬性與底層編號 no)
+        // 新增 6 個鐵架
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 A', label: 'A區', theme: 'border-slate-800', category: '', top: '25%', left: '42%', width: '14%', height: '18%' },
-            { no: 2, id: 'Rack-B', name: '鐵架 B', label: 'B區', theme: 'border-slate-800', category: '', top: '5%', left: '57%', width: '20%', height: '19%' },
-            { no: 3, id: 'Rack-C', name: '鐵架 C', label: 'C區', theme: 'border-slate-800', category: '', top: '25%', left: '57%', width: '20%', height: '18%' },
-            { no: 4, id: 'Rack-D', name: '鐵架 D', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '38%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 E', label: 'E區', theme: 'border-slate-800', category: '', top: '63%', left: '26%', width: '9%', height: '32%' },
-            // 修改：F鐵架往下移動 8 格，相當於向下平移 40% 的相對距離 (63% + 40% = 103%)
-            { no: 6, id: 'Rack-F', name: '鐵架 F', label: 'F區', theme: 'border-slate-800', category: '', top: '103%', left: '42%', width: '14%', height: '18%' }
+            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '25%', left: '42%', width: '14%', height: '18%' },
+            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '5%', left: '57%', width: '20%', height: '19%' },
+            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '25%', left: '57%', width: '20%', height: '18%' },
+            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '38%' },
+            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '63%', left: '26%', width: '9%', height: '32%' },
+            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '103%', left: '42%', width: '14%', height: '18%' }
         ];
 
         const AppState = {
             medicines: [],
             searchQuery: '',
             selectedRackId: null, 
-            focusedRackId: null, // 單純紀錄視覺聚焦，不影響搜尋條件
-            keyboardSelectedIndex: -1, // 新增：用於全鍵盤導航追蹤清單項目
+            selectedShelf: null, // 記錄選取的層數 (1-4)
+            focusedRackId: null, 
+            focusedShelf: null,  // 記錄聚焦的層數 (1-4)
+            keyboardSelectedIndex: -1, 
             lastUpdate: null, 
-            isLoggedIn: false, // 新增登入狀態
+            isLoggedIn: false, 
             
             SHEET_ID: '1NSoY899Pk9KDaXJwhPxwka3YSsd_2Wt0DKffEU0tXkA', 
             WEB_APP_URL: 'https://script.google.com/macros/s/AKfycbzSdtEPXrU_tbM8aGsfO4V254solwNr9KlOY6rfSVZOUV5qmj8HWcVc4ccOui9uB6eN/exec',
@@ -554,7 +526,6 @@
                     return;
                 }
 
-                // 核心 Fetch 函數
                 const fetchSheet = async (sheetName = '') => {
                     let url = `https://docs.google.com/spreadsheets/d/${this.SHEET_ID}/gviz/tq?tqx=out:json`;
                     if (sheetName) url += `&sheet=${encodeURIComponent(sheetName)}`;
@@ -572,7 +543,6 @@
                 };
 
                 try {
-                    // --- 先嘗試讀取後端的層架設定 (Racks 工作表) ---
                     try {
                         const rackJson = await fetchSheet('Racks');
                         const backendRacks = rackJson.table.rows.map(row => ({
@@ -580,7 +550,6 @@
                             name: row.c[1]?.v || '',
                             category: row.c[2]?.v || ''
                         }));
-                        // 套用後端層架設定
                         backendRacks.forEach(br => {
                             const r = RACKS_CONFIG.find(x => x.id === br.id);
                             if (r) {
@@ -588,41 +557,51 @@
                                 if (br.category) r.category = br.category;
                             }
                         });
-                    } catch(e) {
-                        console.warn("尚未建立 Racks 工作表或層架讀取失敗，使用預設或本機快取層架。");
-                    }
-                    DOM.renderRackOptions(); // 同步更新下拉選單
+                    } catch(e) {}
+                    DOM.renderRackOptions(); 
 
-                    // --- 讀取藥品資料 ---
                     const medJson = await fetchSheet();
                     
                     this.medicines = medJson.table.rows.map(row => {
-                        let rawRackId = (row.c[2]?.v || '').toString().trim();
-                        // 支援在 Google Sheet C欄直接填寫 1, 2, 3, 4, 5, 6，自動對應內部 ID
-                        if (rawRackId === '1') rawRackId = 'Rack-A';
-                        if (rawRackId === '2') rawRackId = 'Rack-B';
-                        if (rawRackId === '3') rawRackId = 'Rack-C';
-                        if (rawRackId === '4') rawRackId = 'Rack-D';
-                        if (rawRackId === '5') rawRackId = 'Rack-E';
-                        if (rawRackId === '6') rawRackId = 'Rack-F';
+                        let rawStr = (row.c[2]?.v || '').toString().trim();
+                        let rackId = 'Rack-A'; 
+                        let shelf = 1; 
+                        
+                        let parts = rawStr.split('-');
+                        let rPart = parts[0];
+                        let sPart = parts[1];
+                        
+                        if (rPart === '1' || rPart === 'Rack-A') rackId = 'Rack-A';
+                        else if (rPart === '2' || rPart === 'Rack-B') rackId = 'Rack-B';
+                        else if (rPart === '3' || rPart === 'Rack-C') rackId = 'Rack-C';
+                        else if (rPart === '4' || rPart === 'Rack-D') rackId = 'Rack-D';
+                        else if (rPart === '5' || rPart === 'Rack-E') rackId = 'Rack-E';
+                        else if (rPart === '6' || rPart === 'Rack-F') rackId = 'Rack-F';
+                        else if (rPart) {
+                            const found = RACKS_CONFIG.find(r => r.id === rPart || r.no.toString() === rPart);
+                            if (found) rackId = found.id;
+                        }
+                        
+                        if (sPart && !isNaN(parseInt(sPart))) {
+                            let parsedShelf = parseInt(sPart);
+                            if (parsedShelf >= 1 && parsedShelf <= 4) shelf = parsedShelf;
+                        }
                         
                         return {
                             id: row.c[0]?.v || '',
                             name: row.c[1]?.v || '',
-                            rackId: rawRackId,
-                            chName: row.c[3]?.v || '' // 新增中文品名對應 Google Sheet D欄
+                            rackId: rackId,
+                            shelf: shelf,
+                            chName: row.c[3]?.v || '' 
                         };
                     }).filter(m => m.name !== '')
-                      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase(), 'en')); // 預設依據藥品英文名稱字母排序
+                      .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase(), 'en')); 
 
-                    // 成功讀取後，將真實資料快取到本地端
                     localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
 
                     this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
                     DOM.updateLastUpdateTime();
                 } catch (error) {
-                    console.error("讀取 Google Sheet 失敗", error);
-                    // 離線或讀取失敗時，載入最後一次成功連線的真實資料
                     const cachedMeds = localStorage.getItem('drugSysRealMedicines');
                     this.medicines = cachedMeds ? JSON.parse(cachedMeds) : [];
                     
@@ -637,18 +616,19 @@
                     const matchSearch = med.name.toLowerCase().includes(q) || 
                                         (med.chName && med.chName.toLowerCase().includes(q));
                     const matchRack = this.selectedRackId ? (med.rackId === this.selectedRackId) : true;
-                    return matchSearch && matchRack;
+                    const matchShelf = this.selectedShelf ? (med.shelf === this.selectedShelf) : true;
+                    return matchSearch && matchRack && matchShelf;
                 });
             },
 
-            getHighlightedRackIds() {
-                if (!this.searchQuery) return new Set(); 
+            getHighlightedLocations() {
+                if (!this.searchQuery) return []; 
                 const q = this.searchQuery.toLowerCase();
                 const matchedMeds = this.medicines.filter(med => 
                     med.name.toLowerCase().includes(q) || 
                     (med.chName && med.chName.toLowerCase().includes(q))
                 );
-                return new Set(matchedMeds.map(m => m.rackId));
+                return matchedMeds.map(m => ({ rackId: m.rackId, shelf: m.shelf }));
             },
 
             async syncRacksToServer(racks) {
@@ -663,21 +643,23 @@
                     const result = await response.json();
                     return result.status === 'success';
                 } catch (error) {
-                    console.error("層架同步至後端失敗", error);
                     return false;
                 }
             },
 
-            async syncToServer(id, name, rackId, chName) {
+            async syncToServer(id, name, rackId, shelf, chName) {
                 if (!this.WEB_APP_URL) {
-                    this._updateLocalState(id, name, rackId, chName);
+                    this._updateLocalState(id, name, rackId, shelf, chName);
                     this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
                     DOM.updateLastUpdateTime();
                     return true;
                 }
 
                 try {
-                    const payload = { action: 'saveMedicine', id, name, rackId, chName };
+                    const rackObj = RACKS_CONFIG.find(r => r.id === rackId);
+                    const rackSaveVal = (rackObj ? rackObj.no : rackId) + '-' + shelf;
+                    
+                    const payload = { action: 'saveMedicine', id, name, rackId: rackSaveVal, chName };
                     const response = await fetch(this.WEB_APP_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -686,9 +668,8 @@
                     const result = await response.json();
                     
                     if (result.status === 'success') {
-                        // 即使後端沒有將 chName 原樣回傳，前端依然寫入我們送出的 chName
                         const savedChName = (result.chName !== undefined) ? result.chName : chName;
-                        this._updateLocalState(result.id || id, result.name || name, result.rackId || rackId, savedChName);
+                        this._updateLocalState(result.id || id, result.name || name, rackId, shelf, savedChName);
                         this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false });
                         DOM.updateLastUpdateTime();
                         return true;
@@ -698,27 +679,24 @@
                     }
                 } catch (error) {
                     alert("網路連線錯誤，無法同步至後端！將暫時更新於本地端預覽。");
-                    this._updateLocalState(id, name, rackId, chName);
+                    this._updateLocalState(id, name, rackId, shelf, chName);
                     this.lastUpdate = new Date().toLocaleString('zh-TW', { hour12: false }) + " (本地更新)";
                     DOM.updateLastUpdateTime();
                     return true;
                 }
             },
 
-            _updateLocalState(id, name, rackId, chName) {
+            _updateLocalState(id, name, rackId, shelf, chName) {
                 const existIndex = this.medicines.findIndex(m => m.id === id);
                 if (existIndex >= 0) {
-                    this.medicines[existIndex] = { id, name, rackId, chName };
+                    this.medicines[existIndex] = { id, name, rackId, shelf, chName };
                 } else {
                     const newId = id || ('m' + Date.now()); 
-                    this.medicines.push({ id: newId, name, rackId, chName }); 
+                    this.medicines.push({ id: newId, name, rackId, shelf, chName }); 
                 }
-                
-                // 同步更新本地快取，確保離線作業不遺失
                 localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
             },
 
-            // 新增：向後端發送刪除請求
             async deleteFromServer(id) {
                 if (!this.WEB_APP_URL) {
                     this._deleteLocalState(id);
@@ -754,7 +732,6 @@
                 }
             },
             
-            // 新增：從本地快取移除藥品
             _deleteLocalState(id) {
                 this.medicines = this.medicines.filter(m => m.id !== id);
                 localStorage.setItem('drugSysRealMedicines', JSON.stringify(this.medicines));
@@ -772,6 +749,7 @@
             racksContainer: document.getElementById('racksContainer'),
             statusText: document.getElementById('statusText'),
             statusDot: document.getElementById('statusDot'),
+            shelfFilterContainer: document.getElementById('shelfFilterContainer'), 
             totalItemsCount: document.getElementById('totalItemsCount'),
             lastUpdateTime: document.getElementById('lastUpdateTime'),
             
@@ -782,6 +760,7 @@
             editMedName: document.getElementById('editMedName'),
             editMedChName: document.getElementById('editMedChName'),
             editMedRack: document.getElementById('editMedRack'),
+            editMedShelf: document.getElementById('editMedShelf'),
             saveMedBtn: document.getElementById('saveMedBtn'),
             
             rackEditModal: document.getElementById('rackEditModal'),
@@ -809,13 +788,12 @@
             renderRackOptions() {
                 if (this.editMedRack) {
                     this.editMedRack.innerHTML = RACKS_CONFIG.map(rack => 
-                        `<option value="${rack.id}">${rack.no}號儲位 - ${rack.name}</option>`
+                        `<option value="${rack.id}">${rack.name}</option>`
                     ).join('');
                 }
             },
 
             renderRacks() {
-                // 1. 渲染文字下方的鐵架名稱與種類說明標籤
                 const rackInfoContainer = document.getElementById('rackInfoContainer');
                 if (rackInfoContainer) {
                     rackInfoContainer.innerHTML = RACKS_CONFIG.map(rack => {
@@ -830,32 +808,24 @@
                     }).join('');
                 }
 
-                // 2. 渲染右上角的純粹版俯視小圖
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
-                    // 加入 relative 基準容器以確保 100% = 100px，讓 top: 103% 的 F 鐵架能正確渲染於擴建的下方空間
                     minimapContainer.innerHTML = `
-                        <div style="position: relative; width: 100%; height: 100px;">
-                            <!-- 灰色走道區塊 (更換為柔和粉藍灰色) -->
-                            <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
-                            ${RACKS_CONFIG.map(rack => `
-                                <div id="minimap-rack-${rack.id}" 
-                                     class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
-                                     style="top: ${rack.top}; left: ${rack.left}; width: ${rack.width}; height: ${rack.height};"
-                                     onclick="Controllers.handleRackClick('${rack.id}')">
-                                </div>
-                            `).join('')}
+                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
+                    ` + RACKS_CONFIG.map(rack => `
+                        <div id="minimap-rack-${rack.id}" 
+                             class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
+                             style="top: ${rack.top}; left: ${rack.left}; width: ${rack.width}; height: ${rack.height};"
+                             onclick="Controllers.handleRackClick('${rack.id}')">
                         </div>
-                    `;
+                    `).join('');
                 }
             },
 
-            // 虛擬滾動 (Virtual Scrolling) 列表渲染引擎
             renderList(medicines) {
                 this.filteredMeds = medicines;
-                this.itemHeight = 78; // 每個藥品項目的約略固定高度 (px)
+                this.itemHeight = 78; 
 
-                // 初始化虛擬滾動容器
                 if (!this.virtualScrollWrapper) {
                     this.medicineListContainer.innerHTML = '';
                     
@@ -878,39 +848,39 @@
                         const scrollTop = this.medicineListContainer.scrollTop;
                         const containerHeight = this.medicineListContainer.clientHeight;
                         
-                        // 計算可視範圍，加上前後緩衝區以確保平滑
                         const startIdx = Math.max(0, Math.floor(scrollTop / this.itemHeight) - 3);
                         const endIdx = Math.min(this.filteredMeds.length, startIdx + Math.ceil(containerHeight / this.itemHeight) + 6);
                         
                         this.virtualScrollNode.style.transform = `translateY(${startIdx * this.itemHeight}px)`;
                         
-                        // 只渲染可視範圍內的 HTML，並加入鍵盤選取狀態判斷
                         this.virtualScrollNode.innerHTML = this.filteredMeds.slice(startIdx, endIdx).map((med, idx) => {
                             const globalIdx = startIdx + idx;
                             const isKeyboardSelected = AppState.keyboardSelectedIndex === globalIdx;
                             
-                            const rackName = RACKS_CONFIG.find(r => r.id === med.rackId)?.name || med.rackId;
+                            const rackObj = RACKS_CONFIG.find(r => r.id === med.rackId);
+                            const rackName = rackObj ? rackObj.name : med.rackId;
+                            const displayLocation = `${rackName}-${med.shelf}`; 
+                            
                             const chNameParam = med.chName ? med.chName.replace(/'/g, "\\'") : '';
                             const editBtnHTML = AppState.isLoggedIn ? `
-                                        <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${med.id}', '${med.name}', '${med.rackId}', '${chNameParam}')">
+                                        <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${med.id}', '${med.name}', '${med.rackId}', ${med.shelf}, '${chNameParam}')">
                                             <i data-lucide="edit-3" class="w-4 h-4"></i>
                                         </button>
                             ` : '';
 
-                            // 根據鍵盤選中狀態切換凸顯樣式
                             const activeClass = isKeyboardSelected 
                                 ? 'border-primary dark:border-primary ring-2 ring-primary/30 bg-slate-50 dark:bg-slate-700/90 transform translate-x-2 shadow-md z-10' 
                                 : 'border-slate-100 dark:border-slate-700 hover:border-primary/50 dark:hover:border-primary/50 hover:shadow-md dark:hover:shadow-slate-900/50 hover:-translate-y-1';
 
                             return `
-                                <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border mb-3 cursor-pointer group flex justify-between items-center h-[66px] transition-all duration-200 ${activeClass}" onclick="Controllers.viewRackIn3D('${med.rackId}')">
+                                <div class="bg-white dark:bg-slate-800 p-3.5 rounded-xl shadow-sm border mb-3 cursor-pointer group flex justify-between items-center h-[66px] transition-all duration-200 ${activeClass}" onclick="Controllers.viewRackIn3D('${med.rackId}', ${med.shelf})">
                                     <div class="flex-1 pr-3 overflow-hidden">
                                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-[15px] group-hover:text-primary dark:group-hover:text-primary transition-colors leading-tight truncate">${med.name}</h3>
                                         ${med.chName ? `<p class="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">${med.chName}</p>` : ''}
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
                                         <span class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[11px] px-2.5 py-1 rounded-md font-medium border border-slate-200 dark:border-slate-600 transition-colors">
-                                            ${rackName}
+                                            ${displayLocation}
                                         </span>
                                         ${editBtnHTML}
                                     </div>
@@ -925,7 +895,6 @@
                     });
                 }
 
-                // 處理無資料狀態
                 if (medicines.length === 0) {
                     this.virtualScrollWrapper.style.display = 'none';
                     if (!this.emptyStateNode) {
@@ -943,16 +912,16 @@
                     return;
                 }
 
-                // 套用有資料狀態並設定總高度，觸發捲軸
                 if (this.emptyStateNode) this.emptyStateNode.style.display = 'none';
                 this.virtualScrollWrapper.style.display = 'block';
                 this.virtualScrollWrapper.style.height = `${medicines.length * this.itemHeight}px`;
-                this.updateVirtualList(); // 強制更新當下畫面
+                this.updateVirtualList(); 
             },
 
-            updateRacksVisuals(highlightedIds, selectedId) {
+            updateRacksVisuals(highlightedLocations, selectedRackId, selectedShelf) {
                 const searchColor = window.AppearanceConfig.searchColor;
                 const selectColor = window.AppearanceConfig.selectColor;
+                const highlightedRackIds = new Set(highlightedLocations.map(l => l.rackId));
 
                 RACKS_CONFIG.forEach(rack => {
                     const mapEl = document.getElementById(`minimap-rack-${rack.id}`);
@@ -962,7 +931,6 @@
                     const catEl = document.getElementById(`legend-cat-${rack.id}`);
                     
                     if (mapEl) {
-                        // 狀態重置
                         mapEl.style.backgroundColor = '';
                         mapEl.style.borderColor = '';
                         mapEl.classList.remove('opacity-40');
@@ -977,16 +945,13 @@
                             tagEl.style.backgroundColor = '';
                             tagEl.classList.remove('opacity-50', 'scale-95');
                             tagEl.className = "flex items-center gap-1.5 bg-white/90 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg shadow-sm backdrop-blur-sm cursor-pointer hover:-translate-y-0.5 transition-all duration-300";
-                            
                             nameEl.style.color = '';
                             nameEl.className = "text-xs font-bold text-slate-700 dark:text-slate-200 transition-colors";
-                            
                             catEl.style.color = '';
                             catEl.className = "text-[10px] text-slate-500 dark:text-slate-400 font-medium transition-colors";
                         }
 
-                        // 處理高亮邏輯
-                        if (highlightedIds.has(rack.id) && !selectedId) {
+                        if (highlightedRackIds.has(rack.id) && !selectedRackId) {
                             mapEl.classList.remove('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
                             mapEl.style.borderColor = searchColor;
                             mapEl.style.backgroundColor = searchColor + '40'; 
@@ -1001,8 +966,7 @@
                             }
                         }
 
-                        // 處理選中邏輯
-                        if (selectedId === rack.id) {
+                        if (selectedRackId === rack.id) {
                             mapEl.classList.remove('border-slate-800', 'dark:border-slate-400', 'bg-white', 'dark:bg-slate-800');
                             mapEl.style.borderColor = selectColor;
                             mapEl.style.backgroundColor = selectColor;
@@ -1016,14 +980,12 @@
                                 tagEl.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-lg shadow-md backdrop-blur-sm cursor-pointer transform -translate-y-1 transition-all duration-300 border-2";
                                 tagEl.style.borderColor = selectColor;
                                 tagEl.style.backgroundColor = selectColor + '1A'; 
-                                
                                 nameEl.className = "text-xs font-bold transition-colors";
                                 nameEl.style.color = selectColor;
-                                
                                 catEl.className = "text-[10px] font-medium transition-colors";
                                 catEl.style.color = selectColor;
                             }
-                        } else if (selectedId) {
+                        } else if (selectedRackId) {
                             mapEl.classList.add('opacity-40');
                             if(tagEl) tagEl.classList.add('opacity-50', 'scale-95');
                         }
@@ -1031,7 +993,7 @@
                 });
 
                 if (typeof ThreeApp !== 'undefined') {
-                    ThreeApp.updateVisuals(highlightedIds, selectedId);
+                    ThreeApp.updateVisuals(highlightedLocations, selectedRackId, selectedShelf);
                 }
             },
 
@@ -1044,8 +1006,9 @@
                 let dotStyleColor = "";
 
                 if (AppState.selectedRackId) {
-                    const rackName = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId)?.name;
+                    const rackName = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId)?.name || AppState.selectedRackId;
                     text = `篩選條件: ${rackName}`;
+                    if (AppState.selectedShelf) text += ` 第 ${AppState.selectedShelf} 層`;
                     dotColorClass = "";
                     dotStyleColor = selectColor;
                     if (AppState.searchQuery) text += ` + 關鍵字 "${AppState.searchQuery}"`;
@@ -1082,7 +1045,8 @@
                     const query = e.target.value.trim();
                     AppState.searchQuery = query;
                     AppState.focusedRackId = null;
-                    AppState.keyboardSelectedIndex = query.length > 0 ? 0 : -1; // 修正：輸入文字後預設立刻選中第一項
+                    AppState.focusedShelf = null;
+                    AppState.keyboardSelectedIndex = query.length > 0 ? 0 : -1;
                     if (query.length > 0 && AppState.selectedRackId) {
                         AppState.selectedRackId = null; 
                     }
@@ -1097,6 +1061,7 @@
                 DOM.searchInput.value = '';
                 AppState.searchQuery = '';
                 AppState.focusedRackId = null;
+                AppState.focusedShelf = null;
                 AppState.keyboardSelectedIndex = -1;
                 DOM.clearSearchBtn.classList.add('hidden');
                 DOM.searchInput.focus();
@@ -1108,7 +1073,9 @@
                 DOM.searchInput.value = '';
                 AppState.searchQuery = '';
                 AppState.selectedRackId = null;
+                AppState.selectedShelf = null;
                 AppState.focusedRackId = null;
+                AppState.focusedShelf = null;
                 AppState.keyboardSelectedIndex = -1;
                 DOM.clearSearchBtn.classList.add('hidden');
                 this.refreshUI();
@@ -1118,10 +1085,14 @@
             handleRackClick(rackId) {
                 if (AppState.selectedRackId === rackId) {
                     AppState.selectedRackId = null;
+                    AppState.selectedShelf = null;
                     AppState.focusedRackId = null;
+                    AppState.focusedShelf = null;
                 } else {
                     AppState.selectedRackId = rackId;
+                    AppState.selectedShelf = null;
                     AppState.focusedRackId = null;
+                    AppState.focusedShelf = null;
                     AppState.keyboardSelectedIndex = -1;
                     AppState.searchQuery = '';
                     DOM.searchInput.value = '';
@@ -1129,30 +1100,39 @@
                 }
                 this.refreshUI();
             },
+            
+            handleShelfClick(shelfLevel) {
+                if (AppState.selectedShelf === shelfLevel) {
+                    AppState.selectedShelf = null;
+                } else {
+                    AppState.selectedShelf = shelfLevel;
+                }
+                AppState.focusedRackId = null;
+                AppState.focusedShelf = null;
+                this.refreshUI();
+            },
 
-            viewRackIn3D(rackId) {
+            viewRackIn3D(rackId, shelf) {
                 AppState.focusedRackId = rackId;
+                AppState.focusedShelf = shelf || null;
                 if (typeof ThreeApp !== 'undefined') {
                     ThreeApp.focusOnRack(rackId);
                 }
                 this.refreshUI();
             },
 
-            // --- 新增：鍵盤導航畫面更新邏輯 ---
             updateKeyboardSelection() {
                 const itemHeight = DOM.itemHeight || 78; 
                 const container = DOM.medicineListContainer;
                 const selectedTop = AppState.keyboardSelectedIndex * itemHeight;
                 const selectedBottom = selectedTop + itemHeight;
 
-                // 讓滾動條自動追蹤選中的項目，確保其始終在可視範圍內
                 if (selectedTop < container.scrollTop) {
                     container.scrollTop = selectedTop;
                 } else if (selectedBottom > container.scrollTop + container.clientHeight) {
                     container.scrollTop = selectedBottom - container.clientHeight;
                 }
 
-                // 強制更新虛擬清單以渲染高亮樣式
                 if (DOM.updateVirtualList) {
                     DOM.updateVirtualList();
                 }
@@ -1160,12 +1140,28 @@
 
             refreshUI() {
                 const filteredList = AppState.getFilteredMedicines();
-                const highlightedRacks = AppState.getHighlightedRackIds();
+                const highlightedLocations = AppState.getHighlightedLocations();
                 
                 DOM.renderList(filteredList);
-                DOM.updateRacksVisuals(highlightedRacks, AppState.focusedRackId || AppState.selectedRackId);
+                DOM.updateRacksVisuals(highlightedLocations, AppState.focusedRackId || AppState.selectedRackId, AppState.focusedShelf || AppState.selectedShelf);
                 DOM.updateStatusText();
-                DOM.totalItemsCount.textContent = AppState.medicines.length; 
+                if(DOM.totalItemsCount) DOM.totalItemsCount.textContent = AppState.medicines.length; 
+                
+                // 動態渲染層數篩選按鈕
+                if (AppState.selectedRackId && !AppState.focusedRackId) {
+                    const rack = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId);
+                    const rackName = rack ? rack.name : AppState.selectedRackId;
+                    let html = '';
+                    for(let i=1; i<=4; i++) {
+                        const isActive = AppState.selectedShelf === i;
+                        const bgClass = isActive ? 'bg-primary text-white shadow-md transform scale-105' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600';
+                        html += `<button onclick="Controllers.handleShelfClick(${i})" class="shrink-0 px-4 py-1.5 text-[13px] font-bold rounded-full transition-all duration-200 ${bgClass}">${rackName}-${i}</button>`;
+                    }
+                    DOM.shelfFilterContainer.innerHTML = html;
+                    DOM.shelfFilterContainer.classList.remove('hidden');
+                } else {
+                    DOM.shelfFilterContainer.classList.add('hidden');
+                }
             },
 
             toggleAuth() {
@@ -1445,14 +1441,14 @@
                 this.exportMedicineLabels(mode, checkedRacks, applySearch, includeCode);
             },
 
-            openEditModal(id, name, rackId, chName = '') {
+            openEditModal(id, name, rackId, shelf = 1, chName = '') {
                 DOM.editMedId.value = id || '';
                 DOM.editMedName.value = name || '';
                 if(DOM.editMedChName) DOM.editMedChName.value = chName || '';
                 DOM.editMedRack.value = rackId || 'Rack-A';
+                if(DOM.editMedShelf) DOM.editMedShelf.value = shelf || 1;
                 DOM.modalTitle.textContent = id ? '編輯藥品資訊' : '新增藥品';
                 
-                // 動態判斷是否顯示刪除按鈕 (有 id 代表編輯，才顯示刪除)
                 const deleteBtn = document.getElementById('deleteMedBtn');
                 if (deleteBtn) {
                     if (id) {
@@ -1481,6 +1477,7 @@
                 const id = DOM.editMedId.value.trim();
                 const name = DOM.editMedName.value.trim();
                 const rackId = DOM.editMedRack.value;
+                const shelf = DOM.editMedShelf ? parseInt(DOM.editMedShelf.value) : 1;
                 const chName = DOM.editMedChName ? DOM.editMedChName.value.trim() : '';
 
                 if (!name) {
@@ -1493,7 +1490,7 @@
                 DOM.saveMedBtn.disabled = true;
                 lucide.createIcons();
 
-                const success = await AppState.syncToServer(id, name, rackId, chName);
+                const success = await AppState.syncToServer(id, name, rackId, shelf, chName);
                 
                 DOM.saveMedBtn.innerHTML = originalText;
                 DOM.saveMedBtn.disabled = false;
@@ -1506,7 +1503,6 @@
                 }
             },
 
-            // 新增：刪除藥品的控制器邏輯
             async deleteMedicine() {
                 const id = DOM.editMedId.value.trim();
                 if (!id) return;
@@ -1620,11 +1616,9 @@
                     <style>
                         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; background: #f8fafc; }
                         .label-card { width: 380px; height: 220px; border: 4px dashed #cbd5e1; border-radius: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; text-align: center; background: #fff; page-break-inside: avoid; }
-                        /* 增加醒目色彩 */
                         .label-no { font-size: 20px; font-weight: bold; color: #ef4444; margin-bottom: 12px; letter-spacing: 2px; }
                         .label-name { font-size: 52px; font-weight: 900; color: #1d4ed8; margin-bottom: 16px; }
                         .label-category { font-size: 24px; color: #059669; background: #ecfdf5; border: 3px solid #6ee7b7; padding: 8px 24px; border-radius: 40px; font-weight: bold; }
-                        
                         @media print {
                             body { padding: 0; background: #fff; display: block; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                             .label-card { border: 3px solid #cbd5e1; break-inside: avoid; margin: 0 auto 30px auto; width: 85%; height: 280px; }
@@ -1688,25 +1682,22 @@
                         body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; background: #f8fafc; color: #0f172a; }
                         .rack-section { margin-bottom: 40px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
                         
-                        /* 增加醒目色彩 */
                         .rack-title { font-size: 20px; font-weight: bold; color: #1d4ed8; border-bottom: 2px solid #93c5fd; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
                         .rack-title-badge { background: #3b82f6; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
                         
-                        /* 標籤模式 CSS */
                         .labels-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
                         .med-label { border: 2px solid #bfdbfe; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; page-break-inside: avoid; background: #eff6ff; }
                         .med-name { font-size: 18px; font-weight: bold; color: #1e40af; margin-bottom: 4px; }
                         .med-chName { font-size: 14px; color: #047857; font-weight: bold; }
                         
-                        /* 清單模式 CSS */
                         .med-table { border-collapse: collapse; width: 100%; margin-top: 10px; page-break-inside: auto; }
                         .med-table th, .med-table td { border: 1px solid #93c5fd; padding: 10px 15px; text-align: left; }
                         .med-table th { background-color: #dbeafe; font-weight: bold; color: #1e40af; }
                         .med-table tr:nth-child(even) { background-color: #f8fafc; }
                         .med-table tr { page-break-inside: avoid; page-break-after: auto; }
-                        .med-table td:nth-child(1) { color: #ef4444; font-size: 14px; } /* 內部代碼以紅色顯示 */
-                        .med-table td:nth-child(2) { font-weight: bold; color: #1d4ed8; } /* 英文名以藍色顯示 */
-                        .med-table td:nth-child(3) { color: #047857; font-weight: bold; } /* 中文名以深綠色顯示 */
+                        .med-table td:nth-child(1) { color: #ef4444; font-size: 14px; } 
+                        .med-table td:nth-child(2) { font-weight: bold; color: #1d4ed8; } 
+                        .med-table td:nth-child(3) { color: #047857; font-weight: bold; } 
 
                         @media print {
                             body { padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -1724,6 +1715,8 @@
                     if (!filterRacks.includes(rack.id)) return;
 
                     const rackMeds = targetMedicines.filter(m => m.rackId === rack.id);
+                    rackMeds.sort((a, b) => a.shelf - b.shelf);
+                    
                     if (rackMeds.length > 0) {
                         totalExported += rackMeds.length;
                         htmlContent += `
@@ -1739,6 +1732,7 @@
                             rackMeds.forEach(med => {
                                 htmlContent += `
                                     <div class="med-label">
+                                        <div style="font-size: 13px; color: #3b82f6; font-weight: bold; margin-bottom: 4px;">${rack.name}-${med.shelf}</div>
                                         <div class="med-name">${med.name}</div>
                                         ${med.chName ? `<div class="med-chName">中文品名：${med.chName}</div>` : ''}
                                     </div>
@@ -1751,7 +1745,7 @@
                                 <thead>
                                     <tr>
                                         ${includeCode ? '<th style="width: 15%;">內部代碼</th>' : ''}
-                                        <th style="${includeCode ? 'width: 45%;' : 'width: 50%;'}">英文藥品名稱</th>
+                                        <th style="${includeCode ? 'width: 45%;' : 'width: 50%;'}">英文藥品名稱與層位</th>
                                         <th style="${includeCode ? 'width: 40%;' : 'width: 50%;'}">中文商品名稱</th>
                                     </tr>
                                 </thead>
@@ -1760,9 +1754,9 @@
                             rackMeds.forEach(med => {
                                 htmlContent += `
                                     <tr>
-                                        ${includeCode ? `<td style="color: #64748b; font-size: 14px;">${med.id}</td>` : ''}
-                                        <td style="font-weight: bold; color: #0f172a;">${med.name}</td>
-                                        <td style="color: #475569;">${med.chName || '-'}</td>
+                                        ${includeCode ? `<td style="color: #ef4444; font-size: 14px;">${med.id}</td>` : ''}
+                                        <td style="font-weight: bold; color: #1d4ed8;">${med.name} <span style="font-size: 11px; color: #64748b; margin-left: 6px;">(第 ${med.shelf} 層)</span></td>
+                                        <td style="color: #047857;">${med.chName || '-'}</td>
                                     </tr>
                                 `;
                             });
@@ -1806,16 +1800,12 @@
         };
 
         /**
-         * 4. 3D 模擬視覺化模組 (Three.js) - 引入 InstancedMesh 優化效能
+         * 4. 3D 模擬視覺化模組 (Three.js)
          */
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            isLerpingCam: false, 
-            // 修正：調整預設視角，往後拉遠並拉高，使畫面能同時涵蓋到最下方的 F 鐵架
-            defaultCamPos: new THREE.Vector3(0, 24, 26), 
-            // 修正：將相機對焦點稍微往下移至 Z=4 處，使整體地圖居中
-            defaultTarget: new THREE.Vector3(0, 0, 4),
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 18, 14), defaultTarget: new THREE.Vector3(0, 0, 0),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1847,7 +1837,6 @@
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
                 this.scene.add(ambientLight);
                 
-                // 調整頂光強度至 0.4，避免白紙箱看起來過於灰暗，同時維持柔和度
                 const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
                 dirLight.position.set(10, 20, 10);
                 dirLight.castShadow = true;
@@ -1859,20 +1848,17 @@
                 dirLight.shadow.camera.bottom = -15;
                 this.scene.add(dirLight);
 
-                // 修正：將地板範圍加大，寬度加至 36，深度加至 32，以覆蓋下方擴建的 F 鐵架區域
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
-                const floorGeo = new THREE.PlaneGeometry(36, 32);
+                const floorGeo = new THREE.PlaneGeometry(28, 20);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                // 修正：虛化格線同步擴張至 36x36 範圍
-                this.grid = new THREE.GridHelper(36, 36, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
+                this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
                 this.scene.add(this.grid);
 
-                // 修正：走道顏色套用為圖中的粉藍灰系
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
                 const aisleGeo = new THREE.PlaneGeometry(28, 3.2);
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
@@ -1883,7 +1869,6 @@
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
 
                 this.loadAppearanceConfig();
-
                 this.buildRacks();
 
                 window.addEventListener('resize', () => this.onResize(container));
@@ -1928,26 +1913,22 @@
             },
 
             applyAppearance(config) {
-                let boxHex = 0xf8fafc; let boxRough = 0.9;
-                if (config.boxColor === 'brown') { boxHex = 0x9c7a54; boxRough = 1.0; } 
-                else if (config.boxColor === 'blue') { boxHex = 0x3b82f6; boxRough = 0.7; }
-                
+                const boxHex = 0xf8fafc;
+                const boxRough = 0.9;
                 this.boxBaseMat.color.setHex(boxHex);
                 this.boxBaseMat.roughness = boxRough;
                 
                 let floorHex = 0xffffff;
-                let floorEmissive = 0x333333; // 補償頂光調弱後的地板亮度
+                let floorEmissive = 0x333333; 
                 if (config.floorColor === 'dark') {
                     floorHex = 0x334155;
-                    floorEmissive = 0x000000; // 深色地板不需要亮度補償
+                    floorEmissive = 0x000000; 
                 }
                 this.floorMat.color.setHex(floorHex);
                 this.floorMat.emissive.setHex(floorEmissive);
 
-                // 修正：預設走道顏色套用粉藍灰系
                 let aisleHex = 0xabc2d8; let aisleRough = 0.9;
                 if (config.aisleColor === 'red') { aisleHex = 0xb91c1c; aisleRough = 0.95; }
-                else if (config.aisleColor === 'green') { aisleHex = 0x10b981; aisleRough = 0.85; }
                 
                 this.aisleMat.color.setHex(aisleHex);
                 this.aisleMat.roughness = aisleRough;
@@ -1970,8 +1951,12 @@
                 }
                 
                 Object.values(this.rackMeshes).forEach(rm => {
-                    if (rm.boxInstanced) {
-                        rm.boxInstanced.material.needsUpdate = true;
+                    if (rm.boxMats) {
+                        rm.boxMats.forEach(mat => {
+                            mat.color.setHex(boxHex);
+                            mat.roughness = boxRough;
+                            mat.needsUpdate = true;
+                        });
                     }
                 });
             },
@@ -2058,13 +2043,14 @@
                     const edges = new THREE.EdgesGeometry(rimGeo);
                     const lineMat = new THREE.LineBasicMaterial({ color: 0x64748b, linewidth: 2 }); 
 
-                    const wireframes = []; 
-                    const shelfYs = [-1.6, -0.5, 0.6, 1.7]; 
+                    const shelfYs = [1.7, 0.6, -0.5, -1.6]; 
 
                     const clipTransforms = [];
-                    const boxTransforms = [];
+                    const wireframes = []; 
+                    const boxInstanceds = []; 
+                    const boxMats = []; 
 
-                    shelfYs.forEach((sy) => {
+                    shelfYs.forEach((sy, shelfIndex) => {
                         const shelf = new THREE.Mesh(shelfGeo, shelfMat);
                         shelf.position.y = sy;
                         shelf.receiveShadow = true;
@@ -2090,6 +2076,8 @@
                         const depthOptions = [0.8, 1.0, 1.2];
                         const widthOptions = [0.8, 1.1, 1.4];
                         const heightOptions = [0.6, 0.75, 0.9];
+                        
+                        const boxTransforms = [];
 
                         let currentZ = -d/2 + postRadius * 2.5;
                         while (currentZ < d/2 - postRadius * 2.5) {
@@ -2126,22 +2114,24 @@
                             }
                             currentZ += rowDepth;
                         }
+                        
+                        let boxInstanced = null;
+                        let rackBoxMat = this.boxBaseMat.clone(); 
+                        if (boxTransforms.length > 0) {
+                            boxInstanced = new THREE.InstancedMesh(unitBoxGeo, rackBoxMat, boxTransforms.length);
+                            boxTransforms.forEach((mat, idx) => boxInstanced.setMatrixAt(idx, mat));
+                            boxInstanced.castShadow = true;
+                            boxInstanced.receiveShadow = true;
+                            group.add(boxInstanced);
+                        }
+                        boxInstanceds.push(boxInstanced);
+                        boxMats.push(rackBoxMat);
                     });
 
                     if (clipTransforms.length > 0) {
                         const clipInstanced = new THREE.InstancedMesh(clipGeo, clipMat, clipTransforms.length);
                         clipTransforms.forEach((mat, idx) => clipInstanced.setMatrixAt(idx, mat));
                         group.add(clipInstanced);
-                    }
-
-                    let boxInstanced = null;
-                    let rackBoxMat = this.boxBaseMat.clone(); 
-                    if (boxTransforms.length > 0) {
-                        boxInstanced = new THREE.InstancedMesh(unitBoxGeo, rackBoxMat, boxTransforms.length);
-                        boxTransforms.forEach((mat, idx) => boxInstanced.setMatrixAt(idx, mat));
-                        boxInstanced.castShadow = true;
-                        boxInstanced.receiveShadow = true;
-                        group.add(boxInstanced);
                     }
 
                     const hitGeo = new THREE.BoxGeometry(w, rackHeight, d);
@@ -2151,7 +2141,7 @@
                     group.add(hitBox);
 
                     this.scene.add(group);
-                    this.rackMeshes[rack.id] = { hitBox, group, wireframes, boxInstanced, boxMat: rackBoxMat, originalY: rackHeight / 2 };
+                    this.rackMeshes[rack.id] = { hitBox, group, wireframes, boxInstanceds, boxMats, originalY: rackHeight / 2 };
                 });
 
                 const rackA = RACKS_CONFIG.find(r => r.id === 'Rack-A');
@@ -2226,7 +2216,7 @@
                 }
             },
 
-            updateVisuals(highlightedIds, selectedId) {
+            updateVisuals(highlightedLocations, selectedRackId, selectedShelf) {
                 if(!this.scene) return;
                 
                 const searchColorHex = parseInt(window.AppearanceConfig.searchColor.replace('#', '0x'));
@@ -2239,36 +2229,47 @@
                         wf.material.opacity = 0.5;
                         wf.material.transparent = true;
                     });
-                    if (meshObj.boxMat) {
-                        meshObj.boxMat.emissive.setHex(0x000000);
-                        meshObj.boxMat.emissiveIntensity = 1.0;
-                    }
+                    meshObj.boxMats.forEach(mat => {
+                        mat.emissive.setHex(0x000000);
+                        mat.emissiveIntensity = 1.0;
+                    });
                     meshObj.group.position.y = meshObj.originalY;
                 });
 
-                highlightedIds.forEach(id => {
-                    if (this.rackMeshes[id]) {
-                        this.rackMeshes[id].wireframes.forEach(wf => {
-                            wf.material.color.setHex(searchColorHex);
-                            wf.material.opacity = 0.8;
-                        });
-                        if (this.rackMeshes[id].boxMat) {
-                            this.rackMeshes[id].boxMat.emissive.setHex(searchColorHex);
-                            this.rackMeshes[id].boxMat.emissiveIntensity = glowIntensity * 0.8; 
+                highlightedLocations.forEach(loc => {
+                    if (this.rackMeshes[loc.rackId]) {
+                        const sIdx = loc.shelf - 1; 
+                        if (this.rackMeshes[loc.rackId].wireframes[sIdx]) {
+                            this.rackMeshes[loc.rackId].wireframes[sIdx].material.color.setHex(searchColorHex);
+                            this.rackMeshes[loc.rackId].wireframes[sIdx].material.opacity = 0.8;
+                        }
+                        if (this.rackMeshes[loc.rackId].boxMats[sIdx]) {
+                            this.rackMeshes[loc.rackId].boxMats[sIdx].emissive.setHex(searchColorHex);
+                            this.rackMeshes[loc.rackId].boxMats[sIdx].emissiveIntensity = glowIntensity * 0.8; 
                         }
                     }
                 });
 
-                if (selectedId && this.rackMeshes[selectedId]) {
-                    this.rackMeshes[selectedId].wireframes.forEach(wf => {
-                        wf.material.color.setHex(selectColorHex);
-                        wf.material.opacity = 1.0;
-                    });
-                    if (this.rackMeshes[selectedId].boxMat) {
-                        this.rackMeshes[selectedId].boxMat.emissive.setHex(selectColorHex);
-                        this.rackMeshes[selectedId].boxMat.emissiveIntensity = glowIntensity; 
+                if (selectedRackId && this.rackMeshes[selectedRackId]) {
+                    const meshObj = this.rackMeshes[selectedRackId];
+                    meshObj.group.position.y = meshObj.originalY + 0.5;
+                    
+                    const highlightShelf = (idx) => {
+                        if (meshObj.wireframes[idx]) {
+                            meshObj.wireframes[idx].material.color.setHex(selectColorHex);
+                            meshObj.wireframes[idx].material.opacity = 1.0;
+                        }
+                        if (meshObj.boxMats[idx]) {
+                            meshObj.boxMats[idx].emissive.setHex(selectColorHex);
+                            meshObj.boxMats[idx].emissiveIntensity = glowIntensity; 
+                        }
+                    };
+
+                    if (selectedShelf) {
+                        highlightShelf(selectedShelf - 1);
+                    } else {
+                        for(let i=0; i<4; i++) highlightShelf(i);
                     }
-                    this.rackMeshes[selectedId].group.position.y = this.rackMeshes[selectedId].originalY + 0.5;
                 }
             },
 
@@ -2408,9 +2409,7 @@
                 }
             });
 
-            // --- 新增：搜尋框的全鍵盤導航支援 ---
             DOM.searchInput.addEventListener('keydown', (e) => {
-                // 修正：忽略輸入法 (IME) 的選字與確認 Enter，避免攔截中文輸入導致失效或需連按
                 if (e.isComposing || e.keyCode === 229) return;
 
                 if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
@@ -2419,7 +2418,7 @@
                         clearTimeout(searchDebounceTimer);
                         AppState.searchQuery = currentQuery;
                         AppState.focusedRackId = null;
-                        AppState.keyboardSelectedIndex = currentQuery.length > 0 ? 0 : -1; // 修正：自動選中第一項
+                        AppState.keyboardSelectedIndex = currentQuery.length > 0 ? 0 : -1;
                         DOM.searchLoader.classList.add('hidden');
                         if (currentQuery) DOM.clearSearchBtn.classList.remove('hidden');
                         Controllers.refreshUI();
@@ -2448,13 +2447,12 @@
                     Controllers.updateKeyboardSelection();
                 } else if (e.key === 'Enter') {
                     e.preventDefault();
-                    // 預設 Enter 至少選取第一項
                     const idx = AppState.keyboardSelectedIndex >= 0 ? AppState.keyboardSelectedIndex : 0;
                     if (filteredList[idx]) {
                         AppState.keyboardSelectedIndex = idx;
                         Controllers.updateKeyboardSelection();
-                        Controllers.viewRackIn3D(filteredList[idx].rackId);
-                        DOM.searchInput.blur(); // 按下 Enter 後取消輸入框焦點，讓使用者更專注於 3D 畫面
+                        Controllers.viewRackIn3D(filteredList[idx].rackId, filteredList[idx].shelf);
+                        DOM.searchInput.blur(); 
                     }
                 }
             });
