@@ -1987,6 +1987,7 @@
             },
 
             applyAppearance(config) {
+                // 固定紙箱顏色為白
                 const boxHex = 0xf8fafc;
                 const boxRough = 0.9;
                 this.boxBaseMat.color.setHex(boxHex);
@@ -2017,7 +2018,8 @@
                         border2.position.set(0, 0.05, -1.5);
                         this.carpetBorders = new THREE.Group();
                         this.carpetBorders.add(border1, border2);
-                        this.carpetBorders.position.z = -0.5; // 確保紅毯邊界線跟隨走道往下一格
+                        // 修改：確保星光紅毯的邊界線也跟隨走道向下平移 2 格 (變為 0.5)
+                        this.carpetBorders.position.z = 0.5; 
                         this.scene.add(this.carpetBorders);
                     }
                     this.carpetBorders.visible = true;
@@ -2068,8 +2070,8 @@
 
             buildRacks() {
                 const roomW = 28;
-                // 修正：將全局運算空間的深度從 20 加大至 28，配合擴展後的地板範圍
-                const roomD = 28; 
+                // 修改：為了容納下移的鐵架，將空間深度變數加大至 36，確保計算不破圖
+                const roomD = 36; 
                 const rackHeight = 4.5; 
 
                 const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
