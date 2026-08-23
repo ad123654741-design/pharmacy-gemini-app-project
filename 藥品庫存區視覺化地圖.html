@@ -493,15 +493,15 @@
             glowIntensity: 0.2      
         };
 
-        // 修正：重新校正所有鐵架在小地圖上的 top 百分比，對應擴充後的空間深度
-        // 原本空間深度對應 100%，現在空間拉長，原本的 top 數值需要往下微調以保持走道相對位置
+        // 修正：重新校正所有鐵架在小地圖上的 top 與 height 百分比，
+        // 確保最底部的 F 鐵架 (top + height) 不超過 100%，以完美收納入框。
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '22%', left: '42%', width: '14%', height: '15%' },
-            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '5%', left: '57%', width: '20%', height: '16%' },
-            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '22%', left: '57%', width: '20%', height: '15%' },
-            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '32%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '55%', left: '26%', width: '9%', height: '27%' },
-            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '88%', left: '42%', width: '14%', height: '15%' } // 完美收入框內
+            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '19%', left: '42%', width: '14%', height: '13%' },
+            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '4%', left: '57%', width: '20%', height: '14%' },
+            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '19%', left: '57%', width: '20%', height: '13%' },
+            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '4%', left: '78%', width: '9%', height: '28%' },
+            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '48%', left: '26%', width: '9%', height: '24%' },
+            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '82%', left: '42%', width: '14%', height: '13%' }
         ];
 
         const AppState = {
@@ -811,8 +811,8 @@
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
                     minimapContainer.innerHTML = `
-                        <!-- 修正：走道在小地圖中的比例位置 -->
-                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 39%; left: 2%; width: 96%; height: 13%;"></div>
+                        <!-- 修正：配合壓縮後的坐標系，重新定位走道比例 -->
+                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 35%; left: 2%; width: 96%; height: 11%;"></div>
                     ` + RACKS_CONFIG.map(rack => `
                         <div id="minimap-rack-${rack.id}" 
                              class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
