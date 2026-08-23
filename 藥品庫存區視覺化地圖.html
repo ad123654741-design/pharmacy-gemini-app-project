@@ -158,7 +158,7 @@
                 <!-- 空間俯視圖 -->
                 <div class="hidden sm:flex flex-col items-center gap-1 shrink-0 pointer-events-auto z-20">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-700">空間俯視圖</span>
-                    <!-- 因應 F 鐵架外擴，將地圖容器高度從 100px 加大至 140px -->
+                    <!-- 配合地板與 F 鐵架外推，將容器高度由 100px 加大至 140px -->
                     <div class="relative w-40 h-[140px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
                     </div>
                 </div>
@@ -385,7 +385,6 @@
         </div>
     </div>
     
-    <!-- 3D 外觀與發光設定 Modal -->
     <div id="appearanceModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[70] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="appearanceModalContent">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -1805,7 +1804,7 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 18, 14), defaultTarget: new THREE.Vector3(0, 0, 0),
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 20, 18), defaultTarget: new THREE.Vector3(0, 0, 2),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1831,7 +1830,7 @@
                 this.controls.dampingFactor = 0.05;
                 this.controls.maxPolarAngle = Math.PI / 2 - 0.1;
                 this.controls.minDistance = 5;
-                this.controls.maxDistance = 40;
+                this.controls.maxDistance = 50; 
                 this.controls.target.copy(this.defaultTarget);
 
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
@@ -1842,21 +1841,24 @@
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
                 dirLight.shadow.mapSize.height = 2048;
-                dirLight.shadow.camera.left = -15;
-                dirLight.shadow.camera.right = 15;
-                dirLight.shadow.camera.top = 15;
-                dirLight.shadow.camera.bottom = -15;
+                dirLight.shadow.camera.left = -20;
+                dirLight.shadow.camera.right = 20;
+                dirLight.shadow.camera.top = 20;
+                dirLight.shadow.camera.bottom = -20;
                 this.scene.add(dirLight);
 
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
-                const floorGeo = new THREE.PlaneGeometry(28, 20);
+                const floorGeo = new THREE.PlaneGeometry(28, 24);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
+                floor.position.z = 2; 
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
                 this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
+                this.grid.position.z = 2;
+                this.grid.scale.set(1, 1, 24/28); 
                 this.scene.add(this.grid);
 
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
@@ -1993,7 +1995,7 @@
 
             buildRacks() {
                 const roomW = 28;
-                const roomD = 20;
+                const roomD = 24; 
                 const rackHeight = 4.5; 
 
                 const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
@@ -2019,7 +2021,7 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
-                    group.position.set(x, rackHeight / 2, z); 
+                    group.position.set(x, rackHeight / 2, z + 2); 
 
                     const postPositions = [
                         [-w/2 + postRadius, -d/2 + postRadius],
