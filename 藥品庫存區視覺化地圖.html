@@ -158,7 +158,7 @@
                 <!-- 空間俯視圖 -->
                 <div class="hidden sm:flex flex-col items-center gap-1 shrink-0 pointer-events-auto z-20">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-700">空間俯視圖</span>
-                    <!-- 因應 F 鐵架外擴，將地圖容器高度從 100px 加大至 140px -->
+                    <!-- 修正：將地圖容器高度從 100px 加大至 140px 以容納向外擴展的 F 鐵架 -->
                     <div class="relative w-40 h-[140px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
                     </div>
                 </div>
@@ -1805,7 +1805,8 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 18, 14), defaultTarget: new THREE.Vector3(0, 0, 0),
+            // 修正：預設相機位置拉遠 (原本 z=14 改為 18)，預設目標點往下移 (原本 z=0 改為 2)，以適應變長的地板
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 20, 18), defaultTarget: new THREE.Vector3(0, 0, 2),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1831,7 +1832,7 @@
                 this.controls.dampingFactor = 0.05;
                 this.controls.maxPolarAngle = Math.PI / 2 - 0.1;
                 this.controls.minDistance = 5;
-                this.controls.maxDistance = 40;
+                this.controls.maxDistance = 50; // 加大相機最遠距離
                 this.controls.target.copy(this.defaultTarget);
 
                 const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
@@ -1842,21 +1843,28 @@
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
                 dirLight.shadow.mapSize.height = 2048;
-                dirLight.shadow.camera.left = -15;
-                dirLight.shadow.camera.right = 15;
-                dirLight.shadow.camera.top = 15;
-                dirLight.shadow.camera.bottom = -15;
+                // 加大光源照射陰影範圍
+                dirLight.shadow.camera.left = -20;
+                dirLight.shadow.camera.right = 20;
+                dirLight.shadow.camera.top = 20;
+                dirLight.shadow.camera.bottom = -20;
                 this.scene.add(dirLight);
 
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
-                const floorGeo = new THREE.PlaneGeometry(28, 20);
+                // 修正：將地板的長度由 20 增加到 24，包覆 F 鐵架
+                const floorGeo = new THREE.PlaneGeometry(28, 24);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
+                floor.position.z = 2; // 地板中心點往 +z 偏移，確保往下方長出
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
+                // 修正：將格線同樣加長到 24，中心點偏移
                 this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
+                this.grid.position.z = 2;
+                // 原生的 GridHelper 只能做正方形，所以我們自己替換縮放讓他變成長方形
+                this.grid.scale.set(1, 1, 24/28); 
                 this.scene.add(this.grid);
 
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
@@ -1993,7 +2001,7 @@
 
             buildRacks() {
                 const roomW = 28;
-                const roomD = 20;
+                const roomD = 24; // 修正：3D 建造鐵架時的空間深度參考值同步改為 24
                 const rackHeight = 4.5; 
 
                 const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
@@ -2019,7 +2027,8 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
-                    group.position.set(x, rackHeight / 2, z); 
+                    // 修正：配合地板偏移，整個鐵架的 Z 軸放置基準也要加上 2 的偏移量
+                    group.position.set(x, rackHeight / 2, z + 2); 
 
                     const postPositions = [
                         [-w/2 + postRadius, -d/2 + postRadius],
