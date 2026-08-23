@@ -133,8 +133,8 @@
                     <span id="statusText">顯示所有藥品清單</span>
                 </div>
 
-                <!-- 層架 4 層細部篩選按鈕列 -->
-                <div id="shelfFilterContainer" class="mt-3 flex items-center gap-2 overflow-x-auto no-scrollbar hidden transition-all duration-300 pb-1">
+                <!-- 層架 4 層細部篩選按鈕列 (縮小間距) -->
+                <div id="shelfFilterContainer" class="mt-3 flex items-center gap-1.5 overflow-x-auto no-scrollbar hidden transition-all duration-300 pb-1">
                 </div>
             </div>
 
@@ -485,7 +485,7 @@
          * 1. 資料架構與狀態
          */
          
-        window.AppearanceConfig = {
+       window.AppearanceConfig = {
             floorColor: 'white',
             aisleColor: 'gray',
             searchColor: '#ac0606', 
@@ -493,15 +493,14 @@
             glowIntensity: 0.2      
         };
 
-        // 修正：微調上半部鐵架 (A~E) 的 top 數值，將它們整體向上移動 3%，
-        // 確保它們與走道之間有足夠且相等的間距，不再壓在走道上。
+        // 修正：將 Rack-E 與 Rack-F 向下平移，騰出完美對稱的間距空間給走道
         let RACKS_CONFIG = [
             { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '14%', height: '13%' },
             { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '1%', left: '57%', width: '20%', height: '14%' },
             { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '57%', width: '20%', height: '13%' },
             { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '1%', left: '78%', width: '9%', height: '28%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '45%', left: '26%', width: '9%', height: '24%' },
-            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '82%', left: '42%', width: '14%', height: '13%' }
+            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '54%', left: '26%', width: '9%', height: '24%' },
+            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '84%', left: '42%', width: '14%', height: '13%' }
         ];
 
         const AppState = {
@@ -811,8 +810,8 @@
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
                     minimapContainer.innerHTML = `
-                        <!-- 修正：配合壓縮後的坐標系，重新定位走道比例 -->
-                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 35%; left: 2%; width: 96%; height: 11%;"></div>
+                        <!-- 修正：配合 3D 精確對稱座標，將走道放在上下方群組的正中央 -->
+                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 35.8%; left: 2%; width: 96%; height: 11.4%;"></div>
                     ` + RACKS_CONFIG.map(rack => `
                         <div id="minimap-rack-${rack.id}" 
                              class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
@@ -1148,15 +1147,15 @@
                 DOM.updateStatusText();
                 if(DOM.totalItemsCount) DOM.totalItemsCount.textContent = AppState.medicines.length; 
                 
-                // 動態渲染層數篩選按鈕
+                // 動態渲染層數篩選按鈕 (縮小按鈕與字體大小)
                 if (AppState.selectedRackId && !AppState.focusedRackId) {
                     const rack = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId);
                     const rackName = rack ? rack.name : AppState.selectedRackId;
                     let html = '';
                     for(let i=1; i<=4; i++) {
                         const isActive = AppState.selectedShelf === i;
-                        const bgClass = isActive ? 'bg-primary text-white shadow-md transform scale-105' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600';
-                        html += `<button onclick="Controllers.handleShelfClick(${i})" class="shrink-0 px-4 py-1.5 text-[13px] font-bold rounded-full transition-all duration-200 ${bgClass}">${rackName}-${i}</button>`;
+                        const bgClass = isActive ? 'bg-primary text-white shadow-sm transform scale-105' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600';
+                        html += `<button onclick="Controllers.handleShelfClick(${i})" class="shrink-0 px-3 py-1 text-xs font-medium rounded-full transition-all duration-200 ${bgClass}">${rackName}-${i}</button>`;
                     }
                     DOM.shelfFilterContainer.innerHTML = html;
                     DOM.shelfFilterContainer.classList.remove('hidden');
@@ -1922,20 +1921,20 @@
                 this.grid.position.z = 0; 
                 this.scene.add(this.grid);
 
-                const outerGrid = new THREE.GridHelper(34, 34, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
+                onst outerGrid = new THREE.GridHelper(34, 34, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
                 outerGrid.position.y = 0.005;
                 outerGrid.position.z = 0; 
                 outerGrid.material.transparent = true;
                 outerGrid.material.opacity = 0.4;
                 this.scene.add(outerGrid);
 
-                // 修正：走道維持 30 的長度，不再外推。最重要的是 Z 軸回到 -1.5，這個位置能完美穿插在 A,B,C,D 與 E,F 之間
+                // 修正：將走道精確設定在 Z = -2.38，使前後群組皆有完全對稱且相等的間距
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
                 const aisleGeo = new THREE.PlaneGeometry(30, 3.2); 
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
-                aisle.position.z = -1.5; 
+                aisle.position.z = -2.38; 
                 this.scene.add(aisle);
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
@@ -2006,7 +2005,7 @@
                 this.aisleMat.color.setHex(aisleHex);
                 this.aisleMat.roughness = aisleRough;
                 
-                if (config.aisleColor === 'red') {
+               if (config.aisleColor === 'red') {
                     if (!this.carpetBorders) {
                         const borderGeo = new THREE.BoxGeometry(30, 0.1, 0.2); // 配合走道改為 30
                         const borderMat = new THREE.MeshStandardMaterial({color: 0xffd700, metalness: 0.8, roughness: 0.2});
@@ -2016,8 +2015,8 @@
                         border2.position.set(0, 0.05, -1.5);
                         this.carpetBorders = new THREE.Group();
                         this.carpetBorders.add(border1, border2);
-                        // 修正：紅毯邊線同步回到 -1.5 的 Z 軸基準
-                        this.carpetBorders.position.z = -1.5; 
+                        // 修正：紅毯邊線同步回到 -2.38 的 Z 軸精確基準
+                        this.carpetBorders.position.z = -2.38; 
                         this.scene.add(this.carpetBorders);
                     }
                     this.carpetBorders.visible = true;
