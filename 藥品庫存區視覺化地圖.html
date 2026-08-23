@@ -1661,8 +1661,6 @@
                 }
 
                 const today = new Date().toLocaleDateString('zh-TW');
-                const titleText = mode === 'label' ? '藥品標籤列印' : '藥品庫存清單';
-                
                 let targetMedicines = AppState.medicines;
 
                 if (applySearch && AppState.searchQuery) {
@@ -1673,116 +1671,179 @@
                     );
                 }
 
-                let htmlContent = `
-                <!DOCTYPE html>
-                <html lang="zh-TW">
-                <head>
-                    <meta charset="UTF-8">
-                    <title>${titleText} - ${today}</title>
-                    <style>
-                        body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; background: #f8fafc; color: #0f172a; }
-                        .rack-section { margin-bottom: 40px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-                        
-                        .rack-title { font-size: 20px; font-weight: bold; color: #1d4ed8; border-bottom: 2px solid #93c5fd; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
-                        .rack-title-badge { background: #3b82f6; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
-                        
-                        .labels-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-                        .med-label { border: 2px solid #bfdbfe; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; min-height: 70px; page-break-inside: avoid; background: #eff6ff; }
-                        .med-name { font-size: 18px; font-weight: bold; color: #1e40af; margin-bottom: 4px; }
-                        .med-chName { font-size: 14px; color: #047857; font-weight: bold; }
-                        
-                        .med-table { border-collapse: collapse; width: 100%; margin-top: 10px; page-break-inside: auto; }
-                        .med-table th, .med-table td { border: 1px solid #93c5fd; padding: 10px 15px; text-align: left; }
-                        .med-table th { background-color: #dbeafe; font-weight: bold; color: #1e40af; }
-                        .med-table tr:nth-child(even) { background-color: #f8fafc; }
-                        .med-table tr { page-break-inside: avoid; page-break-after: auto; }
-                        .med-table td:nth-child(1) { color: #ef4444; font-size: 14px; } 
-                        .med-table td:nth-child(2) { font-weight: bold; color: #1d4ed8; } 
-                        .med-table td:nth-child(3) { color: #047857; font-weight: bold; } 
-
-                        @media print {
-                            body { padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-                            .rack-section { box-shadow: none; padding: 0; margin-bottom: 30px; }
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1 style="text-align: center; margin-bottom: 30px;">${titleText} (${today})</h1>
-                `;
-
+                let htmlContent = '';
                 let totalExported = 0;
 
-                RACKS_CONFIG.forEach(rack => {
-                    if (!filterRacks.includes(rack.id)) return;
+                if (mode === 'label') {
+                    // --- 貼紙列印模式 (A4, 3x10, 53x25.5mm, 水平間距 4mm, 左上邊距 21mm) ---
+                    htmlContent += `
+                    <!DOCTYPE html>
+                    <html lang="zh-TW">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>藥品標籤列印 - ${today}</title>
+                        <style>
+                            /* 強制取消瀏覽器預設邊界，由內部 padding 精準控制 */
+                            @page { size: A4; margin: 0; }
+                            body { 
+                                margin: 0; 
+                                padding: 21mm 0 0 21mm; /* 上推 21mm，左推 21mm */
+                                font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; 
+                                background: #fff; 
+                                box-sizing: border-box;
+                            }
+                            
+                            /* 貼紙網格佈局 */
+                            .labels-grid { 
+                                display: grid; 
+                                grid-template-columns: repeat(3, 53mm); /* 3欄，寬度 53mm */
+                                grid-auto-rows: 25.5mm;                 /* 高度 25.5mm */
+                                column-gap: 4mm;                        /* 欄間距 4mm */
+                                row-gap: 0;                             /* 列間距 0 */
+                            }
+                            
+                            /* 單張貼紙內部設定 */
+                            .med-label { 
+                                width: 53mm; 
+                                height: 25.5mm; 
+                                box-sizing: border-box; 
+                                padding: 2mm 3mm; 
+                                display: flex; 
+                                flex-direction: column; 
+                                justify-content: center; 
+                                align-items: flex-start; 
+                                overflow: hidden; 
+                                border: 1px dashed #cbd5e1; /* 網頁預覽用的對齊虛線 */
+                                page-break-inside: avoid;
+                            }
+                            
+                            /* 字體排版防超出設定 */
+                            .med-loc { font-size: 11px; color: #1d4ed8; font-weight: bold; margin-bottom: 1px; }
+                            .med-name { font-size: 13px; font-weight: 900; color: #0f172a; line-height: 1.1; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+                            .med-chName { font-size: 10px; color: #047857; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+                            
+                            @media print {
+                                body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                                .med-label { border: none; } /* 正式列印時隱藏虛線邊框，防止印在貼紙邊緣外 */
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="labels-grid">
+                    `;
 
-                    const rackMeds = targetMedicines.filter(m => m.rackId === rack.id);
-                    rackMeds.sort((a, b) => a.shelf - b.shelf);
-                    
-                    if (rackMeds.length > 0) {
-                        totalExported += rackMeds.length;
-                        htmlContent += `
-                        <div class="rack-section">
-                            <div class="rack-title">
-                                <span class="rack-title-badge">No.${rack.no}</span>
-                                ${rack.name} ${rack.category ? `(${rack.category})` : ''}
-                            </div>
-                        `;
-
-                        if (mode === 'label') {
-                            htmlContent += `<div class="labels-container">`;
-                            rackMeds.forEach(med => {
-                                htmlContent += `
-                                    <div class="med-label">
-                                        <div style="font-size: 13px; color: #3b82f6; font-weight: bold; margin-bottom: 4px;">${rack.name}-${med.shelf}</div>
-                                        <div class="med-name">${med.name}</div>
-                                        ${med.chName ? `<div class="med-chName">中文品名：${med.chName}</div>` : ''}
-                                    </div>
-                                `;
-                            });
-                            htmlContent += `</div>`;
-                        } else if (mode === 'list') {
+                    RACKS_CONFIG.forEach(rack => {
+                        if (!filterRacks.includes(rack.id)) return;
+                        // 針對該層架抓取藥品並依層數排序
+                        const rackMeds = targetMedicines.filter(m => m.rackId === rack.id).sort((a, b) => a.shelf - b.shelf);
+                        
+                        rackMeds.forEach(med => {
+                            totalExported++;
                             htmlContent += `
-                            <table class="med-table">
-                                <thead>
-                                    <tr>
-                                        ${includeCode ? '<th style="width: 15%;">內部代碼</th>' : ''}
-                                        <th style="${includeCode ? 'width: 45%;' : 'width: 50%;'}">英文藥品名稱與層位</th>
-                                        <th style="${includeCode ? 'width: 40%;' : 'width: 50%;'}">中文商品名稱</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
+                                <div class="med-label">
+                                    <div class="med-loc">${rack.name}-${med.shelf}</div>
+                                    <div class="med-name">${med.name}</div>
+                                    ${med.chName ? `<div class="med-chName">${med.chName}</div>` : ''}
+                                </div>
+                            `;
+                        });
+                    });
+
+                    if (totalExported === 0) {
+                        htmlContent += '<div style="padding: 20px;">符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</div>';
+                    }
+
+                    htmlContent += `
+                        </div>
+                    </body>
+                    <script>
+                        window.onload = function() { setTimeout(() => { window.print(); }, 500); }
+                    <\/script>
+                    </html>
+                    `;
+
+                } else {
+                    // --- 清單列印模式 (A4 滿版表格，保留所有大標題與原本排版) ---
+                    htmlContent += `
+                    <!DOCTYPE html>
+                    <html lang="zh-TW">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>藥品庫存清單 - ${today}</title>
+                        <style>
+                            body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; padding: 20px; background: #f8fafc; color: #0f172a; }
+                            .rack-section { margin-bottom: 40px; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+                            
+                            .rack-title { font-size: 20px; font-weight: bold; color: #1d4ed8; border-bottom: 2px solid #93c5fd; padding-bottom: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;}
+                            .rack-title-badge { background: #3b82f6; color: #fff; padding: 4px 12px; border-radius: 20px; font-size: 14px; }
+                            
+                            .med-table { border-collapse: collapse; width: 100%; margin-top: 10px; page-break-inside: auto; }
+                            .med-table th, .med-table td { border: 1px solid #93c5fd; padding: 10px 15px; text-align: left; }
+                            .med-table th { background-color: #dbeafe; font-weight: bold; color: #1e40af; }
+                            .med-table tr:nth-child(even) { background-color: #f8fafc; }
+                            .med-table tr { page-break-inside: avoid; page-break-after: auto; }
+                            .med-table td:nth-child(1) { color: #ef4444; font-size: 14px; } 
+                            .med-table td:nth-child(2) { font-weight: bold; color: #1d4ed8; } 
+                            .med-table td:nth-child(3) { color: #047857; font-weight: bold; } 
+
+                            @media print {
+                                body { padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                                .rack-section { box-shadow: none; padding: 0; margin-bottom: 30px; }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1 style="text-align: center; margin-bottom: 30px;">藥品庫存清單 (${today})</h1>
+                    `;
+
+                    RACKS_CONFIG.forEach(rack => {
+                        if (!filterRacks.includes(rack.id)) return;
+
+                        const rackMeds = targetMedicines.filter(m => m.rackId === rack.id).sort((a, b) => a.shelf - b.shelf);
+                        
+                        if (rackMeds.length > 0) {
+                            totalExported += rackMeds.length;
+                            htmlContent += `
+                            <div class="rack-section">
+                                <div class="rack-title">
+                                    <span class="rack-title-badge">No.${rack.no}</span>
+                                    ${rack.name} ${rack.category ? `(${rack.category})` : ''}
+                                </div>
+                                <table class="med-table">
+                                    <thead>
+                                        <tr>
+                                            ${includeCode ? '<th style="width: 15%;">內部代碼</th>' : ''}
+                                            <th style="${includeCode ? 'width: 45%;' : 'width: 50%;'}">英文藥品名稱與層位</th>
+                                            <th style="${includeCode ? 'width: 40%;' : 'width: 50%;'}">中文商品名稱</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
                             `;
                             rackMeds.forEach(med => {
                                 htmlContent += `
-                                    <tr>
-                                        ${includeCode ? `<td style="color: #ef4444; font-size: 14px;">${med.id}</td>` : ''}
-                                        <td style="font-weight: bold; color: #1d4ed8;">${med.name} <span style="font-size: 11px; color: #64748b; margin-left: 6px;">(第 ${med.shelf} 層)</span></td>
-                                        <td style="color: #047857;">${med.chName || '-'}</td>
-                                    </tr>
+                                        <tr>
+                                            ${includeCode ? `<td style="color: #ef4444; font-size: 14px;">${med.id}</td>` : ''}
+                                            <td style="font-weight: bold; color: #1d4ed8;">${med.name} <span style="font-size: 11px; color: #64748b; margin-left: 6px;">(第 ${med.shelf} 層)</span></td>
+                                            <td style="color: #047857;">${med.chName || '-'}</td>
+                                        </tr>
                                 `;
                             });
-                            htmlContent += `</tbody></table>`;
+                            htmlContent += `</tbody></table></div>`;
                         }
+                    });
 
-                        htmlContent += `
-                        </div>
-                        `;
+                    if (totalExported === 0) {
+                        htmlContent += '<h3>符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</h3>';
                     }
-                });
 
-                if (totalExported === 0) {
-                    htmlContent += '<h3>符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</h3>';
+                    htmlContent += `
+                    </body>
+                    <script>
+                        window.onload = function() { setTimeout(() => { window.print(); }, 500); }
+                    <\/script>
+                    </html>
+                    `;
                 }
-
-                htmlContent += `
-                </body>
-                <script>
-                    window.onload = function() {
-                        setTimeout(() => { window.print(); }, 500);
-                    }
-                <\/script>
-                </html>
-                `;
 
                 printWindow.document.write(htmlContent);
                 printWindow.document.close();
