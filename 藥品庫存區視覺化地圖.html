@@ -493,14 +493,14 @@
             glowIntensity: 0.2      
         };
 
-        // 修正：重新校正所有鐵架在小地圖上的 top 與 height 百分比，
-        // 確保最底部的 F 鐵架 (top + height) 不超過 100%，以完美收納入框。
+        // 修正：微調上半部鐵架 (A~E) 的 top 數值，將它們整體向上移動 3%，
+        // 確保它們與走道之間有足夠且相等的間距，不再壓在走道上。
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '19%', left: '42%', width: '14%', height: '13%' },
-            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '4%', left: '57%', width: '20%', height: '14%' },
-            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '19%', left: '57%', width: '20%', height: '13%' },
-            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '4%', left: '78%', width: '9%', height: '28%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '48%', left: '26%', width: '9%', height: '24%' },
+            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '14%', height: '13%' },
+            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '1%', left: '57%', width: '20%', height: '14%' },
+            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '57%', width: '20%', height: '13%' },
+            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '1%', left: '78%', width: '9%', height: '28%' },
+            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '45%', left: '26%', width: '9%', height: '24%' },
             { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '82%', left: '42%', width: '14%', height: '13%' }
         ];
 
