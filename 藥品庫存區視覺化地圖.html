@@ -523,13 +523,14 @@
             glowIntensity: 0.2      // 附圖預設發光亮度
         };
 
-        // 定義5個鐵架的基礎資料 (新增 category 屬性與底層編號 no)
+        // 定義6個鐵架的基礎資料 (新增 category 屬性與底層編號 no)
         let RACKS_CONFIG = [
             { no: 1, id: 'Rack-A', name: '鐵架 A', label: 'A區', theme: 'border-slate-800', category: '', top: '25%', left: '42%', width: '14%', height: '18%' },
             { no: 2, id: 'Rack-B', name: '鐵架 B', label: 'B區', theme: 'border-slate-800', category: '', top: '5%', left: '57%', width: '20%', height: '19%' },
             { no: 3, id: 'Rack-C', name: '鐵架 C', label: 'C區', theme: 'border-slate-800', category: '', top: '25%', left: '57%', width: '20%', height: '18%' },
             { no: 4, id: 'Rack-D', name: '鐵架 D', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '38%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 E', label: 'E區', theme: 'border-slate-800', category: '', top: '63%', left: '26%', width: '9%', height: '32%' }
+            { no: 5, id: 'Rack-E', name: '鐵架 E', label: 'E區', theme: 'border-slate-800', category: '', top: '63%', left: '26%', width: '9%', height: '32%' },
+            { no: 6, id: 'Rack-F', name: '鐵架 F', label: 'F區', theme: 'border-slate-800', category: '', top: '63%', left: '42%', width: '14%', height: '18%' }
         ];
 
         const AppState = {
@@ -596,12 +597,13 @@
                     
                     this.medicines = medJson.table.rows.map(row => {
                         let rawRackId = (row.c[2]?.v || '').toString().trim();
-                        // 支援在 Google Sheet C欄直接填寫 1, 2, 3, 4, 5，自動對應內部 ID
+                        // 支援在 Google Sheet C欄直接填寫 1, 2, 3, 4, 5, 6，自動對應內部 ID
                         if (rawRackId === '1') rawRackId = 'Rack-A';
                         if (rawRackId === '2') rawRackId = 'Rack-B';
                         if (rawRackId === '3') rawRackId = 'Rack-C';
                         if (rawRackId === '4') rawRackId = 'Rack-D';
                         if (rawRackId === '5') rawRackId = 'Rack-E';
+                        if (rawRackId === '6') rawRackId = 'Rack-F';
                         
                         return {
                             id: row.c[0]?.v || '',
