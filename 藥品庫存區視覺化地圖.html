@@ -2017,6 +2017,7 @@
                         border2.position.set(0, 0.05, -1.5);
                         this.carpetBorders = new THREE.Group();
                         this.carpetBorders.add(border1, border2);
+                        this.carpetBorders.position.z = -0.5; // 確保紅毯邊界線跟隨走道往下一格
                         this.scene.add(this.carpetBorders);
                     }
                     this.carpetBorders.visible = true;
