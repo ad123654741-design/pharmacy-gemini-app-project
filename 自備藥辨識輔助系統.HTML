@@ -83,34 +83,55 @@
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
             
-            /* 標籤列印排版優化：嚴格對齊 3x10 A4 標籤紙 */
+            /* 標籤列印排版：依實體 A4 3欄×10列貼紙規格定位
+             * A4：210×297mm；瀏覽器 @page 仍維持原本 10mm
+             * 貼紙：53×25.5mm；水平間距 4mm；垂直間距 0mm
+             * 左/上實際定位 21mm，因此在 @page 10mm 基礎上再內縮 11mm
+             */
             #label-container {
                 display: grid !important;
-                /* 寬度計算: A4寬(210mm) - 左右邊界(20mm) = 190mm。 3欄x60mm + 2間距x5mm = 190mm */
-                grid-template-columns: repeat(3, 60mm) !important; 
-                /* 高度計算: A4高(297mm) - 上下邊界(20mm) = 277mm。 10列x25mm + 9間距x3mm = 277mm */
-                grid-auto-rows: 25mm !important; 
-                gap: 3mm 5mm !important; /* 上下間距 3mm，左右間距 5mm */
-                justify-content: center !important;
+                grid-template-columns: repeat(3, 53mm) !important;
+                grid-auto-rows: 25.5mm !important;
+                gap: 0mm 4mm !important;
+                width: 167mm !important;
+                margin-left: 11mm !important;
+                margin-top: 11mm !important;
+                justify-content: start !important;
                 align-content: start !important;
             }
-            .label-box { 
-                page-break-inside: avoid; 
-                break-inside: avoid; 
-                border: 1px solid #000 !important; /* 實線框線，如不需列印框線可改為 border: none !important; */
-                width: 60mm !important;
-                height: 25mm !important; /* 嚴格固定高度 25mm */
-                padding: 2mm !important; /* 縮小內距保留文字空間 */
+            .label-box {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                border: 1px solid #000 !important;
+                width: 53mm !important;
+                height: 25.5mm !important;
+                padding: 1.5mm !important;
                 display: flex !important;
                 flex-direction: column !important;
                 box-sizing: border-box !important;
-                overflow: hidden !important; /* 絕對防止文字過多撐開版型，破壞 10 排設定 */
-                gap: 2px !important;
+                overflow: hidden !important;
+                gap: 1px !important;
             }
-            /* 優化標籤內的文字大小以適應小尺寸，防止溢出 */
-            .label-box .text-sm { font-size: 11px !important; line-height: 1.2 !important; }
-            .label-box .text-xs { font-size: 10px !important; line-height: 1.2 !important; }
-            .label-box .text-\\[9px\\] { font-size: 8px !important; }
+            /* 標籤內文字：空間足夠時維持較大字體，商品名過長時由 JS 彈性縮小 */
+            .label-box .label-brand {
+                font-size: 12.5px !important;
+                line-height: 1.1 !important;
+                overflow: hidden !important;
+                display: -webkit-box !important;
+                -webkit-box-orient: vertical !important;
+                -webkit-line-clamp: 2 !important;
+                overflow-wrap: anywhere !important;
+                word-break: break-word !important;
+            }
+            .label-box .label-generic {
+                font-size: 9px !important;
+                line-height: 1.1 !important;
+                overflow: hidden !important;
+                display: -webkit-box !important;
+                -webkit-box-orient: vertical !important;
+                -webkit-line-clamp: 2 !important;
+            }
+            .label-box .text-\[9px\] { font-size: 7px !important; }
         }
 
         /* 順滑進場與 Toast 動畫 */
@@ -212,7 +233,10 @@
                     <div class="flex flex-wrap items-center gap-2 md:gap-3">
                         <div class="p-1.5 bg-primary-50 rounded-lg text-primary-500 hidden sm:block"><i class="ph ph-table text-lg"></i></div>
                         <h2 id="main-list-title" class="font-semibold text-slate-800">2. 藥物清單</h2>
-                        <div class="flex items-center gap-3 ml-1 md:ml-2 border-l border-slate-200 pl-3">
+                        <div class="flex items-center gap-2 ml-1 md:ml-2 border-l border-slate-200 pl-3">
+                            <button id="sort-brand-btn" onclick="app.sortByBrand()" class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 hover:text-primary-600 hover:bg-primary-50 px-2 py-1 rounded-lg border border-slate-200 transition-colors" title="依商品名排序">
+                                <i class="ph ph-sort-ascending text-sm"></i><span>商品名排序</span>
+                            </button>
                             <label class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 cursor-pointer hover:text-primary-600 transition-colors">
                                 <input type="checkbox" id="chk-title-1" onchange="app.updateListTitle()" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5 cursor-pointer">
                                 自備藥辨識
@@ -230,6 +254,7 @@
                             <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 w-40 transition-all">
                         </div>
                         <button id="batch-delete-btn" onclick="app.deleteSelected()" class="hidden text-xs font-medium bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200/50 transition-all duration-200 items-center gap-1"><i class="ph ph-trash"></i> 刪除選取</button>
+                        <button onclick="app.deleteDuplicates()" class="text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200/50 transition-all duration-200 items-center gap-1" title="依商品名刪除重複藥品，只保留第一筆"><i class="ph ph-copy"></i> 刪除重複</button>
                         <span id="med-count" class="text-xs font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200/50 transition-all duration-200">共 0 筆紀錄</span>
                     </div>
                 </div>
@@ -425,6 +450,7 @@
             let parsedList = []; 
             const STORAGE_KEY = 'MedAssistantData_v1';
             let lastCheckedIndex = null; // 用於 Shift+Click 多選
+            let brandSortAscending = true;
             let currentParseMode = 'cloud'; // 新增：紀錄當前清理模式
             let savedTextCloud = ''; // 新增：儲存雲端藥歷文字
             let savedTextUd = ''; // 新增：儲存UD處方文字
@@ -552,7 +578,26 @@
                         // 預先判定：是否為「雲端藥歷表格」的大批貼上 (特徵：包含 Tab 且有疑似健保代碼)
                         const isCloudTableData = text.includes('\t') && /[a-zA-Z][a-zA-Z0-9]{9}/.test(text);
 
-                        text.split('\n').forEach(line => {
+                        // 將雲端藥歷複製時因畫面換行而拆開的「藥品代碼列」重新接回上一行。
+                        // 例如：I200...Mucolytics\t + 下一行 BC23898100\tFLUIMUCIL...，應視為同一筆藥品資料。
+                        const cloudLines = text.split('\n').reduce((lines, line) => {
+                            const current = line.trim();
+                            if (!current) return lines;
+                            const prev = lines[lines.length - 1] || '';
+                            const currentStartsWithDrugCode = /^(?=[a-zA-Z0-9]{10}(?:\t|$))(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}(?:\t|$)/.test(current);
+                            const prevStartsWithDrugCode = /^(?=[a-zA-Z0-9]{10}(?:\t|$))(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}(?:\t|$)/.test(prev);
+
+                            if (currentStartsWithDrugCode && prev && prev.includes('\t') && !prevStartsWithDrugCode) {
+                                lines[lines.length - 1] = prev + '\t' + current;
+                            } else if (prev && !current.includes('\t') && !prev.includes('\t')) {
+                                lines[lines.length - 1] = prev + '\t' + current;
+                            } else {
+                                lines.push(current);
+                            }
+                            return lines;
+                        }, []);
+
+                        cloudLines.forEach(line => {
                             let str = line.trim();
                             if (!str) return;
 
@@ -574,7 +619,7 @@
                                 
                                 // 尋找健保藥品代碼欄位 (10碼英數組合，通常以字母開頭) 作為精準錨點
                                 for (let i = 0; i < parts.length; i++) {
-                                    if (/^[a-zA-Z][a-zA-Z0-9]{9}$/.test(parts[i].trim())) {
+                                    if (/^(?=[a-zA-Z0-9]{10}$)(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}$/.test(parts[i].trim())) {
                                         codeIndex = i;
                                         break;
                                     }
@@ -585,10 +630,20 @@
                                     brandName = parts[codeIndex + 1] ? parts[codeIndex + 1].trim() : '';
                                     genericName = parts[codeIndex + 3] ? parts[codeIndex + 3].trim() : '';
                                     const freq = parts[codeIndex + 4] ? parts[codeIndex + 4].trim() : '';
-                                    const dose = parts[codeIndex + 5] ? parts[codeIndex + 5].trim() : '';
+                                    const totalQty = parts[codeIndex + 5] ? parts[codeIndex + 5].trim() : '';
+                                    const days = parts[codeIndex + 6] ? parts[codeIndex + 6].trim() : '';
                                     
-                                    // 依需求：將用量數字放在頻率前面 (例如：1 BIDPC OU)
-                                    usage = dose ? `${dose} ${freq}`.trim() : freq;
+                                    // 雲端藥歷未提供「一次服用幾顆」時，不自行推算單次劑量。
+                                    // 以「頻次 + 總量(#) + 天數」呈現，避免將總量誤認為單次劑量。
+                                    if (freq && totalQty && days) {
+                                        usage = `${freq} 共${totalQty}# ${days}天`.trim();
+                                    } else if (freq && totalQty) {
+                                        usage = `${freq} 共${totalQty}#`.trim();
+                                    } else if (freq && days) {
+                                        usage = `${freq} ${days}天`.trim();
+                                    } else {
+                                        usage = freq;
+                                    }
                                     isParsedByCloudFormat = true;
                                 }
                             }
@@ -648,7 +703,7 @@
                     } else {
                         els.emptyState.classList.add('hidden'); els.emptyState.classList.remove('flex');
                         els.tableBody.innerHTML = medList.map((med, index) => `
-                            <tr draggable="true" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-none rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative shadow-sm md:shadow-none hover:bg-slate-50/80 md:hover:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
+                            <tr draggable="false" data-drag-armed="false" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-none rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative shadow-sm md:shadow-none hover:bg-slate-50/80 md:hover:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
                                 <!-- 拖曳手把與勾選框 (桌機) -->
                                 <td class="hidden md:table-cell py-1 md:py-3 px-2 md:px-4 text-center border-b border-slate-100 md:border-none">
                                     <div class="flex items-center justify-center gap-1">
@@ -730,18 +785,26 @@
                         els.labelContainer.innerHTML = '<div class="col-span-full text-center text-slate-500 py-10 font-medium">無藥品紀錄可產生標籤</div>';
                         return;
                     }
-                    els.labelContainer.innerHTML = medList.map((med) => `
+                    els.labelContainer.innerHTML = medList.map((med) => {
+                        const brandLength = Array.from(String(med.brandName || '')).length;
+                        let brandFontSize = 12.5;
+                        if (brandLength > 68) brandFontSize = 8;
+                        else if (brandLength > 58) brandFontSize = 8.5;
+                        else if (brandLength > 48) brandFontSize = 9;
+                        else if (brandLength > 38) brandFontSize = 10;
+                        else if (brandLength > 28) brandFontSize = 11;
+                        return `
                         <div class="label-box border-2 border-slate-800 rounded-lg p-2 bg-white flex flex-col gap-1 min-h-[75px] shadow-sm">
                             <div>
                                 <div class="text-[9px] font-bold text-slate-500 mb-0.5 border-b border-slate-200 pb-0.5">商品名</div>
-                                <div class="font-bold text-sm text-slate-900 leading-tight break-words">${utils.escapeHtml(med.brandName) || ' '}</div>
+                                <div class="label-brand font-bold text-sm text-slate-900 leading-tight break-words" style="font-size:${brandFontSize}px !important;">${utils.escapeHtml(med.brandName) || ' '}</div>
                             </div>
                             <div class="mt-auto pt-1">
-                                <div class="text-[9px] font-bold text-slate-500 mb-0.5 border-b border-slate-200 pb-0.5">外觀</div>
-                                <div class="font-medium text-xs text-slate-800 leading-tight break-words">${utils.escapeHtml(med.appearance) || ' '}</div>
+                                <div class="text-[9px] font-bold text-slate-500 mb-0.5 border-b border-slate-200 pb-0.5">學名</div>
+                                <div class="label-generic font-medium text-xs text-slate-800 leading-tight break-words">${utils.escapeHtml(med.genericName) || ' '}</div>
                             </div>
-                        </div>
-                    `).join('');
+                        </div>`;
+                    }).join('');
                 },
 
                 updatePrintView: () => {
@@ -837,10 +900,14 @@
                 // 拖曳排序邏輯 (Drag and Drop)
                 let draggedRow = null;
                 els.tableBody.addEventListener('dragstart', (e) => {
-                    if (e.target.closest('tr')) {
-                        draggedRow = e.target.closest('tr');
+                    const row = e.target.closest('tr');
+                    if (row && row.dataset.dragArmed === 'true') {
+                        draggedRow = row;
                         e.dataTransfer.effectAllowed = 'move';
-                        setTimeout(() => draggedRow.classList.add('opacity-40', 'bg-slate-100'), 0);
+                        e.dataTransfer.setData('text/plain', row.dataset.id || '');
+                        setTimeout(() => draggedRow && draggedRow.classList.add('opacity-40', 'bg-slate-100'), 0);
+                    } else {
+                        e.preventDefault();
                     }
                 });
                 els.tableBody.addEventListener('dragover', (e) => {
@@ -853,7 +920,7 @@
                         els.tableBody.insertBefore(draggedRow, next ? targetRow.nextSibling : targetRow);
                     }
                 });
-                els.tableBody.addEventListener('dragend', (e) => {
+                els.tableBody.addEventListener('dragend', () => {
                     if (draggedRow) {
                         draggedRow.classList.remove('opacity-40', 'bg-slate-100');
                         // 更新 medList 順序
@@ -861,8 +928,35 @@
                         medList.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
                         storage.save();
                         ui.updatePrintView();
+                        draggedRow.dataset.dragArmed = 'false';
+                        draggedRow.draggable = false;
                         draggedRow = null;
                     }
+                });
+                // 只有按住拖曳手把才啟用原生拖曳；其餘區域維持正常文字選取。
+                els.tableBody.addEventListener('pointerdown', (e) => {
+                    const handle = e.target.closest('.drag-handle');
+                    if (handle) {
+                        const row = handle.closest('tr');
+                        if (row) {
+                            row.dataset.dragArmed = 'true';
+                            row.draggable = true;
+                        }
+                    }
+                });
+                els.tableBody.addEventListener('pointerup', (e) => {
+                    if (!e.target.closest('.drag-handle') && !draggedRow) {
+                        els.tableBody.querySelectorAll('tr').forEach(row => {
+                            row.dataset.dragArmed = 'false';
+                            row.draggable = false;
+                        });
+                    }
+                });
+                els.tableBody.addEventListener('pointercancel', () => {
+                    els.tableBody.querySelectorAll('tr').forEach(row => {
+                        row.dataset.dragArmed = 'false';
+                        row.draggable = false;
+                    });
                 });
 
                 els.tableBody.addEventListener('input', (e) => {
@@ -877,17 +971,22 @@
                     }
                 });
                 els.tableBody.addEventListener('click', (e) => {
-                    // Shift+Click 多選邏輯
+                    // Shift+Click 多選邏輯；每一列只視為一個選取單位，並同步桌機/手機兩個 checkbox。
                     if (e.target.classList.contains('row-checkbox')) {
-                        const checkboxes = Array.from(document.querySelectorAll('.row-checkbox'));
-                        const currentIndex = checkboxes.indexOf(e.target);
-                        
+                        const currentRow = e.target.closest('tr');
+                        const rows = Array.from(els.tableBody.querySelectorAll('tr'));
+                        const currentIndex = rows.indexOf(currentRow);
+                        const isChecked = e.target.checked;
+
+                        if (currentRow) {
+                            currentRow.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
+                        }
+
                         if (e.shiftKey && lastCheckedIndex !== null) {
                             const start = Math.min(currentIndex, lastCheckedIndex);
                             const end = Math.max(currentIndex, lastCheckedIndex);
-                            const isChecked = e.target.checked;
                             for (let i = start; i <= end; i++) {
-                                checkboxes[i].checked = isChecked;
+                                rows[i].querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
                             }
                         }
                         lastCheckedIndex = currentIndex;
@@ -1015,12 +1114,18 @@
                 },
                 // --- 新增：批次刪除與勾選邏輯 ---
                 toggleSelectAll: (checkbox) => {
-                    const checkboxes = document.querySelectorAll('.row-checkbox');
-                    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+                    // 每一列在桌機/手機各有一個勾選框，兩者必須同步，避免取消桌機勾選後仍殘留隱藏的手機版勾選框。
+                    document.querySelectorAll('#med-table-body tr').forEach(tr => {
+                        tr.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checkbox.checked);
+                    });
                     api.updateBatchDeleteBtn();
                 },
                 updateBatchDeleteBtn: () => {
-                    const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+                    // 以「列」為單位計算選取狀態，而不是直接計算 checkbox 數量。
+                    // 每列有桌機/手機兩個 checkbox，直接計數會導致全選後取消部分選取時判斷錯誤。
+                    const rows = Array.from(document.querySelectorAll('#med-table-body tr'));
+                    const selectedRows = rows.filter(tr => tr.querySelector('.row-checkbox')?.checked);
+                    const checkedCount = selectedRows.length;
                     if (checkedCount > 0) {
                         els.batchDeleteBtn.classList.remove('hidden');
                         els.batchDeleteBtn.classList.add('flex');
@@ -1029,12 +1134,14 @@
                         els.batchDeleteBtn.classList.remove('flex');
                     }
                     if (els.selectAllCheckbox) {
-                        const totalCount = document.querySelectorAll('.row-checkbox').length;
-                        els.selectAllCheckbox.checked = (checkedCount === totalCount && totalCount > 0);
+                        els.selectAllCheckbox.checked = (checkedCount === rows.length && rows.length > 0);
                     }
                 },
                 deleteSelected: () => {
-                    const checkedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+                    // 直接從每一列取得目前「實際選取」的狀態，避免桌機/手機雙 checkbox 造成重複或殘留選取。
+                    const checkedIds = Array.from(document.querySelectorAll('#med-table-body tr'))
+                        .filter(tr => tr.querySelector('.row-checkbox')?.checked)
+                        .map(tr => tr.dataset.id);
                     if (checkedIds.length === 0) return;
                     
                     checkedIds.forEach(id => {
@@ -1051,6 +1158,36 @@
                         storage.save();
                         utils.showToast(`已批次刪除 ${checkedIds.length} 筆紀錄`, 'info');
                     }, 200);
+                },
+
+                // 新增：依商品名刪除重複藥品，只保留第一筆資料
+                deleteDuplicates: () => {
+                    const seen = new Set();
+                    const originalCount = medList.length;
+                    const duplicates = [];
+
+                    medList.forEach(med => {
+                        const brandName = String(med.brandName || '').trim();
+                        // 商品名為空白時不列入重複判斷，避免所有空白資料被視為同一筆。
+                        if (!brandName) return;
+
+                        const key = brandName.toLowerCase();
+                        if (seen.has(key)) {
+                            duplicates.push(med.id);
+                        } else {
+                            seen.add(key);
+                        }
+                    });
+
+                    if (duplicates.length === 0) {
+                        utils.showToast('沒有找到重複的商品名', 'info');
+                        return;
+                    }
+
+                    medList = medList.filter(med => !duplicates.includes(med.id));
+                    ui.renderTable();
+                    storage.save();
+                    utils.showToast(`已刪除 ${duplicates.length} 筆重複藥品，保留 ${originalCount - duplicates.length} 筆資料`);
                 },
                 
                 // --- 修改：客製化清空確認視窗 (取代 Confirm) ---
@@ -1076,6 +1213,26 @@
                     ui.renderTable(); ui.renderParsedList(); storage.save();
                     api.closeConfirmModal();
                     utils.showToast('資料已清空', 'info');
+                },
+
+                // 依商品名排序；再次點擊可切換升冪/降冪。
+                sortByBrand: () => {
+                    const ascending = brandSortAscending;
+                    medList.sort((a, b) => {
+                        const nameA = String(a.brandName || '').trim();
+                        const nameB = String(b.brandName || '').trim();
+                        const result = nameA.localeCompare(nameB, 'zh-Hant', { numeric: true, sensitivity: 'base' });
+                        return ascending ? result : -result;
+                    });
+                    brandSortAscending = !brandSortAscending;
+                    ui.renderTable();
+                    storage.save();
+                    const btn = document.getElementById('sort-brand-btn');
+                    if (btn) {
+                        const icon = btn.querySelector('i');
+                        if (icon) icon.className = `ph ${ascending ? 'ph-sort-ascending' : 'ph-sort-descending'} text-sm`;
+                    }
+                    utils.showToast(`已依商品名${ascending ? '升冪' : '降冪'}排序`);
                 },
                 clearAllData: () => { api.openConfirmModal(); },
 
