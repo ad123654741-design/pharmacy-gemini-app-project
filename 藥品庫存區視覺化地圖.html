@@ -175,10 +175,10 @@
                     </div>
                 </div>
                 
-                <!-- 恢復並修改右上角俯視圖 (僅保留名稱) -->
+                <!-- 恢復並修改右上角俯視圖 (配合 F鐵架下移，將高度加長至 140px 以容納擴建區域) -->
                 <div class="hidden sm:flex flex-col items-center gap-1 shrink-0 pointer-events-auto z-20">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-700">空間俯視圖</span>
-                    <div class="relative w-40 h-[100px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
+                    <div class="relative w-40 h-[140px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
                         <!-- JS 動態渲染小俯視圖 -->
                     </div>
                 </div>
@@ -530,7 +530,8 @@
             { no: 3, id: 'Rack-C', name: '鐵架 C', label: 'C區', theme: 'border-slate-800', category: '', top: '25%', left: '57%', width: '20%', height: '18%' },
             { no: 4, id: 'Rack-D', name: '鐵架 D', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '38%' },
             { no: 5, id: 'Rack-E', name: '鐵架 E', label: 'E區', theme: 'border-slate-800', category: '', top: '63%', left: '26%', width: '9%', height: '32%' },
-            { no: 6, id: 'Rack-F', name: '鐵架 F', label: 'F區', theme: 'border-slate-800', category: '', top: '63%', left: '42%', width: '14%', height: '18%' }
+            // 修改：F鐵架往下移動 8 格，相當於向下平移 40% 的相對距離 (63% + 40% = 103%)
+            { no: 6, id: 'Rack-F', name: '鐵架 F', label: 'F區', theme: 'border-slate-800', category: '', top: '103%', left: '42%', width: '14%', height: '18%' }
         ];
 
         const AppState = {
@@ -832,16 +833,20 @@
                 // 2. 渲染右上角的純粹版俯視小圖
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
+                    // 加入 relative 基準容器以確保 100% = 100px，讓 top: 103% 的 F 鐵架能正確渲染於擴建的下方空間
                     minimapContainer.innerHTML = `
-                        <!-- 灰色走道區塊 (更換為柔和粉藍灰色) -->
-                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
-                    ` + RACKS_CONFIG.map(rack => `
-                        <div id="minimap-rack-${rack.id}" 
-                             class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
-                             style="top: ${rack.top}; left: ${rack.left}; width: ${rack.width}; height: ${rack.height};"
-                             onclick="Controllers.handleRackClick('${rack.id}')">
+                        <div style="position: relative; width: 100%; height: 100px;">
+                            <!-- 灰色走道區塊 (更換為柔和粉藍灰色) -->
+                            <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
+                            ${RACKS_CONFIG.map(rack => `
+                                <div id="minimap-rack-${rack.id}" 
+                                     class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
+                                     style="top: ${rack.top}; left: ${rack.left}; width: ${rack.width}; height: ${rack.height};"
+                                     onclick="Controllers.handleRackClick('${rack.id}')">
+                                </div>
+                            `).join('')}
                         </div>
-                    `).join('');
+                    `;
                 }
             },
 
@@ -1806,7 +1811,11 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 18, 14), defaultTarget: new THREE.Vector3(0, 0, 0),
+            isLerpingCam: false, 
+            // 修正：調整預設視角，往後拉遠並拉高，使畫面能同時涵蓋到最下方的 F 鐵架
+            defaultCamPos: new THREE.Vector3(0, 24, 26), 
+            // 修正：將相機對焦點稍微往下移至 Z=4 處，使整體地圖居中
+            defaultTarget: new THREE.Vector3(0, 0, 4),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1850,15 +1859,16 @@
                 dirLight.shadow.camera.bottom = -15;
                 this.scene.add(dirLight);
 
-                // 修正：為地板加入 emissive 自發光補償，讓地板維持原本 0.6 頂光時的白淨度
+                // 修正：將地板範圍加大，寬度加至 36，深度加至 32，以覆蓋下方擴建的 F 鐵架區域
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
-                const floorGeo = new THREE.PlaneGeometry(28, 20);
+                const floorGeo = new THREE.PlaneGeometry(36, 32);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
+                // 修正：虛化格線同步擴張至 36x36 範圍
+                this.grid = new THREE.GridHelper(36, 36, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
                 this.scene.add(this.grid);
 
