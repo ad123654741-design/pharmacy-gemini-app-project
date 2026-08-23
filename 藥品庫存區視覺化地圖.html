@@ -158,7 +158,7 @@
                 <!-- 空間俯視圖 -->
                 <div class="hidden sm:flex flex-col items-center gap-1 shrink-0 pointer-events-auto z-20">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-700">空間俯視圖</span>
-                    <!-- 配合地板與 F 鐵架外推，將容器高度由 100px 加大至 140px -->
+                    <!-- 修改 1：配合地板與 F 鐵架外推，將容器高度由 100px 加大至 140px -->
                     <div class="relative w-40 h-[140px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
                     </div>
                 </div>
@@ -1804,6 +1804,7 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
+            // 修改 2：調整預設攝影機位置與對焦目標，確保外擴後的所有層架都在視角內
             isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 20, 18), defaultTarget: new THREE.Vector3(0, 0, 2),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
@@ -1847,20 +1848,32 @@
                 dirLight.shadow.camera.bottom = -20;
                 this.scene.add(dirLight);
 
+                // 修改 1：將白色實體地板與格線深度擴充至 24，並向 Z 軸偏移 2，確保走道與上層鐵架位置不跑掉
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
                 const floorGeo = new THREE.PlaneGeometry(28, 24);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
-                floor.position.z = 2; 
+                floor.position.z = 2; // 向下偏移
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
+                // 內層白色格線 (24格)
                 this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
                 this.grid.position.z = 2;
-                this.grid.scale.set(1, 1, 24/28); 
+                this.grid.scale.set(1, 1, 24/28); // 縮放 Z 軸比例配合 24 深度
                 this.scene.add(this.grid);
 
+                // 修改 1：新增外層透明格線 (28格)，營造往外延伸 2 格的空間感
+                const outerGrid = new THREE.GridHelper(28, 28, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
+                outerGrid.position.y = 0.005; // 比內層稍微低一點點避免閃爍
+                outerGrid.position.z = 2;
+                // 設定為部分透明
+                outerGrid.material.transparent = true;
+                outerGrid.material.opacity = 0.4;
+                this.scene.add(outerGrid);
+
+                // 走道保持原位 (Y=0.02, Z=0)
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
                 const aisleGeo = new THREE.PlaneGeometry(28, 3.2);
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
@@ -1995,6 +2008,7 @@
 
             buildRacks() {
                 const roomW = 28;
+                // 修改 1：佈局基礎常數維持 24，對齊外推後的地板空間
                 const roomD = 24; 
                 const rackHeight = 4.5; 
 
@@ -2021,6 +2035,7 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
+                    // 修改 1：配合地板外推 Z 軸偏移 2，鐵架整體也同步加上 Z 軸偏移，確保相對走道的位置不變
                     group.position.set(x, rackHeight / 2, z + 2); 
 
                     const postPositions = [
