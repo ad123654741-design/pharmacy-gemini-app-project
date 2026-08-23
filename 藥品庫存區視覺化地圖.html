@@ -493,14 +493,15 @@
             glowIntensity: 0.2      
         };
 
-        // 新增 6 個鐵架
+        // 修正：重新校正所有鐵架在小地圖上的 top 百分比，對應擴充後的空間深度
+        // 原本空間深度對應 100%，現在空間拉長，原本的 top 數值需要往下微調以保持走道相對位置
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '25%', left: '42%', width: '14%', height: '18%' },
-            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '5%', left: '57%', width: '20%', height: '19%' },
-            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '25%', left: '57%', width: '20%', height: '18%' },
-            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '38%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '63%', left: '26%', width: '9%', height: '32%' },
-            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '103%', left: '42%', width: '14%', height: '18%' }
+            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '22%', left: '42%', width: '14%', height: '15%' },
+            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '5%', left: '57%', width: '20%', height: '16%' },
+            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '22%', left: '57%', width: '20%', height: '15%' },
+            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '5%', left: '78%', width: '9%', height: '32%' },
+            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '55%', left: '26%', width: '9%', height: '27%' },
+            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '88%', left: '42%', width: '14%', height: '15%' } // 完美收入框內
         ];
 
         const AppState = {
@@ -810,7 +811,8 @@
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
                     minimapContainer.innerHTML = `
-                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 45%; left: 2%; width: 96%; height: 16%;"></div>
+                        <!-- 修正：走道在小地圖中的比例位置 -->
+                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 39%; left: 2%; width: 96%; height: 13%;"></div>
                     ` + RACKS_CONFIG.map(rack => `
                         <div id="minimap-rack-${rack.id}" 
                              class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
@@ -1804,8 +1806,8 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            // 修改 2：調整預設攝影機位置與對焦目標，確保外擴後的所有層架都在視角內
-            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 20, 18), defaultTarget: new THREE.Vector3(0, 0, 2),
+            // 修正：調整攝影機預設位置與注視點，確保完整看見 6 個層架
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(0, 24, 22), defaultTarget: new THREE.Vector3(0, 0, 2),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1848,37 +1850,33 @@
                 dirLight.shadow.camera.bottom = -20;
                 this.scene.add(dirLight);
 
-                // 修改 1：將白色實體地板與格線深度擴充至 24，並向 Z 軸偏移 2，確保走道與上層鐵架位置不跑掉
+                // 修正：實體地板直接擴大，不需偏移 Z 軸
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
-                const floorGeo = new THREE.PlaneGeometry(28, 24);
+                const floorGeo = new THREE.PlaneGeometry(28, 28);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
-                floor.position.z = 2; // 向下偏移
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                // 內層白色格線 (24格)
+                // 修正：單層主要格線
                 this.grid = new THREE.GridHelper(28, 28, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
-                this.grid.position.z = 2;
-                this.grid.scale.set(1, 1, 24/28); // 縮放 Z 軸比例配合 24 深度
                 this.scene.add(this.grid);
 
-                // 修改 1：新增外層透明格線 (28格)，營造往外延伸 2 格的空間感
-                const outerGrid = new THREE.GridHelper(28, 28, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
-                outerGrid.position.y = 0.005; // 比內層稍微低一點點避免閃爍
-                outerGrid.position.z = 2;
-                // 設定為部分透明
+                // 修正：向外擴充 2 格的透明格線 (總長 32)
+                const outerGrid = new THREE.GridHelper(32, 32, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
+                outerGrid.position.y = 0.005;
                 outerGrid.material.transparent = true;
                 outerGrid.material.opacity = 0.4;
                 this.scene.add(outerGrid);
 
-                // 走道保持原位 (Y=0.02, Z=0)
+                // 修正：走道位置。配合全局空間拉長，Z 軸微調以對齊鐵架
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
-                const aisleGeo = new THREE.PlaneGeometry(28, 3.2);
+                const aisleGeo = new THREE.PlaneGeometry(32, 3.2); // 走道長度配合外擴網格
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
+                aisle.position.z = -1.5; // 校正走道在 A, C 鐵架與 E 鐵架之間的精準位置
                 this.scene.add(aisle);
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
@@ -2008,8 +2006,8 @@
 
             buildRacks() {
                 const roomW = 28;
-                // 修改 1：佈局基礎常數維持 24，對齊外推後的地板空間
-                const roomD = 24; 
+                // 修正：將全局運算空間的深度從 20 加大至 28，配合擴展後的地板範圍
+                const roomD = 28; 
                 const rackHeight = 4.5; 
 
                 const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
@@ -2035,8 +2033,8 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
-                    // 修改 1：配合地板外推 Z 軸偏移 2，鐵架整體也同步加上 Z 軸偏移，確保相對走道的位置不變
-                    group.position.set(x, rackHeight / 2, z + 2); 
+                    // 修正：移除之前錯誤的 Z 軸偏移，現在由統一加大的 roomD 來負責正確比例換算
+                    group.position.set(x, rackHeight / 2, z); 
 
                     const postPositions = [
                         [-w/2 + postRadius, -d/2 + postRadius],
