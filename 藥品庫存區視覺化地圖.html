@@ -1867,8 +1867,8 @@
         const ThreeApp = {
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
-            // 修改：將視角拉高、往右上方移動 (22, 26, 22)，營造右上方 45 度俯瞰的全景視野
-            isLerpingCam: false, defaultCamPos: new THREE.Vector3(22, 26, 22), defaultTarget: new THREE.Vector3(0, 0, 2),
+            // 復原：攝影機回歸到適合的 45 度角俯視，不再偏移中心
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(22, 26, 22), defaultTarget: new THREE.Vector3(0, 0, 0),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1908,30 +1908,28 @@
                 dirLight.shadow.camera.bottom = -15;
                 this.scene.add(dirLight);
 
-                // 修改：白色實體地板長寬外推一格 (28 -> 30)
+                // 復原：將地板退回原來的尺寸 (30x30)，並移除多餘的 Z 軸偏移，讓鐵架不會被拉散
                 this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
                 const floorGeo = new THREE.PlaneGeometry(30, 30);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
-                floor.position.z = 2; 
+                floor.position.z = 0; 
                 floor.receiveShadow = true;
                 this.scene.add(floor);
 
-                // 修改：主要白色格線同步外推一格 (28 -> 30)
                 this.grid = new THREE.GridHelper(30, 30, isDark ? 0x334155 : 0xe2e8f0, isDark ? 0x334155 : 0xe2e8f0);
                 this.grid.position.y = 0.01;
-                this.grid.position.z = 2; 
+                this.grid.position.z = 0; 
                 this.scene.add(this.grid);
 
-                // 外圍透明格線 (34x34)
                 const outerGrid = new THREE.GridHelper(34, 34, isDark ? 0x1e293b : 0xe2e8f0, isDark ? 0x1e293b : 0xd1d5db);
                 outerGrid.position.y = 0.005;
-                outerGrid.position.z = 2; 
+                outerGrid.position.z = 0; 
                 outerGrid.material.transparent = true;
                 outerGrid.material.opacity = 0.4;
                 this.scene.add(outerGrid);
 
-                // 修正 1：灰色地毯長度縮回 30，只呈現在白色網格內，不延伸至透明網格
+                // 修正：走道維持 30 的長度，不再外推。最重要的是 Z 軸回到 -1.5，這個位置能完美穿插在 A,B,C,D 與 E,F 之間
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
                 const aisleGeo = new THREE.PlaneGeometry(30, 3.2); 
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
@@ -2010,7 +2008,7 @@
                 
                 if (config.aisleColor === 'red') {
                     if (!this.carpetBorders) {
-                        const borderGeo = new THREE.BoxGeometry(28, 0.1, 0.2);
+                        const borderGeo = new THREE.BoxGeometry(30, 0.1, 0.2); // 配合走道改為 30
                         const borderMat = new THREE.MeshStandardMaterial({color: 0xffd700, metalness: 0.8, roughness: 0.2});
                         const border1 = new THREE.Mesh(borderGeo, borderMat);
                         border1.position.set(0, 0.05, 1.5); 
@@ -2018,8 +2016,8 @@
                         border2.position.set(0, 0.05, -1.5);
                         this.carpetBorders = new THREE.Group();
                         this.carpetBorders.add(border1, border2);
-                        // 修改：確保星光紅毯的邊界線也跟隨走道向下平移 2 格 (變為 0.5)
-                        this.carpetBorders.position.z = 0.5; 
+                        // 修正：紅毯邊線同步回到 -1.5 的 Z 軸基準
+                        this.carpetBorders.position.z = -1.5; 
                         this.scene.add(this.carpetBorders);
                     }
                     this.carpetBorders.visible = true;
@@ -2070,8 +2068,9 @@
 
             buildRacks() {
                 const roomW = 28;
-                // 修改：為了容納下移的鐵架，將空間深度變數加大至 36，確保計算不破圖
-                const roomD = 36; 
+                // 復原最關鍵的比例參數：將空間深度改回 28，停止 Z 軸的異常拉長
+                // 這能確保 RACKS_CONFIG 算出來的百分比，轉換為 3D 時能保持緊湊
+                const roomD = 28; 
                 const rackHeight = 4.5; 
 
                 const postMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
@@ -2097,7 +2096,7 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
-                    // 修正：移除之前錯誤的 Z 軸偏移，現在由統一加大的 roomD 來負責正確比例換算
+                    // 復原：拿掉所有 Z 軸強制位移，依賴原始的比例計算
                     group.position.set(x, rackHeight / 2, z); 
 
                     const postPositions = [
