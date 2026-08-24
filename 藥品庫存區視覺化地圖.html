@@ -682,14 +682,7 @@
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify(payload)
                     });
-                    
-                    const text = await response.text();
-                    let result;
-                    try {
-                        result = JSON.parse(text);
-                    } catch (e) {
-                        throw new Error("後端回傳格式錯誤");
-                    }
+                    const result = await response.json();
                     
                     if (result.status === 'success') {
                         const savedChName = (result.chName !== undefined) ? result.chName : chName;
@@ -895,10 +888,10 @@
                             const rackName = rackObj ? rackObj.name : med.rackId;
                             const displayLocation = `${rackName}-${med.shelf}`; 
                             
-                            // 修正：增加對雙引號的逸出，防止中文名稱含有特殊字元導致 HTML 截斷與儲存失敗
                             const safeId = med.id ? String(med.id).replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
                             const safeName = med.name ? String(med.name).replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
                             const safeChName = med.chName ? String(med.chName).replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
+                            
                             const editBtnHTML = AppState.isLoggedIn ? `
                                         <button class="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700/50 text-slate-400 dark:text-slate-400 flex items-center justify-center hover:bg-amber-100 dark:hover:bg-amber-900/50 hover:text-amber-600 dark:hover:text-amber-400 transition-all duration-200 shadow-sm border border-slate-100 dark:border-slate-600 hover:-translate-y-0.5 ml-1" title="編輯資料" onclick="event.stopPropagation(); Controllers.openEditModal('${safeId}', '${safeName}', '${med.rackId}', ${med.shelf}, '${safeChName}')">
                                             <i data-lucide="edit-3" class="w-4 h-4"></i>
@@ -1531,11 +1524,6 @@
                     DOM.saveMedBtn.disabled = true;
                     if(window.lucide) window.lucide.createIcons({root: DOM.saveMedBtn});
 
-                    // 關鍵修正：如果使用者變更了藥品代碼，強制先從後端刪除舊代碼資料，避免後端直接新增導致重複
-                    if (originalId !== id && AppState.WEB_APP_URL) {
-                        await AppState.deleteFromServer(originalId);
-                    }
-
                     const success = await AppState.syncToServer(id, name, rackId, shelf, chName, originalId);
                     
                     if (success) {
@@ -1543,9 +1531,6 @@
                         DOM.renderRacks(); 
                         this.refreshUI();  
                     }
-                } catch(err) {
-                    console.error("儲存失敗：", err);
-                    alert("儲存過程中發生例外錯誤！");
                 } finally {
                     DOM.saveMedBtn.innerHTML = originalText;
                     DOM.saveMedBtn.disabled = false;
@@ -1557,7 +1542,7 @@
                 const id = DOM.editMedOriginalId && DOM.editMedOriginalId.value ? DOM.editMedOriginalId.value.trim() : DOM.editMedId.value.trim();
                 if (!id) return;
                 
-                if (confirm(`警告：確定要刪除此藥品 (${id}) 嗎？此操作無法復原！`)) {
+                if (confirm('警告：確定要刪除此藥品嗎？此操作無法復原！')) {
                     const deleteBtn = document.getElementById('deleteMedBtn');
                     const originalText = deleteBtn.innerHTML;
                     
@@ -1573,9 +1558,6 @@
                             DOM.renderRacks(); 
                             this.refreshUI();  
                         }
-                    } catch(err) {
-                        console.error("刪除失敗：", err);
-                        alert("執行刪除時發生錯誤！");
                     } finally {
                         if(deleteBtn) {
                             deleteBtn.innerHTML = originalText;
