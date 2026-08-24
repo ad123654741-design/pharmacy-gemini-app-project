@@ -1735,16 +1735,30 @@
                         <meta charset="UTF-8">
                         <title>藥品標籤列印 - ${today}</title>
                         <style>
-                            /* 強制取消瀏覽器預設邊界，由內部 padding 精準控制 */
+                            /* 強制取消瀏覽器預設邊界，由內部精準控制 */
                             @page { size: A4; margin: 0; }
                             body { 
                                 margin: 0; 
-                                padding: 21mm 0 0 21mm; /* 上推 21mm，左推 21mm */
+                                padding: 0; /* 移除 body 的 padding，改用 page-container 控制 */
                                 font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; 
                                 background: #fff; 
                                 box-sizing: border-box;
                             }
                             
+                            /* 單頁容器：確保每一頁的起始位置都一致 (上推 21mm，左推 21mm) */
+                            .page-container {
+                                width: 210mm;
+                                height: 297mm;
+                                padding: 21mm 0 0 21mm; 
+                                box-sizing: border-box;
+                                page-break-after: always; /* 強制換頁 */
+                                position: relative;
+                            }
+                            /* 最後一頁不需要強制換頁 */
+                            .page-container:last-child {
+                                page-break-after: auto;
+                            }
+
                             /* 貼紙網格佈局 */
                             .labels-grid { 
                                 display: grid; 
@@ -1769,9 +1783,9 @@
                                 page-break-inside: avoid;
                             }
                             
-                            /* 字體排版防超出設定：稍微加大字體，若文字過長改為最多折行兩行並隱藏超出部分以配合空間 */
-                            .med-loc { font-size: 12px; color: #1d4ed8; font-weight: bold; margin-bottom: 2px; }
-                            .med-name { font-size: 15px; font-weight: 900; color: #0f172a; line-height: 1.15; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
+                            /* 字體排版防超出設定 */
+                            .med-loc { font-size: 11px; color: #1d4ed8; font-weight: bold; margin-bottom: 1px; }
+                            .med-name { font-size: 15px; font-weight: 900; color: #0f172a; line-height: 1.15; margin-bottom: 1px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
                             .med-chName { font-size: 12px; color: #047857; font-weight: bold; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
                             
                             @media print {
@@ -1781,32 +1795,53 @@
                         </style>
                     </head>
                     <body>
-                        <div class="labels-grid">
                     `;
 
+                    // 1. 先將所有要列印的藥品收集到一個平坦的陣列中
+                    const allLabelsToPrint = [];
                     RACKS_CONFIG.forEach(rack => {
                         if (!filterRacks.includes(rack.id)) return;
-                        // 針對該層架抓取藥品並依層數排序
                         const rackMeds = targetMedicines.filter(m => m.rackId === rack.id).sort((a, b) => a.shelf - b.shelf);
-                        
                         rackMeds.forEach(med => {
-                            totalExported++;
-                            htmlContent += `
-                                <div class="med-label">
-                                    <div class="med-loc">${rack.name}-${med.shelf}</div>
-                                    <div class="med-name">${med.name}</div>
-                                    ${med.chName ? `<div class="med-chName">${med.chName}</div>` : ''}
-                                </div>
-                            `;
+                            allLabelsToPrint.push({ rack, med });
                         });
                     });
 
-                    if (totalExported === 0) {
+                    // 2. 將藥品分成每 30 個一組 (一頁)
+                    const LABELS_PER_PAGE = 30;
+                    const pages = [];
+                    for (let i = 0; i < allLabelsToPrint.length; i += LABELS_PER_PAGE) {
+                        pages.push(allLabelsToPrint.slice(i, i + LABELS_PER_PAGE));
+                    }
+
+                    totalExported = allLabelsToPrint.length;
+
+                    // 3. 逐頁渲染
+                    if (pages.length === 0) {
                         htmlContent += '<div style="padding: 20px;">符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</div>';
+                    } else {
+                        pages.forEach(pageLabels => {
+                            htmlContent += `
+                            <div class="page-container">
+                                <div class="labels-grid">
+                            `;
+                            pageLabels.forEach(({ rack, med }) => {
+                                htmlContent += `
+                                    <div class="med-label">
+                                        <div class="med-loc">${rack.name}-${med.shelf}</div>
+                                        <div class="med-name">${med.name}</div>
+                                        ${med.chName ? `<div class="med-chName">${med.chName}</div>` : ''}
+                                    </div>
+                                `;
+                            });
+                            htmlContent += `
+                                </div>
+                            </div>
+                            `;
+                        });
                     }
 
                     htmlContent += `
-                        </div>
                     </body>
                     <script>
                         window.onload = function() { setTimeout(() => { window.print(); }, 500); }
