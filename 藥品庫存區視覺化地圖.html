@@ -647,6 +647,14 @@
                     const matchRack = this.selectedRackId ? (med.rackId === this.selectedRackId) : true;
                     const matchShelf = this.selectedShelf ? (med.shelf === this.selectedShelf) : true;
                     return matchSearch && matchRack && matchShelf;
+                }).sort((a, b) => {
+                    // 優先依照鐵架代號排序 (例如: 'Rack-A' < 'Rack-B')
+                    const rackCompare = a.rackId.localeCompare(b.rackId, 'zh-TW', {numeric: true});
+                    if (rackCompare !== 0) {
+                        return rackCompare;
+                    }
+                    // 若鐵架代號相同，則依照層數排序 (1 < 2 < 3 < 4)
+                    return a.shelf - b.shelf;
                 });
             },
 
