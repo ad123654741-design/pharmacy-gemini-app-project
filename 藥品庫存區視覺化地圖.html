@@ -500,12 +500,12 @@
         // 修正：微調上半部鐵架 (A~E) 的 top 數值，將它們整體向上移動 3%，
         // 確保它們與走道之間有足夠且相等的間距，不再壓在走道上。
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '14%', height: '13%' },
-            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '1%', left: '57%', width: '20%', height: '14%' },
-            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '57%', width: '20%', height: '13%' },
-            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '1%', left: '78%', width: '9%', height: '28%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '52%', left: '26%', width: '9%', height: '24%' },
-            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '82%', left: '42%', width: '14%', height: '13%' }
+            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '82%', left: '42%', width: '14%', height: '13%' },
+            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '52%', left: '26%', width: '9%', height: '24%' },
+            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '14%', height: '13%' },
+            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '16%', left: '57%', width: '20%', height: '13%' },
+            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '1%', left: '78%', width: '9%', height: '28%' },
+            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '1%', left: '57%', width: '20%', height: '14%' }
         ];
 
         const AppState = {
@@ -566,18 +566,39 @@
 
                     const medJson = await fetchSheet();
                     
-                    // 取得本地快取，用來彌補後端可能未儲存特定欄位（如中文名稱）的問題
-                    const cachedMedsStr = localStorage.getItem('drugSysRealMedicines');
-                    const cachedMeds = cachedMedsStr ? JSON.parse(cachedMedsStr) : [];
-
                     this.medicines = medJson.table.rows.map(row => {
-                        let rawStr = (row.c[2]?.v || '').toString().trim();
+                        // 優先讀取格式化後的值 (f)，避免 1-2 變成 Date 格式
+                        let rawStr = (row.c[2]?.f || row.c[2]?.v || '').toString().trim();
+                        
+                        // 清除可能因為強制純文字而加入的開頭單引號
+                        if (rawStr.startsWith("'")) rawStr = rawStr.substring(1);
+                        
+                        // 若 Google Sheet 將 1-2 自動格式化為 1/2，將斜線轉回橫線
+                        rawStr = rawStr.replace(/\//g, '-');
+                        
+                        // 如果是 Date 格式字串，解析月與日 (例如 Date(2024,0,2) 會解析成 1-2)
+                        if (rawStr.startsWith('Date(')) {
+                            const match = rawStr.match(/Date\(\d+,\s*(\d+),\s*(\d+)/);
+                            if (match) {
+                                const m = parseInt(match[1]) + 1; // GAS Date 月份是 0 起始
+                                const d = parseInt(match[2]);
+                                rawStr = `${m}-${d}`;
+                            }
+                        }
+                        
                         let rackId = 'Rack-A'; 
                         let shelf = 1; 
                         
-                        let parts = rawStr.split('-');
-                        let rPart = parts[0];
-                        let sPart = parts[1];
+                        let rPart, sPart;
+                        if (rawStr.startsWith('Rack-')) {
+                            const parts = rawStr.split('-');
+                            rPart = parts.length >= 2 ? parts[0] + '-' + parts[1] : parts[0];
+                            sPart = parts[2];
+                        } else {
+                            const parts = rawStr.split('-');
+                            rPart = parts[0];
+                            sPart = parts[1];
+                        }
                         
                         if (rPart === '1' || rPart === 'Rack-A') rackId = 'Rack-A';
                         else if (rPart === '2' || rPart === 'Rack-B') rackId = 'Rack-B';
@@ -595,21 +616,12 @@
                             if (parsedShelf >= 1 && parsedShelf <= 4) shelf = parsedShelf;
                         }
                         
-                        const id = row.c[0]?.v || '';
-                        let chName = row.c[3]?.v || '';
-                        
-                        // 解決後端可能無法寫入中文名稱的問題：若後端為空，嘗試從本地快取還原
-                        if (!chName) {
-                            const cached = cachedMeds.find(c => c.id === id);
-                            if (cached && cached.chName) chName = cached.chName;
-                        }
-                        
                         return {
-                            id: id,
+                            id: row.c[0]?.v || '',
                             name: row.c[1]?.v || '',
                             rackId: rackId,
                             shelf: shelf,
-                            chName: chName 
+                            chName: row.c[3]?.v || '' 
                         };
                     }).filter(m => m.name !== '')
                       .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase(), 'en')); 
@@ -674,7 +686,8 @@
 
                 try {
                     const rackObj = RACKS_CONFIG.find(r => r.id === rackId);
-                    const rackSaveVal = (rackObj ? rackObj.no : rackId) + '-' + shelf;
+                    // 加上單引號強制存為純文字，避免 Google Sheet 自動轉為日期 (例如 1-2 被轉為 1月2日)
+                    const rackSaveVal = "'" + (rackObj ? rackObj.no : rackId) + '-' + shelf;
                     
                     const payload = { action: 'saveMedicine', id, name, rackId: rackSaveVal, chName, originalId };
                     const response = await fetch(this.WEB_APP_URL, {
@@ -2261,10 +2274,10 @@
                     this.rackMeshes[rack.id] = { hitBox, group, wireframes, boxInstanceds, boxMats, originalY: rackHeight / 2 };
                 });
 
-                const rackA = RACKS_CONFIG.find(r => r.id === 'Rack-A');
-                if (rackA) {
-                    const ax = (parseFloat(rackA.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackA.width) / 100 * roomW / 2);
-                    const az = (parseFloat(rackA.top) / 100 * roomD) - (roomD / 2) + (parseFloat(rackA.height) / 100 * roomD / 2);
+                const rackC = RACKS_CONFIG.find(r => r.id === 'Rack-C');
+                if (rackC) {
+                    const ax = (parseFloat(rackC.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackC.width) / 100 * roomW / 2);
+                    const az = (parseFloat(rackC.top) / 100 * roomD) - (roomD / 2) + (parseFloat(rackC.height) / 100 * roomD / 2);
                     
                     const canvas = document.createElement('canvas');
                     canvas.width = 1024;
@@ -2294,10 +2307,10 @@
                     this.easterEggBoxes.push(signHitBox);
                 }
 
-                const rackD = RACKS_CONFIG.find(r => r.id === 'Rack-D');
-                if (rackD) {
-                    const dx = (parseFloat(rackD.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackD.width) / 100 * roomW / 2);
-                    const dz = (parseFloat(rackD.top) / 100 * roomD) - (roomD / 2) + (parseFloat(rackD.height) / 100 * roomD / 2);
+                const rackE = RACKS_CONFIG.find(r => r.id === 'Rack-E');
+                if (rackE) {
+                    const dx = (parseFloat(rackE.left) / 100 * roomW) - (roomW / 2) + (parseFloat(rackE.width) / 100 * roomW / 2);
+                    const dz = (parseFloat(rackE.top) / 100 * roomD) - (roomD / 2) + (parseFloat(rackE.height) / 100 * roomD / 2);
                     
                     const capsuleGroup = new THREE.Group();
                     const capRadius = 0.06;
