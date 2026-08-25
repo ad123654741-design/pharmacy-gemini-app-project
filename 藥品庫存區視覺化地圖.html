@@ -158,7 +158,7 @@
                 <!-- 空間俯視圖 -->
                 <div class="hidden sm:flex flex-col items-center gap-1 shrink-0 pointer-events-auto z-20">
                     <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-widest bg-white/80 dark:bg-slate-800/80 px-2 rounded backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-700">空間俯視圖</span>
-                    <!-- 修改 1：配合地板與 F 鐵架外推，將容器高度由 100px 加大至 140px -->
+                    <!-- 修改 1：配合地板與 F 外推，將容器高度由 100px 加大至 140px -->
                     <div class="relative w-40 h-[140px] border-[2px] border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-sm shadow-md p-1 transition-colors duration-300" id="minimapContainer">
                     </div>
                 </div>
@@ -258,7 +258,7 @@
                     <input type="text" id="editMedChName" class="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm" placeholder="請輸入中文商品名稱 (選填)">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">存放儲位 (鐵架與層數)</label>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">存放儲位 (與層數)</label>
                     <div class="flex gap-2">
                         <select id="editMedRack" class="w-2/3 px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-slate-800 dark:text-slate-100 transition-colors shadow-sm">
                         </select>
@@ -500,12 +500,12 @@
         // 修正：微調上半部鐵架 (A~E) 的 top 數值，將它們整體向上移動 3%，
         // 確保它們與走道之間有足夠且相等的間距，不再壓在走道上。
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '82%', left: '42%', width: '14%', height: '13%' },
-            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '52%', left: '26%', width: '9%', height: '24%' },
-            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '14%', height: '13%' },
-            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '16%', left: '57%', width: '20%', height: '13%' },
-            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '1%', left: '78%', width: '9%', height: '28%' },
-            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '1%', left: '57%', width: '20%', height: '14%' }
+            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '82%', left: '27%', width: '14%', height: '13%' },
+            { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '52%', left: '11%', width: '9%', height: '24%' },
+            { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '27%', width: '14%', height: '13%' },
+            { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '20%', height: '13%' },
+            { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '1%', left: '63%', width: '9%', height: '28%' },
+            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '1%', left: '42%', width: '20%', height: '14%' }
         ];
 
         const AppState = {
