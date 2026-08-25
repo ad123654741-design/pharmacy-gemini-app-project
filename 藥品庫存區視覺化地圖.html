@@ -2052,7 +2052,7 @@
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
-                aisle.position.z = 3.5; 
+                aisle.position.z = 5.5; 
                 this.scene.add(aisle);
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
@@ -2330,7 +2330,8 @@
                             boxMats: upperBoxMats,
                             // G/H 桌面櫃額外保存所有可發光材質，清除選取時必須全部還原，
                             // 避免點擊桌面後留下 desk/cabinet/backboard 的殘留發光。
-                            highlightMats: [deskMat, cabinetMat, backMat, doorGapMat, ...upperBoxMats],
+                            deskHighlightMats: [deskMat, cabinetMat, doorGapMat],
+                            highlightMats: [deskMat, cabinetMat, doorGapMat, ...upperBoxMats],
                             originalY: 0,
                             isDeskCabinet: true,
                             deskTopY,
@@ -2602,10 +2603,9 @@
 
                     if (selectedShelf) {
                         if (meshObj.isDeskCabinet && selectedShelf === 1) {
-                            // 桌面位置：只讓 G/H 桌面櫃本體的可高亮材質發光。
-                            // 使用 highlightMats 而非 group.traverse，避免之後清除時漏掉動態材質。
-                            if (meshObj.highlightMats) {
-                                meshObj.highlightMats.forEach(mat => {
+                            // 桌面位置：只讓桌面與下方實心櫃體發光；上方兩層絕對不跟著亮。
+                            if (meshObj.deskHighlightMats) {
+                                meshObj.deskHighlightMats.forEach(mat => {
                                     if (mat && mat.emissive) {
                                         mat.emissive.setHex(selectColorHex);
                                         mat.emissiveIntensity = glowIntensity * 0.45;
