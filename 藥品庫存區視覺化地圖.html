@@ -505,7 +505,9 @@
             { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '27%', width: '14%', height: '13%' },
             { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '20%', height: '13%' },
             { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '1%', left: '63%', width: '9%', height: '28%' },
-            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '1%', left: '42%', width: '20%', height: '14%' }
+            { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '1%', left: '42%', width: '20%', height: '14%' },
+            { no: 7, id: 'Rack-G', name: '桌面櫃 G', label: 'G區', theme: 'border-slate-800', category: '', top: '16%', left: '88%', width: '11%', height: '30%' },
+            { no: 8, id: 'Rack-H', name: '桌面櫃 H', label: 'H區', theme: 'border-slate-800', category: '', top: '46%', left: '88%', width: '11%', height: '30%' }
         ];
 
         const AppState = {
@@ -606,6 +608,8 @@
                         else if (rPart === '4' || rPart === 'Rack-D') rackId = 'Rack-D';
                         else if (rPart === '5' || rPart === 'Rack-E') rackId = 'Rack-E';
                         else if (rPart === '6' || rPart === 'Rack-F') rackId = 'Rack-F';
+                        else if (rPart === '7' || rPart === 'Rack-G') rackId = 'Rack-G';
+                        else if (rPart === '8' || rPart === 'Rack-H') rackId = 'Rack-H';
                         else if (rPart) {
                             const found = RACKS_CONFIG.find(r => r.id === rPart || r.no.toString() === rPart);
                             if (found) rackId = found.id;
@@ -613,7 +617,7 @@
                         
                         if (sPart && !isNaN(parseInt(sPart))) {
                             let parsedShelf = parseInt(sPart);
-                            if (parsedShelf >= 1 && parsedShelf <= 4) shelf = parsedShelf;
+                            if (parsedShelf >= 1 && parsedShelf <= ((rackId === 'Rack-G' || rackId === 'Rack-H') ? 2 : 4)) shelf = parsedShelf;
                         }
                         
                         return {
@@ -1203,11 +1207,14 @@
                     const rack = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId);
                     const rackName = rack ? rack.name : AppState.selectedRackId;
                     let html = '';
-                    for(let i=1; i<=4; i++) {
+                    const shelfCount = (rack && (rack.id === 'Rack-G' || rack.id === 'Rack-H')) ? 2 : 4;
+                    const shelfNames = (rack && (rack.id === 'Rack-G' || rack.id === 'Rack-H')) ? ['桌面', '上方兩層'] : null;
+                    for(let i=1; i<=shelfCount; i++) {
                         const isActive = AppState.selectedShelf === i;
                         const bgClass = isActive ? 'bg-primary text-white shadow-md transform scale-105' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600';
                         // 修正：調整此處的 padding 與文字大小 (px-3 py-1 text-[12px]) 縮小標籤外框
-                        html += `<button onclick="Controllers.handleShelfClick(${i})" class="shrink-0 px-3 py-1 text-[12px] font-bold rounded-full transition-all duration-200 ${bgClass}">${rackName}-${i}</button>`;
+                        const label = shelfNames ? `${rackName}-${shelfNames[i-1]}` : `${rackName}-${i}`;
+                        html += `<button onclick="Controllers.handleShelfClick(${i})" class="shrink-0 px-3 py-1 text-[12px] font-bold rounded-full transition-all duration-200 ${bgClass}">${label}</button>`;
                     }
                     DOM.shelfFilterContainer.innerHTML = html;
                     DOM.shelfFilterContainer.classList.remove('hidden');
@@ -1499,7 +1506,22 @@
                 DOM.editMedName.value = name || '';
                 if(DOM.editMedChName) DOM.editMedChName.value = chName || '';
                 DOM.editMedRack.value = rackId || 'Rack-A';
-                if(DOM.editMedShelf) DOM.editMedShelf.value = shelf || 1;
+                if(DOM.editMedShelf) {
+                    const isDeskCabinet = (DOM.editMedRack.value === 'Rack-G' || DOM.editMedRack.value === 'Rack-H');
+                    DOM.editMedShelf.innerHTML = isDeskCabinet
+                        ? '<option value="1">桌面</option><option value="2">上方兩層</option>'
+                        : '<option value="1">第 1 層</option><option value="2">第 2 層</option><option value="3">第 3 層</option><option value="4">第 4 層</option>';
+                    DOM.editMedShelf.value = shelf || 1;
+                }
+                if(DOM.editMedRack) {
+                    DOM.editMedRack.onchange = () => {
+                        const isDeskCabinet = (DOM.editMedRack.value === 'Rack-G' || DOM.editMedRack.value === 'Rack-H');
+                        DOM.editMedShelf.innerHTML = isDeskCabinet
+                            ? '<option value="1">桌面</option><option value="2">上方兩層</option>'
+                            : '<option value="1">第 1 層</option><option value="2">第 2 層</option><option value="3">第 3 層</option><option value="4">第 4 層</option>';
+                        DOM.editMedShelf.value = 1;
+                    };
+                }
                 DOM.modalTitle.textContent = id ? '編輯藥品資訊' : '新增藥品';
                 
                 const deleteBtn = document.getElementById('deleteMedBtn');
@@ -1963,7 +1985,7 @@
             scene: null, camera: null, renderer: null, controls: null, grid: null,
             rackMeshes: {}, raycaster: new THREE.Raycaster(), mouse: new THREE.Vector2(),
             // 復原：攝影機回歸到適合的 45 度角俯視，不再偏移中心
-            isLerpingCam: false, defaultCamPos: new THREE.Vector3(22, 26, 22), defaultTarget: new THREE.Vector3(0, 0, 0),
+            isLerpingCam: false, defaultCamPos: new THREE.Vector3(-22, 26, 22), defaultTarget: new THREE.Vector3(0, 0, 0),
             targetCamPos: new THREE.Vector3(), targetCamLookAt: new THREE.Vector3(),
             
             init(containerId) {
@@ -1996,7 +2018,7 @@
                 this.scene.add(ambientLight);
                 
                 const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
-                dirLight.position.set(10, 20, 10);
+                dirLight.position.set(-10, 20, 10);
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
                 dirLight.shadow.mapSize.height = 2048;
@@ -2024,13 +2046,13 @@
                 outerGrid.material.opacity = 0.4;
                 this.scene.add(outerGrid);
 
-                // 修正：走道維持 30 的長度，不再外推。最重要的是 Z 軸回到 -1.5，這個位置能完美穿插在 A,B,C,D 與 E,F 之間
+                // 修正：走道維持 30 的長度，不再外推。整體下移 5 格，Z 軸調整為 -6.5，這個位置能完美穿插在 A,B,C,D 與 E,F 之間
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
                 const aisleGeo = new THREE.PlaneGeometry(30, 3.2); 
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
-                aisle.position.z = -1.5; 
+                aisle.position.z = 5.5; 
                 this.scene.add(aisle);
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
@@ -2191,6 +2213,132 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
+                    // G/H：靠右牆的桌面櫃體，採一體成形的桌面、背板與上方置物架造型。
+                    if (rack.id === 'Rack-G' || rack.id === 'Rack-H') {
+                        // 桌面高度：由原本高度的 175% 降為目前設定的 25%。
+                        const deskTopY = rackHeight * 1.75 * 0.25;
+                        const deskThickness = 0.22;
+                        const cabinetHeight = Math.max(deskTopY - deskThickness / 2, 0.4);
+
+                        // 統一的白色櫃體材質，讓桌面、櫃體與背板呈現一體成形的家具感。
+                        const deskMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, metalness: 0.08, roughness: 0.48 });
+                        const cabinetMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.06, roughness: 0.62 });
+                        const backMat = new THREE.MeshStandardMaterial({ color: 0xdbe4ec, metalness: 0.04, roughness: 0.7 });
+                        const shelfMatGH = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, metalness: 0.08, roughness: 0.48 });
+                        const trimMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.12, roughness: 0.42 });
+
+                        // 實心桌面。
+                        const deskGeo = new THREE.BoxGeometry(w, deskThickness, d);
+                        const desk = new THREE.Mesh(deskGeo, deskMat);
+                        desk.position.set(0, deskTopY, 0);
+                        desk.castShadow = true;
+                        desk.receiveShadow = true;
+                        group.add(desk);
+
+                        // 桌面下方為完整實心櫃體。
+                        const cabinetGeo = new THREE.BoxGeometry(w, cabinetHeight, d);
+                        const cabinet = new THREE.Mesh(cabinetGeo, cabinetMat);
+                        cabinet.position.set(0, cabinetHeight / 2, 0);
+                        cabinet.castShadow = true;
+                        cabinet.receiveShadow = true;
+                        group.add(cabinet);
+
+                        // 前方細緻的櫃門分界，保持實心但增加家具造型層次。
+                        const doorGapGeo = new THREE.BoxGeometry(0.025, cabinetHeight * 0.72, 0.018);
+                        const doorGapMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.05, roughness: 0.8 });
+                        const doorGap = new THREE.Mesh(doorGapGeo, doorGapMat);
+                        doorGap.position.set(0, cabinetHeight * 0.45, d / 2 + 0.012);
+                        group.add(doorGap);
+
+                        // 上方層架：重新建模為靠右側牆面的兩層一體式壁掛層架。
+                        // G/H 位於地圖最右側，因此 +X 方向就是靠牆側。
+                        // 上方只有兩層層板；不設左右側板，只有靠牆側的完整背板。
+                        // 上方兩層層架：左右寬度為桌面一半，上下（前後）長度與桌面相同；右側邊緣直接接到靠牆背板。
+                        const upperW = w * 0.50;
+                        const upperD = d;
+                        // 層架左右寬度縮為桌面一半，並靠右側牆面背板配置。
+                        const upperX = w / 4;
+                        const backTopY = deskTopY + 3.0;
+                        const backThickness = 0.10;
+
+                        // 完整背板：只放在最靠牆的右側，並沿兩層層架的高度與深度延伸。
+                        // 層板的右側邊緣與背板內側相接，形成一體成形的靠牆收納架。
+                        const backGeo = new THREE.BoxGeometry(backThickness, backTopY - deskTopY, upperD);
+                        const backPanel = new THREE.Mesh(backGeo, backMat);
+                        backPanel.position.set(
+                            w / 2 - backThickness / 2,
+                            deskTopY + (backTopY - deskTopY) / 2,
+                            d / 2 - upperD / 2
+                        );
+                        backPanel.castShadow = true;
+                        backPanel.receiveShadow = true;
+                        group.add(backPanel);
+
+                        // 只有兩層水平層板，沒有左右側隔板。
+                        // 層架左右寬度為桌面的 50%；前後長度與桌面相同，右側邊緣直接接到靠牆背板。
+                        const upperShelfThickness = 0.12;
+                        const upperBaseY = deskTopY + 1.05;
+                        const upperShelfYs = [upperBaseY, upperBaseY + 1.15];
+                        const upperShelfGeo = new THREE.BoxGeometry(upperW, upperShelfThickness, upperD);
+                        const upperEdges = new THREE.EdgesGeometry(new THREE.BoxGeometry(upperW, 0.12, upperD));
+                        const upperWireframes = [];
+                        const upperBoxMats = [];
+                        const upperBoxInstanceds = [];
+
+                        upperShelfYs.forEach((sy) => {
+                            const shelfMat = new THREE.MeshStandardMaterial({
+                                color: 0xf8fafc,
+                                metalness: 0.06,
+                                roughness: 0.48,
+                                emissive: 0x000000,
+                                emissiveIntensity: 0
+                            });
+                            const shelf = new THREE.Mesh(upperShelfGeo, shelfMat);
+                            shelf.position.set(upperX, sy, d / 2 - upperD / 2);
+                            shelf.castShadow = true;
+                            shelf.receiveShadow = true;
+                            group.add(shelf);
+
+                            const wf = new THREE.LineSegments(
+                                upperEdges,
+                                new THREE.LineBasicMaterial({ color: 0x94a3b8, linewidth: 2, transparent: true, opacity: 0.55 })
+                            );
+                            wf.position.copy(shelf.position);
+                            group.add(wf);
+                            upperWireframes.push(wf);
+
+                            // 層板本身就是可高亮的兩層位置，不另外放置任何物件。
+                            upperBoxMats.push(shelfMat);
+                            upperBoxInstanceds.push(shelf);
+                        });
+
+                        // G/H 仍只有兩個可選位置：1=桌面，2=上方兩層合併。
+                        const hitGeo = new THREE.BoxGeometry(w, backTopY, d);
+                        const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+                        const hitBox = new THREE.Mesh(hitGeo, hitMat);
+                        hitBox.position.y = backTopY / 2;
+                        hitBox.userData = { id: rack.id };
+                        group.add(hitBox);
+
+                        group.position.set(x, 0, z);
+                        this.scene.add(group);
+                        this.rackMeshes[rack.id] = {
+                            hitBox,
+                            group,
+                            wireframes: upperWireframes,
+                            boxInstanceds: upperBoxInstanceds,
+                            boxMats: upperBoxMats,
+                            // G/H 桌面櫃額外保存所有可發光材質，清除選取時必須全部還原，
+                            // 避免點擊桌面後留下 desk/cabinet/backboard 的殘留發光。
+                            highlightMats: [deskMat, cabinetMat, backMat, doorGapMat, ...upperBoxMats],
+                            originalY: 0,
+                            isDeskCabinet: true,
+                            deskTopY,
+                            backTopY
+                        };
+                        return;
+                    }
+
                     // 復原：拿掉所有 Z 軸強制位移，依賴原始的比例計算
                     group.position.set(x, rackHeight / 2, z); 
 
@@ -2406,20 +2554,34 @@
                         mat.emissive.setHex(0x000000);
                         mat.emissiveIntensity = 1.0;
                     });
+                    // G/H 的桌面、櫃體、背板不在 boxMats 內，因此原本清除時不會被還原，
+                    // 造成點選後即使 reset/點其他櫃體仍持續發光。這裡完整重置所有 G/H 高亮材質。
+                    if (meshObj.highlightMats) {
+                        meshObj.highlightMats.forEach(mat => {
+                            if (mat && mat.emissive) {
+                                mat.emissive.setHex(0x000000);
+                                mat.emissiveIntensity = 0;
+                                mat.needsUpdate = true;
+                            }
+                        });
+                    }
                     meshObj.group.position.y = meshObj.originalY;
                 });
 
                 highlightedLocations.forEach(loc => {
                     if (this.rackMeshes[loc.rackId]) {
-                        const sIdx = loc.shelf - 1; 
-                        if (this.rackMeshes[loc.rackId].wireframes[sIdx]) {
-                            this.rackMeshes[loc.rackId].wireframes[sIdx].material.color.setHex(searchColorHex);
-                            this.rackMeshes[loc.rackId].wireframes[sIdx].material.opacity = 0.8;
-                        }
-                        if (this.rackMeshes[loc.rackId].boxMats[sIdx]) {
-                            this.rackMeshes[loc.rackId].boxMats[sIdx].emissive.setHex(searchColorHex);
-                            this.rackMeshes[loc.rackId].boxMats[sIdx].emissiveIntensity = glowIntensity * 0.8; 
-                        }
+                        const meshObj = this.rackMeshes[loc.rackId];
+                        const indices = meshObj.isDeskCabinet && loc.shelf === 2 ? [0, 1] : [loc.shelf - 1];
+                        indices.forEach(sIdx => {
+                            if (meshObj.wireframes[sIdx]) {
+                                meshObj.wireframes[sIdx].material.color.setHex(searchColorHex);
+                                meshObj.wireframes[sIdx].material.opacity = 0.8;
+                            }
+                            if (meshObj.boxMats[sIdx]) {
+                                meshObj.boxMats[sIdx].emissive.setHex(searchColorHex);
+                                meshObj.boxMats[sIdx].emissiveIntensity = glowIntensity * 0.8;
+                            }
+                        });
                     }
                 });
 
@@ -2439,9 +2601,26 @@
                     };
 
                     if (selectedShelf) {
-                        highlightShelf(selectedShelf - 1);
+                        if (meshObj.isDeskCabinet && selectedShelf === 1) {
+                            // 桌面位置：只讓 G/H 桌面櫃本體的可高亮材質發光。
+                            // 使用 highlightMats 而非 group.traverse，避免之後清除時漏掉動態材質。
+                            if (meshObj.highlightMats) {
+                                meshObj.highlightMats.forEach(mat => {
+                                    if (mat && mat.emissive) {
+                                        mat.emissive.setHex(selectColorHex);
+                                        mat.emissiveIntensity = glowIntensity * 0.45;
+                                    }
+                                });
+                            }
+                        } else if (meshObj.isDeskCabinet && selectedShelf === 2) {
+                            highlightShelf(0);
+                            highlightShelf(1);
+                        } else {
+                            highlightShelf(selectedShelf - 1);
+                        }
                     } else {
-                        for(let i=0; i<4; i++) highlightShelf(i);
+                        const count = meshObj.isDeskCabinet ? 2 : 4;
+                        for(let i=0; i<count; i++) highlightShelf(i);
                     }
                 }
             },
