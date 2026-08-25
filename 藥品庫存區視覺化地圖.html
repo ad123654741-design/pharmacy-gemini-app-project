@@ -1890,7 +1890,11 @@
                     `;
 
                 } else if (mode === 'location') {
-                    // --- 英文藥名儲位表：A4 直式、四組欄位、僅英文藥名與層架名稱，依英文藥名排序 ---
+                    // --- 藥品儲位清單：A4 直式、四組欄位、依英文藥名排序 ---
+                    // 排列方式為「由上往下填滿一整欄，再換下一欄」。
+                    const locationColumnCount = 4;
+                    const locationTotalCount = targetMedicines.filter(med => filterRacks.includes(med.rackId)).length;
+                    const locationRowCount = Math.max(1, Math.ceil(locationTotalCount / locationColumnCount));
                     // 版型依使用者提供的參考圖：每列橫向排列 4 組「藥品名稱＋儲位」，
                     // 每組內左側為藥品名稱、右側為層架名稱；整頁以淺色交錯底色方便閱讀。
                     htmlContent += `
@@ -1931,7 +1935,8 @@
                             .location-grid {
                                 display: grid;
                                 grid-template-columns: repeat(4, minmax(0, 1fr));
-                                grid-auto-rows: 6.8mm;
+                                grid-template-rows: repeat(${locationRowCount}, 6.8mm);
+                                grid-auto-flow: column;
                                 width: 100%;
                                 border-top: 0.35mm solid #111;
                                 border-left: 0.35mm solid #111;
@@ -1945,10 +1950,7 @@
                                 background: #fff;
                                 overflow: hidden;
                             }
-                            .location-item:nth-child(8n + 1),
-                            .location-item:nth-child(8n + 2),
-                            .location-item:nth-child(8n + 3),
-                            .location-item:nth-child(8n + 4) {
+                            .location-item.row-shade {
                                 background: #fffed6;
                             }
                             .drug-name,
@@ -2009,7 +2011,8 @@
                             .filter(med => med.rackId === rack.id)
                             .forEach(med => locationRows.push({
                                 name: (med.name || '').trim(),
-                                rackName: rack.name || ''
+                                rackName: rack.name || '',
+                                shelf: med.shelf || ''
                             }));
                     });
 
@@ -2022,20 +2025,20 @@
                     if (locationRows.length === 0) {
                         htmlContent += '<div class="empty">符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</div>';
                     } else {
-                        locationRows.forEach(row => {
+                        locationRows.forEach((row, rowIndex) => {
                             const safeName = row.name
                                 .replace(/&/g, '&amp;')
                                 .replace(/</g, '&lt;')
                                 .replace(/>/g, '&gt;')
                                 .replace(/"/g, '&quot;');
-                            const safeRack = row.rackName
+                            const safeRack = `${row.rackName}-${row.shelf}`
                                 .replace(/&/g, '&amp;')
                                 .replace(/</g, '&lt;')
                                 .replace(/>/g, '&gt;')
                                 .replace(/"/g, '&quot;');
 
                             htmlContent += `
-                                <div class="location-item">
+                                <div class="location-item${(rowIndex % locationRowCount === 0) ? ' row-shade' : ''}">
                                     <div class="drug-name" title="${safeName}">${safeName}</div>
                                     <div class="rack-name">${safeRack}</div>
                                 </div>
