@@ -355,6 +355,16 @@
                     </div>
                 </button>
 
+                <button onclick="Controllers.closeSettingsModal(); Controllers.openPrintFilterModal('location')" class="col-span-1 md:col-span-2 flex items-center gap-4 p-4 rounded-xl border-2 border-emerald-300 dark:border-emerald-700 bg-emerald-50/60 dark:bg-emerald-950/20 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="map-pin" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">匯出英文藥名儲位表</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">只顯示英文藥名與層架名稱，依英文藥名排序，A4 直式單頁</div>
+                    </div>
+                </button>
+
                 <button onclick="Controllers.exportBackup()" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <i data-lucide="download-cloud" class="w-5 h-5"></i>
@@ -1437,7 +1447,7 @@
 
             openPrintFilterModal(mode) {
                 document.getElementById('printModeInput').value = mode;
-                document.getElementById('printModalTitle').textContent = mode === 'label' ? '匯出藥品標籤' : '匯出藥品清單';
+                document.getElementById('printModalTitle').textContent = mode === 'label' ? '匯出藥品標籤' : (mode === 'location' ? '匯出英文藥名儲位表' : '匯出藥品清單');
                 
                 const codeOption = document.getElementById('printCodeOptionContainer');
                 if (codeOption) {
@@ -1872,6 +1882,170 @@
                     }
 
                     htmlContent += `
+                    </body>
+                    <script>
+                        window.onload = function() { setTimeout(() => { window.print(); }, 500); }
+                    <\/script>
+                    </html>
+                    `;
+
+                } else if (mode === 'location') {
+                    // --- 英文藥名儲位表：A4 直式、四組欄位、僅英文藥名與層架名稱，依英文藥名排序 ---
+                    // 版型依使用者提供的參考圖：每列橫向排列 4 組「藥品名稱＋儲位」，
+                    // 每組內左側為藥品名稱、右側為層架名稱；整頁以淺色交錯底色方便閱讀。
+                    htmlContent += `
+                    <!DOCTYPE html>
+                    <html lang="zh-Hant">
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>藥品儲位清單 - ${today}</title>
+                        <style>
+                            @page { size: A4 portrait; margin: 6mm; }
+                            * { box-sizing: border-box; }
+                            html, body { margin: 0; padding: 0; width: 100%; }
+                            body {
+                                font-family: Arial, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+                                color: #111;
+                                background: #fff;
+                            }
+                            .page {
+                                width: 198mm;
+                                height: 285mm;
+                                overflow: hidden;
+                                margin: 0 auto;
+                            }
+                            .title {
+                                width: 100%;
+                                height: 8mm;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                background: #ffff00;
+                                border: 0.35mm solid #111;
+                                border-bottom: 0;
+                                font-size: 13px;
+                                line-height: 1;
+                                font-weight: 800;
+                                margin: 0;
+                            }
+                            .location-grid {
+                                display: grid;
+                                grid-template-columns: repeat(4, minmax(0, 1fr));
+                                grid-auto-rows: 6.8mm;
+                                width: 100%;
+                                border-top: 0.35mm solid #111;
+                                border-left: 0.35mm solid #111;
+                            }
+                            .location-item {
+                                display: grid;
+                                grid-template-columns: minmax(0, 1fr) 16mm;
+                                min-width: 0;
+                                border-right: 0.35mm solid #111;
+                                border-bottom: 0.35mm solid #111;
+                                background: #fff;
+                                overflow: hidden;
+                            }
+                            .location-item:nth-child(8n + 1),
+                            .location-item:nth-child(8n + 2),
+                            .location-item:nth-child(8n + 3),
+                            .location-item:nth-child(8n + 4) {
+                                background: #fffed6;
+                            }
+                            .drug-name,
+                            .rack-name {
+                                display: flex;
+                                align-items: center;
+                                min-width: 0;
+                                height: 100%;
+                                padding: 0.5mm 1.1mm;
+                                overflow: hidden;
+                                white-space: nowrap;
+                                text-overflow: ellipsis;
+                                font-size: 7.4px;
+                                line-height: 1;
+                            }
+                            .drug-name {
+                                font-weight: 600;
+                                border-right: 0.25mm solid #111;
+                            }
+                            .rack-name {
+                                justify-content: center;
+                                font-weight: 600;
+                                font-size: 7.2px;
+                            }
+                            .empty {
+                                grid-column: 1 / -1;
+                                text-align: center;
+                                font-size: 10px;
+                                color: #64748b;
+                                padding-top: 20mm;
+                            }
+                            @media print {
+                                html, body {
+                                    width: 210mm;
+                                    height: 297mm;
+                                }
+                                body {
+                                    -webkit-print-color-adjust: exact;
+                                    print-color-adjust: exact;
+                                }
+                                .page {
+                                    page-break-after: avoid;
+                                    page-break-inside: avoid;
+                                }
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="page">
+                            <div class="title">藥品儲位清單</div>
+                            <div class="location-grid">
+                    `;
+
+                    const locationRows = [];
+                    RACKS_CONFIG.forEach(rack => {
+                        if (!filterRacks.includes(rack.id)) return;
+                        targetMedicines
+                            .filter(med => med.rackId === rack.id)
+                            .forEach(med => locationRows.push({
+                                name: (med.name || '').trim(),
+                                rackName: rack.name || ''
+                            }));
+                    });
+
+                    locationRows.sort((a, b) => a.name.localeCompare(b.name, undefined, {
+                        sensitivity: 'base',
+                        numeric: true
+                    }));
+                    totalExported = locationRows.length;
+
+                    if (locationRows.length === 0) {
+                        htmlContent += '<div class="empty">符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</div>';
+                    } else {
+                        locationRows.forEach(row => {
+                            const safeName = row.name
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/"/g, '&quot;');
+                            const safeRack = row.rackName
+                                .replace(/&/g, '&amp;')
+                                .replace(/</g, '&lt;')
+                                .replace(/>/g, '&gt;')
+                                .replace(/"/g, '&quot;');
+
+                            htmlContent += `
+                                <div class="location-item">
+                                    <div class="drug-name" title="${safeName}">${safeName}</div>
+                                    <div class="rack-name">${safeRack}</div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    htmlContent += `
+                            </div>
+                        </div>
                     </body>
                     <script>
                         window.onload = function() { setTimeout(() => { window.print(); }, 500); }
