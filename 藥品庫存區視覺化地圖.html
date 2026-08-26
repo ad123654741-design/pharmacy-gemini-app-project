@@ -517,7 +517,8 @@
             { no: 5, id: 'Rack-E', name: '鐵架 5', label: 'E區', theme: 'border-slate-800', category: '', top: '1%', left: '63%', width: '9%', height: '28%' },
             { no: 6, id: 'Rack-F', name: '鐵架 6', label: 'F區', theme: 'border-slate-800', category: '', top: '1%', left: '42%', width: '20%', height: '14%' },
             { no: 7, id: 'Rack-G', name: '桌面櫃 G', label: 'G區', theme: 'border-slate-800', category: '', top: '1%', left: '90%', width: '11%', height: '30%' },
-            { no: 8, id: 'Rack-H', name: '桌面櫃 H', label: 'H區', theme: 'border-slate-800', category: '', top: '31%', left: '90%', width: '11%', height: '30%' }
+            { no: 8, id: 'Rack-H', name: '桌面櫃 H', label: 'H區', theme: 'border-slate-800', category: '', top: '31%', left: '90%', width: '11%', height: '30%' },
+            { no: 9, id: 'Rack-I', name: '堆置處 I', label: 'I區', theme: 'border-slate-800', category: '', top: '1%', left: '10%', width: '10%', height: '10%' }
         ];
 
         const AppState = {
@@ -591,6 +592,7 @@
                         rawStr = rawStr.replace(/\//g, '-');
                         rawStr = rawStr.replace(/^Rack-G\s*[-:]\s*(\d+)$/i, 'Rack-G-$1');
                         rawStr = rawStr.replace(/^Rack-H\s*[-:]\s*(\d+)$/i, 'Rack-H-$1');
+                        rawStr = rawStr.replace(/^Rack-I\s*[-:]\s*(\d+)$/i, 'Rack-I-$1');
                         
                         // 如果是 Date 格式字串，解析月與日 (例如 Date(2024,0,2) 會解析成 1-2)
                         if (rawStr.startsWith('Date(')) {
@@ -624,6 +626,7 @@
                         else if (rPart === '6' || rPart === 'Rack-F') rackId = 'Rack-F';
                         else if (rPart === '7' || rPart === 'Rack-G') rackId = 'Rack-G';
                         else if (rPart === '8' || rPart === 'Rack-H') rackId = 'Rack-H';
+                        else if (rPart === '9' || rPart === 'Rack-I') rackId = 'Rack-I';
                         else if (rPart) {
                             const found = RACKS_CONFIG.find(r => r.id === rPart || r.no.toString() === rPart);
                             if (found) rackId = found.id;
@@ -631,7 +634,8 @@
                         
                         if (sPart && !isNaN(parseInt(sPart))) {
                             let parsedShelf = parseInt(sPart);
-                            if (parsedShelf >= 1 && parsedShelf <= ((rackId === 'Rack-G' || rackId === 'Rack-H') ? 2 : 4)) shelf = parsedShelf;
+                            const maxShelf = (rackId === 'Rack-G' || rackId === 'Rack-H') ? 2 : (rackId === 'Rack-I' ? 1 : 4);
+                            if (parsedShelf >= 1 && parsedShelf <= maxShelf) shelf = parsedShelf;
                         }
                         
                         return {
@@ -935,7 +939,7 @@
                             
                             const rackObj = RACKS_CONFIG.find(r => r.id === med.rackId);
                             const rackName = rackObj ? rackObj.name : med.rackId;
-                            const displayLocation = `${rackName}-${med.shelf}`; 
+                            const displayLocation = rackObj && rackObj.id === 'Rack-I' ? rackName : `${rackName}-${med.shelf}`; 
                             
                             const safeId = med.id ? String(med.id).replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
                             const safeName = med.name ? String(med.name).replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
@@ -1087,7 +1091,9 @@
                 if (AppState.selectedRackId) {
                     const rackName = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId)?.name || AppState.selectedRackId;
                     text = `篩選條件: ${rackName}`;
-                    if (AppState.selectedShelf) text += ` 第 ${AppState.selectedShelf} 層`;
+                    if (AppState.selectedShelf) {
+                        text += AppState.selectedRackId === 'Rack-I' ? ' 堆置區' : ` 第 ${AppState.selectedShelf} 層`;
+                    }
                     dotColorClass = "";
                     dotStyleColor = selectColor;
                     if (AppState.searchQuery) text += ` + 關鍵字 "${AppState.searchQuery}"`;
@@ -1231,8 +1237,8 @@
                     const rack = RACKS_CONFIG.find(r => r.id === AppState.selectedRackId);
                     const rackName = rack ? rack.name : AppState.selectedRackId;
                     let html = '';
-                    const shelfCount = (rack && (rack.id === 'Rack-G' || rack.id === 'Rack-H')) ? 2 : 4;
-                    const shelfNames = (rack && (rack.id === 'Rack-G' || rack.id === 'Rack-H')) ? ['桌面', '上方兩層'] : null;
+                    const shelfCount = (rack && (rack.id === 'Rack-G' || rack.id === 'Rack-H')) ? 2 : (rack && rack.id === 'Rack-I' ? 1 : 4);
+                    const shelfNames = (rack && (rack.id === 'Rack-G' || rack.id === 'Rack-H')) ? ['桌面', '上方兩層'] : (rack && rack.id === 'Rack-I' ? ['堆置區'] : null);
                     for(let i=1; i<=shelfCount; i++) {
                         const isActive = AppState.selectedShelf === i;
                         const bgClass = isActive ? 'bg-primary text-white shadow-md transform scale-105' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600';
@@ -1532,17 +1538,23 @@
                 DOM.editMedRack.value = rackId || 'Rack-A';
                 if(DOM.editMedShelf) {
                     const isDeskCabinet = (DOM.editMedRack.value === 'Rack-G' || DOM.editMedRack.value === 'Rack-H');
+                    const isSingleArea = DOM.editMedRack.value === 'Rack-I';
                     DOM.editMedShelf.innerHTML = isDeskCabinet
                         ? '<option value="1">桌面</option><option value="2">上方兩層</option>'
-                        : '<option value="1">第 1 層</option><option value="2">第 2 層</option><option value="3">第 3 層</option><option value="4">第 4 層</option>';
+                        : (isSingleArea
+                            ? '<option value="1">堆置區</option>'
+                            : '<option value="1">第 1 層</option><option value="2">第 2 層</option><option value="3">第 3 層</option><option value="4">第 4 層</option>');
                     DOM.editMedShelf.value = shelf || 1;
                 }
                 if(DOM.editMedRack) {
                     DOM.editMedRack.onchange = () => {
                         const isDeskCabinet = (DOM.editMedRack.value === 'Rack-G' || DOM.editMedRack.value === 'Rack-H');
+                        const isSingleArea = DOM.editMedRack.value === 'Rack-I';
                         DOM.editMedShelf.innerHTML = isDeskCabinet
                             ? '<option value="1">桌面</option><option value="2">上方兩層</option>'
-                            : '<option value="1">第 1 層</option><option value="2">第 2 層</option><option value="3">第 3 層</option><option value="4">第 4 層</option>';
+                            : (isSingleArea
+                                ? '<option value="1">堆置區</option>'
+                                : '<option value="1">第 1 層</option><option value="2">第 2 層</option><option value="3">第 3 層</option><option value="4">第 4 層</option>');
                         DOM.editMedShelf.value = 1;
                     };
                 }
@@ -1882,7 +1894,7 @@
                             pageLabels.forEach(({ rack, med }) => {
                                 htmlContent += `
                                     <div class="med-label">
-                                        <div class="med-loc">${rack.name}-${med.shelf}</div>
+                                        <div class="med-loc">${rack.id === 'Rack-I' ? rack.name : `${rack.name}-${med.shelf}`}</div>
                                         <div class="med-name">${med.name}</div>
                                         ${med.chName ? `<div class="med-chName">${med.chName}</div>` : ''}
                                     </div>
@@ -2076,7 +2088,8 @@
                             .forEach(med => locationRows.push({
                                 name: (med.name || '').trim(),
                                 rackName: rack.name || '',
-                                shelf: med.shelf || ''
+                                shelf: med.shelf || '',
+                                rackId: rack.id
                             }));
                     });
 
@@ -2095,7 +2108,7 @@
                                 .replace(/</g, '&lt;')
                                 .replace(/>/g, '&gt;')
                                 .replace(/"/g, '&quot;');
-                            const safeRack = `${row.rackName}-${row.shelf}`
+                            const safeRack = (row.rackId === 'Rack-I' ? row.rackName : `${row.rackName}-${row.shelf}`)
                                 .replace(/&/g, '&amp;')
                                 .replace(/</g, '&lt;')
                                 .replace(/>/g, '&gt;')
@@ -2181,7 +2194,7 @@
                                 htmlContent += `
                                         <tr>
                                             ${includeCode ? `<td style="color: #ef4444; font-size: 14px;">${med.id}</td>` : ''}
-                                            <td style="font-weight: bold; color: #1d4ed8;">${med.name} <span style="font-size: 11px; color: #64748b; margin-left: 6px;">(第 ${med.shelf} 層)</span></td>
+                                            <td style="font-weight: bold; color: #1d4ed8;">${med.name}${med.rackId === 'Rack-I' ? '' : ` <span style="font-size: 11px; color: #64748b; margin-left: 6px;">(第 ${med.shelf} 層)</span>`}</td>
                                             <td style="color: #047857;">${med.chName || '-'}</td>
                                         </tr>
                                 `;
@@ -2391,8 +2404,14 @@
                 Object.values(this.rackMeshes).forEach(rm => {
                     if (rm.boxMats) {
                         rm.boxMats.forEach(mat => {
-                            mat.color.setHex(boxHex);
-                            mat.roughness = boxRough;
+                            // I 區維持紙箱原本的牛皮紙色，其餘一般鐵架紙箱維持原設定的白色。
+                            if (rm.isSingleArea) {
+                                mat.color.setHex(0xc99b63);
+                                mat.roughness = 0.82;
+                            } else {
+                                mat.color.setHex(boxHex);
+                                mat.roughness = boxRough;
+                            }
                             mat.needsUpdate = true;
                         });
                     }
@@ -2459,6 +2478,75 @@
                     const z = (top * roomD) - (roomD / 2) + (d / 2);
 
                     const group = new THREE.Group();
+
+                    // I：冰箱旁單一堆置區，採堆疊紙箱造型，不分層。
+                    // 底下兩層各一個方形大紙箱，最上層為兩個稍小的長方形紙箱並排。
+                    if (rack.id === 'Rack-I') {
+                        const cardboardMat = new THREE.MeshStandardMaterial({
+                            color: 0xc99b63,
+                            metalness: 0.02,
+                            roughness: 0.82,
+                            emissive: 0x000000,
+                            emissiveIntensity: 0
+                        });
+                        const edgeMat = new THREE.LineBasicMaterial({ color: 0x8b5e34, transparent: true, opacity: 0.65 });
+                        const boxMats = [cardboardMat];
+                        const wireframes = [];
+                        const boxInstanceds = [];
+
+                        const bottomW = Math.min(w, d) * 0.72;
+                        const bottomD = bottomW;
+                        const bottomH = 0.95;
+                        const topW = bottomW * 0.42;
+                        const topD = bottomD * 0.72;
+                        const topH = 0.78;
+                        const gap = 0.035;
+
+                        const addBox = (bw, bh, bd, px, py, pz) => {
+                            const geo = new THREE.BoxGeometry(bw, bh, bd);
+                            const mesh = new THREE.Mesh(geo, cardboardMat);
+                            mesh.position.set(px, py, pz);
+                            mesh.castShadow = true;
+                            mesh.receiveShadow = true;
+                            group.add(mesh);
+
+                            const wf = new THREE.LineSegments(
+                                new THREE.EdgesGeometry(geo),
+                                edgeMat.clone()
+                            );
+                            wf.position.copy(mesh.position);
+                            group.add(wf);
+                            wireframes.push(wf);
+                        };
+
+                        addBox(bottomW, bottomH, bottomD, 0, bottomH / 2, 0);
+                        addBox(bottomW, bottomH, bottomD, 0, bottomH + gap + bottomH / 2, 0);
+
+                        const topY = bottomH * 2 + gap * 2 + topH / 2;
+                        addBox(topW, topH, topD, -topW / 2 - gap / 2, topY, 0);
+                        addBox(topW, topH, topD, topW / 2 + gap / 2, topY, 0);
+
+                        const hitGeo = new THREE.BoxGeometry(w, bottomH * 2 + gap * 2 + topH, d);
+                        const hitMat = new THREE.MeshBasicMaterial({ visible: false });
+                        const hitBox = new THREE.Mesh(hitGeo, hitMat);
+                        hitBox.position.y = (bottomH * 2 + gap * 2 + topH) / 2;
+                        hitBox.userData = { id: rack.id };
+                        group.add(hitBox);
+
+                        group.position.set(x, 0, z);
+                        this.scene.add(group);
+                        this.rackMeshes[rack.id] = {
+                            hitBox,
+                            group,
+                            wireframes,
+                            boxInstanceds,
+                            boxMats,
+                            originalY: 0,
+                            isSingleArea: true
+                        };
+                        return;
+                    }
+
                     // G/H：靠右牆的桌面櫃體，採一體成形的桌面、背板與上方置物架造型。
                     if (rack.id === 'Rack-G' || rack.id === 'Rack-H') {
                         // 桌面高度：由原本高度的 175% 降為目前設定的 25%。
@@ -2821,7 +2909,12 @@
                         const meshObj = this.rackMeshes[loc.rackId];
                         const indices = meshObj.isDeskCabinet && loc.shelf === 2 ? [0, 1] : [loc.shelf - 1];
                         indices.forEach(sIdx => {
-                            if (meshObj.wireframes[sIdx]) {
+                            if (meshObj.isSingleArea) {
+                                meshObj.wireframes.forEach(wf => {
+                                    wf.material.color.setHex(searchColorHex);
+                                    wf.material.opacity = 0.8;
+                                });
+                            } else if (meshObj.wireframes[sIdx]) {
                                 meshObj.wireframes[sIdx].material.color.setHex(searchColorHex);
                                 meshObj.wireframes[sIdx].material.opacity = 0.8;
                             }
@@ -2838,7 +2931,12 @@
                     meshObj.group.position.y = meshObj.originalY + 0.5;
                     
                     const highlightShelf = (idx) => {
-                        if (meshObj.wireframes[idx]) {
+                        if (meshObj.isSingleArea) {
+                            meshObj.wireframes.forEach(wf => {
+                                wf.material.color.setHex(selectColorHex);
+                                wf.material.opacity = 1.0;
+                            });
+                        } else if (meshObj.wireframes[idx]) {
                             meshObj.wireframes[idx].material.color.setHex(selectColorHex);
                             meshObj.wireframes[idx].material.opacity = 1.0;
                         }
@@ -2849,7 +2947,9 @@
                     };
 
                     if (selectedShelf) {
-                        if (meshObj.isDeskCabinet && selectedShelf === 1) {
+                        if (meshObj.isSingleArea) {
+                            highlightShelf(0);
+                        } else if (meshObj.isDeskCabinet && selectedShelf === 1) {
                             // 桌面位置：只讓桌面與下方實心櫃體發光；上方兩層絕對不跟著亮。
                             if (meshObj.deskHighlightMats) {
                                 meshObj.deskHighlightMats.forEach(mat => {
@@ -2866,7 +2966,7 @@
                             highlightShelf(selectedShelf - 1);
                         }
                     } else {
-                        const count = meshObj.isDeskCabinet ? 2 : 4;
+                        const count = meshObj.isSingleArea ? 1 : (meshObj.isDeskCabinet ? 2 : 4);
                         for(let i=0; i<count; i++) highlightShelf(i);
                     }
                 }
