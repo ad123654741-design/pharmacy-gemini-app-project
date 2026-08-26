@@ -2255,10 +2255,10 @@
                 this.controls.maxDistance = 50; 
                 this.controls.target.copy(this.defaultTarget);
 
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.50);
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.38);
                 this.scene.add(ambientLight);
                 
-                const dirLight = new THREE.DirectionalLight(0xffffff, 0.70);
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.55);
                 dirLight.position.set(-10, 20, 10);
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
