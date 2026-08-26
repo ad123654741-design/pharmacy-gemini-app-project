@@ -585,8 +585,12 @@
                         // 清除可能因為強制純文字而加入的開頭單引號
                         if (rawStr.startsWith("'")) rawStr = rawStr.substring(1);
                         
-                        // 若 Google Sheet 將 1-2 自動格式化為 1/2，將斜線轉回橫線
+                        // 儲位資料可能來自舊格式 7-2，也可能來自新版 Rack-G-2。
+                        // 兩種格式都統一保留為可正確辨識的內部 Rack ID。
+                        rawStr = rawStr.trim();
                         rawStr = rawStr.replace(/\//g, '-');
+                        rawStr = rawStr.replace(/^Rack-G\s*[-:]\s*(\d+)$/i, 'Rack-G-$1');
+                        rawStr = rawStr.replace(/^Rack-H\s*[-:]\s*(\d+)$/i, 'Rack-H-$1');
                         
                         // 如果是 Date 格式字串，解析月與日 (例如 Date(2024,0,2) 會解析成 1-2)
                         if (rawStr.startsWith('Date(')) {
@@ -708,10 +712,25 @@
 
                 try {
                     const rackObj = RACKS_CONFIG.find(r => r.id === rackId);
-                    // 加上單引號強制存為純文字，避免 Google Sheet 自動轉為日期 (例如 1-2 被轉為 1月2日)
-                    const rackSaveVal = "'" + (rackObj ? rackObj.no : rackId) + '-' + shelf;
+
+                    // 儲存時不要再把 G/H 轉成 '7-1 / '7-2。
+                    // G/H 是新增的 Rack-G / Rack-H，若送出數字 7/8，後端舊版
+                    // saveMedicine 邏輯可能仍只辨識 1~6，導致重新整理後位置被還原。
+                    // 改用穩定的內部 Rack ID：'Rack-G-1、'Rack-G-2、'Rack-H-1、'Rack-H-2。
+                    // A~F 維持原本 1-4 的儲位格式，避免影響既有資料。
+                    const isDeskCabinet = rackId === 'Rack-G' || rackId === 'Rack-H';
+                    const rackSaveVal = isDeskCabinet
+                        ? "'" + rackId + '-' + shelf
+                        : "'" + (rackObj ? rackObj.no : rackId) + '-' + shelf;
                     
-                    const payload = { action: 'saveMedicine', id, name, rackId: rackSaveVal, chName, originalId };
+                    const payload = {
+                        action: 'saveMedicine',
+                        id,
+                        name,
+                        rackId: rackSaveVal,
+                        chName,
+                        originalId
+                    };
                     const response = await fetch(this.WEB_APP_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
