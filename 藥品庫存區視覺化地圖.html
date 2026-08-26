@@ -1932,13 +1932,45 @@
                                 font-weight: 800;
                                 margin: 0;
                             }
+                            .location-header {
+                                display: grid;
+                                grid-template-columns: repeat(4, minmax(0, 1fr));
+                                width: 100%;
+                                border-left: 0.35mm solid #111;
+                            }
+                            .location-header-group {
+                                display: grid;
+                                grid-template-columns: minmax(0, 1fr) 16mm;
+                                min-width: 0;
+                                height: 6.2mm;
+                                border-right: 0.35mm solid #111;
+                                border-bottom: 0.35mm solid #111;
+                                background: #fff;
+                                font-weight: 800;
+                                font-size: 7.4px;
+                            }
+                            .location-header-group.shade {
+                                background: #fffed6;
+                            }
+                            .location-header-cell {
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                min-width: 0;
+                                padding: 0.5mm 1mm;
+                                white-space: nowrap;
+                                overflow: hidden;
+                                border-right: 0.25mm solid #111;
+                            }
+                            .location-header-cell:last-child {
+                                border-right: 0;
+                            }
                             .location-grid {
                                 display: grid;
                                 grid-template-columns: repeat(4, minmax(0, 1fr));
                                 grid-template-rows: repeat(${locationRowCount}, 6.8mm);
                                 grid-auto-flow: column;
                                 width: 100%;
-                                border-top: 0.35mm solid #111;
                                 border-left: 0.35mm solid #111;
                             }
                             .location-item {
@@ -1950,7 +1982,7 @@
                                 background: #fff;
                                 overflow: hidden;
                             }
-                            .location-item.row-shade {
+                            .location-item.column-shade {
                                 background: #fffed6;
                             }
                             .drug-name,
@@ -2001,6 +2033,24 @@
                     <body>
                         <div class="page">
                             <div class="title">藥品儲位清單</div>
+                            <div class="location-header">
+                                <div class="location-header-group shade">
+                                    <div class="location-header-cell">商品名</div>
+                                    <div class="location-header-cell">儲位</div>
+                                </div>
+                                <div class="location-header-group">
+                                    <div class="location-header-cell">商品名</div>
+                                    <div class="location-header-cell">儲位</div>
+                                </div>
+                                <div class="location-header-group shade">
+                                    <div class="location-header-cell">商品名</div>
+                                    <div class="location-header-cell">儲位</div>
+                                </div>
+                                <div class="location-header-group">
+                                    <div class="location-header-cell">商品名</div>
+                                    <div class="location-header-cell">儲位</div>
+                                </div>
+                            </div>
                             <div class="location-grid">
                     `;
 
@@ -2038,7 +2088,7 @@
                                 .replace(/"/g, '&quot;');
 
                             htmlContent += `
-                                <div class="location-item${(rowIndex % locationRowCount === 0) ? ' row-shade' : ''}">
+                                <div class="location-item${(Math.floor(rowIndex / locationRowCount) % 2 === 0) ? ' column-shade' : ''}">
                                     <div class="drug-name" title="${safeName}">${safeName}</div>
                                     <div class="rack-name">${safeRack}</div>
                                 </div>
