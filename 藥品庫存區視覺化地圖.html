@@ -510,7 +510,7 @@
         // 修正：微調上半部鐵架 (A~E) 的 top 數值，將它們整體向上移動 3%，
         // 確保它們與走道之間有足夠且相等的間距，不再壓在走道上。
         let RACKS_CONFIG = [
-            { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '82%', left: '27%', width: '14%', height: '13%' },
+             { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '82%', left: '27%', width: '14%', height: '13%' },
             { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '60%', left: '14%', width: '9%', height: '16%' },
             { no: 3, id: 'Rack-C', name: '鐵架 3', label: 'C區', theme: 'border-slate-800', category: '', top: '16%', left: '27%', width: '14%', height: '13%' },
             { no: 4, id: 'Rack-D', name: '鐵架 4', label: 'D區', theme: 'border-slate-800', category: '', top: '16%', left: '42%', width: '20%', height: '13%' },
@@ -2255,19 +2255,24 @@
                 this.controls.maxDistance = 50; 
                 this.controls.target.copy(this.defaultTarget);
 
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.50);
                 this.scene.add(ambientLight);
                 
-                const dirLight = new THREE.DirectionalLight(0xffffff, 0.4);
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.70);
                 dirLight.position.set(-10, 20, 10);
                 dirLight.castShadow = true;
                 dirLight.shadow.mapSize.width = 2048;
                 dirLight.shadow.mapSize.height = 2048;
-                dirLight.shadow.camera.bottom = -15;
+                dirLight.shadow.camera.left = -18;
+                dirLight.shadow.camera.right = 18;
+                dirLight.shadow.camera.top = 18;
+                dirLight.shadow.camera.bottom = -18;
+                dirLight.shadow.camera.near = 1;
+                dirLight.shadow.camera.far = 60;
                 this.scene.add(dirLight);
 
                 // 復原：將地板退回原來的尺寸 (30x30)，並移除多餘的 Z 軸偏移，讓鐵架不會被拉散
-                this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x333333 });
+                this.floorMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, metalness: 0.1, emissive: 0x000000 });
                 const floorGeo = new THREE.PlaneGeometry(30, 30);
                 const floor = new THREE.Mesh(floorGeo, this.floorMat);
                 floor.rotation.x = -Math.PI / 2;
@@ -2293,7 +2298,7 @@
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
-                aisle.position.z = 0.5; 
+                aisle.position.z = 2.0; 
                 this.scene.add(aisle);
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
@@ -2616,6 +2621,7 @@
                     shelfYs.forEach((sy, shelfIndex) => {
                         const shelf = new THREE.Mesh(shelfGeo, shelfMat);
                         shelf.position.y = sy;
+                        shelf.castShadow = true;
                         shelf.receiveShadow = true;
                         group.add(shelf);
 
