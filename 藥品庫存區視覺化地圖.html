@@ -713,15 +713,10 @@
                 try {
                     const rackObj = RACKS_CONFIG.find(r => r.id === rackId);
 
-                    // 儲存時不要再把 G/H 轉成 '7-1 / '7-2。
-                    // G/H 是新增的 Rack-G / Rack-H，若送出數字 7/8，後端舊版
-                    // saveMedicine 邏輯可能仍只辨識 1~6，導致重新整理後位置被還原。
-                    // 改用穩定的內部 Rack ID：'Rack-G-1、'Rack-G-2、'Rack-H-1、'Rack-H-2。
-                    // A~F 維持原本 1-4 的儲位格式，避免影響既有資料。
-                    const isDeskCabinet = rackId === 'Rack-G' || rackId === 'Rack-H';
-                    const rackSaveVal = isDeskCabinet
-                        ? "'" + rackId + '-' + shelf
-                        : "'" + (rackObj ? rackObj.no : rackId) + '-' + shelf;
+                    // 儲存時直接寫入與既有資料庫相同的儲位格式，例如 G/H 使用 7-1、7-2、8-1、8-2。
+                    // 不加開頭單引號，避免實際寫入資料變成 '7-2 而造成後續讀取不一致。
+                    // A~F 也維持原本的 1-1 ~ 6-4 格式。
+                    const rackSaveVal = (rackObj ? rackObj.no : rackId) + '-' + shelf;
                     
                     const payload = {
                         action: 'saveMedicine',
