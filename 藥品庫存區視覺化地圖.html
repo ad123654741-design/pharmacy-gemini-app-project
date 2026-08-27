@@ -2105,10 +2105,14 @@
                                 displayRack = row.rackName;
                             } else if (row.rackName === '印表機' || row.rackName === '微波爐') {
                                 displayRack = row.rackName;
-                            } else if (row.rackName === '鐵架') {
-                                displayRack = row.shelf || '';
                             } else {
-                                displayRack = row.shelf ? `${row.rackName}-${row.shelf}` : row.rackName;
+                                // 一般鐵架：例如「鐵架 1」+ 第1層 → 只顯示「1-1」；不改動實際儲位資料。
+                                const ironRackMatch = (row.rackName || '').trim().match(/^鐵架\s*(\d+)$/);
+                                if (ironRackMatch) {
+                                    displayRack = row.shelf ? `${ironRackMatch[1]}-${row.shelf}` : ironRackMatch[1];
+                                } else {
+                                    displayRack = row.shelf ? `${row.rackName}-${row.shelf}` : row.rackName;
+                                }
                             }
                             const safeRack = displayRack
                                 .replace(/&/g, '&amp;')
