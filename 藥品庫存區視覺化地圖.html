@@ -1911,12 +1911,12 @@
                     `;
 
                 } else if (mode === 'location') {
-                    // --- 藥品儲位清單：A4 橫式、六組欄位、依英文藥名排序 ---
+                    // --- 藥品儲位清單：A4 橫式、四組欄位、依英文藥名排序 ---
                     // 排列方式為「由上往下填滿一整欄，再換下一欄」。
-                    const locationColumnCount = 6;
+                    const locationColumnCount = 4;
                     const locationTotalCount = targetMedicines.filter(med => filterRacks.includes(med.rackId)).length;
                     const locationRowCount = Math.max(1, Math.ceil(locationTotalCount / locationColumnCount));
-                    // 版型：每列橫向排列 6 組「藥品名稱＋儲位」，
+                    // 版型：每列橫向排列 4 組「藥品名稱＋儲位」，
                     // 每組內左側為藥品名稱、右側為層架名稱；整頁以淺色交錯底色方便閱讀。
                     htmlContent += `
                     <!DOCTYPE html>
@@ -1955,7 +1955,7 @@
                             }
                             .location-header {
                                 display: grid;
-                                grid-template-columns: repeat(6, minmax(0, 1fr));
+                                grid-template-columns: repeat(4, minmax(0, 1fr));
                                 width: 100%;
                                 border-left: 0.35mm solid #111;
                                 border-bottom: 0.35mm solid #111;
@@ -1989,7 +1989,7 @@
                             }
                             .location-grid {
                                 display: grid;
-                                grid-template-columns: repeat(6, minmax(0, 1fr));
+                                grid-template-columns: repeat(4, minmax(0, 1fr));
                                 grid-template-rows: repeat(${locationRowCount}, 6.8mm);
                                 grid-auto-flow: column;
                                 width: 100%;
@@ -2056,14 +2056,6 @@
                         <div class="page">
                             <div class="title">藥品儲位清單</div>
                             <div class="location-header">
-                                <div class="location-header-group shade">
-                                    <div class="location-header-cell">商品名</div>
-                                    <div class="location-header-cell">儲位</div>
-                                </div>
-                                <div class="location-header-group">
-                                    <div class="location-header-cell">商品名</div>
-                                    <div class="location-header-cell">儲位</div>
-                                </div>
                                 <div class="location-header-group shade">
                                     <div class="location-header-cell">商品名</div>
                                     <div class="location-header-cell">儲位</div>
