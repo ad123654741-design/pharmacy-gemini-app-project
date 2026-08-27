@@ -416,13 +416,6 @@
                             <option value="dark">工業深色</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">走道風格</label>
-                        <select id="settingAisleColor" onchange="Controllers.updateAppearance()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-800 dark:text-slate-100">
-                            <option value="gray">粉藍灰系</option>
-                            <option value="red">星光紅毯(金邊)</option>
-                        </select>
-                    </div>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
@@ -501,7 +494,6 @@
          
         window.AppearanceConfig = {
             floorColor: 'white',
-            aisleColor: 'gray',
             searchColor: '#ac0606', 
             selectColor: '#35a207', 
             glowIntensity: 0.2      
@@ -509,6 +501,11 @@
 
         // 修正：微調上半部鐵架 (A~E) 的 top 數值，將它們整體向上移動 3%，
         // 確保它們與走道之間有足夠且相等的間距，不再壓在走道上。
+        // 3D 地圖與空間俯視圖共用的走道座標，避免兩邊手動調整後產生偏移。
+        const AISLE_Z = 0.5;
+        const AISLE_DEPTH = 3.2;
+        const MAP_ROOM_SIZE = 30;
+
         let RACKS_CONFIG = [
              { no: 1, id: 'Rack-A', name: '鐵架 1', label: 'A區', theme: 'border-slate-800', category: '', top: '82%', left: '27%', width: '14%', height: '13%' },
             { no: 2, id: 'Rack-B', name: '鐵架 2', label: 'B區', theme: 'border-slate-800', category: '', top: '60%', left: '14%', width: '9%', height: '16%' },
@@ -890,8 +887,8 @@
                 const minimapContainer = document.getElementById('minimapContainer');
                 if (minimapContainer) {
                     minimapContainer.innerHTML = `
-                        <!-- 修正：配合壓縮後的坐標系，重新定位走道比例 -->
-                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: 35%; left: 2%; width: 96%; height: 11%;"></div>
+                        <!-- 走道位置與 3D 地圖共用 AISLE_Z / AISLE_DEPTH，確保俯視圖同步校正 -->
+                        <div class="absolute bg-[#abc2d8] dark:bg-slate-600 pointer-events-none" style="top: ${( (AISLE_Z - AISLE_DEPTH / 2 + MAP_ROOM_SIZE / 2) / MAP_ROOM_SIZE * 100 ).toFixed(2)}%; left: 0%; width: 100%; height: ${(AISLE_DEPTH / MAP_ROOM_SIZE * 100).toFixed(2)}%;"></div>
                     ` + RACKS_CONFIG.map(rack => `
                         <div id="minimap-rack-${rack.id}" 
                              class="absolute flex items-center justify-center bg-white dark:bg-slate-800 border-[1.5px] border-slate-800 dark:border-slate-400 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors overflow-hidden"
@@ -1434,7 +1431,6 @@
                 if (confirm('確定要還原所有 3D 外觀與顏色設定至系統預設值嗎？')) {
                     window.AppearanceConfig = {
                         floorColor: 'white',
-                        aisleColor: 'gray',
                         searchColor: '#ac0606',
                         selectColor: '#35a207',
                         glowIntensity: 0.2
@@ -1450,7 +1446,6 @@
             updateAppearance() {
                 const config = {
                     floorColor: document.getElementById('settingFloorColor').value,
-                    aisleColor: document.getElementById('settingAisleColor').value,
                     searchColor: document.getElementById('settingSearchColor').value,
                     selectColor: document.getElementById('settingSelectColor').value,
                     glowIntensity: parseFloat(document.getElementById('settingGlowIntensity').value)
@@ -1916,12 +1911,12 @@
                     `;
 
                 } else if (mode === 'location') {
-                    // --- 藥品儲位清單：A4 直式、四組欄位、依英文藥名排序 ---
+                    // --- 藥品儲位清單：A4 橫式、六組欄位、依英文藥名排序 ---
                     // 排列方式為「由上往下填滿一整欄，再換下一欄」。
-                    const locationColumnCount = 4;
+                    const locationColumnCount = 6;
                     const locationTotalCount = targetMedicines.filter(med => filterRacks.includes(med.rackId)).length;
                     const locationRowCount = Math.max(1, Math.ceil(locationTotalCount / locationColumnCount));
-                    // 版型依使用者提供的參考圖：每列橫向排列 4 組「藥品名稱＋儲位」，
+                    // 版型：每列橫向排列 6 組「藥品名稱＋儲位」，
                     // 每組內左側為藥品名稱、右側為層架名稱；整頁以淺色交錯底色方便閱讀。
                     htmlContent += `
                     <!DOCTYPE html>
@@ -1930,7 +1925,7 @@
                         <meta charset="UTF-8">
                         <title>藥品儲位清單 - ${today}</title>
                         <style>
-                            @page { size: A4 portrait; margin: 6mm; }
+                            @page { size: A4 landscape; margin: 6mm; }
                             * { box-sizing: border-box; }
                             html, body { margin: 0; padding: 0; width: 100%; }
                             body {
@@ -1939,8 +1934,8 @@
                                 background: #fff;
                             }
                             .page {
-                                width: 198mm;
-                                height: 285mm;
+                                width: 285mm;
+                                height: 198mm;
                                 overflow: hidden;
                                 margin: 0 auto;
                             }
@@ -1960,9 +1955,10 @@
                             }
                             .location-header {
                                 display: grid;
-                                grid-template-columns: repeat(4, minmax(0, 1fr));
+                                grid-template-columns: repeat(6, minmax(0, 1fr));
                                 width: 100%;
                                 border-left: 0.35mm solid #111;
+                                border-bottom: 0.35mm solid #111;
                             }
                             .location-header-group {
                                 display: grid;
@@ -1973,7 +1969,7 @@
                                 border-bottom: 0.35mm solid #111;
                                 background: #fff;
                                 font-weight: 800;
-                                font-size: 10px;
+                                font-size: 12px;
                             }
                             .location-header-group.shade {
                                 background: #fffed6;
@@ -1993,7 +1989,7 @@
                             }
                             .location-grid {
                                 display: grid;
-                                grid-template-columns: repeat(4, minmax(0, 1fr));
+                                grid-template-columns: repeat(6, minmax(0, 1fr));
                                 grid-template-rows: repeat(${locationRowCount}, 6.8mm);
                                 grid-auto-flow: column;
                                 width: 100%;
@@ -2021,7 +2017,7 @@
                                 overflow: hidden;
                                 white-space: nowrap;
                                 text-overflow: ellipsis;
-                                font-size: 10px;
+                                font-size: 12px;
                                 line-height: 1;
                             }
                             .drug-name {
@@ -2031,19 +2027,19 @@
                             .rack-name {
                                 justify-content: center;
                                 font-weight: 600;
-                                font-size: 10px;
+                                font-size: 12px;
                             }
                             .empty {
                                 grid-column: 1 / -1;
                                 text-align: center;
-                                font-size: 10px;
+                                font-size: 12px;
                                 color: #64748b;
                                 padding-top: 20mm;
                             }
                             @media print {
                                 html, body {
-                                    width: 210mm;
-                                    height: 297mm;
+                                    width: 297mm;
+                                    height: 210mm;
                                 }
                                 body {
                                     -webkit-print-color-adjust: exact;
@@ -2060,6 +2056,14 @@
                         <div class="page">
                             <div class="title">藥品儲位清單</div>
                             <div class="location-header">
+                                <div class="location-header-group shade">
+                                    <div class="location-header-cell">商品名</div>
+                                    <div class="location-header-cell">儲位</div>
+                                </div>
+                                <div class="location-header-group">
+                                    <div class="location-header-cell">商品名</div>
+                                    <div class="location-header-cell">儲位</div>
+                                </div>
                                 <div class="location-header-group shade">
                                     <div class="location-header-cell">商品名</div>
                                     <div class="location-header-cell">儲位</div>
@@ -2228,6 +2232,10 @@
                 if (typeof ThreeApp !== 'undefined' && ThreeApp.scene) {
                     ThreeApp.scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf1f5f9);
                     if(ThreeApp.grid) ThreeApp.grid.material.color.setHex(isDark ? 0x334155 : 0xe2e8f0);
+                    // 深色模式切換時同步重新套用 3D 外觀，讓地板立即切換為深色版本。
+                    if (typeof ThreeApp.applyAppearance === 'function') {
+                        ThreeApp.applyAppearance(window.AppearanceConfig);
+                    }
                 }
             }
         };
@@ -2307,11 +2315,11 @@
 
                 // 修正：走道維持 30 的長度，不再外推。整體下移 5 格，Z 軸調整為 -6.5，這個位置能完美穿插在 A,B,C,D 與 E,F 之間
                 this.aisleMat = new THREE.MeshStandardMaterial({ color: 0xabc2d8, roughness: 0.9 });
-                const aisleGeo = new THREE.PlaneGeometry(30, 3.2); 
+                const aisleGeo = new THREE.PlaneGeometry(MAP_ROOM_SIZE, AISLE_DEPTH); 
                 const aisle = new THREE.Mesh(aisleGeo, this.aisleMat);
                 aisle.rotation.x = -Math.PI / 2;
                 aisle.position.y = 0.02;
-                aisle.position.z = 0.5; 
+                aisle.position.z = AISLE_Z; 
                 this.scene.add(aisle);
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
@@ -2342,13 +2350,11 @@
                 const config = window.AppearanceConfig;
                 
                 const selFloor = document.getElementById('settingFloorColor');
-                const selAisle = document.getElementById('settingAisleColor');
                 const inpSearch = document.getElementById('settingSearchColor');
                 const inpSelect = document.getElementById('settingSelectColor');
                 const inpGlow = document.getElementById('settingGlowIntensity');
                 
                 if(selFloor) selFloor.value = config.floorColor;
-                if(selAisle) selAisle.value = config.aisleColor;
                 if(inpSearch) inpSearch.value = config.searchColor;
                 if(inpSelect) inpSelect.value = config.selectColor;
                 if(inpGlow) {
@@ -2368,38 +2374,18 @@
                 this.boxBaseMat.roughness = boxRough;
                 
                 let floorHex = 0xffffff;
-                let floorEmissive = 0x333333; 
-                if (config.floorColor === 'dark') {
+                let floorEmissive = 0x333333;
+                const isDarkMode = document.documentElement.classList.contains('dark');
+                if (isDarkMode || config.floorColor === 'dark') {
                     floorHex = 0x334155;
-                    floorEmissive = 0x000000; 
+                    floorEmissive = 0x000000;
                 }
                 this.floorMat.color.setHex(floorHex);
                 this.floorMat.emissive.setHex(floorEmissive);
 
-                let aisleHex = 0xabc2d8; let aisleRough = 0.9;
-                if (config.aisleColor === 'red') { aisleHex = 0xb91c1c; aisleRough = 0.95; }
-                
-                this.aisleMat.color.setHex(aisleHex);
-                this.aisleMat.roughness = aisleRough;
-                
-                if (config.aisleColor === 'red') {
-                    if (!this.carpetBorders) {
-                        const borderGeo = new THREE.BoxGeometry(30, 0.1, 0.2); // 配合走道改為 30
-                        const borderMat = new THREE.MeshStandardMaterial({color: 0xffd700, metalness: 0.8, roughness: 0.2});
-                        const border1 = new THREE.Mesh(borderGeo, borderMat);
-                        border1.position.set(0, 0.05, 1.5); 
-                        const border2 = new THREE.Mesh(borderGeo, borderMat);
-                        border2.position.set(0, 0.05, -1.5);
-                        this.carpetBorders = new THREE.Group();
-                        this.carpetBorders.add(border1, border2);
-                        // 修正：紅毯邊線同步回到 -1.5 的 Z 軸基準
-                        this.carpetBorders.position.z = -1.5; 
-                        this.scene.add(this.carpetBorders);
-                    }
-                    this.carpetBorders.visible = true;
-                } else {
-                    if (this.carpetBorders) this.carpetBorders.visible = false;
-                }
+                // 走道固定採用系統預設的粉藍灰樣式，不再提供紅毯/金邊變換。
+                this.aisleMat.color.setHex(0xabc2d8);
+                this.aisleMat.roughness = 0.9;
                 
                 Object.values(this.rackMeshes).forEach(rm => {
                     if (rm.boxMats) {
