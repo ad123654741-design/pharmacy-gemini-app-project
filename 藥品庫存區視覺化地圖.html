@@ -416,6 +416,13 @@
                             <option value="dark">工業深色</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">3D 建模物件外觀</label>
+                        <select id="settingObjectColor" onchange="Controllers.updateAppearance()" class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm text-slate-800 dark:text-slate-100">
+                            <option value="plain">無色版</option>
+                            <option value="colored">上色版</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
@@ -494,6 +501,7 @@
          
         window.AppearanceConfig = {
             floorColor: 'white',
+            objectColor: 'plain',
             searchColor: '#ac0606', 
             selectColor: '#35a207', 
             glowIntensity: 0.2      
@@ -1431,6 +1439,7 @@
                 if (confirm('確定要還原所有 3D 外觀與顏色設定至系統預設值嗎？')) {
                     window.AppearanceConfig = {
                         floorColor: 'white',
+                        objectColor: 'plain',
                         searchColor: '#ac0606',
                         selectColor: '#35a207',
                         glowIntensity: 0.2
@@ -1446,6 +1455,7 @@
             updateAppearance() {
                 const config = {
                     floorColor: document.getElementById('settingFloorColor').value,
+                    objectColor: document.getElementById('settingObjectColor').value,
                     searchColor: document.getElementById('settingSearchColor').value,
                     selectColor: document.getElementById('settingSelectColor').value,
                     glowIntensity: parseFloat(document.getElementById('settingGlowIntensity').value)
@@ -2089,10 +2099,26 @@
                             }));
                     });
 
-                    locationRows.sort((a, b) => a.name.localeCompare(b.name, undefined, {
-                        sensitivity: 'base',
-                        numeric: true
-                    }));
+                    // 排序：英文 A-Z 優先；英文之後依序為數字，再來中文。
+                    // 這樣可避免瀏覽器／語系排序時，數字或中文跑到英文名稱前面。
+                    const getNameSortGroup = (name) => {
+                        const value = (name || '').trim();
+                        const firstChar = value.charAt(0);
+                        if (/^[A-Za-z]/.test(firstChar)) return 0;
+                        if (/^[0-9]/.test(firstChar)) return 1;
+                        if (/^[\u3400-\u9fff]/.test(firstChar)) return 2;
+                        return 3;
+                    };
+
+                    locationRows.sort((a, b) => {
+                        const groupA = getNameSortGroup(a.name);
+                        const groupB = getNameSortGroup(b.name);
+                        if (groupA !== groupB) return groupA - groupB;
+                        return a.name.localeCompare(b.name, 'en', {
+                            sensitivity: 'base',
+                            numeric: true
+                        });
+                    });
                     totalExported = locationRows.length;
 
                     if (locationRows.length === 0) {
@@ -2342,11 +2368,13 @@
                 const config = window.AppearanceConfig;
                 
                 const selFloor = document.getElementById('settingFloorColor');
+                const selObject = document.getElementById('settingObjectColor');
                 const inpSearch = document.getElementById('settingSearchColor');
                 const inpSelect = document.getElementById('settingSelectColor');
                 const inpGlow = document.getElementById('settingGlowIntensity');
                 
                 if(selFloor) selFloor.value = config.floorColor;
+                if(selObject) selObject.value = config.objectColor || 'plain';
                 if(inpSearch) inpSearch.value = config.searchColor;
                 if(inpSelect) inpSelect.value = config.selectColor;
                 if(inpGlow) {
@@ -2359,9 +2387,10 @@
             },
 
             applyAppearance(config) {
-                // 固定紙箱顏色為白
-                const boxHex = 0xf8fafc;
-                const boxRough = 0.9;
+                // 3D 建模物件外觀：無色版維持目前白色紙箱；上色版則統一改為牛皮紙色。
+                const isObjectColored = config.objectColor === 'colored';
+                const boxHex = isObjectColored ? 0xc99b63 : 0xf8fafc;
+                const boxRough = isObjectColored ? 0.82 : 0.9;
                 this.boxBaseMat.color.setHex(boxHex);
                 this.boxBaseMat.roughness = boxRough;
                 
@@ -2382,15 +2411,37 @@
                 Object.values(this.rackMeshes).forEach(rm => {
                     if (rm.boxMats) {
                         rm.boxMats.forEach(mat => {
-                            // I 區維持紙箱原本的牛皮紙色，其餘一般鐵架紙箱維持原設定的白色。
-                            if (rm.isSingleArea) {
-                                mat.color.setHex(0xc99b63);
-                                mat.roughness = 0.82;
-                            } else {
-                                mat.color.setHex(boxHex);
-                                mat.roughness = boxRough;
-                            }
+                            mat.color.setHex(boxHex);
+                            mat.roughness = boxRough;
                             mat.needsUpdate = true;
+                        });
+                    }
+
+                    // 上色版：桌面櫃體的桌子使用淺木頭色，架子／櫃體維持白色；無色版則維持目前灰白外觀。
+                    if (rm.isDeskCabinet && rm.deskCabinetMats) {
+                        const deskWoodHex = 0xd8b27a;
+                        const deskWhiteHex = 0xf1f5f9;
+                        const cabinetWhiteHex = 0xe2e8f0;
+                        const backWhiteHex = 0xdbe4ec;
+                        const trimWhiteHex = 0xcbd5e1;
+
+                        if (isObjectColored) {
+                            rm.deskCabinetMats.desk.color.setHex(deskWoodHex);
+                            rm.deskCabinetMats.cabinet.color.setHex(deskWhiteHex);
+                            rm.deskCabinetMats.back.color.setHex(deskWhiteHex);
+                            rm.deskCabinetMats.shelves.forEach(mat => mat.color.setHex(deskWhiteHex));
+                            rm.deskCabinetMats.trim.color.setHex(trimWhiteHex);
+                        } else {
+                            rm.deskCabinetMats.desk.color.setHex(deskWhiteHex);
+                            rm.deskCabinetMats.cabinet.color.setHex(cabinetWhiteHex);
+                            rm.deskCabinetMats.back.color.setHex(backWhiteHex);
+                            rm.deskCabinetMats.shelves.forEach(mat => mat.color.setHex(0xf8fafc));
+                            rm.deskCabinetMats.trim.color.setHex(trimWhiteHex);
+                        }
+
+                        Object.values(rm.deskCabinetMats).forEach(value => {
+                            if (Array.isArray(value)) value.forEach(mat => mat.needsUpdate = true);
+                            else if (value && value.needsUpdate !== undefined) value.needsUpdate = true;
                         });
                     }
                 });
@@ -2461,13 +2512,13 @@
                     // 底下兩層各一個方形大紙箱，最上層為兩個稍小的長方形紙箱並排。
                     if (rack.id === 'Rack-I') {
                         const cardboardMat = new THREE.MeshStandardMaterial({
-                            color: 0xc99b63,
+                            color: 0xf8fafc,
                             metalness: 0.02,
-                            roughness: 0.82,
+                            roughness: 0.9,
                             emissive: 0x000000,
                             emissiveIntensity: 0
                         });
-                        const edgeMat = new THREE.LineBasicMaterial({ color: 0x8b5e34, transparent: true, opacity: 0.65 });
+                        const edgeMat = new THREE.LineBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0.65 });
                         const boxMats = [cardboardMat];
                         const wireframes = [];
                         const boxInstanceds = [];
@@ -2644,6 +2695,13 @@
                             // 避免點擊桌面後留下 desk/cabinet/backboard 的殘留發光。
                             deskHighlightMats: [deskMat, cabinetMat, doorGapMat],
                             highlightMats: [deskMat, cabinetMat, doorGapMat, ...upperBoxMats],
+                            deskCabinetMats: {
+                                desk: deskMat,
+                                cabinet: cabinetMat,
+                                back: backMat,
+                                shelves: upperBoxMats,
+                                trim: trimMat
+                            },
                             originalY: 0,
                             isDeskCabinet: true,
                             deskTopY,
