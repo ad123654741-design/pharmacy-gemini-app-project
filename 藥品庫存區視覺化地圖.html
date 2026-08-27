@@ -1926,8 +1926,11 @@
                     const locationColumnCount = 4;
                     const locationTotalCount = targetMedicines.filter(med => filterRacks.includes(med.rackId)).length;
                     const locationRowCount = Math.max(1, Math.ceil(locationTotalCount / locationColumnCount));
+                    // A4 橫式單頁：依資料筆數自動計算列高；資料少時稍微放大，資料多時自動縮小，確保不溢出第二頁。
+                    const locationAvailableHeightMm = 190 - 8; // A4 高 210mm - 上下列印邊界 12mm - 標題 8mm
+                    const locationRowHeightMm = Math.min(7.2, Math.max(4.8, locationAvailableHeightMm / locationRowCount));
                     // 版型：每列橫向排列 4 組「藥品名稱＋儲位」，
-                    // 每組內左側為藥品名稱、右側為層架名稱；整頁以淺色交錯底色方便閱讀。
+                    // 每組內左側為藥品名稱、右側為層架名稱；資料列預設純白，僅 A-Z 各字母首筆加底色。
                     htmlContent += `
                     <!DOCTYPE html>
                     <html lang="zh-Hant">
@@ -1944,7 +1947,7 @@
                                 background: #fff;
                             }
                             .page {
-                                width: 285mm;
+                                width: 100%;
                                 height: 198mm;
                                 overflow: hidden;
                                 margin: 0 auto;
@@ -1963,44 +1966,10 @@
                                 font-weight: 800;
                                 margin: 0;
                             }
-                            .location-header {
-                                display: grid;
-                                grid-template-columns: repeat(4, minmax(0, 1fr));
-                                width: 100%;
-                                border-left: 0.35mm solid #111;
-                                border-bottom: 0.35mm solid #111;
-                            }
-                            .location-header-group {
-                                display: grid;
-                                grid-template-columns: minmax(0, 1fr) 16mm;
-                                min-width: 0;
-                                height: 6.2mm;
-                                border-right: 0.35mm solid #111;
-                                border-bottom: 0.35mm solid #111;
-                                background: #fff;
-                                font-weight: 800;
-                                font-size: 12px;
-                            }
-                            .location-header-group.shade {
-                                background: #fffed6;
-                            }
-                            .location-header-cell {
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                min-width: 0;
-                                padding: 0.5mm 1mm;
-                                white-space: nowrap;
-                                overflow: hidden;
-                                border-right: 0.25mm solid #111;
-                            }
-                            .location-header-cell:last-child {
-                                border-right: 0;
-                            }
                             .location-grid {
                                 display: grid;
                                 grid-template-columns: repeat(4, minmax(0, 1fr));
-                                grid-template-rows: repeat(${locationRowCount}, 6.8mm);
+                                grid-template-rows: repeat(${locationRowCount}, ${locationRowHeightMm}mm);
                                 grid-auto-flow: column;
                                 width: 100%;
                                 border-left: 0.35mm solid #111;
@@ -2011,15 +1980,12 @@
                                 min-width: 0;
                                 border-right: 0.35mm solid #111;
                                 border-bottom: 0.35mm solid #111;
-                                background: #fff;
+                                background: #fff !important;
                                 overflow: hidden;
                             }
-                            /* 所有藥品資料預設純白；只有每個英文字母首次出現的藥品才加底色 */
-                            .location-item {
-                                background: #fff;
-                            }
+                            /* 預設全部純白；只有 A-Z 各字母第一次出現的那一筆才加底色 */
                             .location-item.letter-start {
-                                background: #fffed6;
+                                background: #fffed6 !important;
                             }
                             .drug-name,
                             .rack-name {
@@ -2052,16 +2018,18 @@
                             }
                             @media print {
                                 html, body {
-                                    width: 297mm;
-                                    height: 210mm;
+                                    width: 100%;
+                                    height: auto;
                                 }
                                 body {
                                     -webkit-print-color-adjust: exact;
                                     print-color-adjust: exact;
                                 }
                                 .page {
+                                    page-break-before: auto;
                                     page-break-after: avoid;
                                     page-break-inside: avoid;
+                                    break-after: avoid-page;
                                 }
                             }
                         </style>
@@ -2069,24 +2037,6 @@
                     <body>
                         <div class="page">
                             <div class="title">藥品儲位清單</div>
-                            <div class="location-header">
-                                <div class="location-header-group shade">
-                                    <div class="location-header-cell">商品名</div>
-                                    <div class="location-header-cell">儲位</div>
-                                </div>
-                                <div class="location-header-group">
-                                    <div class="location-header-cell">商品名</div>
-                                    <div class="location-header-cell">儲位</div>
-                                </div>
-                                <div class="location-header-group shade">
-                                    <div class="location-header-cell">商品名</div>
-                                    <div class="location-header-cell">儲位</div>
-                                </div>
-                                <div class="location-header-group">
-                                    <div class="location-header-cell">商品名</div>
-                                    <div class="location-header-cell">儲位</div>
-                                </div>
-                            </div>
                             <div class="location-grid">
                     `;
 
@@ -2128,16 +2078,18 @@
                     if (locationRows.length === 0) {
                         htmlContent += '<div class="empty">符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</div>';
                     } else {
-                        // 只標示 A-Z 各字母第一次出現的藥品；數字與中文不標示。
+                        // 只標示 A-Z 各字母第一次出現的藥品；數字與中文永遠不標示。
+                        // 不再使用任何「奇偶列／交錯欄位」底色判斷。
                         const highlightedLetters = new Set();
 
                         locationRows.forEach((row) => {
                             const firstChar = (row.name || '').trim().charAt(0);
-                            const letterMatch = firstChar.match(/[A-Za-z]/);
-                            const isFirstLetterOccurrence = !!letterMatch && !highlightedLetters.has(firstChar.toUpperCase());
+                            const letterMatch = firstChar.match(/^[A-Za-z]$/);
+                            const letterKey = letterMatch ? firstChar.toUpperCase() : '';
+                            const isFirstLetterOccurrence = !!letterKey && !highlightedLetters.has(letterKey);
 
-                            if (letterMatch) {
-                                highlightedLetters.add(firstChar.toUpperCase());
+                            if (letterKey) {
+                                highlightedLetters.add(letterKey);
                             }
 
                             const letterStartClass = isFirstLetterOccurrence ? ' letter-start' : '';
@@ -2147,7 +2099,18 @@
                                 .replace(/</g, '&lt;')
                                 .replace(/>/g, '&gt;')
                                 .replace(/"/g, '&quot;');
-                            const safeRack = (row.rackId === 'Rack-I' ? row.rackName : `${row.rackName}-${row.shelf}`)
+                            // 儲位顯示：一般鐵架省略「鐵架」文字；冰箱旁維持原樣；印表機／微波爐只保留名稱。
+                            let displayRack = '';
+                            if (row.rackId === 'Rack-I') {
+                                displayRack = row.rackName;
+                            } else if (row.rackName === '印表機' || row.rackName === '微波爐') {
+                                displayRack = row.rackName;
+                            } else if (row.rackName === '鐵架') {
+                                displayRack = row.shelf || '';
+                            } else {
+                                displayRack = row.shelf ? `${row.rackName}-${row.shelf}` : row.rackName;
+                            }
+                            const safeRack = displayRack
                                 .replace(/&/g, '&amp;')
                                 .replace(/</g, '&lt;')
                                 .replace(/>/g, '&gt;')
