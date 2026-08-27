@@ -2014,7 +2014,11 @@
                                 background: #fff;
                                 overflow: hidden;
                             }
-                            .location-item.column-shade {
+                            /* 所有藥品資料預設純白；只有每個英文字母首次出現的藥品才加底色 */
+                            .location-item {
+                                background: #fff;
+                            }
+                            .location-item.letter-start {
                                 background: #fffed6;
                             }
                             .drug-name,
@@ -2124,7 +2128,20 @@
                     if (locationRows.length === 0) {
                         htmlContent += '<div class="empty">符合篩選條件的範圍內，目前沒有任何藥品可供匯出。</div>';
                     } else {
-                        locationRows.forEach((row, rowIndex) => {
+                        // 只標示 A-Z 各字母第一次出現的藥品；數字與中文不標示。
+                        const highlightedLetters = new Set();
+
+                        locationRows.forEach((row) => {
+                            const firstChar = (row.name || '').trim().charAt(0);
+                            const letterMatch = firstChar.match(/[A-Za-z]/);
+                            const isFirstLetterOccurrence = !!letterMatch && !highlightedLetters.has(firstChar.toUpperCase());
+
+                            if (letterMatch) {
+                                highlightedLetters.add(firstChar.toUpperCase());
+                            }
+
+                            const letterStartClass = isFirstLetterOccurrence ? ' letter-start' : '';
+
                             const safeName = row.name
                                 .replace(/&/g, '&amp;')
                                 .replace(/</g, '&lt;')
@@ -2137,7 +2154,7 @@
                                 .replace(/"/g, '&quot;');
 
                             htmlContent += `
-                                <div class="location-item${(Math.floor(rowIndex / locationRowCount) % 2 === 0) ? ' column-shade' : ''}">
+                                <div class="location-item${letterStartClass}">
                                     <div class="drug-name" title="${safeName}">${safeName}</div>
                                     <div class="rack-name">${safeRack}</div>
                                 </div>
