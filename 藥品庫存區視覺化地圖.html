@@ -2322,8 +2322,11 @@
 
                 this.boxBaseMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.9, metalness: 0.05 });
 
-                this.loadAppearanceConfig();
+                // 先建立所有 3D 物件，再載入外觀設定。
+                // 原本先 loadAppearanceConfig() 再 buildRacks()，會因 rackMeshes 尚未建立，
+                // 導致冰箱旁紙箱與 G/H 桌面櫃在重新開啟網頁時沒有套用已儲存的上色版。
                 this.buildRacks();
+                this.loadAppearanceConfig();
 
                 window.addEventListener('resize', () => this.onResize(container));
                 this.renderer.domElement.addEventListener('pointerdown', (e) => this.onClick(e, container));
@@ -2455,6 +2458,12 @@
                 this.rackMeshes = {};
                 this.easterEggBoxes = [];
                 this.buildRacks();
+
+                // 重建 3D 物件後，重新套用目前已儲存的外觀設定。
+                // 確保上色版不會因 rebuildAllRacks() 建立新材質而恢復成預設色。
+                if (window.AppearanceConfig) {
+                    this.applyAppearance(window.AppearanceConfig);
+                }
             },
 
             buildRacks() {
