@@ -146,6 +146,12 @@
         /* 手機底部安全區 padding (iPhone) */
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
+    <!-- 動態隱藏欄位用的樣式區塊 -->
+    <style id="dynamic-cols-style">
+        /* 預設隱藏替代備註欄位與健保碼欄位 */
+        .col-alternative { display: none !important; }
+        .col-nhiCode { display: none !important; }
+    </style>
 </head>
 <body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden">
 
@@ -155,123 +161,138 @@
     <div id="app-ui" class="flex flex-col h-full w-full">
         
         <!-- 頂部導覽列 -->
-        <header class="bg-surface border-b border-slate-200/80 px-4 md:px-6 py-3 md:py-4 flex justify-between items-center shrink-0 z-10 shadow-sm transition-all duration-200">
-            <div class="flex items-center gap-3">
-                <div class="bg-primary-100 text-primary-600 p-2 rounded-xl shrink-0 shadow-sm">
-                    <i class="ph ph-pills text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg md:text-xl font-semibold text-slate-800 tracking-tight">自備藥辨識輔助系統</h1>
-                    <p class="text-[10px] md:text-xs text-slate-500 hidden sm:block mt-0.5">快速整併、清理雲端藥歷，生成標準化醫囑參考 <span class="hidden md:inline ml-2 pl-2 border-l border-slate-300">程式製作 : 其仁藥師 &nbsp; 版本日期 : 2026/05</span></p>
+        <header class="bg-surface border-b border-slate-200/80 px-4 md:px-6 py-3 flex flex-col md:flex-row md:justify-between items-start md:items-center shrink-0 z-10 shadow-sm transition-all duration-200 gap-3 md:gap-0">
+            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center gap-3">
+                    <div class="bg-primary-100 text-primary-600 p-2 rounded-xl shrink-0 shadow-sm">
+                        <i class="ph ph-pills text-xl md:text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg md:text-xl font-semibold text-slate-800 tracking-tight flex items-baseline gap-2">
+                            自備藥辨識輔助系統
+                            <span class="text-[10px] text-slate-500 font-normal hidden sm:inline-block">程式製作 : 其仁藥師 &nbsp; 版本日期 : 2026/05</span>
+                        </h1>
+                    </div>
                 </div>
             </div>
             <!-- 桌機版操作按鈕 (加入平滑Hover與光暈) -->
-            <div class="hidden md:flex items-center gap-3">
-                <a href="https://mcp.fda.gov.tw/" target="_blank" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:-translate-y-0.5 active:translate-y-0 rounded-lg transition-all duration-200 min-h-[44px]">
-                    <i class="ph ph-link text-lg"></i> 仿單查詢
+            <div class="hidden md:flex items-center gap-2 lg:gap-3 flex-wrap">
+                <a href="https://mcp.fda.gov.tw/" target="_blank" class="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:-translate-y-0.5 active:translate-y-0 rounded-lg transition-all duration-200 min-h-[36px]">
+                    <i class="ph ph-link text-base lg:text-lg"></i> <span class="hidden xl:inline">仿單查詢</span><span class="xl:hidden">仿單</span>
                 </a>
-                <a href="https://drugtw.com/figure" target="_blank" class="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:-translate-y-0.5 active:translate-y-0 rounded-lg transition-all duration-200 min-h-[44px]">
-                    <i class="ph ph-link text-lg"></i> 藥台灣(非最新)
+                <a href="https://drugtw.com/figure" target="_blank" class="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:-translate-y-0.5 active:translate-y-0 rounded-lg transition-all duration-200 min-h-[36px]">
+                    <i class="ph ph-link text-base lg:text-lg"></i> <span class="hidden xl:inline">藥台灣</span><span class="xl:hidden">藥台灣</span>
                 </a>
-                <button onclick="app.openConfirmModal()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[44px]">
-                    <i class="ph ph-trash text-lg"></i> 清空資料
+                <button onclick="app.openConfirmModal()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
+                    <i class="ph ph-trash text-base lg:text-lg"></i> 清空
                 </button>
-                <button onclick="app.copyTextContent()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[44px]">
-                    <i class="ph ph-copy text-lg"></i> 複製內容
+                <button onclick="app.copyTextContent()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
+                    <i class="ph ph-copy text-base lg:text-lg"></i> 複製
                 </button>
-                <button onclick="app.exportToCSV()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[44px]">
-                    <i class="ph ph-download-simple text-lg"></i> 匯出 CSV
+                <button onclick="app.exportToCSV()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
+                    <i class="ph ph-download-simple text-base lg:text-lg"></i> CSV
                 </button>
-                <button onclick="app.openPrintLabelView()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[44px]">
-                    <i class="ph ph-tag text-lg"></i> 列印標籤
+                <button onclick="app.openPrintLabelView()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
+                    <i class="ph ph-tag text-base lg:text-lg"></i> 標籤
                 </button>
-                <button onclick="app.openPrintView()" class="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 rounded-lg transition-all duration-200 min-h-[44px]">
-                    <i class="ph ph-printer text-lg"></i> 列印清單
+                <button onclick="app.openPrintView()" class="flex items-center gap-1.5 lg:gap-2 px-4 lg:px-5 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 rounded-lg transition-all duration-200 min-h-[36px]">
+                    <i class="ph ph-printer text-base lg:text-lg"></i> 列印
                 </button>
             </div>
         </header>
 
-        <!-- 主要工作區 -->
-        <main class="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden p-3 md:p-4 pb-24 md:pb-4 gap-4 bg-slate-50/50">
+        <!-- 主要工作區 (改為上下排版) -->
+        <main class="flex-1 flex flex-col overflow-y-auto md:overflow-hidden p-3 md:p-4 pb-24 md:pb-4 gap-4 bg-slate-50/50">
             
-            <!-- 左側：雲端藥歷智能清理區 -->
-            <aside class="w-full md:w-[35%] lg:w-[400px] shrink-0 flex flex-col gap-4 h-auto md:h-full">
-                <!-- 輸入區卡片 (增強陰影與留白) -->
-                <div class="bg-surface rounded-2xl shadow-soft border border-slate-200/60 p-5 flex flex-col md:h-2/5 shrink-0 transition-shadow duration-200 hover:shadow-md">
-                    <div class="flex items-center justify-between mb-3">
+            <!-- 上側：醫囑清理工具 (極簡單行設計) -->
+            <section class="w-full shrink-0 flex flex-col gap-3">
+                <div class="bg-surface rounded-xl shadow-soft border border-slate-200/60 p-2 md:p-3 transition-shadow duration-200 hover:shadow-md flex flex-col md:flex-row items-center gap-3">
+                    <div class="flex items-center gap-3 shrink-0 w-full md:w-auto justify-between">
                         <div class="flex items-center gap-2">
-                            <div class="p-1.5 bg-primary-50 rounded-lg text-primary-500"><i class="ph ph-magic-wand text-lg"></i></div>
-                            <h2 class="font-semibold text-slate-800">1. 醫囑清理工具</h2>
+                            <div class="p-1.5 bg-primary-50 rounded-lg text-primary-500"><i class="ph ph-magic-wand text-base"></i></div>
+                            <h2 class="font-semibold text-slate-800 text-sm whitespace-nowrap">1. 醫囑清理</h2>
                         </div>
-                        <!-- 新增：切換清理模式按鈕 -->
-                        <div class="flex bg-slate-100 p-1 rounded-lg">
-                            <button id="mode-btn-cloud" onclick="app.setParseMode('cloud')" class="px-3 py-1 text-xs font-medium rounded-md shadow-sm bg-white text-primary-600 transition-all">雲端藥歷</button>
-                            <button id="mode-btn-ud" onclick="app.setParseMode('ud')" class="px-3 py-1 text-xs font-medium rounded-md text-slate-500 hover:text-slate-700 transition-all">UD處方</button>
+                        <!-- 切換清理模式按鈕 -->
+                        <div class="flex bg-slate-100 p-0.5 rounded-lg">
+                            <button id="mode-btn-cloud" onclick="app.setParseMode('cloud')" class="px-2 py-1 text-[11px] font-medium rounded-md shadow-sm bg-white text-primary-600 transition-all">雲端藥歷</button>
+                            <button id="mode-btn-ud" onclick="app.setParseMode('ud')" class="px-2 py-1 text-[11px] font-medium rounded-md text-slate-500 hover:text-slate-700 transition-all">UD處方</button>
                         </div>
                     </div>
-                    <textarea id="rawText" class="flex-1 w-full min-h-[120px] md:min-h-0 p-3 text-sm bg-slate-50 border border-slate-200/80 rounded-xl resize-none focus:outline-none focus:ring-4 focus:ring-primary-500/15 focus:border-primary-400 focus:bg-white transition-all duration-200" placeholder="貼上雲端藥歷內容...&#10;範例：&#10;1. PANADOL 500mg (Acetaminophen) 1顆 TID"></textarea>
-                    <button onclick="app.parseText()" class="mt-4 w-full py-3 md:py-2.5 bg-slate-800 hover:bg-slate-700 hover:shadow-lg hover:shadow-slate-800/20 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] text-white text-sm font-medium rounded-xl transition-all duration-200 min-h-[44px]">
-                        解析內容
-                    </button>
-                </div>
-
-                <!-- 解析結果清單區卡片 -->
-                <div class="bg-surface rounded-2xl shadow-soft border border-slate-200/60 p-5 flex flex-col md:flex-1 h-[300px] md:h-auto overflow-hidden transition-shadow duration-200 hover:shadow-md">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="font-semibold text-slate-800 text-sm flex items-center gap-2"><i class="ph ph-list-bullets text-slate-400"></i> 解析結果暫存區</h2>
-                        <button onclick="app.addAllParsedItems()" class="text-sm md:text-xs p-2 md:p-1.5 text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-lg font-medium active:scale-95 transition-all duration-200">全部加入右側 <i class="ph ph-caret-double-right align-middle"></i></button>
-                    </div>
-                    <div id="parsed-list" class="flex-1 overflow-y-auto pr-2 space-y-3">
-                        <!-- 解析項目將透過 JS 動態生成於此 -->
+                    
+                    <div class="flex-1 w-full flex items-center gap-2">
+                        <textarea id="rawText" class="flex-1 w-full h-[36px] min-h-[36px] py-1.5 px-3 text-sm bg-slate-50 border border-slate-200/80 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 focus:bg-white transition-all duration-200 leading-normal" placeholder="在此貼上內容..."></textarea>
+                        
+                        <button onclick="app.parseText()" class="shrink-0 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-white text-sm font-medium rounded-lg transition-all duration-200 h-[36px]">
+                            解析並加入
+                        </button>
                     </div>
                 </div>
-            </aside>
+            </section>
 
-            <!-- 右側：自備藥清單編輯區 -->
-            <section class="flex-1 bg-surface rounded-2xl shadow-soft border border-slate-200/60 flex flex-col overflow-hidden h-auto md:h-full transition-shadow duration-200 hover:shadow-md">
-                <div class="p-4 md:p-5 border-b border-slate-100 flex flex-col xl:flex-row justify-between xl:items-center bg-white z-10 shrink-0 gap-3">
+            <!-- 下側：全幅藥物清單編輯區 -->
+            <section class="flex-1 bg-surface rounded-2xl shadow-soft border border-slate-200/60 flex flex-col overflow-hidden transition-shadow duration-200 hover:shadow-md">
+                <div class="p-3 md:p-4 border-b border-slate-100 flex flex-col xl:flex-row justify-between xl:items-center bg-white z-10 shrink-0 gap-3">
                     <div class="flex flex-wrap items-center gap-2 md:gap-3">
                         <div class="p-1.5 bg-primary-50 rounded-lg text-primary-500 hidden sm:block"><i class="ph ph-table text-lg"></i></div>
-                        <h2 id="main-list-title" class="font-semibold text-slate-800">2. 藥物清單</h2>
+                        <h2 id="main-list-title" class="font-semibold text-slate-800 text-sm md:text-base">2. 藥物清單</h2>
                         <div class="flex items-center gap-2 ml-1 md:ml-2 border-l border-slate-200 pl-3">
                             <button id="sort-brand-btn" onclick="app.sortByBrand()" class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 hover:text-primary-600 hover:bg-primary-50 px-2 py-1 rounded-lg border border-slate-200 transition-colors" title="依商品名排序">
-                                <i class="ph ph-sort-ascending text-sm"></i><span>商品名排序</span>
+                                <i class="ph ph-sort-ascending text-sm"></i><span class="hidden sm:inline">商品名排序</span><span class="sm:hidden">排序</span>
                             </button>
                             <label class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 cursor-pointer hover:text-primary-600 transition-colors">
                                 <input type="checkbox" id="chk-title-1" onchange="app.updateListTitle()" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5 cursor-pointer">
-                                自備藥辨識
+                                <span class="hidden sm:inline">自備藥辨識</span><span class="sm:hidden">辨識</span>
                             </label>
                             <label class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 cursor-pointer hover:text-primary-600 transition-colors">
                                 <input type="checkbox" id="chk-title-2" onchange="app.updateListTitle()" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5 cursor-pointer">
-                                手術前停藥建議
+                                <span class="hidden sm:inline">手術前停藥建議</span><span class="sm:hidden">停藥</span>
                             </label>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end gap-2">
-                        <!-- 新增：即時搜尋框 -->
-                        <div class="relative hidden sm:block mr-2">
+                    <div class="flex items-center justify-end gap-2 flex-wrap">
+                        <!-- 即時搜尋框 -->
+                        <div class="relative hidden sm:block">
                             <i class="ph ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 w-40 transition-all">
+                            <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 w-28 md:w-36 transition-all">
                         </div>
-                        <button id="batch-delete-btn" onclick="app.deleteSelected()" class="hidden text-xs font-medium bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-lg border border-red-200/50 transition-all duration-200 items-center gap-1"><i class="ph ph-trash"></i> 刪除選取</button>
-                        <button onclick="app.deleteDuplicates()" class="text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200/50 transition-all duration-200 items-center gap-1" title="依商品名刪除重複藥品，只保留第一筆"><i class="ph ph-copy"></i> 刪除重複</button>
-                        <span id="med-count" class="text-xs font-medium bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200/50 transition-all duration-200">共 0 筆紀錄</span>
+
+                        <!-- 欄位顯示設定按鈕 (呼叫 Modal) -->
+                        <div class="hidden sm:block">
+                            <button onclick="app.openColSettingsModal()" class="text-[11px] md:text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 md:px-3 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200/50 transition-colors">
+                                <i class="ph ph-columns"></i> 欄位
+                            </button>
+                        </div>
+
+                        <!-- 批次刪除按鈕群組 (勾選時顯示) -->
+                        <div id="batch-actions" class="hidden items-center gap-1">
+                            <button onclick="app.deleteSelected()" class="text-[11px] md:text-xs font-medium bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1.5 rounded-lg border border-red-200/50 transition-all duration-200 flex items-center gap-1 whitespace-nowrap"><i class="ph ph-trash"></i> 刪除已勾選</button>
+                            <button onclick="app.deleteUnselected()" class="text-[11px] md:text-xs font-medium bg-pink-50 hover:bg-pink-100 text-pink-600 px-2 py-1.5 rounded-lg border border-pink-200/50 transition-all duration-200 flex items-center gap-1 whitespace-nowrap"><i class="ph ph-eraser"></i> 刪除未勾選</button>
+                        </div>
+                        
+                        <!-- 刪除重複與手動新增按鈕 -->
+                        <div class="flex items-center gap-1 border-l border-slate-200 pl-1">
+                            <button onclick="app.deleteDuplicates()" class="text-[11px] md:text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg border border-amber-200/50 transition-all duration-200 flex items-center gap-1" title="依商品名刪除重複藥品，只保留第一筆"><i class="ph ph-copy"></i> <span class="hidden sm:inline">刪除重複</span></button>
+                            <button onclick="app.addNewRow()" class="text-[11px] md:text-xs font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 px-2 py-1.5 rounded-lg border border-primary-200/50 transition-all duration-200 flex items-center gap-1" title="手動新增一筆空白藥品"><i class="ph ph-plus-circle text-sm md:text-base"></i> <span class="hidden sm:inline">新增</span></button>
+                        </div>
+                        <span id="med-count" class="text-[11px] md:text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1.5 rounded-lg border border-slate-200/50 transition-all duration-200">0 筆</span>
                     </div>
                 </div>
                 
                 <!-- 表格容器 -->
-                <div class="md:flex-1 md:overflow-auto bg-slate-50/30 p-3 md:p-0">
-                    <table class="w-full text-left border-collapse md:min-w-[800px]">
+                <div class="flex-1 overflow-auto bg-slate-50/30 p-2 md:p-0">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
                         <thead class="hidden md:table-header-group bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm border-b border-slate-200/80 text-xs text-slate-500 font-medium tracking-wider">
                             <tr>
-                                <th class="py-3 px-4 w-12 text-center"><input type="checkbox" id="select-all" onchange="app.toggleSelectAll(this)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4"></th>
-                                <th class="py-3 px-4 w-12 text-center">#</th>
-                                <th class="py-3 px-4 w-1/5">商品名</th>
-                                <th class="py-3 px-4 w-1/5">學名/成分</th>
-                                <th class="py-3 px-4 w-[25%]">用法用量</th>
-                                <th class="py-3 px-4 w-[15%]">外觀描述</th>
-                                <th class="py-3 px-4 w-1/5">替代品項 / 備註</th>
-                                <th class="py-3 px-4 w-16 text-center">操作</th>
+                                <th class="py-3 px-3 w-10 text-center"><input type="checkbox" id="select-all" onchange="app.toggleSelectAll(this)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4"></th>
+                                <th class="py-3 px-2 w-10 text-center">#</th>
+                                <th class="col-img py-3 px-2 w-14 text-center">外觀</th>
+                                <th class="col-brandName py-3 px-3 w-[20%]">商品名</th>
+                                <th class="col-genericName py-3 px-3 w-[18%]">學名/成分</th>
+                                <th class="col-usage py-3 px-3 w-[15%]">用法用量</th>
+                                <th class="col-appearance py-3 px-3 w-[15%]">外觀描述</th>
+                                <th class="col-nhiCode py-3 px-3 w-[12%]">健保碼</th>
+                                <th class="col-alternative py-3 px-3 w-[15%]">替代品項 / 備註</th>
+                                <th class="py-3 px-3 w-14 text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody id="med-table-body" class="text-sm md:divide-y divide-slate-100/80 block md:table-row-group">
@@ -280,17 +301,10 @@
                     </table>
                     
                     <!-- 空狀態提示 (加入淡入動畫) -->
-                    <div id="empty-state" class="hidden flex-col items-center justify-center py-12 md:py-24 text-slate-400 animate-fade-in-up">
+                    <div id="empty-state" class="hidden flex-col items-center justify-center py-12 md:py-24 text-slate-400 animate-fade-in-up h-full min-h-[200px]">
                         <div class="bg-slate-50 p-4 rounded-full mb-4 shadow-sm"><i class="ph ph-folder-open text-5xl opacity-50"></i></div>
-                        <p class="text-center px-4 font-medium text-slate-500">目前清單為空<br class="md:hidden"><span class="text-sm font-normal text-slate-400 mt-1 block">請從左側加入解析結果，或手動新增。</span></p>
+                        <p class="text-center px-4 font-medium text-slate-500">目前清單為空<br class="md:hidden"><span class="text-sm font-normal text-slate-400 mt-1 block">請使用上方清理工具解析，或手動新增。</span></p>
                     </div>
-                </div>
-
-                <!-- 底部操作區 -->
-                <div class="hidden md:block p-4 border-t border-slate-100 bg-white/80 backdrop-blur-sm shrink-0">
-                    <button onclick="app.addNewRow()" class="w-full py-3 min-h-[44px] border-2 border-dashed border-slate-200 text-slate-500 hover:text-primary-600 hover:border-primary-400 hover:bg-primary-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2">
-                        <i class="ph ph-plus-circle text-lg"></i> 手動新增一筆空白藥品
-                    </button>
                 </div>
             </section>
 
@@ -330,14 +344,14 @@
     <!-- 3. 列印與匯出隱藏視圖 (Print View)         -->
     <!-- ========================================== -->
     <div id="print-view" class="hidden bg-white p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
-        <!-- 新增：列印小提醒 (不印出) -->
+        <!-- 列印小提醒 (不印出) -->
         <div class="max-w-5xl mx-auto print-hide">
             <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
                 <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
                 <p><strong>列印排版提醒：</strong>網頁程式無法自動更改瀏覽器的列印預設值。為了畫面乾淨並避免印出網址與日期，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
             </div>
         </div>
-        <!-- 新增：動態自訂列印欄位 -->
+        <!-- 動態自訂列印欄位 -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 print-hide max-w-5xl mx-auto border-b border-slate-200 pb-4 gap-4">
             <div>
                 <h3 class="text-sm font-bold text-slate-700 mb-2">自訂列印顯示欄位：</h3>
@@ -346,6 +360,7 @@
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="generic" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 學名/成分</label>
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="usage" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 用法用量</label>
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="appearance" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 外觀描述</label>
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" value="nhiCode" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 健保碼</label>
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="alternative" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 替代品項/備註</label>
                 </div>
             </div>
@@ -369,6 +384,7 @@
                         <th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">外觀描述</th>
+                        <th class="border border-gray-400 py-2 px-3 text-left">健保碼</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">替代品項 / 備註</th>
                     </tr>
                 </thead>
@@ -387,7 +403,7 @@
     <!-- 3.5. 列印標籤隱藏視圖 (Print Label View)   -->
     <!-- ========================================== -->
     <div id="print-label-view" class="hidden bg-slate-100 p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
-        <!-- 新增：列印小提醒 (不印出) -->
+        <!-- 列印小提醒 (不印出) -->
         <div class="max-w-5xl mx-auto print-hide">
             <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
                 <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
@@ -403,6 +419,42 @@
         <div class="max-w-5xl mx-auto">
             <div id="label-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                 <!-- 列印標籤內容動態生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 欄位設定 Modal -->
+    <div id="col-settings-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden flex-col items-center justify-center transition-opacity duration-200 opacity-0">
+        <div class="bg-white rounded-2xl shadow-2xl w-[90%] max-w-xs transform scale-95 transition-transform duration-200 overflow-hidden flex flex-col" id="col-settings-content">
+            <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-columns text-primary-500"></i> 自訂顯示欄位</h3>
+                <button onclick="app.closeColSettingsModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 transition-colors"><i class="ph ph-x text-lg"></i></button>
+            </div>
+            <div class="p-4 flex flex-col gap-2">
+                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <input type="checkbox" onchange="app.toggleTableCol('img', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">外觀圖</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <input type="checkbox" onchange="app.toggleTableCol('brandName', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">商品名</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <input type="checkbox" onchange="app.toggleTableCol('genericName', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">學名/成分</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <input type="checkbox" onchange="app.toggleTableCol('usage', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">用法用量</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <input type="checkbox" onchange="app.toggleTableCol('appearance', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">外觀描述</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <input type="checkbox" onchange="app.toggleTableCol('nhiCode', this.checked)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4" id="chk-col-nhiCode"> <span class="text-sm text-slate-700">健保碼</span>
+                </label>
+                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
+                    <input type="checkbox" onchange="app.toggleTableCol('alternative', this.checked)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4" id="chk-col-alternative"> <span class="text-sm text-slate-700">替代/備註</span>
+                </label>
+            </div>
+            <div class="p-3 border-t border-slate-100 bg-slate-50 flex justify-end">
+                 <button onclick="app.closeColSettingsModal()" class="px-5 py-2 text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors shadow-sm active:scale-95">完成</button>
             </div>
         </div>
     </div>
@@ -447,24 +499,33 @@
     <script>
         const app = (function() {
             let medList = []; 
-            let parsedList = []; 
             const STORAGE_KEY = 'MedAssistantData_v1';
             let lastCheckedIndex = null; // 用於 Shift+Click 多選
             let brandSortAscending = true;
-            let currentParseMode = 'cloud'; // 新增：紀錄當前清理模式
-            let savedTextCloud = ''; // 新增：儲存雲端藥歷文字
-            let savedTextUd = ''; // 新增：儲存UD處方文字
+            let currentParseMode = 'cloud'; // 紀錄當前清理模式
+            let savedTextCloud = ''; // 儲存雲端藥歷文字
+            let savedTextUd = ''; // 儲存UD處方文字
             
+            // 定義表格欄位顯示狀態 (替代/備註、健保碼預設隱藏)
+            let colState = {
+                img: true,
+                brandName: true,
+                genericName: true,
+                usage: true,
+                appearance: true,
+                nhiCode: false,
+                alternative: false
+            };
+
             const els = {
                 tableBody: document.getElementById('med-table-body'),
-                parsedListContainer: document.getElementById('parsed-list'),
                 emptyState: document.getElementById('empty-state'),
                 medCount: document.getElementById('med-count'),
                 rawText: document.getElementById('rawText'),
                 printTableBody: document.getElementById('print-table-body'),
                 printDate: document.getElementById('print-date'),
                 toastContainer: document.getElementById('toast-container'),
-                batchDeleteBtn: document.getElementById('batch-delete-btn'),
+                batchActions: document.getElementById('batch-actions'), // 群組
                 selectAllCheckbox: document.getElementById('select-all'),
                 printView: document.getElementById('print-view'),
                 printLabelView: document.getElementById('print-label-view'),
@@ -472,10 +533,13 @@
                 appUi: document.getElementById('app-ui'),
                 confirmModal: document.getElementById('confirm-modal'),
                 confirmModalContent: document.getElementById('confirm-modal-content'),
+                colSettingsModal: document.getElementById('col-settings-modal'),
+                colSettingsContent: document.getElementById('col-settings-content'),
                 searchInput: document.getElementById('search-input'),
                 loginOverlay: document.getElementById('login-overlay'),
                 loginPwd: document.getElementById('login-pwd'),
-                loginError: document.getElementById('login-error')
+                loginError: document.getElementById('login-error'),
+                dynamicColsStyle: document.getElementById('dynamic-cols-style') // 動態欄位樣式
             };
 
             const utils = {
@@ -524,7 +588,7 @@
             const parser = {
                 process: (text) => {
                     if (!text.trim()) { utils.showToast('請先貼上內容', 'info'); return; }
-                    parsedList = [];
+                    let newlyParsedItems = [];
                     
                     if (currentParseMode === 'ud') {
                         // --- UD處方醫囑清理模式 ---
@@ -544,9 +608,9 @@
                             let brandName = str;
                             let genericName = '';
                             let usage = '';
+                            let nhiCode = ''; // UD 模式暫無固定格式解析健保碼，留白
 
                             // 2. 擷取後方的用法用量 (例: 1TABBID -> 1 TAB BID)
-                            // 支援您提供的劑量與單位: TAB, PILL, AMP, BOT, CAP, ML, VIAL, U, TUB, TUBE, DROPS, DROP, EA, GM, PUFF, PAK, PKG 等，新增 PACK
                             const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PACK|PKG|SYRI)\s*([A-Z0-9&]+)?$/i);
                             
                             if (usageMatch) {
@@ -567,19 +631,14 @@
                             }
 
                             if (brandName || usage) {
-                                parsedList.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '' });
+                                newlyParsedItems.push({ id: utils.generateId(), nhiCode, brandName, genericName, usage, appearance: '', alternative: '' });
                             }
                         });
-                        ui.renderParsedList();
-                        utils.showToast(`成功解析 ${parsedList.length} 筆 UD 資料`);
-
+                        
                     } else {
                         // --- 雲端藥歷清理模式 (原有邏輯) ---
-                        // 預先判定：是否為「雲端藥歷表格」的大批貼上 (特徵：包含 Tab 且有疑似健保代碼)
                         const isCloudTableData = text.includes('\t') && /[a-zA-Z][a-zA-Z0-9]{9}/.test(text);
 
-                        // 將雲端藥歷複製時因畫面換行而拆開的「藥品代碼列」重新接回上一行。
-                        // 例如：I200...Mucolytics\t + 下一行 BC23898100\tFLUIMUCIL...，應視為同一筆藥品資料。
                         const cloudLines = text.split('\n').reduce((lines, line) => {
                             const current = line.trim();
                             if (!current) return lines;
@@ -601,23 +660,18 @@
                             let str = line.trim();
                             if (!str) return;
 
-                            // 0. 過濾掉可能夾帶的 "處理中..." 雜訊
                             str = str.replace(/^處理中(?:\.\.\.)?\s*/, '');
-                            // 同時過濾掉最前方的日期，避免使用者忘記切換模式時，日期被當作商品名保留
                             str = str.replace(/^\d{2,3}[/\\-]?\d{2}[/\\-]?\d{2}\s*/, '');
 
-                            // 排除雲端藥歷表頭行
                             if (str.includes('藥品代碼') || str.includes('藥品名稱') || str.includes('成分名稱')) return;
 
-                            let brandName = '', genericName = '', usage = '';
+                            let brandName = '', genericName = '', usage = '', nhiCode = '';
                             let isParsedByCloudFormat = false;
 
-                            // 策略一：優先嘗試「健保雲端藥歷」Tab 分隔格式解析
                             if (str.includes('\t')) {
                                 const parts = str.split('\t');
                                 let codeIndex = -1;
                                 
-                                // 尋找健保藥品代碼欄位 (10碼英數組合，通常以字母開頭) 作為精準錨點
                                 for (let i = 0; i < parts.length; i++) {
                                     if (/^(?=[a-zA-Z0-9]{10}$)(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}$/.test(parts[i].trim())) {
                                         codeIndex = i;
@@ -625,16 +679,14 @@
                                     }
                                 }
 
-                                // 若找到健保碼，且後續欄位數量足夠對應：代碼(i) -> 商品名(i+1) -> 複方註記(i+2) -> 學名(i+3) -> 用法(i+4) -> 用量(i+5)
                                 if (codeIndex !== -1 && parts.length > codeIndex + 4) {
+                                    nhiCode = parts[codeIndex].trim(); // 精準擷取健保碼
                                     brandName = parts[codeIndex + 1] ? parts[codeIndex + 1].trim() : '';
                                     genericName = parts[codeIndex + 3] ? parts[codeIndex + 3].trim() : '';
                                     const freq = parts[codeIndex + 4] ? parts[codeIndex + 4].trim() : '';
                                     const totalQty = parts[codeIndex + 5] ? parts[codeIndex + 5].trim() : '';
                                     const days = parts[codeIndex + 6] ? parts[codeIndex + 6].trim() : '';
                                     
-                                    // 雲端藥歷未提供「一次服用幾顆」時，不自行推算單次劑量。
-                                    // 以「頻次 + 總量(#) + 天數」呈現，避免將總量誤認為單次劑量。
                                     if (freq && totalQty && days) {
                                         usage = `${freq} 共${totalQty}# ${days}天`.trim();
                                     } else if (freq && totalQty) {
@@ -648,20 +700,22 @@
                                 }
                             }
 
-                            // --- 雜訊過濾機制 ---
-                            // 狀況A: 如果整包資料確認是雲端表格，但這行沒被解析成功且帶有 Tab (如：日期的換行雜訊)，當作雜訊丟棄。
                             if (isCloudTableData && !isParsedByCloudFormat && str.includes('\t')) return;
                             
-                            // 狀況B: 雲端表格內的換行無 Tab 雜訊 (如："門診"、"主診斷"文字被擠到下一行)
                             if (isCloudTableData && !isParsedByCloudFormat) {
                                 const hasUsageKeyword = /(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|mg|ml|mcg|\d+[顆錠粒包瓶次滴])/i.test(str);
                                 const hasGenericPattern = /\([^)]+\)|\[[^\]]+\]/.test(str);
-                                // 如果連基本的用法關鍵字或學名括號特徵都沒有，判定為雜訊直接過濾
                                 if (!hasUsageKeyword && !hasGenericPattern) return; 
                             }
 
-                            // 策略二：如果不是標準 Tab 雲端格式，降級使用原本的啟發式解析 (處理一般手打病歷文字)
                             if (!isParsedByCloudFormat) {
+                                // 嘗試尋找疑似健保碼 (10碼英數字，字母開頭)
+                                const nhiCodeMatch = str.match(/(?<![a-zA-Z0-9])[a-zA-Z][a-zA-Z0-9]{9}(?![a-zA-Z0-9])/);
+                                if (nhiCodeMatch) {
+                                    nhiCode = nhiCodeMatch[0];
+                                    str = str.replace(nhiCode, ''); // 從字串移除，避免干擾後續解析
+                                }
+
                                 const genericMatch = str.match(/\(([^)]+)\)|\[([^\]]+)\]/);
                                 if (genericMatch) genericName = genericMatch[1] || genericMatch[2];
                                 const usageMatches = str.match(/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴]|[早中晚]?[飯餐][前後]|睡前)/ig);
@@ -673,21 +727,32 @@
                                 remainStr = remainStr.replace(/^(\d+\.|\[\d+\])\s*/, '');
                                 brandName = remainStr.replace(/[^\w\s\u4e00-\u9fa5-]/g, '').replace(/\s+/g, ' ').trim();
                                 
-                                // 狀況C: 手動輸入或殘留的單純雜字過濾
-                                if (!usage && !genericName) {
-                                    // 若抽出文字是常見病歷非藥物用詞，或純數字/符號(日期)，則捨棄
+                                if (!usage && !genericName && !nhiCode) {
                                     if (/^(門診|急診|住院|就醫|診斷|項次|費用|日期|來源)/.test(brandName)) return;
                                     if (/^[\d\s/-]+$/.test(brandName)) return; 
                                 }
                             }
 
-                            if (brandName || genericName || usage) {
-                                parsedList.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '' });
+                            if (brandName || genericName || usage || nhiCode) {
+                                newlyParsedItems.push({ id: utils.generateId(), nhiCode, brandName, genericName, usage, appearance: '', alternative: '' });
                             }
                         });
-                        ui.renderParsedList();
-                        utils.showToast(`成功解析 ${parsedList.length} 筆資料`);
-                    } // End of else (Cloud mode)
+                    }
+
+                    // 直接將解析結果加入主要清單
+                    if (newlyParsedItems.length > 0) {
+                        medList = [...medList, ...newlyParsedItems];
+                        ui.renderTable();
+                        storage.save();
+                        utils.showToast(`成功解析並加入 ${newlyParsedItems.length} 筆資料`);
+                        
+                        // 清空輸入區
+                        els.rawText.value = '';
+                        if (currentParseMode === 'cloud') savedTextCloud = '';
+                        else savedTextUd = '';
+                    } else {
+                        utils.showToast('無法解析出任何藥物資料', 'info');
+                    }
                 }
             };
 
@@ -695,7 +760,7 @@
                 renderTable: () => {
                     // 初始化重置狀態
                     if(els.selectAllCheckbox) els.selectAllCheckbox.checked = false;
-                    els.batchDeleteBtn.classList.replace('flex', 'hidden');
+                    els.batchActions.classList.replace('flex', 'hidden');
 
                     if (medList.length === 0) {
                         els.tableBody.innerHTML = '';
@@ -705,14 +770,14 @@
                         els.tableBody.innerHTML = medList.map((med, index) => `
                             <tr draggable="false" data-drag-armed="false" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-none rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative shadow-sm md:shadow-none hover:bg-slate-50/80 md:hover:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
                                 <!-- 拖曳手把與勾選框 (桌機) -->
-                                <td class="hidden md:table-cell py-1 md:py-3 px-2 md:px-4 text-center border-b border-slate-100 md:border-none">
+                                <td class="hidden md:table-cell py-1 md:py-3 px-2 md:px-3 text-center border-b border-slate-100 md:border-none">
                                     <div class="flex items-center justify-center gap-1">
                                         <i class="ph ph-dots-six-vertical text-slate-400 cursor-grab hover:text-primary-500 active:cursor-grabbing text-lg drag-handle" title="拖曳排序"></i>
                                         <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4 transition-all" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
                                     </div>
                                 </td>
                                 <!-- 序號與手機版勾選/刪除鈕 -->
-                                <td class="block md:table-cell py-1 md:py-3 px-2 md:px-4 text-left md:text-center font-medium text-slate-500 border-b border-slate-100 md:border-none mb-2 md:mb-0 transition-colors duration-200 group-hover:text-primary-600">
+                                <td class="block md:table-cell py-1 md:py-3 px-1 md:px-2 text-left md:text-center font-medium text-slate-500 border-b border-slate-100 md:border-none mb-2 md:mb-0 transition-colors duration-200 group-hover:text-primary-600">
                                     <div class="flex justify-between items-center md:block">
                                         <div class="flex items-center gap-2">
                                             <input type="checkbox" class="md:hidden row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4 transition-all" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
@@ -723,29 +788,42 @@
                                         </button>
                                     </div>
                                 </td>
+                                <!-- 新增：外觀圖示欄位 -->
+                                <td class="col-img flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2 border-b border-slate-50 md:border-none text-center">
+                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">外觀圖</span>
+                                    <div class="flex-1 md:flex-none flex justify-start md:justify-center">
+                                        <a href="#" target="_blank" class="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg border border-slate-200 text-slate-400 hover:text-primary-500 hover:bg-primary-50 hover:border-primary-300 transition-all cursor-pointer shadow-sm" title="查看藥品外觀 (待串接)">
+                                            <i class="ph ph-image text-lg pointer-events-none"></i>
+                                        </a>
+                                    </div>
+                                </td>
                                 <!-- 輸入欄位 -->
-                                <td class="flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2 border-b border-slate-50 md:border-none">
+                                <td class="col-brandName flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
                                     <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">商品名</span>
                                     <input type="text" class="table-input font-medium md:font-normal" data-field="brandName" value="${utils.escapeHtml(med.brandName)}" placeholder="輸入商品名">
                                 </td>
-                                <td class="flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2 border-b border-slate-50 md:border-none">
+                                <td class="col-genericName flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
                                     <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">學名成分</span>
                                     <input type="text" class="table-input text-slate-600" data-field="genericName" value="${utils.escapeHtml(med.genericName)}" placeholder="輸入學名">
                                 </td>
-                                <td class="flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2 border-b border-slate-50 md:border-none">
+                                <td class="col-usage flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
                                     <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">用法用量</span>
                                     <input type="text" class="table-input text-slate-600" data-field="usage" value="${utils.escapeHtml(med.usage)}" placeholder="例: 1顆 TID">
                                 </td>
-                                <td class="flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2 border-b border-slate-50 md:border-none">
+                                <td class="col-appearance flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
                                     <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">外觀描述</span>
                                     <input type="text" class="table-input text-slate-600" data-field="appearance" value="${utils.escapeHtml(med.appearance)}" placeholder="例: 白色圓錠">
                                 </td>
-                                <td class="flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2">
+                                <td class="col-nhiCode flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
+                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">健保碼</span>
+                                    <input type="text" class="table-input text-slate-600" data-field="nhiCode" value="${utils.escapeHtml(med.nhiCode)}" placeholder="健保碼">
+                                </td>
+                                <td class="col-alternative flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3">
                                     <span class="md:hidden w-[72px] shrink-0 text-xs text-amber-600 font-medium">替代/備註</span>
                                     <input type="text" class="table-input text-amber-600 bg-amber-50/50 md:bg-amber-50/30 md:focus:bg-amber-100/50" data-field="alternative" value="${utils.escapeHtml(med.alternative)}" placeholder="替代或備註">
                                 </td>
                                 <!-- 桌機版刪除鈕 -->
-                                <td class="hidden md:table-cell py-2 px-4 text-center">
+                                <td class="hidden md:table-cell py-2 px-3 text-center">
                                     <button class="delete-btn text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 p-2.5 rounded-xl" title="刪除此列">
                                         <i class="ph ph-trash text-xl pointer-events-none"></i>
                                     </button>
@@ -755,29 +833,6 @@
                     }
                     ui.updateMetrics();
                     ui.updatePrintView();
-                },
-
-                renderParsedList: () => {
-                    if (parsedList.length === 0) {
-                        els.parsedListContainer.innerHTML = `
-                            <div class="h-full flex flex-col items-center justify-center text-slate-400 text-sm gap-3 min-h-[150px] animate-fade-in-up">
-                                <div class="p-3 bg-slate-50 rounded-full"><i class="ph ph-text-align-left text-3xl opacity-50"></i></div>
-                                <p>尚無解析內容</p>
-                            </div>`;
-                        return;
-                    }
-                    els.parsedListContainer.innerHTML = parsedList.map((item, index) => `
-                        <div class="animate-fade-in-up bg-white border border-slate-200/80 rounded-xl p-3.5 shadow-sm hover:shadow-md hover:border-primary-300 hover:-translate-y-0.5 transition-all duration-200 group relative flex items-center" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
-                            <div class="flex flex-col gap-1.5 flex-1 pr-4">
-                                <input type="text" class="font-medium text-slate-800 bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-primary-500 outline-none text-sm w-full py-0.5 transition-colors duration-200" value="${utils.escapeHtml(item.brandName)}" onchange="app.updateParsedItem('${item.id}', 'brandName', this.value)" placeholder="商品名">
-                                <input type="text" class="text-xs text-slate-500 bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-primary-500 outline-none w-full py-0.5 transition-colors duration-200" value="${utils.escapeHtml(item.genericName)}" onchange="app.updateParsedItem('${item.id}', 'genericName', this.value)" placeholder="學名/成分">
-                                <input type="text" class="text-xs text-primary-600 font-medium bg-transparent border-b border-dashed border-transparent hover:border-slate-300 focus:border-primary-500 outline-none w-full py-0.5 transition-colors duration-200" value="${utils.escapeHtml(item.usage)}" onchange="app.updateParsedItem('${item.id}', 'usage', this.value)" placeholder="用法用量">
-                            </div>
-                            <button onclick="app.addSingleParsedItem('${item.id}')" class="p-3 bg-primary-50 text-primary-600 rounded-xl hover:bg-primary-600 hover:text-white hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all duration-200 shrink-0" title="加入清單">
-                                <i class="ph ph-plus font-bold text-lg"></i>
-                            </button>
-                        </div>
-                    `).join('');
                 },
 
                 updatePrintLabelView: () => {
@@ -818,6 +873,7 @@
                         generic: toggles.find(t => t.value === 'generic')?.checked ?? true,
                         usage: toggles.find(t => t.value === 'usage')?.checked ?? true,
                         appearance: toggles.find(t => t.value === 'appearance')?.checked ?? true,
+                        nhiCode: toggles.find(t => t.value === 'nhiCode')?.checked ?? false,
                         alternative: toggles.find(t => t.value === 'alternative')?.checked ?? true
                     };
 
@@ -829,6 +885,7 @@
                             ${showCols.generic ? '<th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>' : ''}
                             ${showCols.usage ? '<th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>' : ''}
                             ${showCols.appearance ? '<th class="border border-gray-400 py-2 px-3 text-left">外觀描述</th>' : ''}
+                            ${showCols.nhiCode ? '<th class="border border-gray-400 py-2 px-3 text-left">健保碼</th>' : ''}
                             ${showCols.alternative ? '<th class="border border-gray-400 py-2 px-3 text-left">替代品項 / 備註</th>' : ''}
                         </tr>
                     `;
@@ -848,11 +905,12 @@
                             ${showCols.generic ? `<td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.genericName)}</td>` : ''}
                             ${showCols.usage ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.usage)}</td>` : ''}
                             ${showCols.appearance ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.appearance)}</td>` : ''}
+                            ${showCols.nhiCode ? `<td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.nhiCode)}</td>` : ''}
                             ${showCols.alternative ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.alternative)}</td>` : ''}
                         </tr>
                     `).join('');
                 },
-                updateMetrics: () => { els.medCount.textContent = `共 ${medList.length} 筆紀錄`; }
+                updateMetrics: () => { els.medCount.textContent = `${medList.length} 筆`; }
             };
 
             const setupEvents = () => {
@@ -863,7 +921,8 @@
                         document.querySelectorAll('#med-table-body tr').forEach(tr => {
                             const brand = tr.querySelector('input[data-field="brandName"]').value.toLowerCase();
                             const generic = tr.querySelector('input[data-field="genericName"]').value.toLowerCase();
-                            if (brand.includes(keyword) || generic.includes(keyword)) {
+                            const nhiCode = tr.querySelector('input[data-field="nhiCode"]').value.toLowerCase();
+                            if (brand.includes(keyword) || generic.includes(keyword) || nhiCode.includes(keyword)) {
                                 tr.classList.remove('hidden');
                                 tr.classList.add('md:table-row');
                             } else {
@@ -1023,7 +1082,7 @@
                     medList = storage.load(); ui.renderTable(); setupEvents(); 
                 },
 
-                // 新增：驗證密碼邏輯
+                // 驗證密碼邏輯
                 verifyPassword: () => {
                     if (els.loginPwd.value === '789') {
                         sessionStorage.setItem('medAssistantAuth', 'true');
@@ -1040,7 +1099,37 @@
                     }
                 },
                 
-                // 新增：切換解析模式 UI 與狀態
+                // 動態切換表格欄位顯示 (搭配 CSS 修改)
+                toggleTableCol: (colName, isVisible) => {
+                    colState[colName] = isVisible;
+                    let styleStr = '';
+                    for (let key in colState) {
+                        if (!colState[key]) {
+                            styleStr += `.col-${key} { display: none !important; }\n`;
+                        }
+                    }
+                    els.dynamicColsStyle.innerHTML = styleStr;
+                },
+                
+                // 欄位設定 Modal 互動
+                openColSettingsModal: () => {
+                    els.colSettingsModal.classList.remove('hidden');
+                    els.colSettingsModal.classList.add('flex');
+                    requestAnimationFrame(() => {
+                        els.colSettingsModal.classList.remove('opacity-0');
+                        els.colSettingsContent.classList.remove('scale-95');
+                    });
+                },
+                closeColSettingsModal: () => {
+                    els.colSettingsModal.classList.add('opacity-0');
+                    els.colSettingsContent.classList.add('scale-95');
+                    setTimeout(() => {
+                        els.colSettingsModal.classList.add('hidden');
+                        els.colSettingsModal.classList.remove('flex');
+                    }, 200);
+                },
+
+                // 切換解析模式 UI 與狀態
                 setParseMode: (mode) => {
                     // 切換前先儲存當前模式的文字
                     if (currentParseMode === 'cloud') {
@@ -1059,51 +1148,28 @@
                         btnCloud.classList.remove('text-slate-500', 'hover:text-slate-700');
                         btnUd.classList.remove('bg-white', 'text-primary-600', 'shadow-sm');
                         btnUd.classList.add('text-slate-500', 'hover:text-slate-700');
-                        rawText.placeholder = "貼上雲端藥歷內容...\n範例：\n1. PANADOL 500mg (Acetaminophen) 1顆 TID";
+                        rawText.placeholder = "在此貼上內容...";
                         rawText.value = savedTextCloud; // 載入雲端藥歷文字
                     } else {
                         btnUd.classList.add('bg-white', 'text-primary-600', 'shadow-sm');
                         btnUd.classList.remove('text-slate-500', 'hover:text-slate-700');
                         btnCloud.classList.remove('bg-white', 'text-primary-600', 'shadow-sm');
                         btnCloud.classList.add('text-slate-500', 'hover:text-slate-700');
-                        rawText.placeholder = "貼上UD處方醫囑內容...\n範例：\n115/05/06Propranolol tab 10mg排裝(YL) 1TABBID";
+                        rawText.placeholder = "在此貼上內容...";
                         rawText.value = savedTextUd; // 載入UD處方文字
                     }
                 },
 
                 parseText: () => { parser.process(els.rawText.value); },
-                updateParsedItem: (id, field, value) => {
-                    const item = parsedList.find(i => i.id === id);
-                    if (item) item[field] = value;
-                },
-                addSingleParsedItem: (id) => {
-                    const idx = parsedList.findIndex(i => i.id === id);
-                    if (idx > -1) {
-                        medList.push({ ...parsedList.splice(idx, 1)[0], id: utils.generateId() });
-                        ui.renderParsedList(); ui.renderTable(); storage.save();
-                        utils.showToast('已加入清單');
-                    }
-                },
-                addAllParsedItems: () => {
-                    if (parsedList.length === 0) return;
-                    const newItems = parsedList.map(item => ({ ...item, id: utils.generateId() }));
-                    medList = [...medList, ...newItems];
-                    parsedList = []; 
-                    ui.renderParsedList(); ui.renderTable(); storage.save();
-                    utils.showToast(`已批次加入 ${newItems.length} 筆資料`);
-                    els.rawText.value = '';
-                    // 同步清空暫存文字
-                    if (currentParseMode === 'cloud') savedTextCloud = '';
-                    else savedTextUd = '';
-                },
+                
                 addNewRow: () => {
-                    medList.push({ id: utils.generateId(), brandName: '', genericName: '', usage: '', appearance: '', alternative: '' });
+                    medList.push({ id: utils.generateId(), nhiCode: '', brandName: '', genericName: '', usage: '', appearance: '', alternative: '' });
                     ui.renderTable(); storage.save();
                     setTimeout(() => {
                         const newRow = els.tableBody.lastElementChild;
                         if (newRow) {
                             newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            newRow.querySelector('input').focus();
+                            newRow.querySelector('input[data-field="brandName"]').focus();
                         }
                     }, 100);
                 },
@@ -1112,33 +1178,30 @@
                     ui.renderTable(); storage.save();
                     utils.showToast('已刪除紀錄', 'info');
                 },
-                // --- 新增：批次刪除與勾選邏輯 ---
+                // 批次刪除與勾選邏輯
                 toggleSelectAll: (checkbox) => {
-                    // 每一列在桌機/手機各有一個勾選框，兩者必須同步，避免取消桌機勾選後仍殘留隱藏的手機版勾選框。
                     document.querySelectorAll('#med-table-body tr').forEach(tr => {
                         tr.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checkbox.checked);
                     });
                     api.updateBatchDeleteBtn();
                 },
                 updateBatchDeleteBtn: () => {
-                    // 以「列」為單位計算選取狀態，而不是直接計算 checkbox 數量。
-                    // 每列有桌機/手機兩個 checkbox，直接計數會導致全選後取消部分選取時判斷錯誤。
                     const rows = Array.from(document.querySelectorAll('#med-table-body tr'));
                     const selectedRows = rows.filter(tr => tr.querySelector('.row-checkbox')?.checked);
                     const checkedCount = selectedRows.length;
+                    
                     if (checkedCount > 0) {
-                        els.batchDeleteBtn.classList.remove('hidden');
-                        els.batchDeleteBtn.classList.add('flex');
+                        els.batchActions.classList.remove('hidden');
+                        els.batchActions.classList.add('flex');
                     } else {
-                        els.batchDeleteBtn.classList.add('hidden');
-                        els.batchDeleteBtn.classList.remove('flex');
+                        els.batchActions.classList.add('hidden');
+                        els.batchActions.classList.remove('flex');
                     }
                     if (els.selectAllCheckbox) {
                         els.selectAllCheckbox.checked = (checkedCount === rows.length && rows.length > 0);
                     }
                 },
                 deleteSelected: () => {
-                    // 直接從每一列取得目前「實際選取」的狀態，避免桌機/手機雙 checkbox 造成重複或殘留選取。
                     const checkedIds = Array.from(document.querySelectorAll('#med-table-body tr'))
                         .filter(tr => tr.querySelector('.row-checkbox')?.checked)
                         .map(tr => tr.dataset.id);
@@ -1156,11 +1219,33 @@
                         medList = medList.filter(m => !checkedIds.includes(m.id));
                         ui.renderTable(); 
                         storage.save();
-                        utils.showToast(`已批次刪除 ${checkedIds.length} 筆紀錄`, 'info');
+                        utils.showToast(`已刪除 ${checkedIds.length} 筆已勾選紀錄`, 'info');
+                    }, 200);
+                },
+                // 刪除未勾選
+                deleteUnselected: () => {
+                    const uncheckedIds = Array.from(document.querySelectorAll('#med-table-body tr'))
+                        .filter(tr => !tr.querySelector('.row-checkbox')?.checked)
+                        .map(tr => tr.dataset.id);
+                    if (uncheckedIds.length === 0) return;
+                    
+                    uncheckedIds.forEach(id => {
+                        const tr = document.querySelector(`tr[data-id="${id}"]`);
+                        if(tr) {
+                            tr.style.opacity = '0';
+                            tr.style.transform = 'translateY(-10px)';
+                        }
+                    });
+                    
+                    setTimeout(() => {
+                        medList = medList.filter(m => !uncheckedIds.includes(m.id));
+                        ui.renderTable(); 
+                        storage.save();
+                        utils.showToast(`已清理 ${uncheckedIds.length} 筆未勾選紀錄`, 'info');
                     }, 200);
                 },
 
-                // 新增：依商品名刪除重複藥品，只保留第一筆資料
+                // 依商品名刪除重複藥品，只保留第一筆資料
                 deleteDuplicates: () => {
                     const seen = new Set();
                     const originalCount = medList.length;
@@ -1190,7 +1275,7 @@
                     utils.showToast(`已刪除 ${duplicates.length} 筆重複藥品，保留 ${originalCount - duplicates.length} 筆資料`);
                 },
                 
-                // --- 修改：客製化清空確認視窗 (取代 Confirm) ---
+                // 客製化清空確認視窗
                 openConfirmModal: () => {
                     els.confirmModal.classList.remove('hidden');
                     els.confirmModal.classList.add('flex');
@@ -1208,9 +1293,9 @@
                     }, 200);
                 },
                 executeClearData: () => {
-                    medList = []; parsedList = []; els.rawText.value = '';
+                    medList = []; els.rawText.value = '';
                     savedTextCloud = ''; savedTextUd = ''; // 同步清空暫存的輸入內容
-                    ui.renderTable(); ui.renderParsedList(); storage.save();
+                    ui.renderTable(); storage.save();
                     api.closeConfirmModal();
                     utils.showToast('資料已清空', 'info');
                 },
@@ -1236,7 +1321,7 @@
                 },
                 clearAllData: () => { api.openConfirmModal(); },
 
-                // 新增：更新清單標題 (UI與列印同步)
+                // 更新清單標題 (UI與列印同步)
                 updateListTitle: () => {
                     const chk1 = document.getElementById('chk-title-1')?.checked;
                     const chk2 = document.getElementById('chk-title-2')?.checked;
@@ -1253,7 +1338,7 @@
                     if(printTitle) printTitle.textContent = `病患${prefixStr}藥物清單`;
                 },
 
-                // --- 修改：列印預覽機制 (解決 iframe 阻擋問題) ---
+                // 列印預覽機制 (解決 iframe 阻擋問題)
                 openPrintView: () => {
                     ui.updatePrintView();
                     els.appUi.classList.add('hidden');
@@ -1273,7 +1358,7 @@
                     if(bottomNav) bottomNav.classList.remove('hidden');
                 },
 
-                // 新增：列印標籤預覽機制
+                // 列印標籤預覽機制
                 openPrintLabelView: () => {
                     ui.updatePrintLabelView();
                     els.appUi.classList.add('hidden');
@@ -1293,21 +1378,22 @@
                     if(bottomNav) bottomNav.classList.remove('hidden');
                 },
 
-                // 新增：將 updatePrintView 暴露給全域 app 物件，解決 onchange 呼叫不到的問題
+                // 將 updatePrintView 暴露給全域 app 物件，解決 onchange 呼叫不到的問題
                 updatePrintView: () => {
                     ui.updatePrintView();
                 },
 
-                // 匯出 CSV 檔案功能 (取代複製)
+                // 匯出 CSV 檔案功能 (新增健保碼)
                 exportToCSV: () => {
                     if (medList.length === 0) { utils.showToast('沒有資料可匯出', 'info'); return; }
                     
                     // 加上 BOM 確保 Excel 開啟不會亂碼
-                    let csvContent = "\uFEFF序號,商品名,學名/成分,用法用量,外觀描述,替代品項/備註\n";
+                    let csvContent = "\uFEFF序號,健保碼,商品名,學名/成分,用法用量,外觀描述,替代品項/備註\n";
                     
                     medList.forEach((med, i) => {
                         const row = [
                             i + 1,
+                            med.nhiCode,
                             med.brandName,
                             med.genericName,
                             med.usage,
@@ -1334,7 +1420,7 @@
                     utils.showToast('已成功下載 CSV 檔案！');
                 },
 
-                // 新增：複製純文字內容功能
+                // 複製純文字內容功能
                 copyTextContent: () => {
                     if (medList.length === 0) { utils.showToast('沒有資料可複製', 'info'); return; }
                     
