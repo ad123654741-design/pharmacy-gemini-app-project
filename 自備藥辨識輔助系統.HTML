@@ -256,11 +256,16 @@
                             <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 w-28 md:w-36 transition-all">
                         </div>
 
-                        <!-- 欄位顯示設定按鈕 (呼叫 Modal) -->
-                        <div class="hidden sm:block">
-                            <button onclick="app.openColSettingsModal()" class="text-[11px] md:text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 md:px-3 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200/50 transition-colors">
-                                <i class="ph ph-columns"></i> 欄位
+                        <!-- 切換視圖與欄位設定 -->
+                        <div class="hidden sm:flex items-center gap-2 border-r border-slate-200 pr-2 mr-1">
+                            <button id="view-mode-btn" onclick="app.toggleViewMode()" class="text-[11px] md:text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 md:px-3 py-1.5 rounded-lg flex items-center gap-1 border border-indigo-200/50 transition-colors">
+                                <i class="ph ph-image" id="view-mode-icon"></i> <span id="view-mode-text">圖片模式</span>
                             </button>
+                            <div id="col-settings-wrapper" class="flex">
+                                <button onclick="app.openColSettingsModal()" class="text-[11px] md:text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 md:px-3 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200/50 transition-colors">
+                                    <i class="ph ph-columns"></i> 欄位
+                                </button>
+                            </div>
                         </div>
 
                         <!-- 批次刪除按鈕群組 (勾選時顯示) -->
@@ -270,17 +275,20 @@
                         </div>
                         
                         <!-- 刪除重複與手動新增按鈕 -->
-                        <div class="flex items-center gap-1 border-l border-slate-200 pl-1">
+                        <div class="flex items-center gap-1">
                             <button onclick="app.deleteDuplicates()" class="text-[11px] md:text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg border border-amber-200/50 transition-all duration-200 flex items-center gap-1" title="依商品名刪除重複藥品，只保留第一筆"><i class="ph ph-copy"></i> <span class="hidden sm:inline">刪除重複</span></button>
-                            <button onclick="app.addNewRow()" class="text-[11px] md:text-xs font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 px-2 py-1.5 rounded-lg border border-primary-200/50 transition-all duration-200 flex items-center gap-1" title="手動新增一筆空白藥品"><i class="ph ph-plus-circle text-sm md:text-base"></i> <span class="hidden sm:inline">新增</span></button>
+                            <div id="add-btn-wrapper" class="flex">
+                                <button onclick="app.addNewRow()" class="text-[11px] md:text-xs font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 px-2 py-1.5 rounded-lg border border-primary-200/50 transition-all duration-200 flex items-center gap-1" title="手動新增一筆空白藥品"><i class="ph ph-plus-circle text-sm md:text-base"></i> <span class="hidden sm:inline">新增</span></button>
+                            </div>
                         </div>
                         <span id="med-count" class="text-[11px] md:text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1.5 rounded-lg border border-slate-200/50 transition-all duration-200">0 筆</span>
                     </div>
                 </div>
                 
-                <!-- 表格容器 -->
-                <div class="flex-1 overflow-auto bg-slate-50/30 p-2 md:p-0">
-                    <table class="w-full text-left border-collapse min-w-[800px]">
+                <!-- 表格與圖片網格容器 -->
+                <div class="flex-1 overflow-auto bg-slate-50/30 p-2 md:p-0 relative">
+                    <!-- 表格模式 -->
+                    <table id="med-table-container" class="w-full text-left border-collapse min-w-[800px]">
                         <thead class="hidden md:table-header-group bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm border-b border-slate-200/80 text-xs text-slate-500 font-medium tracking-wider">
                             <tr>
                                 <th class="py-3 px-3 w-10 text-center"><input type="checkbox" id="select-all" onchange="app.toggleSelectAll(this)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4"></th>
@@ -299,6 +307,11 @@
                             <!-- 藥品列將透過 JS 動態生成 -->
                         </tbody>
                     </table>
+
+                    <!-- 圖片模式網格 (預設隱藏) -->
+                    <div id="med-grid-body" class="hidden grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-4 pb-8">
+                        <!-- 圖片卡片將透過 JS 動態生成 -->
+                    </div>
                     
                     <!-- 空狀態提示 (加入淡入動畫) -->
                     <div id="empty-state" class="hidden flex-col items-center justify-center py-12 md:py-24 text-slate-400 animate-fade-in-up h-full min-h-[200px]">
@@ -379,7 +392,7 @@
             <table class="w-full border-collapse border border-gray-400 text-sm">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="border border-gray-400 py-2 px-3 text-left">序號</th>
+                        <th class="border border-gray-400 py-2 px-3 text-left w-12">序號</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">商品名</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>
@@ -505,6 +518,7 @@
             let currentParseMode = 'cloud'; // 紀錄當前清理模式
             let savedTextCloud = ''; // 儲存雲端藥歷文字
             let savedTextUd = ''; // 儲存UD處方文字
+            let currentViewMode = 'table'; // 狀態：'table' 或是 'grid' 圖片模式
             
             // 定義表格欄位顯示狀態 (替代/備註、健保碼預設隱藏)
             let colState = {
@@ -518,7 +532,14 @@
             };
 
             const els = {
+                tableContainer: document.getElementById('med-table-container'),
                 tableBody: document.getElementById('med-table-body'),
+                gridBody: document.getElementById('med-grid-body'),
+                viewModeBtn: document.getElementById('view-mode-btn'),
+                viewModeIcon: document.getElementById('view-mode-icon'),
+                viewModeText: document.getElementById('view-mode-text'),
+                colSettingsWrapper: document.getElementById('col-settings-wrapper'),
+                addBtnWrapper: document.getElementById('add-btn-wrapper'),
                 emptyState: document.getElementById('empty-state'),
                 medCount: document.getElementById('med-count'),
                 rawText: document.getElementById('rawText'),
@@ -764,9 +785,12 @@
 
                     if (medList.length === 0) {
                         els.tableBody.innerHTML = '';
+                        if (els.gridBody) els.gridBody.innerHTML = '';
                         els.emptyState.classList.remove('hidden'); els.emptyState.classList.add('flex');
                     } else {
                         els.emptyState.classList.add('hidden'); els.emptyState.classList.remove('flex');
+                        
+                        // 1. 渲染表格模式
                         els.tableBody.innerHTML = medList.map((med, index) => `
                             <tr draggable="false" data-drag-armed="false" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-none rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative shadow-sm md:shadow-none hover:bg-slate-50/80 md:hover:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
                                 <!-- 拖曳手把與勾選框 (桌機) -->
@@ -788,7 +812,7 @@
                                         </button>
                                     </div>
                                 </td>
-                                <!-- 新增：外觀圖示欄位 -->
+                                <!-- 外觀圖示欄位 -->
                                 <td class="col-img flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2 border-b border-slate-50 md:border-none text-center">
                                     <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">外觀圖</span>
                                     <div class="flex-1 md:flex-none flex justify-start md:justify-center">
@@ -830,6 +854,30 @@
                                 </td>
                             </tr>
                         `).join('');
+
+                        // 2. 渲染圖片網格模式
+                        if (els.gridBody) {
+                            els.gridBody.innerHTML = medList.map((med, index) => `
+                                <div class="med-card group relative bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex flex-col hover:shadow-md hover:border-primary-300 transition-all duration-200 animate-fade-in-up" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
+                                    <div class="absolute top-2 left-2 z-10 bg-white/80 backdrop-blur-sm rounded-md p-0.5 shadow-sm">
+                                        <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4 transition-all" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                    </div>
+                                    <button class="delete-btn absolute top-2 right-2 z-10 text-slate-400 hover:text-red-500 bg-white/80 backdrop-blur-sm hover:bg-red-50 rounded-md p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-all" title="刪除">
+                                        <i class="ph ph-trash text-lg pointer-events-none"></i>
+                                    </button>
+                                    
+                                    <div class="w-full aspect-square bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 mb-2 overflow-hidden relative cursor-pointer hover:opacity-90 transition-opacity" title="點擊檢視外觀圖 (未來串接)">
+                                        <i class="ph ph-image text-4xl text-slate-300"></i>
+                                        <!-- 未來這裡可串接: <img src="URL" class="w-full h-full object-cover"> -->
+                                    </div>
+                                    
+                                    <div class="flex flex-col flex-1 gap-1">
+                                        <div class="brand-name font-bold text-sm text-slate-800 leading-tight line-clamp-2" title="${utils.escapeHtml(med.brandName)}">${utils.escapeHtml(med.brandName) || '<span class="text-slate-400 font-normal">未命名商品</span>'}</div>
+                                        <div class="appearance-desc text-xs text-slate-500 leading-snug line-clamp-2" title="${utils.escapeHtml(med.appearance)}">${utils.escapeHtml(med.appearance) || '無外觀描述'}</div>
+                                    </div>
+                                </div>
+                            `).join('');
+                        }
                     }
                     ui.updateMetrics();
                     ui.updatePrintView();
@@ -914,10 +962,11 @@
             };
 
             const setupEvents = () => {
-                // 即時搜尋與過濾
+                // 即時搜尋與過濾 (同步過濾清單與網格)
                 if (els.searchInput) {
                     els.searchInput.addEventListener('input', (e) => {
                         const keyword = e.target.value.toLowerCase();
+                        // 1. 過濾清單表格
                         document.querySelectorAll('#med-table-body tr').forEach(tr => {
                             const brand = tr.querySelector('input[data-field="brandName"]').value.toLowerCase();
                             const generic = tr.querySelector('input[data-field="genericName"]').value.toLowerCase();
@@ -930,6 +979,18 @@
                                 tr.classList.remove('md:table-row');
                             }
                         });
+                        // 2. 過濾圖片網格
+                        if (els.gridBody) {
+                            document.querySelectorAll('#med-grid-body .med-card').forEach(card => {
+                                const brand = card.querySelector('.brand-name').textContent.toLowerCase();
+                                const appearance = card.querySelector('.appearance-desc').textContent.toLowerCase();
+                                if (brand.includes(keyword) || appearance.includes(keyword)) {
+                                    card.classList.remove('hidden');
+                                } else {
+                                    card.classList.add('hidden');
+                                }
+                            });
+                        }
                     });
                 }
 
@@ -1018,6 +1079,7 @@
                     });
                 });
 
+                // 表格內容直接編輯即時存檔
                 els.tableBody.addEventListener('input', (e) => {
                     if (e.target.classList.contains('table-input')) {
                         const tr = e.target.closest('tr');
@@ -1029,40 +1091,52 @@
                         }
                     }
                 });
-                els.tableBody.addEventListener('click', (e) => {
-                    // Shift+Click 多選邏輯；每一列只視為一個選取單位，並同步桌機/手機兩個 checkbox。
+
+                // 共用的點擊事件處理 (處理清單與圖片網格中的 checkbox 和刪除)
+                const handleItemClick = (e, container, itemSelector) => {
+                    // 勾選框同步與 Shift 多選
                     if (e.target.classList.contains('row-checkbox')) {
-                        const currentRow = e.target.closest('tr');
-                        const rows = Array.from(els.tableBody.querySelectorAll('tr'));
-                        const currentIndex = rows.indexOf(currentRow);
+                        const currentItem = e.target.closest(itemSelector);
+                        const items = Array.from(container.querySelectorAll(itemSelector));
+                        const currentIndex = items.indexOf(currentItem);
                         const isChecked = e.target.checked;
+                        const medId = e.target.value;
 
-                        if (currentRow) {
-                            currentRow.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
-                        }
+                        // 核心：同步更新相同 ID 的所有勾選框 (跨越桌機/手機欄位，或跨列表/網格隱藏狀態)
+                        document.querySelectorAll(`.row-checkbox[value="${medId}"]`).forEach(cb => cb.checked = isChecked);
 
+                        // Shift 多選邏輯
                         if (e.shiftKey && lastCheckedIndex !== null) {
                             const start = Math.min(currentIndex, lastCheckedIndex);
                             const end = Math.max(currentIndex, lastCheckedIndex);
                             for (let i = start; i <= end; i++) {
-                                rows[i].querySelectorAll('.row-checkbox').forEach(cb => cb.checked = isChecked);
+                                const idToSync = items[i].dataset.id;
+                                document.querySelectorAll(`.row-checkbox[value="${idToSync}"]`).forEach(cb => cb.checked = isChecked);
                             }
                         }
                         lastCheckedIndex = currentIndex;
                         api.updateBatchDeleteBtn();
                     }
 
+                    // 單筆刪除
                     const btn = e.target.closest('.delete-btn');
                     if (btn) {
-                        const tr = btn.closest('tr');
-                        // 加上平滑淡出動畫後再刪除
-                        tr.style.opacity = '0';
-                        tr.style.transform = 'translateY(-10px)';
+                        const item = btn.closest(itemSelector);
+                        // 讓它淡出
+                        item.style.opacity = '0';
+                        item.style.transform = 'translateY(-10px)';
+                        // 同步把另一個視圖的元素也淡出
+                        const mirrorItems = document.querySelectorAll(`[data-id="${item.dataset.id}"]`);
+                        mirrorItems.forEach(mi => { mi.style.opacity = '0'; mi.style.transform = 'translateY(-10px)'; });
+
                         setTimeout(() => {
-                            api.deleteRow(tr.dataset.id);
-                        }, 200); // 對應 transition 延遲
+                            api.deleteRow(item.dataset.id);
+                        }, 200); 
                     }
-                });
+                };
+
+                els.tableBody.addEventListener('click', (e) => handleItemClick(e, els.tableBody, 'tr'));
+                if (els.gridBody) els.gridBody.addEventListener('click', (e) => handleItemClick(e, els.gridBody, '.med-card'));
             };
 
             const api = {
@@ -1082,7 +1156,6 @@
                     medList = storage.load(); ui.renderTable(); setupEvents(); 
                 },
 
-                // 驗證密碼邏輯
                 verifyPassword: () => {
                     if (els.loginPwd.value === '789') {
                         sessionStorage.setItem('medAssistantAuth', 'true');
@@ -1129,9 +1202,54 @@
                     }, 200);
                 },
 
+                // 視圖模式切換 (清單 / 圖片)
+                toggleViewMode: () => {
+                    currentViewMode = currentViewMode === 'table' ? 'grid' : 'table';
+                    
+                    if (currentViewMode === 'grid') {
+                        // 轉換為圖片模式
+                        els.tableContainer.classList.add('hidden');
+                        els.gridBody.classList.remove('hidden');
+                        els.gridBody.classList.add('grid');
+                        
+                        // 隱藏不必要的按鈕
+                        els.colSettingsWrapper.classList.add('hidden');
+                        els.colSettingsWrapper.classList.remove('flex');
+                        els.addBtnWrapper.classList.add('hidden');
+                        els.addBtnWrapper.classList.remove('flex');
+
+                        // 更新按鈕外觀
+                        els.viewModeIcon.className = 'ph ph-list-bullets';
+                        els.viewModeText.textContent = '清單模式';
+                        els.viewModeBtn.classList.replace('bg-indigo-50', 'bg-blue-50');
+                        els.viewModeBtn.classList.replace('text-indigo-700', 'text-blue-700');
+                        els.viewModeBtn.classList.replace('border-indigo-200/50', 'border-blue-200/50');
+                    } else {
+                        // 轉換回清單模式
+                        els.tableContainer.classList.remove('hidden');
+                        els.gridBody.classList.add('hidden');
+                        els.gridBody.classList.remove('grid');
+                        
+                        // 恢復顯示按鈕
+                        els.colSettingsWrapper.classList.remove('hidden');
+                        els.colSettingsWrapper.classList.add('flex');
+                        els.addBtnWrapper.classList.remove('hidden');
+                        els.addBtnWrapper.classList.add('flex');
+
+                        // 更新按鈕外觀
+                        els.viewModeIcon.className = 'ph ph-image';
+                        els.viewModeText.textContent = '圖片模式';
+                        els.viewModeBtn.classList.replace('bg-blue-50', 'bg-indigo-50');
+                        els.viewModeBtn.classList.replace('text-blue-700', 'text-indigo-700');
+                        els.viewModeBtn.classList.replace('border-blue-200/50', 'border-indigo-200/50');
+                    }
+                    
+                    // 重新計算當下畫面中勾選的按鈕數量
+                    api.updateBatchDeleteBtn();
+                },
+
                 // 切換解析模式 UI 與狀態
                 setParseMode: (mode) => {
-                    // 切換前先儲存當前模式的文字
                     if (currentParseMode === 'cloud') {
                         savedTextCloud = els.rawText.value;
                     } else {
@@ -1149,14 +1267,14 @@
                         btnUd.classList.remove('bg-white', 'text-primary-600', 'shadow-sm');
                         btnUd.classList.add('text-slate-500', 'hover:text-slate-700');
                         rawText.placeholder = "在此貼上內容...";
-                        rawText.value = savedTextCloud; // 載入雲端藥歷文字
+                        rawText.value = savedTextCloud;
                     } else {
                         btnUd.classList.add('bg-white', 'text-primary-600', 'shadow-sm');
                         btnUd.classList.remove('text-slate-500', 'hover:text-slate-700');
                         btnCloud.classList.remove('bg-white', 'text-primary-600', 'shadow-sm');
                         btnCloud.classList.add('text-slate-500', 'hover:text-slate-700');
                         rawText.placeholder = "在此貼上內容...";
-                        rawText.value = savedTextUd; // 載入UD處方文字
+                        rawText.value = savedTextUd; 
                     }
                 },
 
@@ -1178,17 +1296,18 @@
                     ui.renderTable(); storage.save();
                     utils.showToast('已刪除紀錄', 'info');
                 },
-                // 批次刪除與勾選邏輯
+
+                // 批次選取與刪除 (與當前模式聯動)
                 toggleSelectAll: (checkbox) => {
-                    document.querySelectorAll('#med-table-body tr').forEach(tr => {
-                        tr.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checkbox.checked);
-                    });
+                    document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checkbox.checked);
                     api.updateBatchDeleteBtn();
                 },
                 updateBatchDeleteBtn: () => {
-                    const rows = Array.from(document.querySelectorAll('#med-table-body tr'));
-                    const selectedRows = rows.filter(tr => tr.querySelector('.row-checkbox')?.checked);
-                    const checkedCount = selectedRows.length;
+                    // 只計算當前「活躍畫面」的選取數量，避免隱藏的畫面影響判斷
+                    const activeContainer = currentViewMode === 'table' ? els.tableBody : els.gridBody;
+                    const items = Array.from(activeContainer.querySelectorAll(currentViewMode === 'table' ? 'tr' : '.med-card'));
+                    const selectedItems = items.filter(el => el.querySelector('.row-checkbox')?.checked);
+                    const checkedCount = selectedItems.length;
                     
                     if (checkedCount > 0) {
                         els.batchActions.classList.remove('hidden');
@@ -1198,21 +1317,22 @@
                         els.batchActions.classList.remove('flex');
                     }
                     if (els.selectAllCheckbox) {
-                        els.selectAllCheckbox.checked = (checkedCount === rows.length && rows.length > 0);
+                        els.selectAllCheckbox.checked = (checkedCount === items.length && items.length > 0);
                     }
                 },
                 deleteSelected: () => {
-                    const checkedIds = Array.from(document.querySelectorAll('#med-table-body tr'))
-                        .filter(tr => tr.querySelector('.row-checkbox')?.checked)
-                        .map(tr => tr.dataset.id);
+                    const activeSelector = currentViewMode === 'table' ? '#med-table-body tr' : '#med-grid-body .med-card';
+                    const checkedIds = Array.from(document.querySelectorAll(activeSelector))
+                        .filter(el => el.querySelector('.row-checkbox')?.checked)
+                        .map(el => el.dataset.id);
+
                     if (checkedIds.length === 0) return;
                     
                     checkedIds.forEach(id => {
-                        const tr = document.querySelector(`tr[data-id="${id}"]`);
-                        if(tr) {
-                            tr.style.opacity = '0';
-                            tr.style.transform = 'translateY(-10px)';
-                        }
+                        document.querySelectorAll(`[data-id="${id}"]`).forEach(item => {
+                            item.style.opacity = '0';
+                            item.style.transform = 'translateY(-10px)';
+                        });
                     });
                     
                     setTimeout(() => {
@@ -1222,19 +1342,19 @@
                         utils.showToast(`已刪除 ${checkedIds.length} 筆已勾選紀錄`, 'info');
                     }, 200);
                 },
-                // 刪除未勾選
                 deleteUnselected: () => {
-                    const uncheckedIds = Array.from(document.querySelectorAll('#med-table-body tr'))
-                        .filter(tr => !tr.querySelector('.row-checkbox')?.checked)
-                        .map(tr => tr.dataset.id);
+                    const activeSelector = currentViewMode === 'table' ? '#med-table-body tr' : '#med-grid-body .med-card';
+                    const uncheckedIds = Array.from(document.querySelectorAll(activeSelector))
+                        .filter(el => !el.querySelector('.row-checkbox')?.checked)
+                        .map(el => el.dataset.id);
+
                     if (uncheckedIds.length === 0) return;
                     
                     uncheckedIds.forEach(id => {
-                        const tr = document.querySelector(`tr[data-id="${id}"]`);
-                        if(tr) {
-                            tr.style.opacity = '0';
-                            tr.style.transform = 'translateY(-10px)';
-                        }
+                         document.querySelectorAll(`[data-id="${id}"]`).forEach(item => {
+                            item.style.opacity = '0';
+                            item.style.transform = 'translateY(-10px)';
+                        });
                     });
                     
                     setTimeout(() => {
@@ -1253,7 +1373,6 @@
 
                     medList.forEach(med => {
                         const brandName = String(med.brandName || '').trim();
-                        // 商品名為空白時不列入重複判斷，避免所有空白資料被視為同一筆。
                         if (!brandName) return;
 
                         const key = brandName.toLowerCase();
@@ -1294,13 +1413,13 @@
                 },
                 executeClearData: () => {
                     medList = []; els.rawText.value = '';
-                    savedTextCloud = ''; savedTextUd = ''; // 同步清空暫存的輸入內容
+                    savedTextCloud = ''; savedTextUd = ''; 
                     ui.renderTable(); storage.save();
                     api.closeConfirmModal();
                     utils.showToast('資料已清空', 'info');
                 },
 
-                // 依商品名排序；再次點擊可切換升冪/降冪。
+                // 依商品名排序
                 sortByBrand: () => {
                     const ascending = brandSortAscending;
                     medList.sort((a, b) => {
@@ -1321,7 +1440,7 @@
                 },
                 clearAllData: () => { api.openConfirmModal(); },
 
-                // 更新清單標題 (UI與列印同步)
+                // 更新清單標題
                 updateListTitle: () => {
                     const chk1 = document.getElementById('chk-title-1')?.checked;
                     const chk2 = document.getElementById('chk-title-2')?.checked;
@@ -1338,7 +1457,7 @@
                     if(printTitle) printTitle.textContent = `病患${prefixStr}藥物清單`;
                 },
 
-                // 列印預覽機制 (解決 iframe 阻擋問題)
+                // 列印預覽機制
                 openPrintView: () => {
                     ui.updatePrintView();
                     els.appUi.classList.add('hidden');
@@ -1378,16 +1497,15 @@
                     if(bottomNav) bottomNav.classList.remove('hidden');
                 },
 
-                // 將 updatePrintView 暴露給全域 app 物件，解決 onchange 呼叫不到的問題
+                // 將 updatePrintView 暴露給全域 app 物件
                 updatePrintView: () => {
                     ui.updatePrintView();
                 },
 
-                // 匯出 CSV 檔案功能 (新增健保碼)
+                // 匯出 CSV 檔案
                 exportToCSV: () => {
                     if (medList.length === 0) { utils.showToast('沒有資料可匯出', 'info'); return; }
                     
-                    // 加上 BOM 確保 Excel 開啟不會亂碼
                     let csvContent = "\uFEFF序號,健保碼,商品名,學名/成分,用法用量,外觀描述,替代品項/備註\n";
                     
                     medList.forEach((med, i) => {
@@ -1399,7 +1517,7 @@
                             med.usage,
                             med.appearance,
                             med.alternative
-                        ].map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(","); // 確保轉換為字串後再處理引號跳脫
+                        ].map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(","); 
                         csvContent += row + "\n";
                     });
 
@@ -1441,7 +1559,6 @@
 
                     if (!textStr) { utils.showToast('沒有商品名或用法用量可供複製', 'info'); return; }
 
-                    // 使用 Clipboard API，若環境不支援則提供 Fallback
                     try {
                         navigator.clipboard.writeText(textStr.trim()).then(() => {
                             utils.showToast('內容已複製！可直接貼上至 Word');
