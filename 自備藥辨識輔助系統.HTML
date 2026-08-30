@@ -316,6 +316,17 @@
             </div>
         </div>
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 print-hide max-w-5xl mx-auto border-b border-slate-200 pb-4 gap-4">
+            <div>
+                <h3 class="text-sm font-bold text-slate-700 mb-2">自訂列印顯示欄位：</h3>
+                <div class="flex flex-wrap gap-4 text-sm text-slate-600" id="print-col-toggles">
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="brand" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 商品名</label>
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="generic" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 學名/成分</label>
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="usage" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 用法用量</label>
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="appearance" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 外觀描述</label>
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" value="nhicode" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 健保碼</label>
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" value="alternative" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 替代品項/備註</label>
+                </div>
+            </div>
             <div class="flex gap-3 shrink-0 ml-auto">
                 <button onclick="app.closePrintView()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">返回編輯</button>
                 <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-colors shadow-sm">
@@ -329,15 +340,8 @@
                 <p class="text-gray-600">列印日期：<span id="print-date"></span></p>
             </div>
             <table class="w-full border-collapse border border-gray-400 text-sm">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border border-gray-400 py-2 px-3 text-left">序號</th>
-                        <th class="border border-gray-400 py-2 px-3 text-left">商品名</th>
-                        <th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>
-                        <th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>
-                        <th class="border border-gray-400 py-2 px-3 text-left">外觀描述</th>
-                        <th class="border border-gray-400 py-2 px-3 text-left">替代品項 / 備註</th>
-                    </tr>
+                <thead class="bg-gray-100" id="print-table-head">
+                    <!-- 列印表頭動態生成 -->
                 </thead>
                 <tbody id="print-table-body">
                     <!-- 列印內容動態生成 -->
@@ -622,20 +626,50 @@
                         const today = new Date();
                         printDate.textContent = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
                     }
+                    const printTableHead = document.getElementById('print-table-head');
                     const printTableBody = document.getElementById('print-table-body');
-                    if(!printTableBody) return;
+                    if(!printTableHead || !printTableBody) return;
+
+                    // 取得列印勾選設定
+                    const toggles = Array.from(document.querySelectorAll('#print-col-toggles input[type="checkbox"]'));
+                    const showCols = {
+                        brand: toggles.find(t => t.value === 'brand')?.checked ?? true,
+                        generic: toggles.find(t => t.value === 'generic')?.checked ?? true,
+                        usage: toggles.find(t => t.value === 'usage')?.checked ?? true,
+                        appearance: toggles.find(t => t.value === 'appearance')?.checked ?? true,
+                        nhicode: toggles.find(t => t.value === 'nhicode')?.checked ?? false,
+                        alternative: toggles.find(t => t.value === 'alternative')?.checked ?? false
+                    };
+
+                    // 動態生成表頭
+                    printTableHead.innerHTML = `
+                        <tr>
+                            <th class="border border-gray-400 py-2 px-3 text-left w-12">序號</th>
+                            ${showCols.brand ? '<th class="border border-gray-400 py-2 px-3 text-left">商品名</th>' : ''}
+                            ${showCols.generic ? '<th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>' : ''}
+                            ${showCols.usage ? '<th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>' : ''}
+                            ${showCols.appearance ? '<th class="border border-gray-400 py-2 px-3 text-left">外觀描述</th>' : ''}
+                            ${showCols.nhicode ? '<th class="border border-gray-400 py-2 px-3 text-left">健保碼</th>' : ''}
+                            ${showCols.alternative ? '<th class="border border-gray-400 py-2 px-3 text-left">替代品項 / 備註</th>' : ''}
+                        </tr>
+                    `;
+
                     if (medList.length === 0) {
-                        printTableBody.innerHTML = `<tr><td colspan="6" class="border border-gray-400 py-4 text-center text-gray-500">無藥品紀錄</td></tr>`;
+                        const colCount = 1 + Object.values(showCols).filter(Boolean).length;
+                        printTableBody.innerHTML = `<tr><td colspan="${colCount}" class="border border-gray-400 py-4 text-center text-gray-500">無藥品紀錄</td></tr>`;
                         return;
                     }
+                    
+                    // 動態生成內容
                     printTableBody.innerHTML = medList.map((med, i) => `
                         <tr>
                             <td class="border border-gray-400 py-2 px-3 text-center">${i + 1}</td>
-                            <td class="border border-gray-400 py-2 px-3 font-medium">${utils.escapeHtml(med.brandName)}</td>
-                            <td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.genericName)}</td>
-                            <td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.usage)}</td>
-                            <td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.appearance)}</td>
-                            <td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.alternative)}</td>
+                            ${showCols.brand ? `<td class="border border-gray-400 py-2 px-3 font-medium">${utils.escapeHtml(med.brandName)}</td>` : ''}
+                            ${showCols.generic ? `<td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.genericName)}</td>` : ''}
+                            ${showCols.usage ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.usage)}</td>` : ''}
+                            ${showCols.appearance ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.appearance)}</td>` : ''}
+                            ${showCols.nhicode ? `<td class="border border-gray-400 py-2 px-3 text-gray-600 uppercase font-mono">${utils.escapeHtml(med.nhiCode)}</td>` : ''}
+                            ${showCols.alternative ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.alternative)}</td>` : ''}
                         </tr>
                     `).join('');
                 },
@@ -822,7 +856,6 @@
                     }
                 },
                 toggleViewMode: () => {
-                    // --- 修正：確保在切換模式前，強制抓取輸入框的最新值寫入 medList (避免輸入法組字未觸發 input 事件造成遺失) ---
                     if (!isImageMode) {
                         document.querySelectorAll('#med-table-body tr').forEach(tr => {
                             const id = tr.dataset.id;
@@ -1005,6 +1038,9 @@
                     if(printTitle) printTitle.textContent = `病患${prefixStr}藥物清單`;
                 }
             };
+
+            // 將 updatePrintView 暴露至 app 以便 input onchange 呼叫
+            api.updatePrintView = ui.updatePrintView;
 
             return api;
         })();
