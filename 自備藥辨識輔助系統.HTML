@@ -29,65 +29,56 @@
         }
     </script>
     <style>
-        /* --- 自訂樣式與優化 --- */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600&display=swap');
 
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: theme('colors.background'); overscroll-behavior-y: none; }
 
-        /* 優雅的滾動條 (桌機版適用) */
+        /* 動態欄位隱藏設定 (新增 col-image 處理外觀圖) */
+        body:not(.show-col-image) .col-image,
+        body:not(.show-col-generic) .col-generic,
+        body:not(.show-col-usage) .col-usage,
+        body:not(.show-col-appearance) .col-appearance,
+        body:not(.show-col-nhicode) .col-nhicode,
+        body:not(.show-col-alternative) .col-alternative {
+            display: none !important;
+        }
+
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; transition: background 0.2s; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* 表格輸入框無縫樣式與觸控優化 */
         .table-input {
             width: 100%; background-color: transparent; border: none; outline: none; padding: 0.5rem;
             transition: all 0.2s ease-in-out; border-radius: 0.375rem;
-            min-height: 44px; /* 手機端觸控友善高度 */
+            min-height: 44px; 
         }
         @media (min-width: 768px) {
-            .table-input { min-height: 36px; } /* 桌機端恢復緊湊高度以減少滾動 */
+            .table-input { min-height: 36px; } 
         }
-        /* 聚焦時的柔和光暈效果 */
         .table-input:focus { 
             background-color: theme('colors.primary.50'); 
             box-shadow: inset 0 0 0 1px theme('colors.primary.400'), 0 0 0 3px theme('colors.primary.100'); 
         }
         
-        /* 隱藏列印時的 UI 元素 */
         @media print {
             body { background-color: white; height: auto; overflow: visible !important; }
             #app-ui, #bottom-nav, #toast-container, .print-hide { display: none !important; }
-            /* 恢復 padding 為 0，將留白交給正規的 @page margin 處理，避免跨頁被切斷 */
             #print-view:not(.hidden), #print-label-view:not(.hidden) { display: block !important; position: static !important; overflow: visible !important; height: auto !important; min-height: auto !important; padding: 0 !important; }
             #print-view.hidden, #print-label-view.hidden { display: none !important; }
             
-            /* * 針對列印邊界與頁尾的標準設定 
-             * (註: Chrome/Edge 原生不支援分開隱藏網址與保留頁碼，此為 W3C 標準語法，Safari/Firefox 適用)
-             */
             @page { 
-                margin: 10mm; /* 將邊界設為精準的 10mm (1公分)，確保標籤定位絕對準確 */
+                margin: 10mm; 
                 size: A4 portrait; 
-                @bottom-left {
-                    content: ""; /* 隱藏左下角的網址 */
-                }
-                @bottom-right {
-                    content: counter(page) " / " counter(pages); /* 僅保留右下角頁碼 */
-                }
+                @bottom-left { content: ""; }
+                @bottom-right { content: counter(page) " / " counter(pages); }
             }
             
-            /* 智能分頁：確保表頭重複與避免切斷列 */
             table { page-break-inside: auto; }
             tr { page-break-inside: avoid; break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
             tfoot { display: table-footer-group; }
             
-            /* 標籤列印排版：依實體 A4 3欄×10列貼紙規格定位
-             * A4：210×297mm；瀏覽器 @page 仍維持原本 10mm
-             * 貼紙：53×25.5mm；水平間距 4mm；垂直間距 0mm
-             * 左/上實際定位 21mm，因此在 @page 10mm 基礎上再內縮 11mm
-             */
             #label-container {
                 display: grid !important;
                 grid-template-columns: repeat(3, 53mm) !important;
@@ -112,7 +103,6 @@
                 overflow: hidden !important;
                 gap: 1px !important;
             }
-            /* 標籤內文字：空間足夠時維持較大字體，商品名過長時由 JS 彈性縮小 */
             .label-box .label-brand {
                 font-size: 12.5px !important;
                 line-height: 1.1 !important;
@@ -134,7 +124,6 @@
             .label-box .text-\[9px\] { font-size: 7px !important; }
         }
 
-        /* 順滑進場與 Toast 動畫 */
         @keyframes slideIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -142,242 +131,192 @@
         .toast-enter { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: fadeOut 0.3s ease-out forwards; }
         .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        
-        /* 手機底部安全區 padding (iPhone) */
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
-    <!-- 動態隱藏欄位用的樣式區塊 -->
-    <style id="dynamic-cols-style">
-        /* 預設隱藏替代備註欄位與健保碼欄位 */
-        .col-alternative { display: none !important; }
-        .col-nhiCode { display: none !important; }
-    </style>
 </head>
-<body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden">
+<!-- 預設移除 show-col-image，使清單模式的外觀圖預設隱藏 -->
+<body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance">
 
-    <!-- ========================================== -->
-    <!-- 1. 應用程式主介面 (App UI)                 -->
-    <!-- ========================================== -->
     <div id="app-ui" class="flex flex-col h-full w-full">
         
-        <!-- 頂部導覽列 -->
-        <header class="bg-surface border-b border-slate-200/80 px-4 md:px-6 py-3 flex flex-col md:flex-row md:justify-between items-start md:items-center shrink-0 z-10 shadow-sm transition-all duration-200 gap-3 md:gap-0">
-            <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-                <div class="flex items-center gap-3">
-                    <div class="bg-primary-100 text-primary-600 p-2 rounded-xl shrink-0 shadow-sm">
-                        <i class="ph ph-pills text-xl md:text-2xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-lg md:text-xl font-semibold text-slate-800 tracking-tight flex items-baseline gap-2">
-                            自備藥辨識輔助系統
-                            <span class="text-[10px] text-slate-500 font-normal hidden sm:inline-block">程式製作 : 其仁藥師 &nbsp; 版本日期 : 2026/05</span>
-                        </h1>
-                    </div>
+        <!-- 頂部精簡導覽列 -->
+        <header class="bg-surface border-b border-slate-200/80 px-4 md:px-6 py-2.5 flex justify-between items-center shrink-0 z-10 shadow-sm">
+            <div class="flex items-baseline gap-3">
+                <div class="flex items-center gap-2">
+                    <div class="bg-primary-100 text-primary-600 p-1.5 rounded-lg shrink-0 shadow-sm"><i class="ph ph-pills text-xl"></i></div>
+                    <h1 class="text-lg font-semibold text-slate-800 tracking-tight">自備藥辨識輔助系統</h1>
                 </div>
+                <p class="text-[10px] text-slate-400 hidden lg:block border-l border-slate-200 pl-3">程式製作 : 其仁藥師 &nbsp; 版本日期 : 2026/05</p>
             </div>
-            <!-- 桌機版操作按鈕 (加入平滑Hover與光暈) -->
-            <div class="hidden md:flex items-center gap-2 lg:gap-3 flex-wrap">
-                <a href="https://mcp.fda.gov.tw/" target="_blank" class="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:-translate-y-0.5 active:translate-y-0 rounded-lg transition-all duration-200 min-h-[36px]">
-                    <i class="ph ph-link text-base lg:text-lg"></i> <span class="hidden xl:inline">仿單查詢</span><span class="xl:hidden">仿單</span>
-                </a>
-                <a href="https://drugtw.com/figure" target="_blank" class="flex items-center gap-1.5 lg:gap-2 px-2.5 lg:px-3 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 hover:-translate-y-0.5 active:translate-y-0 rounded-lg transition-all duration-200 min-h-[36px]">
-                    <i class="ph ph-link text-base lg:text-lg"></i> <span class="hidden xl:inline">藥台灣</span><span class="xl:hidden">藥台灣</span>
-                </a>
-                <button onclick="app.openConfirmModal()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
-                    <i class="ph ph-trash text-base lg:text-lg"></i> 清空
-                </button>
-                <button onclick="app.copyTextContent()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
-                    <i class="ph ph-copy text-base lg:text-lg"></i> 複製
-                </button>
-                <button onclick="app.exportToCSV()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
-                    <i class="ph ph-download-simple text-base lg:text-lg"></i> CSV
-                </button>
-                <button onclick="app.openPrintLabelView()" class="flex items-center gap-1.5 lg:gap-2 px-3 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 active:shadow-sm rounded-lg transition-all duration-200 min-h-[36px]">
-                    <i class="ph ph-tag text-base lg:text-lg"></i> 標籤
-                </button>
-                <button onclick="app.openPrintView()" class="flex items-center gap-1.5 lg:gap-2 px-4 lg:px-5 py-1.5 lg:py-2 text-xs lg:text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 rounded-lg transition-all duration-200 min-h-[36px]">
-                    <i class="ph ph-printer text-base lg:text-lg"></i> 列印
-                </button>
+            <div class="hidden md:flex items-center gap-2">
+                <a href="https://mcp.fda.gov.tw/" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"><i class="ph ph-link text-base"></i> 仿單查詢</a>
+                <a href="https://drugtw.com/figure" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"><i class="ph ph-link text-base"></i> 藥台灣</a>
+                <button onclick="app.openConfirmModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-all"><i class="ph ph-trash text-base"></i> 清空</button>
+                <button onclick="app.copyTextContent()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"><i class="ph ph-copy text-base"></i> 複製</button>
+                <button onclick="app.exportToCSV()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all"><i class="ph ph-download-simple text-base"></i> CSV</button>
+                <button onclick="app.openPrintLabelView()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all"><i class="ph ph-tag text-base"></i> 標籤</button>
+                <button onclick="app.openPrintView()" class="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-all shadow-sm"><i class="ph ph-printer text-base"></i> 列印</button>
             </div>
         </header>
 
-        <!-- 主要工作區 (改為上下排版) -->
-        <main class="flex-1 flex flex-col overflow-y-auto md:overflow-hidden p-3 md:p-4 pb-24 md:pb-4 gap-4 bg-slate-50/50">
+        <!-- 主要工作區 (上下分割) -->
+        <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50">
             
-            <!-- 上側：醫囑清理工具 (極簡單行設計) -->
-            <section class="w-full shrink-0 flex flex-col gap-3">
-                <div class="bg-surface rounded-xl shadow-soft border border-slate-200/60 p-2 md:p-3 transition-shadow duration-200 hover:shadow-md flex flex-col md:flex-row items-center gap-3">
-                    <div class="flex items-center gap-3 shrink-0 w-full md:w-auto justify-between">
-                        <div class="flex items-center gap-2">
-                            <div class="p-1.5 bg-primary-50 rounded-lg text-primary-500"><i class="ph ph-magic-wand text-base"></i></div>
-                            <h2 class="font-semibold text-slate-800 text-sm whitespace-nowrap">1. 醫囑清理</h2>
-                        </div>
-                        <!-- 切換清理模式按鈕 -->
-                        <div class="flex bg-slate-100 p-0.5 rounded-lg">
-                            <button id="mode-btn-cloud" onclick="app.setParseMode('cloud')" class="px-2 py-1 text-[11px] font-medium rounded-md shadow-sm bg-white text-primary-600 transition-all">雲端藥歷</button>
-                            <button id="mode-btn-ud" onclick="app.setParseMode('ud')" class="px-2 py-1 text-[11px] font-medium rounded-md text-slate-500 hover:text-slate-700 transition-all">UD處方</button>
+            <!-- 上方：醫囑清理工具 (極度壓縮高度) -->
+            <section class="w-full shrink-0 bg-surface border-b border-slate-200/60 p-3 flex flex-col gap-2 z-10 shadow-sm relative">
+                <div class="flex items-center justify-between max-w-7xl mx-auto w-full gap-4">
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="p-1 bg-primary-50 rounded text-primary-500"><i class="ph ph-magic-wand"></i></div>
+                        <h2 class="font-semibold text-slate-800 text-sm">1. 醫囑清理工具</h2>
+                        <div class="flex bg-slate-100 p-0.5 rounded-md ml-2">
+                            <button id="mode-btn-cloud" onclick="app.setParseMode('cloud')" class="px-2.5 py-1 text-[11px] font-medium rounded shadow-sm bg-white text-primary-600 transition-all">雲端藥歷</button>
+                            <button id="mode-btn-ud" onclick="app.setParseMode('ud')" class="px-2.5 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 transition-all">UD處方</button>
                         </div>
                     </div>
-                    
-                    <div class="flex-1 w-full flex items-center gap-2">
-                        <textarea id="rawText" class="flex-1 w-full h-[36px] min-h-[36px] py-1.5 px-3 text-sm bg-slate-50 border border-slate-200/80 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 focus:bg-white transition-all duration-200 leading-normal" placeholder="在此貼上內容..."></textarea>
-                        
-                        <button onclick="app.parseText()" class="shrink-0 px-4 py-1.5 bg-slate-800 hover:bg-slate-700 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-white text-sm font-medium rounded-lg transition-all duration-200 h-[36px]">
-                            解析並加入
+                    <div class="flex-1 flex items-center gap-2">
+                        <textarea id="rawText" class="flex-1 h-[36px] p-1.5 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 focus:bg-white transition-all overflow-hidden whitespace-nowrap" placeholder="貼上雲端藥歷內容..."></textarea>
+                        <button onclick="app.parseAndAddText()" class="px-4 h-[36px] bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-lg transition-all shadow-sm shrink-0 flex items-center gap-1.5 active:scale-95">
+                            解析內容並加入清單
                         </button>
                     </div>
                 </div>
             </section>
 
-            <!-- 下側：全幅藥物清單編輯區 -->
-            <section class="flex-1 bg-surface rounded-2xl shadow-soft border border-slate-200/60 flex flex-col overflow-hidden transition-shadow duration-200 hover:shadow-md">
-                <div class="p-3 md:p-4 border-b border-slate-100 flex flex-col xl:flex-row justify-between xl:items-center bg-white z-10 shrink-0 gap-3">
-                    <div class="flex flex-wrap items-center gap-2 md:gap-3">
+            <!-- 下方：自備藥清單編輯區 (全幅主體) -->
+            <section class="flex-1 bg-surface flex flex-col overflow-hidden">
+                <!-- 清單工具列 -->
+                <div class="p-3 md:px-5 border-b border-slate-100 flex flex-wrap justify-between items-center bg-white z-10 shrink-0 gap-3">
+                    <div class="flex items-center gap-3">
                         <div class="p-1.5 bg-primary-50 rounded-lg text-primary-500 hidden sm:block"><i class="ph ph-table text-lg"></i></div>
-                        <h2 id="main-list-title" class="font-semibold text-slate-800 text-sm md:text-base">2. 藥物清單</h2>
-                        <div class="flex items-center gap-2 ml-1 md:ml-2 border-l border-slate-200 pl-3">
-                            <button id="sort-brand-btn" onclick="app.sortByBrand()" class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 hover:text-primary-600 hover:bg-primary-50 px-2 py-1 rounded-lg border border-slate-200 transition-colors" title="依商品名排序">
-                                <i class="ph ph-sort-ascending text-sm"></i><span class="hidden sm:inline">商品名排序</span><span class="sm:hidden">排序</span>
+                        <h2 id="main-list-title" class="font-semibold text-slate-800">2. 藥物清單</h2>
+                        <div class="flex items-center gap-2 ml-2 border-l border-slate-200 pl-3">
+                            <button id="sort-brand-btn" onclick="app.sortByBrand()" class="flex items-center gap-1 text-xs text-slate-600 hover:text-primary-600 hover:bg-primary-50 px-2 py-1 rounded border border-slate-200 transition-colors">
+                                <i class="ph ph-sort-ascending"></i><span>商品名排序</span>
                             </button>
-                            <label class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 cursor-pointer hover:text-primary-600 transition-colors">
-                                <input type="checkbox" id="chk-title-1" onchange="app.updateListTitle()" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5 cursor-pointer">
-                                <span class="hidden sm:inline">自備藥辨識</span><span class="sm:hidden">辨識</span>
+                            <label class="flex items-center gap-1 text-xs text-slate-600 cursor-pointer hover:text-primary-600 transition-colors">
+                                <input type="checkbox" id="chk-title-1" onchange="app.updateListTitle()" class="rounded border-slate-300 text-primary-600 w-3 h-3"> 自備藥辨識
                             </label>
-                            <label class="flex items-center gap-1 text-[11px] md:text-xs text-slate-600 cursor-pointer hover:text-primary-600 transition-colors">
-                                <input type="checkbox" id="chk-title-2" onchange="app.updateListTitle()" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-3.5 h-3.5 cursor-pointer">
-                                <span class="hidden sm:inline">手術前停藥建議</span><span class="sm:hidden">停藥</span>
+                            <label class="flex items-center gap-1 text-xs text-slate-600 cursor-pointer hover:text-primary-600 transition-colors">
+                                <input type="checkbox" id="chk-title-2" onchange="app.updateListTitle()" class="rounded border-slate-300 text-primary-600 w-3 h-3"> 手術前停藥建議
                             </label>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end gap-2 flex-wrap">
-                        <!-- 即時搜尋框 -->
-                        <div class="relative hidden sm:block">
-                            <i class="ph ph-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                            <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 w-28 md:w-36 transition-all">
-                        </div>
-
-                        <!-- 切換視圖與欄位設定 -->
-                        <div class="hidden sm:flex items-center gap-2 border-r border-slate-200 pr-2 mr-1">
-                            <button id="view-mode-btn" onclick="app.toggleViewMode()" class="text-[11px] md:text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-2 md:px-3 py-1.5 rounded-lg flex items-center gap-1 border border-indigo-200/50 transition-colors">
-                                <i class="ph ph-image" id="view-mode-icon"></i> <span id="view-mode-text">圖片模式</span>
-                            </button>
-                            <div id="col-settings-wrapper" class="flex">
-                                <button onclick="app.openColSettingsModal()" class="text-[11px] md:text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 md:px-3 py-1.5 rounded-lg flex items-center gap-1 border border-slate-200/50 transition-colors">
-                                    <i class="ph ph-columns"></i> 欄位
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- 批次刪除按鈕群組 (勾選時顯示) -->
-                        <div id="batch-actions" class="hidden items-center gap-1">
-                            <button onclick="app.deleteSelected()" class="text-[11px] md:text-xs font-medium bg-red-50 hover:bg-red-100 text-red-600 px-2 py-1.5 rounded-lg border border-red-200/50 transition-all duration-200 flex items-center gap-1 whitespace-nowrap"><i class="ph ph-trash"></i> 刪除已勾選</button>
-                            <button onclick="app.deleteUnselected()" class="text-[11px] md:text-xs font-medium bg-pink-50 hover:bg-pink-100 text-pink-600 px-2 py-1.5 rounded-lg border border-pink-200/50 transition-all duration-200 flex items-center gap-1 whitespace-nowrap"><i class="ph ph-eraser"></i> 刪除未勾選</button>
+                    <div class="flex items-center justify-end gap-2">
+                        <div class="relative hidden sm:block mr-2">
+                            <i class="ph ph-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-primary-500 w-36">
                         </div>
                         
-                        <!-- 刪除重複與手動新增按鈕 -->
-                        <div class="flex items-center gap-1">
-                            <button onclick="app.deleteDuplicates()" class="text-[11px] md:text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-2 py-1.5 rounded-lg border border-amber-200/50 transition-all duration-200 flex items-center gap-1" title="依商品名刪除重複藥品，只保留第一筆"><i class="ph ph-copy"></i> <span class="hidden sm:inline">刪除重複</span></button>
-                            <div id="add-btn-wrapper" class="flex">
-                                <button onclick="app.addNewRow()" class="text-[11px] md:text-xs font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 px-2 py-1.5 rounded-lg border border-primary-200/50 transition-all duration-200 flex items-center gap-1" title="手動新增一筆空白藥品"><i class="ph ph-plus-circle text-sm md:text-base"></i> <span class="hidden sm:inline">新增</span></button>
-                            </div>
+                        <!-- 模式切換按鈕 -->
+                        <button id="toggle-mode-btn" onclick="app.toggleViewMode()" class="text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-200/50 transition-all flex items-center gap-1">
+                            <i id="view-mode-icon" class="ph ph-image text-sm"></i> <span id="view-mode-text">圖片模式</span>
+                        </button>
+
+                        <!-- 獨立欄位選擇彈窗觸發鈕 -->
+                        <button id="col-setting-btn" onclick="app.toggleColModal()" class="text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200/50 transition-all flex items-center gap-1">
+                            <i class="ph ph-columns text-sm"></i> 欄位
+                        </button>
+                        
+                        <!-- 批次動作群組 -->
+                        <div id="batch-actions" class="hidden items-center bg-red-50 border border-red-100 rounded-lg overflow-hidden">
+                            <button onclick="app.deleteSelected()" class="text-xs font-medium hover:bg-red-100 text-red-600 px-2 py-1.5 transition-all border-r border-red-100" title="刪除已打勾的項目">刪除已選</button>
+                            <button onclick="app.deleteUnselected()" class="text-xs font-medium hover:bg-red-100 text-red-600 px-2 py-1.5 transition-all" title="保留打勾，刪除未打勾的項目">刪除未選</button>
                         </div>
-                        <span id="med-count" class="text-[11px] md:text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1.5 rounded-lg border border-slate-200/50 transition-all duration-200">0 筆</span>
+
+                        <button onclick="app.deleteDuplicates()" class="text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200/50 transition-all flex items-center gap-1"><i class="ph ph-copy text-sm"></i> 刪除重複</button>
+                        
+                        <!-- 新增按鈕移至此處 -->
+                        <button id="add-new-btn" onclick="app.addNewRow()" class="text-xs font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 px-3 py-1.5 rounded-lg border border-primary-200/50 transition-all flex items-center gap-1">
+                            <i class="ph ph-plus-circle text-sm"></i> 新增
+                        </button>
+
+                        <span id="med-count" class="text-xs font-medium bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200/50">0 筆</span>
                     </div>
                 </div>
                 
-                <!-- 表格與圖片網格容器 -->
-                <div class="flex-1 overflow-auto bg-slate-50/30 p-2 md:p-0 relative">
-                    <!-- 表格模式 -->
-                    <table id="med-table-container" class="w-full text-left border-collapse min-w-[800px]">
-                        <thead class="hidden md:table-header-group bg-slate-50/80 backdrop-blur-sm sticky top-0 z-10 shadow-sm border-b border-slate-200/80 text-xs text-slate-500 font-medium tracking-wider">
+                <!-- 清單模式容器 -->
+                <div id="list-container" class="md:flex-1 md:overflow-auto bg-slate-50/30 p-3 md:p-0">
+                    <table class="w-full text-left border-collapse md:min-w-[900px]">
+                        <thead class="hidden md:table-header-group bg-white sticky top-0 z-10 shadow-sm border-b border-slate-200/80 text-xs text-slate-500 font-medium">
                             <tr>
-                                <th class="py-3 px-3 w-10 text-center"><input type="checkbox" id="select-all" onchange="app.toggleSelectAll(this)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4"></th>
-                                <th class="py-3 px-2 w-10 text-center">#</th>
-                                <th class="col-img py-3 px-2 w-14 text-center">外觀</th>
-                                <th class="col-brandName py-3 px-3 w-[20%]">商品名</th>
-                                <th class="col-genericName py-3 px-3 w-[18%]">學名/成分</th>
-                                <th class="col-usage py-3 px-3 w-[15%]">用法用量</th>
-                                <th class="col-appearance py-3 px-3 w-[15%]">外觀描述</th>
-                                <th class="col-nhiCode py-3 px-3 w-[12%]">健保碼</th>
-                                <th class="col-alternative py-3 px-3 w-[15%]">替代品項 / 備註</th>
-                                <th class="py-3 px-3 w-14 text-center">操作</th>
+                                <th class="py-2.5 px-3 w-10 text-center"><input type="checkbox" id="select-all" onchange="app.toggleSelectAll(this)" class="rounded border-slate-300 text-primary-600 w-3.5 h-3.5"></th>
+                                <th class="py-2.5 px-3 w-10 text-center">#</th>
+                                <th class="col-image py-2.5 px-3 w-16 text-center">外觀圖</th>
+                                <th class="col-brand py-2.5 px-3 w-1/5">商品名</th>
+                                <th class="col-generic py-2.5 px-3 w-1/5">學名/成分</th>
+                                <th class="col-usage py-2.5 px-3 w-1/5">用法用量</th>
+                                <th class="col-appearance py-2.5 px-3 w-[15%]">外觀描述</th>
+                                <th class="col-nhicode py-2.5 px-3 w-24">健保碼</th>
+                                <th class="col-alternative py-2.5 px-3 w-1/5">替代品項 / 備註</th>
+                                <th class="py-2.5 px-3 w-12 text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody id="med-table-body" class="text-sm md:divide-y divide-slate-100/80 block md:table-row-group">
-                            <!-- 藥品列將透過 JS 動態生成 -->
+                            <!-- 列表內容動態生成 -->
                         </tbody>
                     </table>
+                </div>
 
-                    <!-- 圖片模式網格 (預設隱藏) -->
-                    <div id="med-grid-body" class="hidden grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 md:gap-4 p-3 md:p-4 pb-8">
-                        <!-- 圖片卡片將透過 JS 動態生成 -->
-                    </div>
-                    
-                    <!-- 空狀態提示 (加入淡入動畫) -->
-                    <div id="empty-state" class="hidden flex-col items-center justify-center py-12 md:py-24 text-slate-400 animate-fade-in-up h-full min-h-[200px]">
-                        <div class="bg-slate-50 p-4 rounded-full mb-4 shadow-sm"><i class="ph ph-folder-open text-5xl opacity-50"></i></div>
-                        <p class="text-center px-4 font-medium text-slate-500">目前清單為空<br class="md:hidden"><span class="text-sm font-normal text-slate-400 mt-1 block">請使用上方清理工具解析，或手動新增。</span></p>
+                <!-- 圖片模式容器 (初始隱藏) -->
+                <div id="grid-container" class="hidden md:flex-1 md:overflow-auto bg-slate-50/30 p-4 md:p-6">
+                    <div id="med-grid-body" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        <!-- 圖片卡片動態生成 -->
                     </div>
                 </div>
-            </section>
 
+                <!-- 空狀態提示 -->
+                <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 animate-fade-in-up h-full">
+                    <div class="bg-slate-50 p-4 rounded-full mb-4 shadow-sm"><i class="ph ph-folder-open text-5xl opacity-50"></i></div>
+                    <p class="text-center px-4 font-medium text-slate-500">目前清單為空<br><span class="text-sm font-normal text-slate-400 mt-1 block">請透過上方工具解析或手動新增藥品。</span></p>
+                </div>
+            </section>
         </main>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 2. 手機版底部導覽列 (Bottom Navigation)    -->
-    <!-- ========================================== -->
-    <nav id="bottom-nav" class="md:hidden fixed bottom-0 left-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-200/80 flex justify-around items-end pb-safe pt-2 px-1 z-50 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.08)] h-20 transition-all duration-200 print-hide">
-        <button onclick="app.openConfirmModal()" class="flex flex-col items-center justify-center w-1/5 h-full text-pink-500 hover:text-pink-600 active:text-pink-700 active:bg-pink-50 rounded-xl transition-colors duration-200 group">
-            <i class="ph ph-trash text-[26px] mb-1 group-hover:-translate-y-1 transition-transform duration-200"></i>
-            <span class="text-[11px] font-medium">清空</span>
-        </button>
-        <button onclick="app.copyTextContent()" class="flex flex-col items-center justify-center w-1/5 h-full text-slate-500 hover:text-indigo-600 active:text-indigo-700 active:bg-slate-50 rounded-xl transition-colors duration-200 group">
-            <i class="ph ph-copy text-[26px] mb-1 group-hover:-translate-y-1 transition-transform duration-200"></i>
-            <span class="text-[11px] font-medium">複製</span>
-        </button>
-        <!-- 懸浮突出的新增按鈕 (FAB Style 增強陰影與互動) -->
-        <div class="relative w-1/5 h-full flex justify-center">
-            <button onclick="app.addNewRow()" class="absolute -top-7 flex items-center justify-center w-[56px] h-[56px] bg-primary-600 hover:bg-primary-500 text-white rounded-full shadow-lg hover:shadow-glow border-4 border-white active:scale-90 hover:-translate-y-1 transition-all duration-200">
-                <i class="ph ph-plus font-bold text-2xl"></i>
-            </button>
-            <span class="text-[11px] font-medium text-primary-700 absolute bottom-2">新增</span>
+    <!-- 欄位設定彈跳視窗 -->
+    <div id="col-settings-modal" class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[150] hidden items-center justify-center transition-opacity opacity-0" onclick="if(event.target===this) app.toggleColModal()">
+        <div class="bg-white rounded-xl shadow-xl p-5 w-64 transform scale-95 transition-transform" id="col-settings-content">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
+                <h3 class="text-sm font-bold text-slate-800">顯示欄位設定</h3>
+                <button onclick="app.toggleColModal()" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="space-y-3 text-sm text-slate-700">
+                <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked disabled class="rounded border-slate-300 text-slate-400 focus:ring-0 w-4 h-4 cursor-not-allowed"> 商品名 (必選)</label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" onchange="app.toggleColumn('image', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 外觀圖</label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('generic', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 學名/成分</label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('usage', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 用法用量</label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('appearance', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 外觀描述</label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 健保碼</label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" onchange="app.toggleColumn('alternative', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 替代品項/備註</label>
+            </div>
         </div>
-        <button onclick="app.exportToCSV()" class="flex flex-col items-center justify-center w-1/5 h-full text-slate-500 hover:text-primary-600 active:text-primary-700 active:bg-slate-50 rounded-xl transition-colors duration-200 group">
-            <i class="ph ph-download-simple text-[26px] mb-1 group-hover:-translate-y-1 transition-transform duration-200"></i>
-            <span class="text-[11px] font-medium">匯出</span>
-        </button>
-        <button onclick="app.openPrintView()" class="flex flex-col items-center justify-center w-1/5 h-full text-slate-500 hover:text-primary-600 active:text-primary-700 active:bg-slate-50 rounded-xl transition-colors duration-200 group">
-            <i class="ph ph-printer text-[26px] mb-1 group-hover:-translate-y-1 transition-transform duration-200"></i>
-            <span class="text-[11px] font-medium">列印</span>
-        </button>
-    </nav>
+    </div>
 
-    <!-- ========================================== -->
-    <!-- 3. 列印與匯出隱藏視圖 (Print View)         -->
-    <!-- ========================================== -->
+    <!-- 清空確認彈窗 -->
+    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden flex-col items-center justify-center opacity-0 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm transform scale-95 transition-transform duration-200" id="confirm-modal-content">
+            <div class="flex items-center gap-3 mb-4 text-pink-500">
+                <div class="p-2 bg-pink-50 rounded-full"><i class="ph ph-warning-circle text-2xl"></i></div>
+                <h3 class="text-lg font-bold text-slate-800">確認清空</h3>
+            </div>
+            <p class="text-sm text-slate-500 mb-6 pl-1">確定要清空所有資料嗎？此動作無法復原。</p>
+            <div class="flex gap-3 justify-end">
+                <button onclick="app.closeConfirmModal()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">取消</button>
+                <button onclick="app.executeClearData()" class="px-5 py-2.5 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-xl transition-colors shadow-sm shadow-pink-500/30">確定清空</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 列印視圖 -->
     <div id="print-view" class="hidden bg-white p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
-        <!-- 列印小提醒 (不印出) -->
         <div class="max-w-5xl mx-auto print-hide">
             <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
                 <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
-                <p><strong>列印排版提醒：</strong>網頁程式無法自動更改瀏覽器的列印預設值。為了畫面乾淨並避免印出網址與日期，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
+                <p><strong>列印排版提醒：</strong>為了畫面乾淨，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
             </div>
         </div>
-        <!-- 動態自訂列印欄位 -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 print-hide max-w-5xl mx-auto border-b border-slate-200 pb-4 gap-4">
-            <div>
-                <h3 class="text-sm font-bold text-slate-700 mb-2">自訂列印顯示欄位：</h3>
-                <div class="flex flex-wrap gap-4 text-sm text-slate-600" id="print-col-toggles">
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="brand" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 商品名</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="generic" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 學名/成分</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="usage" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 用法用量</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="appearance" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 外觀描述</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" value="nhiCode" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 健保碼</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="alternative" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 替代品項/備註</label>
-                </div>
-            </div>
-            <div class="flex gap-3 shrink-0">
+            <div class="flex gap-3 shrink-0 ml-auto">
                 <button onclick="app.closePrintView()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">返回編輯</button>
                 <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-colors shadow-sm">
                     <i class="ph ph-printer text-lg"></i> 呼叫系統列印
@@ -392,12 +331,11 @@
             <table class="w-full border-collapse border border-gray-400 text-sm">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="border border-gray-400 py-2 px-3 text-left w-12">序號</th>
+                        <th class="border border-gray-400 py-2 px-3 text-left">序號</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">商品名</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">外觀描述</th>
-                        <th class="border border-gray-400 py-2 px-3 text-left">健保碼</th>
                         <th class="border border-gray-400 py-2 px-3 text-left">替代品項 / 備註</th>
                     </tr>
                 </thead>
@@ -407,20 +345,17 @@
             </table>
             <div class="mt-8 flex justify-between items-end text-sm text-gray-600">
                 <p>藥師簽章：_________________</p>
-                <p class="text-xs text-gray-400 hidden md:block print:block">程式製作 : 其仁藥師 &nbsp;|&nbsp; 版本日期 : 2026/05</p>
+                <p class="text-xs text-gray-400">程式製作 : 其仁藥師 &nbsp;|&nbsp; 版本日期 : 2026/05</p>
             </div>
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 3.5. 列印標籤隱藏視圖 (Print Label View)   -->
-    <!-- ========================================== -->
+    <!-- 標籤列印視圖 -->
     <div id="print-label-view" class="hidden bg-slate-100 p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
-        <!-- 列印小提醒 (不印出) -->
         <div class="max-w-5xl mx-auto print-hide">
             <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
                 <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
-                <p><strong>列印排版提醒：</strong>網頁程式無法自動更改瀏覽器的列印預設值。為了畫面乾淨並避免印出網址與日期，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
+                <p><strong>列印排版提醒：</strong>請手動取消勾選「頁首及頁尾」。</p>
             </div>
         </div>
         <div class="flex justify-end gap-3 mb-6 print-hide max-w-5xl mx-auto border-b border-slate-300 pb-4">
@@ -436,131 +371,32 @@
         </div>
     </div>
 
-    <!-- 欄位設定 Modal -->
-    <div id="col-settings-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden flex-col items-center justify-center transition-opacity duration-200 opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl w-[90%] max-w-xs transform scale-95 transition-transform duration-200 overflow-hidden flex flex-col" id="col-settings-content">
-            <div class="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
-                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2"><i class="ph ph-columns text-primary-500"></i> 自訂顯示欄位</h3>
-                <button onclick="app.closeColSettingsModal()" class="text-slate-400 hover:text-slate-600 rounded-lg p-1 transition-colors"><i class="ph ph-x text-lg"></i></button>
-            </div>
-            <div class="p-4 flex flex-col gap-2">
-                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
-                    <input type="checkbox" onchange="app.toggleTableCol('img', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">外觀圖</span>
-                </label>
-                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
-                    <input type="checkbox" onchange="app.toggleTableCol('brandName', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">商品名</span>
-                </label>
-                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
-                    <input type="checkbox" onchange="app.toggleTableCol('genericName', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">學名/成分</span>
-                </label>
-                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
-                    <input type="checkbox" onchange="app.toggleTableCol('usage', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">用法用量</span>
-                </label>
-                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
-                    <input type="checkbox" onchange="app.toggleTableCol('appearance', this.checked)" checked class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4"> <span class="text-sm text-slate-700">外觀描述</span>
-                </label>
-                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
-                    <input type="checkbox" onchange="app.toggleTableCol('nhiCode', this.checked)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4" id="chk-col-nhiCode"> <span class="text-sm text-slate-700">健保碼</span>
-                </label>
-                <label class="flex items-center gap-3 p-2 hover:bg-slate-50 cursor-pointer rounded-lg transition-colors border border-transparent hover:border-slate-200">
-                    <input type="checkbox" onchange="app.toggleTableCol('alternative', this.checked)" class="rounded border-slate-300 text-primary-600 focus:ring-primary-500 w-4 h-4" id="chk-col-alternative"> <span class="text-sm text-slate-700">替代/備註</span>
-                </label>
-            </div>
-            <div class="p-3 border-t border-slate-100 bg-slate-50 flex justify-end">
-                 <button onclick="app.closeColSettingsModal()" class="px-5 py-2 text-sm font-medium text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-colors shadow-sm active:scale-95">完成</button>
-            </div>
-        </div>
-    </div>
+    <div id="login-overlay" class="fixed inset-0 bg-slate-100 z-[200] flex flex-col items-center justify-center opacity-0 hidden"></div>
+    <div id="toast-container" class="fixed bottom-6 right-1/2 translate-x-1/2 md:translate-x-0 md:right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
 
-    <!-- 客製化 Confirm Modal -->
-    <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden flex-col items-center justify-center transition-opacity duration-200 opacity-0">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm transform scale-95 transition-transform duration-200" id="confirm-modal-content">
-            <div class="flex items-center gap-3 mb-4 text-pink-500">
-                <div class="p-2 bg-pink-50 rounded-full"><i class="ph ph-warning-circle text-2xl"></i></div>
-                <h3 class="text-lg font-bold text-slate-800">確認清空</h3>
-            </div>
-            <p class="text-sm text-slate-500 mb-6 pl-1">確定要清空所有資料嗎？此動作無法復原。</p>
-            <div class="flex gap-3 justify-end">
-                <button onclick="app.closeConfirmModal()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">取消</button>
-                <button onclick="app.executeClearData()" class="px-5 py-2.5 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-xl transition-colors shadow-sm shadow-pink-500/30">確定清空</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 登入畫面 (Login Overlay) -->
-    <div id="login-overlay" class="fixed inset-0 bg-slate-100 z-[200] flex flex-col items-center justify-center transition-opacity duration-300">
-        <div class="bg-white p-8 rounded-2xl shadow-xl max-w-sm w-[90%] text-center border border-slate-200/60">
-            <div class="w-16 h-16 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center mx-auto mb-5 shadow-inner">
-                <i class="ph ph-lock-key text-3xl"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-slate-800 mb-2">系統登入</h2>
-            <p class="text-sm text-slate-500 mb-6">請輸入存取密碼以繼續使用本系統</p>
-            <input type="password" id="login-pwd" class="w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white text-center text-xl tracking-[0.25em] transition-all" placeholder="請輸入密碼">
-            <button onclick="app.verifyPassword()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]">
-                登入系統
-            </button>
-            <p id="login-error" class="text-red-500 text-sm mt-4 hidden opacity-0 transition-opacity font-medium">密碼錯誤，請重新輸入</p>
-        </div>
-    </div>
-
-    <!-- Toast 提示容器 -->
-    <div id="toast-container" class="fixed bottom-24 md:bottom-6 right-1/2 translate-x-1/2 md:translate-x-0 md:right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
-
-    <!-- ========================================== -->
-    <!-- 4. 系統核心邏輯 (JavaScript)               -->
-    <!-- ========================================== -->
     <script>
         const app = (function() {
             let medList = []; 
-            const STORAGE_KEY = 'MedAssistantData_v1';
-            let lastCheckedIndex = null; // 用於 Shift+Click 多選
+            const STORAGE_KEY = 'MedAssistantData_v2';
+            let lastCheckedIndex = null;
             let brandSortAscending = true;
-            let currentParseMode = 'cloud'; // 紀錄當前清理模式
-            let savedTextCloud = ''; // 儲存雲端藥歷文字
-            let savedTextUd = ''; // 儲存UD處方文字
-            let currentViewMode = 'table'; // 狀態：'table' 或是 'grid' 圖片模式
+            let currentParseMode = 'cloud';
+            let isImageMode = false;
             
-            // 定義表格欄位顯示狀態 (替代/備註、健保碼預設隱藏)
-            let colState = {
-                img: true,
-                brandName: true,
-                genericName: true,
-                usage: true,
-                appearance: true,
-                nhiCode: false,
-                alternative: false
-            };
-
             const els = {
-                tableContainer: document.getElementById('med-table-container'),
+                listContainer: document.getElementById('list-container'),
+                gridContainer: document.getElementById('grid-container'),
                 tableBody: document.getElementById('med-table-body'),
                 gridBody: document.getElementById('med-grid-body'),
-                viewModeBtn: document.getElementById('view-mode-btn'),
-                viewModeIcon: document.getElementById('view-mode-icon'),
-                viewModeText: document.getElementById('view-mode-text'),
-                colSettingsWrapper: document.getElementById('col-settings-wrapper'),
-                addBtnWrapper: document.getElementById('add-btn-wrapper'),
                 emptyState: document.getElementById('empty-state'),
                 medCount: document.getElementById('med-count'),
                 rawText: document.getElementById('rawText'),
-                printTableBody: document.getElementById('print-table-body'),
-                printDate: document.getElementById('print-date'),
                 toastContainer: document.getElementById('toast-container'),
-                batchActions: document.getElementById('batch-actions'), // 群組
+                batchActions: document.getElementById('batch-actions'),
                 selectAllCheckbox: document.getElementById('select-all'),
-                printView: document.getElementById('print-view'),
-                printLabelView: document.getElementById('print-label-view'),
-                labelContainer: document.getElementById('label-container'),
-                appUi: document.getElementById('app-ui'),
-                confirmModal: document.getElementById('confirm-modal'),
-                confirmModalContent: document.getElementById('confirm-modal-content'),
-                colSettingsModal: document.getElementById('col-settings-modal'),
-                colSettingsContent: document.getElementById('col-settings-content'),
                 searchInput: document.getElementById('search-input'),
-                loginOverlay: document.getElementById('login-overlay'),
-                loginPwd: document.getElementById('login-pwd'),
-                loginError: document.getElementById('login-error'),
-                dynamicColsStyle: document.getElementById('dynamic-cols-style') // 動態欄位樣式
+                colModal: document.getElementById('col-settings-modal'),
+                colModalContent: document.getElementById('col-settings-content')
             };
 
             const utils = {
@@ -577,12 +413,9 @@
                     const isSuccess = type === 'success';
                     const icon = isSuccess ? '<i class="ph ph-check-circle text-green-500 text-xl"></i>' : '<i class="ph ph-info text-blue-500 text-xl"></i>';
                     const bgColor = isSuccess ? 'bg-white border-green-100' : 'bg-white border-blue-100';
-                    
-                    toast.className = `toast-enter pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border ${bgColor} text-slate-700 text-sm font-medium w-max max-w-[90vw] transition-all duration-200`;
+                    toast.className = `toast-enter pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg border ${bgColor} text-slate-700 text-sm font-medium w-max max-w-[90vw] transition-all`;
                     toast.innerHTML = `${icon} <span>${message}</span>`;
-                    
                     els.toastContainer.appendChild(toast);
-                    
                     setTimeout(() => {
                         toast.classList.replace('toast-enter', 'toast-leave');
                         setTimeout(() => toast.remove(), 300);
@@ -608,287 +441,212 @@
 
             const parser = {
                 process: (text) => {
-                    if (!text.trim()) { utils.showToast('請先貼上內容', 'info'); return; }
-                    let newlyParsedItems = [];
+                    if (!text.trim()) { utils.showToast('請先貼上內容', 'info'); return []; }
+                    let results = [];
                     
                     if (currentParseMode === 'ud') {
-                        // --- UD處方醫囑清理模式 ---
                         text.split('\n').forEach(line => {
-                            let str = line.trim();
+                            let str = line.trim().replace(/^處理中(?:\.\.\.)?\s*/, '').replace(/^\d{2,3}[/\\-]?\d{2}[/\\-]?\d{2}\s*/, '').replace(/^\(\d+\)\s*/, '');
                             if (!str) return;
-
-                            // 0. 過濾掉 "處理中..." 雜訊 (支援有無點點點)
-                            str = str.replace(/^處理中(?:\.\.\.)?\s*/, '');
-
-                            // 1. 過濾掉最前方的日期 (例: 115/05/06, 1150506, 115-05-06)
-                            str = str.replace(/^\d{2,3}[/\\-]?\d{2}[/\\-]?\d{2}\s*/, '');
-                            
-                            // 新增：過濾掉最前方的括號數字雜訊 (例: (48), (24))
-                            str = str.replace(/^\(\d+\)\s*/, '');
-
-                            let brandName = str;
-                            let genericName = '';
-                            let usage = '';
-                            let nhiCode = ''; // UD 模式暫無固定格式解析健保碼，留白
-
-                            // 2. 擷取後方的用法用量 (例: 1TABBID -> 1 TAB BID)
+                            let brandName = str, genericName = '', usage = '';
                             const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PACK|PKG|SYRI)\s*([A-Z0-9&]+)?$/i);
-                            
                             if (usageMatch) {
-                                brandName = usageMatch[1].trim(); // 商品名
-                                const dose = usageMatch[2]; // 數字用量 (包含小數點如 0.5)
-                                const unit = usageMatch[3].toUpperCase(); // 單位
-                                const freq = usageMatch[4] ? usageMatch[4].toUpperCase() : ''; // 頻率
-                                usage = `${dose} ${unit} ${freq}`.trim(); // 組合成新的用法格式 (加空格)
+                                brandName = usageMatch[1].trim(); usage = `${usageMatch[2]} ${usageMatch[3].toUpperCase()} ${usageMatch[4]?usageMatch[4].toUpperCase():''}`.trim();
                             } else {
-                                // 增強：如果沒有常見單位，嘗試抓取結尾的頻率 (例如 1 BID)
                                 const fallbackMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(QD|BID&HS|BID|TID|QID|Q\d+H|PRN|HS|AC|PC|QW)$/i);
-                                if(fallbackMatch) {
-                                    brandName = fallbackMatch[1].trim();
-                                    usage = `${fallbackMatch[2]} ${fallbackMatch[3].toUpperCase()}`.trim();
-                                } else {
-                                    brandName = str; // 若都沒抓到，整串當作商品名
-                                }
+                                if(fallbackMatch) { brandName = fallbackMatch[1].trim(); usage = `${fallbackMatch[2]} ${fallbackMatch[3].toUpperCase()}`.trim(); }
                             }
-
-                            if (brandName || usage) {
-                                newlyParsedItems.push({ id: utils.generateId(), nhiCode, brandName, genericName, usage, appearance: '', alternative: '' });
-                            }
+                            if (brandName || usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode: '', imageUrl: '' });
                         });
-                        
                     } else {
-                        // --- 雲端藥歷清理模式 (原有邏輯) ---
-                        const isCloudTableData = text.includes('\t') && /[a-zA-Z][a-zA-Z0-9]{9}/.test(text);
-
                         const cloudLines = text.split('\n').reduce((lines, line) => {
                             const current = line.trim();
                             if (!current) return lines;
                             const prev = lines[lines.length - 1] || '';
-                            const currentStartsWithDrugCode = /^(?=[a-zA-Z0-9]{10}(?:\t|$))(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}(?:\t|$)/.test(current);
-                            const prevStartsWithDrugCode = /^(?=[a-zA-Z0-9]{10}(?:\t|$))(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}(?:\t|$)/.test(prev);
-
-                            if (currentStartsWithDrugCode && prev && prev.includes('\t') && !prevStartsWithDrugCode) {
-                                lines[lines.length - 1] = prev + '\t' + current;
-                            } else if (prev && !current.includes('\t') && !prev.includes('\t')) {
-                                lines[lines.length - 1] = prev + '\t' + current;
-                            } else {
-                                lines.push(current);
-                            }
+                            const currentStartsWithCode = /^(?=[a-zA-Z0-9]{10}(?:\t|$))(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}(?:\t|$)/.test(current);
+                            const prevStartsWithCode = /^(?=[a-zA-Z0-9]{10}(?:\t|$))(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}(?:\t|$)/.test(prev);
+                            if (currentStartsWithCode && prev && prev.includes('\t') && !prevStartsWithCode) lines[lines.length - 1] = prev + '\t' + current;
+                            else if (prev && !current.includes('\t') && !prev.includes('\t')) lines[lines.length - 1] = prev + '\t' + current;
+                            else lines.push(current);
                             return lines;
                         }, []);
 
                         cloudLines.forEach(line => {
-                            let str = line.trim();
-                            if (!str) return;
-
-                            str = str.replace(/^處理中(?:\.\.\.)?\s*/, '');
-                            str = str.replace(/^\d{2,3}[/\\-]?\d{2}[/\\-]?\d{2}\s*/, '');
-
-                            if (str.includes('藥品代碼') || str.includes('藥品名稱') || str.includes('成分名稱')) return;
+                            let str = line.trim().replace(/^處理中(?:\.\.\.)?\s*/, '').replace(/^\d{2,3}[/\\-]?\d{2}[/\\-]?\d{2}\s*/, '');
+                            if (!str || str.includes('藥品代碼') || str.includes('藥品名稱')) return;
 
                             let brandName = '', genericName = '', usage = '', nhiCode = '';
-                            let isParsedByCloudFormat = false;
+                            let isParsed = false;
 
                             if (str.includes('\t')) {
                                 const parts = str.split('\t');
-                                let codeIndex = -1;
-                                
-                                for (let i = 0; i < parts.length; i++) {
-                                    if (/^(?=[a-zA-Z0-9]{10}$)(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}$/.test(parts[i].trim())) {
-                                        codeIndex = i;
-                                        break;
-                                    }
-                                }
-
+                                let codeIndex = parts.findIndex(p => /^(?=[a-zA-Z0-9]{10}$)(?=[a-zA-Z0-9]*\d)[a-zA-Z][a-zA-Z0-9]{9}$/.test(p.trim()));
                                 if (codeIndex !== -1 && parts.length > codeIndex + 4) {
-                                    nhiCode = parts[codeIndex].trim(); // 精準擷取健保碼
+                                    nhiCode = parts[codeIndex].trim();
                                     brandName = parts[codeIndex + 1] ? parts[codeIndex + 1].trim() : '';
                                     genericName = parts[codeIndex + 3] ? parts[codeIndex + 3].trim() : '';
                                     const freq = parts[codeIndex + 4] ? parts[codeIndex + 4].trim() : '';
                                     const totalQty = parts[codeIndex + 5] ? parts[codeIndex + 5].trim() : '';
                                     const days = parts[codeIndex + 6] ? parts[codeIndex + 6].trim() : '';
-                                    
-                                    if (freq && totalQty && days) {
-                                        usage = `${freq} 共${totalQty}# ${days}天`.trim();
-                                    } else if (freq && totalQty) {
-                                        usage = `${freq} 共${totalQty}#`.trim();
-                                    } else if (freq && days) {
-                                        usage = `${freq} ${days}天`.trim();
-                                    } else {
-                                        usage = freq;
-                                    }
-                                    isParsedByCloudFormat = true;
+                                    if (freq && totalQty && days) usage = `${freq} 共${totalQty}# ${days}天`;
+                                    else if (freq && totalQty) usage = `${freq} 共${totalQty}#`;
+                                    else usage = freq || '';
+                                    isParsed = true;
                                 }
                             }
+                            if (text.includes('\t') && /^[a-zA-Z0-9]{10}/.test(text) && !isParsed && str.includes('\t')) return;
+                            if (text.includes('\t') && /^[a-zA-Z0-9]{10}/.test(text) && !isParsed && !/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|mg|ml|mcg|\d+[顆錠粒包瓶次滴])/i.test(str) && !/\([^)]+\)|\[[^\]]+\]/.test(str)) return;
 
-                            if (isCloudTableData && !isParsedByCloudFormat && str.includes('\t')) return;
-                            
-                            if (isCloudTableData && !isParsedByCloudFormat) {
-                                const hasUsageKeyword = /(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|mg|ml|mcg|\d+[顆錠粒包瓶次滴])/i.test(str);
-                                const hasGenericPattern = /\([^)]+\)|\[[^\]]+\]/.test(str);
-                                if (!hasUsageKeyword && !hasGenericPattern) return; 
-                            }
-
-                            if (!isParsedByCloudFormat) {
-                                // 嘗試尋找疑似健保碼 (10碼英數字，字母開頭)
-                                const nhiCodeMatch = str.match(/(?<![a-zA-Z0-9])[a-zA-Z][a-zA-Z0-9]{9}(?![a-zA-Z0-9])/);
-                                if (nhiCodeMatch) {
-                                    nhiCode = nhiCodeMatch[0];
-                                    str = str.replace(nhiCode, ''); // 從字串移除，避免干擾後續解析
-                                }
-
+                            if (!isParsed) {
                                 const genericMatch = str.match(/\(([^)]+)\)|\[([^\]]+)\]/);
                                 if (genericMatch) genericName = genericMatch[1] || genericMatch[2];
                                 const usageMatches = str.match(/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴]|[早中晚]?[飯餐][前後]|睡前)/ig);
                                 if (usageMatches) usage = usageMatches.join(' ');
-                                
-                                let remainStr = str;
-                                if (genericMatch) remainStr = remainStr.replace(genericMatch[0], '');
-                                if (usageMatches) usageMatches.forEach(u => { remainStr = remainStr.replace(u, ''); });
-                                remainStr = remainStr.replace(/^(\d+\.|\[\d+\])\s*/, '');
-                                brandName = remainStr.replace(/[^\w\s\u4e00-\u9fa5-]/g, '').replace(/\s+/g, ' ').trim();
-                                
-                                if (!usage && !genericName && !nhiCode) {
-                                    if (/^(門診|急診|住院|就醫|診斷|項次|費用|日期|來源)/.test(brandName)) return;
-                                    if (/^[\d\s/-]+$/.test(brandName)) return; 
-                                }
+                                let remain = str;
+                                if (genericMatch) remain = remain.replace(genericMatch[0], '');
+                                if (usageMatches) usageMatches.forEach(u => remain = remain.replace(u, ''));
+                                brandName = remain.replace(/^(\d+\.|\[\d+\])\s*/, '').replace(/[^\w\s\u4e00-\u9fa5-]/g, '').replace(/\s+/g, ' ').trim();
+                                if (!usage && !genericName && (/^(門診|急診|住院|就醫|診斷|項次)/.test(brandName) || /^[\d\s/-]+$/.test(brandName))) return;
                             }
-
-                            if (brandName || genericName || usage || nhiCode) {
-                                newlyParsedItems.push({ id: utils.generateId(), nhiCode, brandName, genericName, usage, appearance: '', alternative: '' });
-                            }
+                            if (brandName || genericName || usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode, imageUrl: '' });
                         });
                     }
-
-                    // 直接將解析結果加入主要清單
-                    if (newlyParsedItems.length > 0) {
-                        medList = [...medList, ...newlyParsedItems];
-                        ui.renderTable();
-                        storage.save();
-                        utils.showToast(`成功解析並加入 ${newlyParsedItems.length} 筆資料`);
-                        
-                        // 清空輸入區
-                        els.rawText.value = '';
-                        if (currentParseMode === 'cloud') savedTextCloud = '';
-                        else savedTextUd = '';
-                    } else {
-                        utils.showToast('無法解析出任何藥物資料', 'info');
-                    }
+                    return results;
                 }
             };
 
             const ui = {
                 renderTable: () => {
-                    // 初始化重置狀態
                     if(els.selectAllCheckbox) els.selectAllCheckbox.checked = false;
-                    els.batchActions.classList.replace('flex', 'hidden');
+                    api.updateBatchDeleteBtn();
 
                     if (medList.length === 0) {
-                        els.tableBody.innerHTML = '';
-                        if (els.gridBody) els.gridBody.innerHTML = '';
+                        els.listContainer.classList.add('hidden');
+                        els.gridContainer.classList.add('hidden');
                         els.emptyState.classList.remove('hidden'); els.emptyState.classList.add('flex');
+                        els.tableBody.innerHTML = '';
+                        els.gridBody.innerHTML = '';
                     } else {
                         els.emptyState.classList.add('hidden'); els.emptyState.classList.remove('flex');
-                        
-                        // 1. 渲染表格模式
-                        els.tableBody.innerHTML = medList.map((med, index) => `
-                            <tr draggable="false" data-drag-armed="false" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-none rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative shadow-sm md:shadow-none hover:bg-slate-50/80 md:hover:shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 transition-all duration-200" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
-                                <!-- 拖曳手把與勾選框 (桌機) -->
-                                <td class="hidden md:table-cell py-1 md:py-3 px-2 md:px-3 text-center border-b border-slate-100 md:border-none">
-                                    <div class="flex items-center justify-center gap-1">
-                                        <i class="ph ph-dots-six-vertical text-slate-400 cursor-grab hover:text-primary-500 active:cursor-grabbing text-lg drag-handle" title="拖曳排序"></i>
-                                        <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4 transition-all" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
-                                    </div>
-                                </td>
-                                <!-- 序號與手機版勾選/刪除鈕 -->
-                                <td class="block md:table-cell py-1 md:py-3 px-1 md:px-2 text-left md:text-center font-medium text-slate-500 border-b border-slate-100 md:border-none mb-2 md:mb-0 transition-colors duration-200 group-hover:text-primary-600">
-                                    <div class="flex justify-between items-center md:block">
-                                        <div class="flex items-center gap-2">
-                                            <input type="checkbox" class="md:hidden row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4 transition-all" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
-                                            <span><span class="md:hidden text-xs text-slate-400 mr-1">序號:</span>${index + 1}</span>
-                                        </div>
-                                        <button class="delete-btn md:hidden text-slate-400 hover:text-red-500 hover:bg-red-50 p-2.5 -mr-2 rounded-xl active:scale-95 transition-all duration-200" title="刪除此列">
-                                            <i class="ph ph-trash text-xl pointer-events-none"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                                <!-- 外觀圖示欄位 -->
-                                <td class="col-img flex md:table-cell items-center py-1 md:py-2 px-1 md:px-2 border-b border-slate-50 md:border-none text-center">
-                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">外觀圖</span>
-                                    <div class="flex-1 md:flex-none flex justify-start md:justify-center">
-                                        <a href="#" target="_blank" class="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-lg border border-slate-200 text-slate-400 hover:text-primary-500 hover:bg-primary-50 hover:border-primary-300 transition-all cursor-pointer shadow-sm" title="查看藥品外觀 (待串接)">
-                                            <i class="ph ph-image text-lg pointer-events-none"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                                <!-- 輸入欄位 -->
-                                <td class="col-brandName flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
-                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">商品名</span>
-                                    <input type="text" class="table-input font-medium md:font-normal" data-field="brandName" value="${utils.escapeHtml(med.brandName)}" placeholder="輸入商品名">
-                                </td>
-                                <td class="col-genericName flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
-                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">學名成分</span>
-                                    <input type="text" class="table-input text-slate-600" data-field="genericName" value="${utils.escapeHtml(med.genericName)}" placeholder="輸入學名">
-                                </td>
-                                <td class="col-usage flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
-                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">用法用量</span>
-                                    <input type="text" class="table-input text-slate-600" data-field="usage" value="${utils.escapeHtml(med.usage)}" placeholder="例: 1顆 TID">
-                                </td>
-                                <td class="col-appearance flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
-                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">外觀描述</span>
-                                    <input type="text" class="table-input text-slate-600" data-field="appearance" value="${utils.escapeHtml(med.appearance)}" placeholder="例: 白色圓錠">
-                                </td>
-                                <td class="col-nhiCode flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3 border-b border-slate-50 md:border-none">
-                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500 font-medium">健保碼</span>
-                                    <input type="text" class="table-input text-slate-600" data-field="nhiCode" value="${utils.escapeHtml(med.nhiCode)}" placeholder="健保碼">
-                                </td>
-                                <td class="col-alternative flex md:table-cell items-center py-1 md:py-2 px-1 md:px-3">
-                                    <span class="md:hidden w-[72px] shrink-0 text-xs text-amber-600 font-medium">替代/備註</span>
-                                    <input type="text" class="table-input text-amber-600 bg-amber-50/50 md:bg-amber-50/30 md:focus:bg-amber-100/50" data-field="alternative" value="${utils.escapeHtml(med.alternative)}" placeholder="替代或備註">
-                                </td>
-                                <!-- 桌機版刪除鈕 -->
-                                <td class="hidden md:table-cell py-2 px-3 text-center">
-                                    <button class="delete-btn text-slate-400 hover:text-red-500 hover:bg-red-50 hover:shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 p-2.5 rounded-xl" title="刪除此列">
-                                        <i class="ph ph-trash text-xl pointer-events-none"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `).join('');
 
-                        // 2. 渲染圖片網格模式
-                        if (els.gridBody) {
+                        if (isImageMode) {
+                            els.listContainer.classList.add('hidden');
+                            els.gridContainer.classList.remove('hidden');
+                            els.tableBody.innerHTML = ''; 
+
                             els.gridBody.innerHTML = medList.map((med, index) => `
-                                <div class="med-card group relative bg-white rounded-2xl shadow-sm border border-slate-200 p-3 flex flex-col hover:shadow-md hover:border-primary-300 transition-all duration-200 animate-fade-in-up" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
-                                    <div class="absolute top-2 left-2 z-10 bg-white/80 backdrop-blur-sm rounded-md p-0.5 shadow-sm">
-                                        <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4 transition-all" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                <div class="col-span-1 bg-white border border-slate-200 rounded-xl p-3 flex flex-col relative shadow-sm hover:shadow-md transition-shadow animate-fade-in-up card-item" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                        <button class="delete-btn text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1 transition-colors -mt-1 -mr-1" title="刪除此列"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
                                     </div>
-                                    <button class="delete-btn absolute top-2 right-2 z-10 text-slate-400 hover:text-red-500 bg-white/80 backdrop-blur-sm hover:bg-red-50 rounded-md p-1.5 shadow-sm opacity-0 group-hover:opacity-100 transition-all" title="刪除">
-                                        <i class="ph ph-trash text-lg pointer-events-none"></i>
-                                    </button>
-                                    
-                                    <div class="w-full aspect-square bg-slate-50 rounded-xl flex items-center justify-center border border-slate-100 mb-2 overflow-hidden relative cursor-pointer hover:opacity-90 transition-opacity" title="點擊檢視外觀圖 (未來串接)">
-                                        <i class="ph ph-image text-4xl text-slate-300"></i>
-                                        <!-- 未來這裡可串接: <img src="URL" class="w-full h-full object-cover"> -->
+                                    <div class="w-full aspect-square bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100 overflow-hidden mb-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="app.editImageUrl('${med.id}')" title="點擊設定圖片">
+                                        ${med.imageUrl ? `<img src="${utils.escapeHtml(med.imageUrl)}" class="w-full h-full object-cover">` : `<i class="ph ph-image text-4xl text-slate-300"></i>`}
                                     </div>
-                                    
-                                    <div class="flex flex-col flex-1 gap-1">
-                                        <div class="brand-name font-bold text-sm text-slate-800 leading-tight line-clamp-2" title="${utils.escapeHtml(med.brandName)}">${utils.escapeHtml(med.brandName) || '<span class="text-slate-400 font-normal">未命名商品</span>'}</div>
-                                        <div class="appearance-desc text-xs text-slate-500 leading-snug line-clamp-2" title="${utils.escapeHtml(med.appearance)}">${utils.escapeHtml(med.appearance) || '無外觀描述'}</div>
+                                    <div class="mt-auto">
+                                        <div class="font-bold text-slate-800 text-sm leading-tight truncate mb-1" title="${utils.escapeHtml(med.brandName)}">${utils.escapeHtml(med.brandName) || '未命名商品'}</div>
+                                        <div class="text-xs text-slate-500 leading-tight truncate" title="${utils.escapeHtml(med.appearance)}">${utils.escapeHtml(med.appearance) || '無外觀描述'}</div>
                                     </div>
                                 </div>
+                            `).join('');
+                        } else {
+                            els.gridContainer.classList.add('hidden');
+                            els.listContainer.classList.remove('hidden');
+                            els.gridBody.innerHTML = ''; 
+
+                            els.tableBody.innerHTML = medList.map((med, index) => `
+                                <tr draggable="false" data-drag-armed="false" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-none rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative shadow-sm md:shadow-none hover:bg-slate-50/80 md:hover:shadow-md transition-all duration-200 list-item-row" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
+                                    <td class="hidden md:table-cell py-2 px-2 text-center border-b border-slate-100 md:border-none">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <i class="ph ph-dots-six-vertical text-slate-400 cursor-grab hover:text-primary-500 drag-handle"></i>
+                                            <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 w-4 h-4 cursor-pointer" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                        </div>
+                                    </td>
+                                    <td class="block md:table-cell py-2 px-2 text-left md:text-center font-medium text-slate-500 border-b border-slate-100 md:border-none mb-2 md:mb-0">
+                                        <div class="flex justify-between items-center md:block">
+                                            <div class="flex items-center gap-2">
+                                                <input type="checkbox" class="md:hidden row-checkbox rounded border-slate-300 text-primary-600 w-4 h-4 cursor-pointer" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                                <span><span class="md:hidden text-xs text-slate-400"># </span>${index + 1}</span>
+                                            </div>
+                                            <button class="delete-btn md:hidden text-slate-400 hover:text-red-500 p-2"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
+                                        </div>
+                                    </td>
+                                    <td class="col-image flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none text-center">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">外觀圖</span>
+                                        ${med.imageUrl ? 
+                                            `<a href="${utils.escapeHtml(med.imageUrl)}" target="_blank" class="p-1 rounded text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors mx-auto block" title="開啟圖片連結">
+                                                <i class="ph ph-image-square text-xl text-primary-500"></i>
+                                            </a>` : 
+                                            `<button onclick="app.editImageUrl('${med.id}')" class="p-1 rounded text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors mx-auto block" title="設定圖片連結">
+                                                <i class="ph ph-image text-xl"></i>
+                                            </button>`
+                                        }
+                                    </td>
+                                    <td class="col-brand flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">商品名</span>
+                                        <input type="text" class="table-input font-medium md:font-normal" data-field="brandName" value="${utils.escapeHtml(med.brandName)}" placeholder="輸入商品名">
+                                    </td>
+                                    <td class="col-generic flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">學名/成分</span>
+                                        <input type="text" class="table-input text-slate-600" data-field="genericName" value="${utils.escapeHtml(med.genericName)}">
+                                    </td>
+                                    <td class="col-usage flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">用法用量</span>
+                                        <input type="text" class="table-input text-slate-600" data-field="usage" value="${utils.escapeHtml(med.usage)}">
+                                    </td>
+                                    <td class="col-appearance flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">外觀描述</span>
+                                        <input type="text" class="table-input text-slate-600" data-field="appearance" value="${utils.escapeHtml(med.appearance)}">
+                                    </td>
+                                    <td class="col-nhicode hidden flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">健保碼</span>
+                                        <input type="text" class="table-input text-slate-600 font-mono text-xs uppercase" data-field="nhiCode" value="${utils.escapeHtml(med.nhiCode)}">
+                                    </td>
+                                    <td class="col-alternative hidden flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-amber-600">替代/備註</span>
+                                        <input type="text" class="table-input text-amber-600 bg-amber-50/50" data-field="alternative" value="${utils.escapeHtml(med.alternative)}">
+                                    </td>
+                                    <td class="hidden md:table-cell py-2 px-2 text-center">
+                                        <button class="delete-btn text-slate-400 hover:text-red-500 p-2"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
+                                    </td>
+                                </tr>
                             `).join('');
                         }
                     }
                     ui.updateMetrics();
-                    ui.updatePrintView();
                 },
-
-                updatePrintLabelView: () => {
+                updateMetrics: () => { els.medCount.textContent = `${medList.length} 筆`; },
+                updatePrintView: () => {
+                    const printDate = document.getElementById('print-date');
+                    if(printDate) {
+                        const today = new Date();
+                        printDate.textContent = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
+                    }
+                    const printTableBody = document.getElementById('print-table-body');
+                    if(!printTableBody) return;
                     if (medList.length === 0) {
-                        els.labelContainer.innerHTML = '<div class="col-span-full text-center text-slate-500 py-10 font-medium">無藥品紀錄可產生標籤</div>';
+                        printTableBody.innerHTML = `<tr><td colspan="6" class="border border-gray-400 py-4 text-center text-gray-500">無藥品紀錄</td></tr>`;
                         return;
                     }
-                    els.labelContainer.innerHTML = medList.map((med) => {
+                    printTableBody.innerHTML = medList.map((med, i) => `
+                        <tr>
+                            <td class="border border-gray-400 py-2 px-3 text-center">${i + 1}</td>
+                            <td class="border border-gray-400 py-2 px-3 font-medium">${utils.escapeHtml(med.brandName)}</td>
+                            <td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.genericName)}</td>
+                            <td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.usage)}</td>
+                            <td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.appearance)}</td>
+                            <td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.alternative)}</td>
+                        </tr>
+                    `).join('');
+                },
+                updatePrintLabelView: () => {
+                    const labelContainer = document.getElementById('label-container');
+                    if(!labelContainer) return;
+                    if (medList.length === 0) {
+                        labelContainer.innerHTML = '<div class="col-span-full text-center text-slate-500 py-10 font-medium">無藥品紀錄可產生標籤</div>';
+                        return;
+                    }
+                    labelContainer.innerHTML = medList.map((med) => {
                         const brandLength = Array.from(String(med.brandName || '')).length;
                         let brandFontSize = 12.5;
                         if (brandLength > 68) brandFontSize = 8;
@@ -908,518 +666,209 @@
                             </div>
                         </div>`;
                     }).join('');
-                },
-
-                updatePrintView: () => {
-                    const today = new Date();
-                    if(els.printDate) els.printDate.textContent = `${today.getFullYear()}/${today.getMonth() + 1}/${today.getDate()}`;
-                    
-                    // 獲取自訂列印欄位狀態
-                    const toggles = Array.from(document.querySelectorAll('#print-col-toggles input[type="checkbox"]'));
-                    const showCols = {
-                        brand: toggles.find(t => t.value === 'brand')?.checked ?? true,
-                        generic: toggles.find(t => t.value === 'generic')?.checked ?? true,
-                        usage: toggles.find(t => t.value === 'usage')?.checked ?? true,
-                        appearance: toggles.find(t => t.value === 'appearance')?.checked ?? true,
-                        nhiCode: toggles.find(t => t.value === 'nhiCode')?.checked ?? false,
-                        alternative: toggles.find(t => t.value === 'alternative')?.checked ?? true
-                    };
-
-                    // 動態更新表頭
-                    const theadHTML = `
-                        <tr>
-                            <th class="border border-gray-400 py-2 px-3 text-left w-12">序號</th>
-                            ${showCols.brand ? '<th class="border border-gray-400 py-2 px-3 text-left">商品名</th>' : ''}
-                            ${showCols.generic ? '<th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>' : ''}
-                            ${showCols.usage ? '<th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>' : ''}
-                            ${showCols.appearance ? '<th class="border border-gray-400 py-2 px-3 text-left">外觀描述</th>' : ''}
-                            ${showCols.nhiCode ? '<th class="border border-gray-400 py-2 px-3 text-left">健保碼</th>' : ''}
-                            ${showCols.alternative ? '<th class="border border-gray-400 py-2 px-3 text-left">替代品項 / 備註</th>' : ''}
-                        </tr>
-                    `;
-                    const theadContainer = document.querySelector('#print-view thead');
-                    if (theadContainer) theadContainer.innerHTML = theadHTML;
-
-                    if (medList.length === 0) {
-                        const colCount = 1 + Object.values(showCols).filter(Boolean).length;
-                        els.printTableBody.innerHTML = `<tr><td colspan="${colCount}" class="border border-gray-400 py-4 text-center text-gray-500">無藥品紀錄</td></tr>`;
-                        return;
-                    }
-                    
-                    els.printTableBody.innerHTML = medList.map((med, i) => `
-                        <tr>
-                            <td class="border border-gray-400 py-2 px-3 text-center">${i + 1}</td>
-                            ${showCols.brand ? `<td class="border border-gray-400 py-2 px-3 font-medium">${utils.escapeHtml(med.brandName)}</td>` : ''}
-                            ${showCols.generic ? `<td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.genericName)}</td>` : ''}
-                            ${showCols.usage ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.usage)}</td>` : ''}
-                            ${showCols.appearance ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.appearance)}</td>` : ''}
-                            ${showCols.nhiCode ? `<td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.nhiCode)}</td>` : ''}
-                            ${showCols.alternative ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.alternative)}</td>` : ''}
-                        </tr>
-                    `).join('');
-                },
-                updateMetrics: () => { els.medCount.textContent = `${medList.length} 筆`; }
+                }
             };
 
             const setupEvents = () => {
-                // 即時搜尋與過濾 (同步過濾清單與網格)
-                if (els.searchInput) {
-                    els.searchInput.addEventListener('input', (e) => {
-                        const keyword = e.target.value.toLowerCase();
-                        // 1. 過濾清單表格
-                        document.querySelectorAll('#med-table-body tr').forEach(tr => {
-                            const brand = tr.querySelector('input[data-field="brandName"]').value.toLowerCase();
-                            const generic = tr.querySelector('input[data-field="genericName"]').value.toLowerCase();
-                            const nhiCode = tr.querySelector('input[data-field="nhiCode"]').value.toLowerCase();
-                            if (brand.includes(keyword) || generic.includes(keyword) || nhiCode.includes(keyword)) {
-                                tr.classList.remove('hidden');
-                                tr.classList.add('md:table-row');
-                            } else {
-                                tr.classList.add('hidden');
-                                tr.classList.remove('md:table-row');
-                            }
-                        });
-                        // 2. 過濾圖片網格
-                        if (els.gridBody) {
-                            document.querySelectorAll('#med-grid-body .med-card').forEach(card => {
-                                const brand = card.querySelector('.brand-name').textContent.toLowerCase();
-                                const appearance = card.querySelector('.appearance-desc').textContent.toLowerCase();
-                                if (brand.includes(keyword) || appearance.includes(keyword)) {
-                                    card.classList.remove('hidden');
-                                } else {
-                                    card.classList.add('hidden');
-                                }
-                            });
-                        }
-                    });
-                }
-
-                // 全域鍵盤快捷鍵 (Ctrl+S 手動存檔)
-                document.addEventListener('keydown', (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                        e.preventDefault();
-                        storage.save();
-                        utils.showToast('手動存檔成功');
-                    }
-                });
-
-                els.tableBody.addEventListener('keydown', (e) => {
-                    // 無滑鼠快捷輸入 (Enter 跳下一格，Tab 瀏覽器原生支援)
-                    if (e.key === 'Enter' && e.target.classList.contains('table-input')) {
-                        e.preventDefault();
-                        const inputs = Array.from(els.tableBody.querySelectorAll('.table-input'));
-                        const currentIndex = inputs.indexOf(e.target);
-                        if (currentIndex > -1 && currentIndex < inputs.length - 1) {
-                            inputs[currentIndex + 1].focus();
-                        } else if (currentIndex === inputs.length - 1) {
-                            api.addNewRow(); // 如果是最後一格，自動新增一列
-                        }
-                    }
-                });
-
-                // 拖曳排序邏輯 (Drag and Drop)
-                let draggedRow = null;
-                els.tableBody.addEventListener('dragstart', (e) => {
-                    const row = e.target.closest('tr');
-                    if (row && row.dataset.dragArmed === 'true') {
-                        draggedRow = row;
-                        e.dataTransfer.effectAllowed = 'move';
-                        e.dataTransfer.setData('text/plain', row.dataset.id || '');
-                        setTimeout(() => draggedRow && draggedRow.classList.add('opacity-40', 'bg-slate-100'), 0);
-                    } else {
-                        e.preventDefault();
-                    }
-                });
-                els.tableBody.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    const targetRow = e.target.closest('tr');
-                    if (targetRow && targetRow !== draggedRow && targetRow.parentNode === els.tableBody) {
-                        const rect = targetRow.getBoundingClientRect();
-                        const next = (e.clientY - rect.top)/(rect.bottom - rect.top) > 0.5;
-                        els.tableBody.insertBefore(draggedRow, next ? targetRow.nextSibling : targetRow);
-                    }
-                });
-                els.tableBody.addEventListener('dragend', () => {
-                    if (draggedRow) {
-                        draggedRow.classList.remove('opacity-40', 'bg-slate-100');
-                        // 更新 medList 順序
-                        const newOrderIds = Array.from(els.tableBody.querySelectorAll('tr')).map(tr => tr.dataset.id);
-                        medList.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
-                        storage.save();
-                        ui.updatePrintView();
-                        draggedRow.dataset.dragArmed = 'false';
-                        draggedRow.draggable = false;
-                        draggedRow = null;
-                    }
-                });
-                // 只有按住拖曳手把才啟用原生拖曳；其餘區域維持正常文字選取。
-                els.tableBody.addEventListener('pointerdown', (e) => {
-                    const handle = e.target.closest('.drag-handle');
-                    if (handle) {
-                        const row = handle.closest('tr');
-                        if (row) {
-                            row.dataset.dragArmed = 'true';
-                            row.draggable = true;
-                        }
-                    }
-                });
-                els.tableBody.addEventListener('pointerup', (e) => {
-                    if (!e.target.closest('.drag-handle') && !draggedRow) {
-                        els.tableBody.querySelectorAll('tr').forEach(row => {
-                            row.dataset.dragArmed = 'false';
-                            row.draggable = false;
-                        });
-                    }
-                });
-                els.tableBody.addEventListener('pointercancel', () => {
-                    els.tableBody.querySelectorAll('tr').forEach(row => {
-                        row.dataset.dragArmed = 'false';
-                        row.draggable = false;
-                    });
-                });
-
-                // 表格內容直接編輯即時存檔
-                els.tableBody.addEventListener('input', (e) => {
+                const handleInput = (e) => {
                     if (e.target.classList.contains('table-input')) {
-                        const tr = e.target.closest('tr');
-                        const medIndex = medList.findIndex(m => m.id === tr.dataset.id);
+                        const itemEl = e.target.closest('[data-id]');
+                        if(!itemEl) return;
+                        const medIndex = medList.findIndex(m => m.id === itemEl.dataset.id);
                         if (medIndex > -1) {
                             medList[medIndex][e.target.dataset.field] = e.target.value;
                             debouncedSave();
-                            ui.updatePrintView();
                         }
                     }
-                });
+                };
+                els.listContainer.addEventListener('input', handleInput);
 
-                // 共用的點擊事件處理 (處理清單與圖片網格中的 checkbox 和刪除)
-                const handleItemClick = (e, container, itemSelector) => {
-                    // 勾選框同步與 Shift 多選
+                const handleClick = (e) => {
                     if (e.target.classList.contains('row-checkbox')) {
-                        const currentItem = e.target.closest(itemSelector);
-                        const items = Array.from(container.querySelectorAll(itemSelector));
-                        const currentIndex = items.indexOf(currentItem);
-                        const isChecked = e.target.checked;
-                        const medId = e.target.value;
+                        const itemEl = e.target.closest('[data-id]');
+                        if(!itemEl) return;
+                        const currentId = itemEl.dataset.id;
+                        
+                        if(!isImageMode) {
+                            itemEl.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
+                        }
 
-                        // 核心：同步更新相同 ID 的所有勾選框 (跨越桌機/手機欄位，或跨列表/網格隱藏狀態)
-                        document.querySelectorAll(`.row-checkbox[value="${medId}"]`).forEach(cb => cb.checked = isChecked);
-
-                        // Shift 多選邏輯
                         if (e.shiftKey && lastCheckedIndex !== null) {
+                            const allItems = Array.from(document.querySelectorAll('[data-id]'));
+                            const currentIndex = allItems.findIndex(el => el.dataset.id === currentId);
                             const start = Math.min(currentIndex, lastCheckedIndex);
                             const end = Math.max(currentIndex, lastCheckedIndex);
                             for (let i = start; i <= end; i++) {
-                                const idToSync = items[i].dataset.id;
-                                document.querySelectorAll(`.row-checkbox[value="${idToSync}"]`).forEach(cb => cb.checked = isChecked);
+                                allItems[i].querySelectorAll('.row-checkbox').forEach(cb => cb.checked = e.target.checked);
                             }
                         }
-                        lastCheckedIndex = currentIndex;
+                        const allItems = Array.from(document.querySelectorAll('[data-id]'));
+                        lastCheckedIndex = allItems.findIndex(el => el.dataset.id === currentId);
                         api.updateBatchDeleteBtn();
                     }
 
-                    // 單筆刪除
-                    const btn = e.target.closest('.delete-btn');
-                    if (btn) {
-                        const item = btn.closest(itemSelector);
-                        // 讓它淡出
-                        item.style.opacity = '0';
-                        item.style.transform = 'translateY(-10px)';
-                        // 同步把另一個視圖的元素也淡出
-                        const mirrorItems = document.querySelectorAll(`[data-id="${item.dataset.id}"]`);
-                        mirrorItems.forEach(mi => { mi.style.opacity = '0'; mi.style.transform = 'translateY(-10px)'; });
-
-                        setTimeout(() => {
-                            api.deleteRow(item.dataset.id);
-                        }, 200); 
+                    const deleteBtn = e.target.closest('.delete-btn');
+                    if (deleteBtn) {
+                        const itemEl = deleteBtn.closest('[data-id]');
+                        if(itemEl) {
+                            itemEl.style.opacity = '0';
+                            setTimeout(() => api.deleteRow(itemEl.dataset.id), 200);
+                        }
                     }
                 };
+                els.listContainer.addEventListener('click', handleClick);
+                els.gridContainer.addEventListener('click', handleClick);
 
-                els.tableBody.addEventListener('click', (e) => handleItemClick(e, els.tableBody, 'tr'));
-                if (els.gridBody) els.gridBody.addEventListener('click', (e) => handleItemClick(e, els.gridBody, '.med-card'));
+                if (els.searchInput) {
+                    els.searchInput.addEventListener('input', (e) => {
+                        const keyword = e.target.value.toLowerCase();
+                        document.querySelectorAll('[data-id]').forEach(el => {
+                            const med = medList.find(m => m.id === el.dataset.id);
+                            if(med && (String(med.brandName).toLowerCase().includes(keyword) || String(med.genericName).toLowerCase().includes(keyword))) {
+                                el.style.display = '';
+                            } else {
+                                el.style.display = 'none';
+                            }
+                        });
+                    });
+                }
             };
 
             const api = {
                 init: () => { 
-                    // 登入驗證檢查 (利用 sessionStorage 避免同一個分頁一直重複登入)
-                    if (sessionStorage.getItem('medAssistantAuth') === 'true') {
-                        els.loginOverlay.classList.add('hidden');
-                        els.loginOverlay.classList.remove('flex');
-                    } else {
-                        els.loginPwd.addEventListener('keypress', (e) => {
-                            if (e.key === 'Enter') api.verifyPassword();
-                        });
-                        // 稍微延遲 focus 避免行動裝置鍵盤異常彈出
-                        setTimeout(() => els.loginPwd.focus(), 100);
-                    }
-                    
                     medList = storage.load(); ui.renderTable(); setupEvents(); 
                 },
-
-                verifyPassword: () => {
-                    if (els.loginPwd.value === '789') {
-                        sessionStorage.setItem('medAssistantAuth', 'true');
-                        els.loginOverlay.classList.add('opacity-0');
-                        setTimeout(() => {
-                            els.loginOverlay.classList.add('hidden');
-                            els.loginOverlay.classList.remove('flex');
-                        }, 300);
-                    } else {
-                        els.loginError.classList.remove('hidden');
-                        els.loginError.classList.remove('opacity-0');
-                        els.loginPwd.value = '';
-                        els.loginPwd.focus();
-                    }
-                },
-                
-                // 動態切換表格欄位顯示 (搭配 CSS 修改)
-                toggleTableCol: (colName, isVisible) => {
-                    colState[colName] = isVisible;
-                    let styleStr = '';
-                    for (let key in colState) {
-                        if (!colState[key]) {
-                            styleStr += `.col-${key} { display: none !important; }\n`;
-                        }
-                    }
-                    els.dynamicColsStyle.innerHTML = styleStr;
-                },
-                
-                // 欄位設定 Modal 互動
-                openColSettingsModal: () => {
-                    els.colSettingsModal.classList.remove('hidden');
-                    els.colSettingsModal.classList.add('flex');
-                    requestAnimationFrame(() => {
-                        els.colSettingsModal.classList.remove('opacity-0');
-                        els.colSettingsContent.classList.remove('scale-95');
-                    });
-                },
-                closeColSettingsModal: () => {
-                    els.colSettingsModal.classList.add('opacity-0');
-                    els.colSettingsContent.classList.add('scale-95');
-                    setTimeout(() => {
-                        els.colSettingsModal.classList.add('hidden');
-                        els.colSettingsModal.classList.remove('flex');
-                    }, 200);
-                },
-
-                // 視圖模式切換 (清單 / 圖片)
-                toggleViewMode: () => {
-                    currentViewMode = currentViewMode === 'table' ? 'grid' : 'table';
-                    
-                    if (currentViewMode === 'grid') {
-                        // 轉換為圖片模式
-                        els.tableContainer.classList.add('hidden');
-                        els.gridBody.classList.remove('hidden');
-                        els.gridBody.classList.add('grid');
-                        
-                        // 隱藏不必要的按鈕
-                        els.colSettingsWrapper.classList.add('hidden');
-                        els.colSettingsWrapper.classList.remove('flex');
-                        els.addBtnWrapper.classList.add('hidden');
-                        els.addBtnWrapper.classList.remove('flex');
-
-                        // 更新按鈕外觀
-                        els.viewModeIcon.className = 'ph ph-list-bullets';
-                        els.viewModeText.textContent = '清單模式';
-                        els.viewModeBtn.classList.replace('bg-indigo-50', 'bg-blue-50');
-                        els.viewModeBtn.classList.replace('text-indigo-700', 'text-blue-700');
-                        els.viewModeBtn.classList.replace('border-indigo-200/50', 'border-blue-200/50');
-                    } else {
-                        // 轉換回清單模式
-                        els.tableContainer.classList.remove('hidden');
-                        els.gridBody.classList.add('hidden');
-                        els.gridBody.classList.remove('grid');
-                        
-                        // 恢復顯示按鈕
-                        els.colSettingsWrapper.classList.remove('hidden');
-                        els.colSettingsWrapper.classList.add('flex');
-                        els.addBtnWrapper.classList.remove('hidden');
-                        els.addBtnWrapper.classList.add('flex');
-
-                        // 更新按鈕外觀
-                        els.viewModeIcon.className = 'ph ph-image';
-                        els.viewModeText.textContent = '圖片模式';
-                        els.viewModeBtn.classList.replace('bg-blue-50', 'bg-indigo-50');
-                        els.viewModeBtn.classList.replace('text-blue-700', 'text-indigo-700');
-                        els.viewModeBtn.classList.replace('border-blue-200/50', 'border-indigo-200/50');
-                    }
-                    
-                    // 重新計算當下畫面中勾選的按鈕數量
-                    api.updateBatchDeleteBtn();
-                },
-
-                // 切換解析模式 UI 與狀態
                 setParseMode: (mode) => {
-                    if (currentParseMode === 'cloud') {
-                        savedTextCloud = els.rawText.value;
-                    } else {
-                        savedTextUd = els.rawText.value;
-                    }
-
                     currentParseMode = mode;
-                    const btnCloud = document.getElementById('mode-btn-cloud');
-                    const btnUd = document.getElementById('mode-btn-ud');
-                    const rawText = document.getElementById('rawText');
-
-                    if (mode === 'cloud') {
-                        btnCloud.classList.add('bg-white', 'text-primary-600', 'shadow-sm');
-                        btnCloud.classList.remove('text-slate-500', 'hover:text-slate-700');
-                        btnUd.classList.remove('bg-white', 'text-primary-600', 'shadow-sm');
-                        btnUd.classList.add('text-slate-500', 'hover:text-slate-700');
-                        rawText.placeholder = "在此貼上內容...";
-                        rawText.value = savedTextCloud;
-                    } else {
-                        btnUd.classList.add('bg-white', 'text-primary-600', 'shadow-sm');
-                        btnUd.classList.remove('text-slate-500', 'hover:text-slate-700');
-                        btnCloud.classList.remove('bg-white', 'text-primary-600', 'shadow-sm');
-                        btnCloud.classList.add('text-slate-500', 'hover:text-slate-700');
-                        rawText.placeholder = "在此貼上內容...";
-                        rawText.value = savedTextUd; 
+                    document.getElementById('mode-btn-cloud').className = mode === 'cloud' ? 'px-2.5 py-1 text-[11px] font-medium rounded shadow-sm bg-white text-primary-600 transition-all' : 'px-2.5 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 transition-all';
+                    document.getElementById('mode-btn-ud').className = mode === 'ud' ? 'px-2.5 py-1 text-[11px] font-medium rounded shadow-sm bg-white text-primary-600 transition-all' : 'px-2.5 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 transition-all';
+                    els.rawText.placeholder = mode === 'cloud' ? "貼上雲端藥歷內容..." : "貼上UD處方...";
+                },
+                parseAndAddText: () => {
+                    const parsed = parser.process(els.rawText.value);
+                    if (parsed && parsed.length > 0) {
+                        medList = [...medList, ...parsed];
+                        ui.renderTable(); storage.save();
+                        utils.showToast(`成功解析並加入 ${parsed.length} 筆資料`);
+                        els.rawText.value = '';
                     }
                 },
-
-                parseText: () => { parser.process(els.rawText.value); },
-                
                 addNewRow: () => {
-                    medList.push({ id: utils.generateId(), nhiCode: '', brandName: '', genericName: '', usage: '', appearance: '', alternative: '' });
+                    medList.push({ id: utils.generateId(), brandName: '', genericName: '', usage: '', appearance: '', alternative: '', nhiCode: '', imageUrl: '' });
                     ui.renderTable(); storage.save();
                     setTimeout(() => {
-                        const newRow = els.tableBody.lastElementChild;
+                        const newRow = document.querySelector('[data-id]:last-child');
                         if (newRow) {
                             newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            newRow.querySelector('input[data-field="brandName"]').focus();
+                            const input = newRow.querySelector('input[type="text"]');
+                            if(input) input.focus();
                         }
                     }, 100);
                 },
                 deleteRow: (id) => {
                     medList = medList.filter(m => m.id !== id);
                     ui.renderTable(); storage.save();
-                    utils.showToast('已刪除紀錄', 'info');
+                    utils.showToast('已刪除', 'info');
                 },
-
-                // 批次選取與刪除 (與當前模式聯動)
                 toggleSelectAll: (checkbox) => {
                     document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = checkbox.checked);
                     api.updateBatchDeleteBtn();
                 },
                 updateBatchDeleteBtn: () => {
-                    // 只計算當前「活躍畫面」的選取數量，避免隱藏的畫面影響判斷
-                    const activeContainer = currentViewMode === 'table' ? els.tableBody : els.gridBody;
-                    const items = Array.from(activeContainer.querySelectorAll(currentViewMode === 'table' ? 'tr' : '.med-card'));
-                    const selectedItems = items.filter(el => el.querySelector('.row-checkbox')?.checked);
-                    const checkedCount = selectedItems.length;
-                    
-                    if (checkedCount > 0) {
-                        els.batchActions.classList.remove('hidden');
-                        els.batchActions.classList.add('flex');
+                    const checkedIds = new Set(Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value));
+                    if (checkedIds.size > 0) {
+                        els.batchActions.classList.remove('hidden'); els.batchActions.classList.add('flex');
                     } else {
-                        els.batchActions.classList.add('hidden');
-                        els.batchActions.classList.remove('flex');
-                    }
-                    if (els.selectAllCheckbox) {
-                        els.selectAllCheckbox.checked = (checkedCount === items.length && items.length > 0);
+                        els.batchActions.classList.add('hidden'); els.batchActions.classList.remove('flex');
                     }
                 },
                 deleteSelected: () => {
-                    const activeSelector = currentViewMode === 'table' ? '#med-table-body tr' : '#med-grid-body .med-card';
-                    const checkedIds = Array.from(document.querySelectorAll(activeSelector))
-                        .filter(el => el.querySelector('.row-checkbox')?.checked)
-                        .map(el => el.dataset.id);
-
-                    if (checkedIds.length === 0) return;
-                    
-                    checkedIds.forEach(id => {
-                        document.querySelectorAll(`[data-id="${id}"]`).forEach(item => {
-                            item.style.opacity = '0';
-                            item.style.transform = 'translateY(-10px)';
-                        });
-                    });
-                    
-                    setTimeout(() => {
-                        medList = medList.filter(m => !checkedIds.includes(m.id));
-                        ui.renderTable(); 
-                        storage.save();
-                        utils.showToast(`已刪除 ${checkedIds.length} 筆已勾選紀錄`, 'info');
-                    }, 200);
+                    const checkedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+                    if(checkedIds.length === 0) return;
+                    medList = medList.filter(m => !checkedIds.includes(m.id));
+                    ui.renderTable(); storage.save();
+                    utils.showToast(`已刪除 ${checkedIds.length} 筆紀錄`);
                 },
                 deleteUnselected: () => {
-                    const activeSelector = currentViewMode === 'table' ? '#med-table-body tr' : '#med-grid-body .med-card';
-                    const uncheckedIds = Array.from(document.querySelectorAll(activeSelector))
-                        .filter(el => !el.querySelector('.row-checkbox')?.checked)
-                        .map(el => el.dataset.id);
-
-                    if (uncheckedIds.length === 0) return;
-                    
-                    uncheckedIds.forEach(id => {
-                         document.querySelectorAll(`[data-id="${id}"]`).forEach(item => {
-                            item.style.opacity = '0';
-                            item.style.transform = 'translateY(-10px)';
-                        });
-                    });
-                    
-                    setTimeout(() => {
-                        medList = medList.filter(m => !uncheckedIds.includes(m.id));
-                        ui.renderTable(); 
-                        storage.save();
-                        utils.showToast(`已清理 ${uncheckedIds.length} 筆未勾選紀錄`, 'info');
-                    }, 200);
+                    const checkedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+                    const removeCount = medList.length - checkedIds.length;
+                    if(removeCount <= 0) return;
+                    medList = medList.filter(m => checkedIds.includes(m.id));
+                    ui.renderTable(); storage.save();
+                    utils.showToast(`已刪除未選取的 ${removeCount} 筆紀錄`);
                 },
-
-                // 依商品名刪除重複藥品，只保留第一筆資料
                 deleteDuplicates: () => {
                     const seen = new Set();
                     const originalCount = medList.length;
                     const duplicates = [];
-
                     medList.forEach(med => {
-                        const brandName = String(med.brandName || '').trim();
-                        if (!brandName) return;
-
-                        const key = brandName.toLowerCase();
-                        if (seen.has(key)) {
-                            duplicates.push(med.id);
-                        } else {
-                            seen.add(key);
-                        }
+                        const brand = String(med.brandName || '').trim().toLowerCase();
+                        if (!brand) return;
+                        if (seen.has(brand)) duplicates.push(med.id);
+                        else seen.add(brand);
                     });
-
-                    if (duplicates.length === 0) {
-                        utils.showToast('沒有找到重複的商品名', 'info');
-                        return;
+                    if (duplicates.length === 0) { utils.showToast('無重複項目', 'info'); return; }
+                    medList = medList.filter(m => !duplicates.includes(m.id));
+                    ui.renderTable(); storage.save();
+                    utils.showToast(`已刪除 ${duplicates.length} 筆重複藥品`);
+                },
+                editImageUrl: (id) => {
+                    const med = medList.find(m => m.id === id);
+                    if(!med) return;
+                    const url = prompt("請輸入外觀圖片網址 (URL)：", med.imageUrl || "");
+                    if (url !== null) {
+                        med.imageUrl = url.trim();
+                        ui.renderTable(); storage.save();
+                    }
+                },
+                toggleViewMode: () => {
+                    // --- 修正：確保在切換模式前，強制抓取輸入框的最新值寫入 medList (避免輸入法組字未觸發 input 事件造成遺失) ---
+                    if (!isImageMode) {
+                        document.querySelectorAll('#med-table-body tr').forEach(tr => {
+                            const id = tr.dataset.id;
+                            const med = medList.find(m => m.id === id);
+                            if (med) {
+                                tr.querySelectorAll('.table-input').forEach(input => {
+                                    med[input.dataset.field] = input.value;
+                                });
+                            }
+                        });
+                        storage.save();
                     }
 
-                    medList = medList.filter(med => !duplicates.includes(med.id));
+                    isImageMode = !isImageMode;
+                    const btnText = document.getElementById('view-mode-text');
+                    const btnIcon = document.getElementById('view-mode-icon');
+                    const colBtn = document.getElementById('col-setting-btn');
+                    const addBtn = document.getElementById('add-new-btn');
+                    
+                    if(isImageMode) {
+                        btnText.textContent = '清單模式';
+                        btnIcon.className = 'ph ph-list-bullets text-sm';
+                        if(colBtn) colBtn.classList.add('hidden');
+                        if(addBtn) addBtn.classList.add('hidden');
+                    } else {
+                        btnText.textContent = '圖片模式';
+                        btnIcon.className = 'ph ph-image text-sm';
+                        if(colBtn) colBtn.classList.remove('hidden');
+                        if(addBtn) addBtn.classList.remove('hidden');
+                    }
                     ui.renderTable();
-                    storage.save();
-                    utils.showToast(`已刪除 ${duplicates.length} 筆重複藥品，保留 ${originalCount - duplicates.length} 筆資料`);
+                },
+                toggleColModal: () => {
+                    if(els.colModal.classList.contains('hidden')) {
+                        els.colModal.classList.remove('hidden'); els.colModal.classList.add('flex');
+                        requestAnimationFrame(() => { els.colModal.classList.remove('opacity-0'); els.colModalContent.classList.remove('scale-95'); });
+                    } else {
+                        els.colModal.classList.add('opacity-0'); els.colModalContent.classList.add('scale-95');
+                        setTimeout(() => { els.colModal.classList.add('hidden'); els.colModal.classList.remove('flex'); }, 200);
+                    }
+                },
+                toggleColumn: (colName, isShow) => {
+                    if(isShow) document.body.classList.add(`show-col-${colName}`);
+                    else document.body.classList.remove(`show-col-${colName}`);
                 },
                 
-                // 客製化清空確認視窗
-                openConfirmModal: () => {
-                    els.confirmModal.classList.remove('hidden');
-                    els.confirmModal.classList.add('flex');
-                    requestAnimationFrame(() => {
-                        els.confirmModal.classList.remove('opacity-0');
-                        els.confirmModalContent.classList.remove('scale-95');
-                    });
-                },
-                closeConfirmModal: () => {
-                    els.confirmModal.classList.add('opacity-0');
-                    els.confirmModalContent.classList.add('scale-95');
-                    setTimeout(() => {
-                        els.confirmModal.classList.add('hidden');
-                        els.confirmModal.classList.remove('flex');
-                    }, 200);
-                },
-                executeClearData: () => {
-                    medList = []; els.rawText.value = '';
-                    savedTextCloud = ''; savedTextUd = ''; 
-                    ui.renderTable(); storage.save();
-                    api.closeConfirmModal();
-                    utils.showToast('資料已清空', 'info');
-                },
-
-                // 依商品名排序
                 sortByBrand: () => {
                     const ascending = brandSortAscending;
                     medList.sort((a, b) => {
@@ -1429,8 +878,7 @@
                         return ascending ? result : -result;
                     });
                     brandSortAscending = !brandSortAscending;
-                    ui.renderTable();
-                    storage.save();
+                    ui.renderTable(); storage.save();
                     const btn = document.getElementById('sort-brand-btn');
                     if (btn) {
                         const icon = btn.querySelector('i');
@@ -1438,153 +886,126 @@
                     }
                     utils.showToast(`已依商品名${ascending ? '升冪' : '降冪'}排序`);
                 },
-                clearAllData: () => { api.openConfirmModal(); },
-
-                // 更新清單標題
-                updateListTitle: () => {
-                    const chk1 = document.getElementById('chk-title-1')?.checked;
-                    const chk2 = document.getElementById('chk-title-2')?.checked;
-                    let prefixes = [];
-                    if (chk1) prefixes.push("自備藥辨識");
-                    if (chk2) prefixes.push("手術前停藥建議");
-
-                    const prefixStr = prefixes.length > 0 ? prefixes.join("及") + " - " : "";
-                    
-                    const mainTitle = document.getElementById('main-list-title');
-                    if(mainTitle) mainTitle.textContent = `2. ${prefixStr}藥物清單`;
-
-                    const printTitle = document.getElementById('print-main-title');
-                    if(printTitle) printTitle.textContent = `病患${prefixStr}藥物清單`;
+                openConfirmModal: () => {
+                    const confirmModal = document.getElementById('confirm-modal');
+                    const confirmModalContent = document.getElementById('confirm-modal-content');
+                    if(confirmModal) {
+                        confirmModal.classList.remove('hidden'); confirmModal.classList.add('flex');
+                        requestAnimationFrame(() => {
+                            confirmModal.classList.remove('opacity-0');
+                            if(confirmModalContent) confirmModalContent.classList.remove('scale-95');
+                        });
+                    }
                 },
+                closeConfirmModal: () => {
+                    const confirmModal = document.getElementById('confirm-modal');
+                    const confirmModalContent = document.getElementById('confirm-modal-content');
+                    if(confirmModal) {
+                        confirmModal.classList.add('opacity-0');
+                        if(confirmModalContent) confirmModalContent.classList.add('scale-95');
+                        setTimeout(() => {
+                            confirmModal.classList.add('hidden'); confirmModal.classList.remove('flex');
+                        }, 200);
+                    }
+                },
+                executeClearData: () => {
+                    medList = []; els.rawText.value = '';
+                    ui.renderTable(); storage.save();
+                    api.closeConfirmModal();
+                    utils.showToast('資料已清空', 'info');
+                },
+                copyTextContent: () => {
+                    if (medList.length === 0) { utils.showToast('沒有資料可複製', 'info'); return; }
+                    let textStr = "";
+                    medList.forEach(med => {
+                        const brand = (med.brandName || '').trim();
+                        const usage = (med.usage || '').trim();
+                        let line = brand;
+                        if (usage) line += (brand ? " " : "") + usage;
+                        if (line) textStr += line + "\n";
+                    });
+                    if (!textStr) { utils.showToast('沒有商品名或用法用量可供複製', 'info'); return; }
+                    try {
+                        navigator.clipboard.writeText(textStr.trim()).then(() => {
+                            utils.showToast('內容已複製！可直接貼上至 Word');
+                        }).catch(() => fallbackCopy(textStr));
+                    } catch (e) { fallbackCopy(textStr); }
 
-                // 列印預覽機制
-                openPrintView: () => {
-                    ui.updatePrintView();
-                    els.appUi.classList.add('hidden');
-                    const bottomNav = document.getElementById('bottom-nav');
-                    if(bottomNav) bottomNav.classList.add('hidden');
-                    
-                    els.printView.classList.remove('hidden');
-                    els.printView.classList.add('block');
-                    window.scrollTo(0,0);
+                    function fallbackCopy(text) {
+                        const tempTextArea = document.createElement('textarea');
+                        tempTextArea.value = text.trim();
+                        tempTextArea.style.position = 'fixed'; tempTextArea.style.left = '-9999px';
+                        document.body.appendChild(tempTextArea);
+                        tempTextArea.select();
+                        try {
+                            document.execCommand('copy'); utils.showToast('內容已複製！可直接貼上至 Word');
+                        } catch (err) { utils.showToast('複製失敗，請手動框選複製', 'error'); } 
+                        finally { document.body.removeChild(tempTextArea); }
+                    }
                 },
-                closePrintView: () => {
-                    els.printView.classList.add('hidden');
-                    els.printView.classList.remove('block');
-                    
-                    els.appUi.classList.remove('hidden');
-                    const bottomNav = document.getElementById('bottom-nav');
-                    if(bottomNav) bottomNav.classList.remove('hidden');
-                },
-
-                // 列印標籤預覽機制
-                openPrintLabelView: () => {
-                    ui.updatePrintLabelView();
-                    els.appUi.classList.add('hidden');
-                    const bottomNav = document.getElementById('bottom-nav');
-                    if(bottomNav) bottomNav.classList.add('hidden');
-                    
-                    els.printLabelView.classList.remove('hidden');
-                    els.printLabelView.classList.add('block');
-                    window.scrollTo(0,0);
-                },
-                closePrintLabelView: () => {
-                    els.printLabelView.classList.add('hidden');
-                    els.printLabelView.classList.remove('block');
-                    
-                    els.appUi.classList.remove('hidden');
-                    const bottomNav = document.getElementById('bottom-nav');
-                    if(bottomNav) bottomNav.classList.remove('hidden');
-                },
-
-                // 將 updatePrintView 暴露給全域 app 物件
-                updatePrintView: () => {
-                    ui.updatePrintView();
-                },
-
-                // 匯出 CSV 檔案
                 exportToCSV: () => {
                     if (medList.length === 0) { utils.showToast('沒有資料可匯出', 'info'); return; }
-                    
-                    let csvContent = "\uFEFF序號,健保碼,商品名,學名/成分,用法用量,外觀描述,替代品項/備註\n";
-                    
+                    let csvContent = "\uFEFF序號,商品名,學名/成分,用法用量,外觀描述,健保碼,替代品項/備註\n";
                     medList.forEach((med, i) => {
-                        const row = [
-                            i + 1,
-                            med.nhiCode,
-                            med.brandName,
-                            med.genericName,
-                            med.usage,
-                            med.appearance,
-                            med.alternative
-                        ].map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(","); 
+                        const row = [ i + 1, med.brandName, med.genericName, med.usage, med.appearance, med.nhiCode, med.alternative ]
+                            .map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(",");
                         csvContent += row + "\n";
                     });
-
                     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
-                    
                     const today = new Date();
                     const dateStr = `${today.getFullYear()}${(today.getMonth()+1).toString().padStart(2, '0')}${today.getDate().toString().padStart(2, '0')}`;
-                    
                     link.setAttribute("href", url);
                     link.setAttribute("download", `病患自備藥清單_${dateStr}.csv`);
                     link.style.visibility = 'hidden';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    
                     utils.showToast('已成功下載 CSV 檔案！');
                 },
-
-                // 複製純文字內容功能
-                copyTextContent: () => {
-                    if (medList.length === 0) { utils.showToast('沒有資料可複製', 'info'); return; }
-                    
-                    let textStr = "";
-                    medList.forEach(med => {
-                        const brand = (med.brandName || '').trim();
-                        const usage = (med.usage || '').trim();
-                        
-                        let line = brand;
-                        if (usage) {
-                            line += (brand ? " " : "") + usage;
-                        }
-                        
-                        if (line) {
-                            textStr += line + "\n";
-                        }
-                    });
-
-                    if (!textStr) { utils.showToast('沒有商品名或用法用量可供複製', 'info'); return; }
-
-                    try {
-                        navigator.clipboard.writeText(textStr.trim()).then(() => {
-                            utils.showToast('內容已複製！可直接貼上至 Word');
-                        }).catch(() => fallbackCopy(textStr));
-                    } catch (e) {
-                        fallbackCopy(textStr);
-                    }
-
-                    function fallbackCopy(text) {
-                        const tempTextArea = document.createElement('textarea');
-                        tempTextArea.value = text.trim();
-                        tempTextArea.style.position = 'fixed';
-                        tempTextArea.style.left = '-9999px';
-                        document.body.appendChild(tempTextArea);
-                        tempTextArea.select();
-                        try {
-                            document.execCommand('copy');
-                            utils.showToast('內容已複製！可直接貼上至 Word');
-                        } catch (err) {
-                            utils.showToast('複製失敗，請手動框選複製', 'error');
-                        } finally {
-                            document.body.removeChild(tempTextArea);
-                        }
-                    }
+                openPrintView: () => {
+                    ui.updatePrintView();
+                    const appUi = document.getElementById('app-ui');
+                    const printView = document.getElementById('print-view');
+                    if(appUi) appUi.classList.add('hidden');
+                    if(printView) { printView.classList.remove('hidden'); printView.classList.add('block'); }
+                    window.scrollTo(0,0);
+                },
+                closePrintView: () => {
+                    const appUi = document.getElementById('app-ui');
+                    const printView = document.getElementById('print-view');
+                    if(printView) { printView.classList.add('hidden'); printView.classList.remove('block'); }
+                    if(appUi) appUi.classList.remove('hidden');
+                },
+                openPrintLabelView: () => {
+                    ui.updatePrintLabelView();
+                    const appUi = document.getElementById('app-ui');
+                    const printLabelView = document.getElementById('print-label-view');
+                    if(appUi) appUi.classList.add('hidden');
+                    if(printLabelView) { printLabelView.classList.remove('hidden'); printLabelView.classList.add('block'); }
+                    window.scrollTo(0,0);
+                },
+                closePrintLabelView: () => {
+                    const appUi = document.getElementById('app-ui');
+                    const printLabelView = document.getElementById('print-label-view');
+                    if(printLabelView) { printLabelView.classList.add('hidden'); printLabelView.classList.remove('block'); }
+                    if(appUi) appUi.classList.remove('hidden');
+                },
+                updateListTitle: () => {
+                    const chk1 = document.getElementById('chk-title-1')?.checked;
+                    const chk2 = document.getElementById('chk-title-2')?.checked;
+                    let prefixes = [];
+                    if (chk1) prefixes.push("自備藥辨識");
+                    if (chk2) prefixes.push("手術前停藥建議");
+                    const prefixStr = prefixes.length > 0 ? prefixes.join("及") + " - " : "";
+                    const mainTitle = document.getElementById('main-list-title');
+                    if(mainTitle) mainTitle.textContent = `2. ${prefixStr}藥物清單`;
+                    const printTitle = document.getElementById('print-main-title');
+                    if(printTitle) printTitle.textContent = `病患${prefixStr}藥物清單`;
                 }
             };
+
             return api;
         })();
         document.addEventListener('DOMContentLoaded', app.init);
