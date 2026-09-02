@@ -526,7 +526,7 @@
                                 const fallbackMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(QD|BID&HS|BID|TID|QID|Q\d+H|PRN|HS|AC|PC|QW)$/i);
                                 if(fallbackMatch) { brandName = fallbackMatch[1].trim(); usage = `${fallbackMatch[2]} ${fallbackMatch[3].toUpperCase()}`.trim(); }
                             }
-                            if (brandName || usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode: '', imageUrl: '' });
+                            if (usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode: '', imageUrl: '' });
                         });
                     } else {
                         const cloudLines = text.split('\n').reduce((lines, line) => {
@@ -570,26 +570,17 @@
                             if (!isParsed) {
                                 const genericMatch = str.match(/\(([^)]+)\)|\[([^\]]+)\]/);
                                 if (genericMatch) genericName = genericMatch[1] || genericMatch[2];
-                                const usageMatches = str.match(/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴]|[早中晚]?[飯餐][前後]|睡前)/ig);
+                                const usageMatches = str.match(/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴條支管罐]|[早中晚]?[飯餐][前後]|睡前)/ig);
                                 if (usageMatches) usage = usageMatches.join(' ');
                                 let remain = str;
                                 if (genericMatch) remain = remain.replace(genericMatch[0], '');
                                 if (usageMatches) usageMatches.forEach(u => remain = remain.replace(u, ''));
                                 brandName = remain.replace(/^(\d+\.|\[\d+\])\s*/, '').replace(/[^\w\s\u4e00-\u9fa5-]/g, '').replace(/\s+/g, ' ').trim();
-                                
-                                // ★ 更新修正的雜訊過濾邏輯：無用法無成分時，嚴格審視字串
-                                if (!usage && !genericName) {
-                                    if (
-                                        !/[a-zA-Z]/.test(brandName) || 
-                                        /藥局|診所|醫院|醫學中心|衛生所|病房|護理之家/.test(brandName) ||
-                                        /^(門診|急診|住院|就醫|診斷|項次|處方|醫囑)/.test(brandName) || 
-                                        /^[\d\s/-]+$/.test(brandName)
-                                    ) {
-                                        return;
-                                    }
-                                }
                             }
-                            if (brandName || genericName || usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode, imageUrl: '' });
+                            
+                            if (!usage) return;
+
+                            results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode, imageUrl: '' });
                         });
                     }
                     return results;
@@ -881,8 +872,8 @@
                     
                     let matchCount = 0;
                     toMatch.forEach(med => {
-                        const code = med.nhiCode.trim().toUpperCase();
-                        const record = dbData.find(row => (row.A || '').trim().toUpperCase() === code);
+                        const code = med.nhiCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                        const record = dbData.find(row => (row.A || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase() === code);
                         
                         if(record) {
                             // 判斷 AD欄 (信心等級)
@@ -958,14 +949,14 @@
                     }
                 },
                 deleteSelected: () => {
-                    const checkedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+                    const checkedIds = Array.from(new Set(Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value)));
                     if(checkedIds.length === 0) return;
                     medList = medList.filter(m => !checkedIds.includes(m.id));
                     ui.renderTable(); storage.save();
                     utils.showToast(`已刪除 ${checkedIds.length} 筆紀錄`);
                 },
                 deleteUnselected: () => {
-                    const checkedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+                    const checkedIds = Array.from(new Set(Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value)));
                     const removeCount = medList.length - checkedIds.length;
                     if(removeCount <= 0) return;
                     medList = medList.filter(m => checkedIds.includes(m.id));
