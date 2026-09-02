@@ -207,6 +207,11 @@
                             <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-primary-500 w-36">
                         </div>
                         
+                        <!-- 手動觸發雲端比對按鈕 -->
+                        <button onclick="app.manualMatch()" class="text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200/50 transition-all flex items-center gap-1" title="自動用健保碼比對雲端資料庫">
+                            <i class="ph ph-cloud-arrow-down text-sm"></i> 雲端比對
+                        </button>
+
                         <!-- 模式切換按鈕 -->
                         <button id="toggle-mode-btn" onclick="app.toggleViewMode()" class="text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-200/50 transition-all flex items-center gap-1">
                             <i id="view-mode-icon" class="ph ph-image text-sm"></i> <span id="view-mode-text">圖片模式</span>
@@ -225,7 +230,7 @@
 
                         <button onclick="app.deleteDuplicates()" class="text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200/50 transition-all flex items-center gap-1"><i class="ph ph-copy text-sm"></i> 刪除重複</button>
                         
-                        <!-- 新增按鈕移至此處 -->
+                        <!-- 新增按鈕 -->
                         <button id="add-new-btn" onclick="app.addNewRow()" class="text-xs font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 px-3 py-1.5 rounded-lg border border-primary-200/50 transition-all flex items-center gap-1">
                             <i class="ph ph-plus-circle text-sm"></i> 新增
                         </button>
@@ -379,6 +384,11 @@
     <div id="toast-container" class="fixed bottom-6 right-1/2 translate-x-1/2 md:translate-x-0 md:right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
 
     <script>
+        // ==========================================
+        // ★ 資料庫綁定區：請將您的網址貼在引號內 ★
+        // ==========================================
+        const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRy6GrZwcmQwQXoyWzodfqK-vBkzyySgofjQRQ25H8TfuO5gl4XVSG8eAd4ZFr36Msl76WSb4VbNFAt/pub?output=csv"; 
+        
         const app = (function() {
             let medList = []; 
             const STORAGE_KEY = 'MedAssistantData_v2';
@@ -442,6 +452,62 @@
                 }
             };
             const debouncedSave = utils.debounce(storage.save, 500);
+
+            const db = {
+                fetchData: async () => {
+                    if (!GOOGLE_SHEET_CSV_URL || GOOGLE_SHEET_CSV_URL.includes("您的網址請貼在這裡")) {
+                        utils.showToast('程式碼中的資料庫網址未設定，略過雲端比對', 'info');
+                        return null;
+                    }
+                    try {
+                        const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        const text = await response.text();
+                        return db.parseCSV(text);
+                    } catch (error) {
+                        console.error('Fetch DB Error:', error);
+                        utils.showToast('無法讀取資料庫，請檢查網址或網路狀況', 'error');
+                        return null;
+                    }
+                },
+                parseCSV: (str) => {
+                    const arr = [];
+                    let quote = false;
+                    let row = 0, col = 0;
+                    arr[0] = [];
+                    for (let c = 0, char; char = str[c]; c++) {
+                        if (char === '"' && quote && str[c + 1] === '"') { arr[row][col] += '"'; c++; }
+                        else if (char === '"') quote = !quote;
+                        else if (char === ',' && !quote) { col++; arr[row][col] = ''; }
+                        else if ((char === '\n' || char === '\r') && !quote) {
+                            if (char === '\r' && str[c+1] === '\n') c++; 
+                            row++; col = 0; arr[row] = []; arr[row][col] = '';
+                        }
+                        else {
+                            arr[row][col] = arr[row][col] || '';
+                            arr[row][col] += char;
+                        }
+                    }
+                    
+                    const getColLetter = (index) => {
+                        let temp, letter = '';
+                        while (index > 0) {
+                            temp = (index - 1) % 26;
+                            letter = String.fromCharCode(temp + 65) + letter;
+                            index = (index - temp - 1) / 26;
+                        }
+                        return letter;
+                    };
+
+                    return arr.map(rowArr => {
+                        let obj = {};
+                        rowArr.forEach((val, i) => {
+                            if(val !== undefined) obj[getColLetter(i + 1)] = val;
+                        });
+                        return obj;
+                    });
+                }
+            };
 
             const parser = {
                 process: (text) => {
@@ -510,7 +576,18 @@
                                 if (genericMatch) remain = remain.replace(genericMatch[0], '');
                                 if (usageMatches) usageMatches.forEach(u => remain = remain.replace(u, ''));
                                 brandName = remain.replace(/^(\d+\.|\[\d+\])\s*/, '').replace(/[^\w\s\u4e00-\u9fa5-]/g, '').replace(/\s+/g, ' ').trim();
-                                if (!usage && !genericName && (/^(門診|急診|住院|就醫|診斷|項次)/.test(brandName) || /^[\d\s/-]+$/.test(brandName))) return;
+                                
+                                // ★ 更新修正的雜訊過濾邏輯：無用法無成分時，嚴格審視字串
+                                if (!usage && !genericName) {
+                                    if (
+                                        !/[a-zA-Z]/.test(brandName) || 
+                                        /藥局|診所|醫院|醫學中心|衛生所|病房|護理之家/.test(brandName) ||
+                                        /^(門診|急診|住院|就醫|診斷|項次|處方|醫囑)/.test(brandName) || 
+                                        /^[\d\s/-]+$/.test(brandName)
+                                    ) {
+                                        return;
+                                    }
+                                }
                             }
                             if (brandName || genericName || usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode, imageUrl: '' });
                         });
@@ -630,7 +707,6 @@
                     const printTableBody = document.getElementById('print-table-body');
                     if(!printTableHead || !printTableBody) return;
 
-                    // 取得列印勾選設定
                     const toggles = Array.from(document.querySelectorAll('#print-col-toggles input[type="checkbox"]'));
                     const showCols = {
                         brand: toggles.find(t => t.value === 'brand')?.checked ?? true,
@@ -641,7 +717,6 @@
                         alternative: toggles.find(t => t.value === 'alternative')?.checked ?? false
                     };
 
-                    // 動態生成表頭
                     printTableHead.innerHTML = `
                         <tr>
                             <th class="border border-gray-400 py-2 px-3 text-left w-12">序號</th>
@@ -660,7 +735,6 @@
                         return;
                     }
                     
-                    // 動態生成內容
                     printTableBody.innerHTML = medList.map((med, i) => `
                         <tr>
                             <td class="border border-gray-400 py-2 px-3 text-center">${i + 1}</td>
@@ -778,13 +852,80 @@
                     document.getElementById('mode-btn-ud').className = mode === 'ud' ? 'px-2.5 py-1 text-[11px] font-medium rounded shadow-sm bg-white text-primary-600 transition-all' : 'px-2.5 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 transition-all';
                     els.rawText.placeholder = mode === 'cloud' ? "貼上雲端藥歷內容..." : "貼上UD處方...";
                 },
-                parseAndAddText: () => {
+                parseAndAddText: async () => {
                     const parsed = parser.process(els.rawText.value);
                     if (parsed && parsed.length > 0) {
                         medList = [...medList, ...parsed];
                         ui.renderTable(); storage.save();
                         utils.showToast(`成功解析並加入 ${parsed.length} 筆資料`);
                         els.rawText.value = '';
+
+                        // 解析加入完成後，自動執行雲端比對
+                        await api.matchMedications(parsed);
+                    }
+                },
+                manualMatch: async () => {
+                    if(medList.length === 0) {
+                        utils.showToast('目前清單為空，無法比對', 'info');
+                        return;
+                    }
+                    await api.matchMedications(medList);
+                },
+                matchMedications: async (targetList) => {
+                    const toMatch = targetList.filter(m => m.nhiCode && m.nhiCode.trim() !== '');
+                    if(toMatch.length === 0) return; // 無健保碼時靜默結束
+                    
+                    utils.showToast('正在與雲端資料庫比對外觀資料...', 'info');
+                    const dbData = await db.fetchData();
+                    if(!dbData) return;
+                    
+                    let matchCount = 0;
+                    toMatch.forEach(med => {
+                        const code = med.nhiCode.trim().toUpperCase();
+                        const record = dbData.find(row => (row.A || '').trim().toUpperCase() === code);
+                        
+                        if(record) {
+                            // 判斷 AD欄 (信心等級)
+                            const confidence = (record.AD || '').trim();
+                            if(confidence === '高' || confidence === '中') {
+                                let updated = false;
+                                
+                                // AB欄: 圖片 URL
+                                const imgUrl = (record.AB || '').trim();
+                                if(imgUrl && !med.imageUrl) {
+                                    med.imageUrl = imgUrl;
+                                    updated = true;
+                                }
+                                
+                                // V:顏色, X:刻痕, Z:標註一, AA:標註二
+                                const color = (record.V || '').trim();
+                                const score = (record.X || '').trim();
+                                const mark1 = (record.Z || '').trim();
+                                const mark2 = (record.AA || '').trim();
+                                
+                                let descParts = [];
+                                if(color) descParts.push(color);
+                                if(score) descParts.push(score);
+                                if(mark1) descParts.push(mark1);
+                                if(mark2) descParts.push(mark2);
+                                
+                                const newDesc = descParts.join('、');
+                                if(newDesc && !med.appearance) {
+                                    med.appearance = newDesc;
+                                    updated = true;
+                                }
+                                
+                                if(updated) matchCount++;
+                            }
+                        }
+                    });
+                    
+                    if(matchCount > 0) {
+                        ui.renderTable();
+                        storage.save();
+                        utils.showToast(`比對完成！成功載入 ${matchCount} 筆藥品外觀`);
+                    } else {
+                        utils.showToast('比對完成，無符合的更新項目', 'info');
                     }
                 },
                 addNewRow: () => {
@@ -1044,6 +1185,7 @@
 
             return api;
         })();
+        
         document.addEventListener('DOMContentLoaded', app.init);
     </script>
 </body>
