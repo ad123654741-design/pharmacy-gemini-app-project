@@ -460,7 +460,9 @@
                         return null;
                     }
                     try {
-                        const response = await fetch(GOOGLE_SHEET_CSV_URL);
+                        // 加入動態時間戳 (Cache-Buster)，避免瀏覽器快取到舊的 Google Sheet 資料
+                        const fetchUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                        const response = await fetch(fetchUrl);
                         if (!response.ok) throw new Error('Network response was not ok');
                         const text = await response.text();
                         return db.parseCSV(text);
@@ -873,48 +875,53 @@
                     let matchCount = 0;
                     toMatch.forEach(med => {
                         const code = med.nhiCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                        const record = dbData.find(row => (row.A || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase() === code);
+                        
+                        // 修正核心：將「信心等級」篩選放入 find 的並列條件中。
+                        // 避免相同健保碼有多筆資料時，抓到第一筆(但無信心等級)而中斷更新。
+                        const record = dbData.find(row => {
+                            const rowCode = (row.A || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                            if (rowCode !== code) return false; // 健保碼不符
+                            
+                            const confidence = (row.AD || '').trim();
+                            return confidence === '高' || confidence === '中'; // 必須同時滿足信心等級
+                        });
                         
                         if(record) {
-                            // 判斷 AD欄 (信心等級)
-                            const confidence = (record.AD || '').trim();
-                            if(confidence === '高' || confidence === '中') {
-                                let updated = false;
-                                
-                                // AB欄: 圖片 URL
-                                const imgUrl = (record.AB || '').trim();
-                                if(imgUrl && !med.imageUrl) {
-                                    med.imageUrl = imgUrl;
-                                    updated = true;
-                                }
-                                
-                                // V:顏色, X:刻痕, Z:標註一, AA:標註二
-                                const color = (record.V || '').trim();
-                                const score = (record.X || '').trim();
-                                const mark1 = (record.Z || '').trim();
-                                const mark2 = (record.AA || '').trim();
-                                
-                                let descParts = [];
-                                if(color) descParts.push(color);
-                                if(score) descParts.push(score);
-                                if(mark1) descParts.push(mark1);
-                                if(mark2) descParts.push(mark2);
-                                
-                                const newDesc = descParts.join('、');
-                                if(newDesc && !med.appearance) {
-                                    med.appearance = newDesc;
-                                    updated = true;
-                                }
-                                
-                                if(updated) matchCount++;
+                            let updated = false;
+                            
+                            // AB欄: 圖片 URL
+                            const imgUrl = (record.AB || '').trim();
+                            if(imgUrl && med.imageUrl !== imgUrl) {
+                                med.imageUrl = imgUrl;
+                                updated = true;
                             }
+                            
+                            // V:顏色, X:刻痕, Z:標註一, AA:標註二
+                            const color = (record.V || '').trim();
+                            const score = (record.X || '').trim();
+                            const mark1 = (record.Z || '').trim();
+                            const mark2 = (record.AA || '').trim();
+                            
+                            let descParts = [];
+                            if(color) descParts.push(color);
+                            if(score) descParts.push(score);
+                            if(mark1) descParts.push(mark1);
+                            if(mark2) descParts.push(mark2);
+                            
+                            const newDesc = descParts.join('、');
+                            if(newDesc && med.appearance !== newDesc) {
+                                med.appearance = newDesc;
+                                updated = true;
+                            }
+                            
+                            if(updated) matchCount++;
                         }
                     });
                     
                     if(matchCount > 0) {
                         ui.renderTable();
                         storage.save();
-                        utils.showToast(`比對完成！成功載入 ${matchCount} 筆藥品外觀`);
+                        utils.showToast(`比對完成！成功更新 ${matchCount} 筆藥品外觀`);
                     } else {
                         utils.showToast('比對完成，無符合的更新項目', 'info');
                     }
