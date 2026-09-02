@@ -8,6 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入 Phosphor Icons 作為高質感圖示 -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- 引入 PapaParse 作為強大且穩定的後端 CSV 解析引擎 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
     <script>
         tailwind.config = {
             theme: {
@@ -138,7 +141,6 @@
 <body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance">
 
     <div id="app-ui" class="flex flex-col h-full w-full">
-        
         <!-- 頂部精簡導覽列 -->
         <header class="bg-surface border-b border-slate-200/80 px-4 md:px-6 py-2.5 flex justify-between items-center shrink-0 z-10 shadow-sm">
             <div class="flex items-baseline gap-3">
@@ -385,7 +387,7 @@
 
     <script>
         // ==========================================
-        // ★ 資料庫綁定區：請將您的網址貼在引號內 ★
+        // ★ 資料庫綁定區：Google Sheet 發佈網址 ★
         // ==========================================
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRy6GrZwcmQwQXoyWzodfqK-vBkzyySgofjQRQ25H8TfuO5gl4XVSG8eAd4ZFr36Msl76WSb4VbNFAt/pub?output=csv"; 
         
@@ -459,54 +461,45 @@
                         utils.showToast('程式碼中的資料庫網址未設定，略過雲端比對', 'info');
                         return null;
                     }
-                    try {
-                        // 加入動態時間戳 (Cache-Buster)，避免瀏覽器快取到舊的 Google Sheet 資料
-                        const fetchUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-                        const response = await fetch(fetchUrl);
-                        if (!response.ok) throw new Error('Network response was not ok');
-                        const text = await response.text();
-                        return db.parseCSV(text);
-                    } catch (error) {
-                        console.error('Fetch DB Error:', error);
-                        utils.showToast('無法讀取資料庫，請檢查網址或網路狀況', 'error');
-                        return null;
-                    }
-                },
-                parseCSV: (str) => {
-                    const arr = [];
-                    let quote = false;
-                    let row = 0, col = 0;
-                    arr[0] = [];
-                    for (let c = 0, char; char = str[c]; c++) {
-                        if (char === '"' && quote && str[c + 1] === '"') { arr[row][col] += '"'; c++; }
-                        else if (char === '"') quote = !quote;
-                        else if (char === ',' && !quote) { col++; arr[row][col] = ''; }
-                        else if ((char === '\n' || char === '\r') && !quote) {
-                            if (char === '\r' && str[c+1] === '\n') c++; 
-                            row++; col = 0; arr[row] = []; arr[row][col] = '';
-                        }
-                        else {
-                            arr[row][col] = arr[row][col] || '';
-                            arr[row][col] += char;
-                        }
-                    }
                     
-                    const getColLetter = (index) => {
-                        let temp, letter = '';
-                        while (index > 0) {
-                            temp = (index - 1) % 26;
-                            letter = String.fromCharCode(temp + 65) + letter;
-                            index = (index - temp - 1) / 26;
-                        }
-                        return letter;
-                    };
+                    return new Promise((resolve) => {
+                        // 使用業界標準 PapaParse 引擎進行後端連動，徹底解決欄位中有逗號/換行導致的錯位問題
+                        // 加上時間戳強制解除瀏覽器快取
+                        const fetchUrl = GOOGLE_SHEET_CSV_URL + (GOOGLE_SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+                        
+                        Papa.parse(fetchUrl, {
+                            download: true,
+                            header: false, // 依賴 A, B, C 絕對欄位定位
+                            skipEmptyLines: true,
+                            complete: function(results) {
+                                const getColLetter = (index) => {
+                                    let temp, letter = '';
+                                    while (index > 0) {
+                                        temp = (index - 1) % 26;
+                                        letter = String.fromCharCode(temp + 65) + letter;
+                                        index = (index - temp - 1) / 26;
+                                    }
+                                    return letter;
+                                };
 
-                    return arr.map(rowArr => {
-                        let obj = {};
-                        rowArr.forEach((val, i) => {
-                            if(val !== undefined) obj[getColLetter(i + 1)] = val;
+                                const dbData = results.data.map(rowArr => {
+                                    let obj = {};
+                                    // 將陣列轉換為 { A: 值, B: 值... } 的物件格式
+                                    rowArr.forEach((val, i) => {
+                                        if (val !== undefined && val !== null) {
+                                            obj[getColLetter(i + 1)] = val;
+                                        }
+                                    });
+                                    return obj;
+                                });
+                                resolve(dbData);
+                            },
+                            error: function(err) {
+                                console.error('PapaParse Fetch Error:', err);
+                                utils.showToast('後端連動失敗，請檢查網址或網路狀態', 'error');
+                                resolve(null);
+                            }
                         });
-                        return obj;
                     });
                 }
             };
@@ -528,6 +521,7 @@
                                 const fallbackMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(QD|BID&HS|BID|TID|QID|Q\d+H|PRN|HS|AC|PC|QW)$/i);
                                 if(fallbackMatch) { brandName = fallbackMatch[1].trim(); usage = `${fallbackMatch[2]} ${fallbackMatch[3].toUpperCase()}`.trim(); }
                             }
+                            // 嚴格過濾：一定要有解析到用法用量才認定為藥品
                             if (usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode: '', imageUrl: '' });
                         });
                     } else {
@@ -572,7 +566,7 @@
                             if (!isParsed) {
                                 const genericMatch = str.match(/\(([^)]+)\)|\[([^\]]+)\]/);
                                 if (genericMatch) genericName = genericMatch[1] || genericMatch[2];
-                                const usageMatches = str.match(/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴條支管罐]|[早中晚]?[飯餐][前後]|睡前)/ig);
+                                const usageMatches = str.match(/(Q[DI]D|BID&HS|BID|TID|Q\d+H|PRN|ST|PO|\d+(mg|ml|g|mcg)|\d+[顆錠粒包瓶次滴]|[早中晚]?[飯餐][前後]|睡前)/ig);
                                 if (usageMatches) usage = usageMatches.join(' ');
                                 let remain = str;
                                 if (genericMatch) remain = remain.replace(genericMatch[0], '');
@@ -580,6 +574,7 @@
                                 brandName = remain.replace(/^(\d+\.|\[\d+\])\s*/, '').replace(/[^\w\s\u4e00-\u9fa5-]/g, '').replace(/\s+/g, ' ').trim();
                             }
                             
+                            // 嚴格過濾：一定要有解析到用法用量才認定為藥品，剔除所有診斷與醫療院所名稱！
                             if (!usage) return;
 
                             results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode, imageUrl: '' });
@@ -690,6 +685,7 @@
                     ui.updateMetrics();
                 },
                 updateMetrics: () => { els.medCount.textContent = `${medList.length} 筆`; },
+                
                 updatePrintView: () => {
                     const printDate = document.getElementById('print-date');
                     if(printDate) {
@@ -864,9 +860,10 @@
                     }
                     await api.matchMedications(medList);
                 },
+                
                 matchMedications: async (targetList) => {
                     const toMatch = targetList.filter(m => m.nhiCode && m.nhiCode.trim() !== '');
-                    if(toMatch.length === 0) return; // 無健保碼時靜默結束
+                    if(toMatch.length === 0) return; 
                     
                     utils.showToast('正在與雲端資料庫比對外觀資料...', 'info');
                     const dbData = await db.fetchData();
@@ -874,16 +871,16 @@
                     
                     let matchCount = 0;
                     toMatch.forEach(med => {
+                        // 清除健保碼中的非英數字元以精準比對
                         const code = med.nhiCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
                         
-                        // 修正核心：將「信心等級」篩選放入 find 的並列條件中。
-                        // 避免相同健保碼有多筆資料時，抓到第一筆(但無信心等級)而中斷更新。
+                        // 尋找符合健保碼，並且信心等級為高或中的資料列
                         const record = dbData.find(row => {
                             const rowCode = (row.A || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                            if (rowCode !== code) return false; // 健保碼不符
+                            if (rowCode !== code) return false;
                             
                             const confidence = (row.AD || '').trim();
-                            return confidence === '高' || confidence === '中'; // 必須同時滿足信心等級
+                            return confidence === '高' || confidence === '中';
                         });
                         
                         if(record) {
@@ -923,7 +920,7 @@
                         storage.save();
                         utils.showToast(`比對完成！成功更新 ${matchCount} 筆藥品外觀`);
                     } else {
-                        utils.showToast('比對完成，無符合的更新項目', 'info');
+                        utils.showToast('比對完成，無符合的高/中信心等級項目', 'info');
                     }
                 },
                 addNewRow: () => {
@@ -955,7 +952,9 @@
                         els.batchActions.classList.add('hidden'); els.batchActions.classList.remove('flex');
                     }
                 },
+                
                 deleteSelected: () => {
+                    // 利用 Set 過濾重複的 checkbox ID (因應響應式設計的重複方塊)
                     const checkedIds = Array.from(new Set(Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value)));
                     if(checkedIds.length === 0) return;
                     medList = medList.filter(m => !checkedIds.includes(m.id));
@@ -963,6 +962,7 @@
                     utils.showToast(`已刪除 ${checkedIds.length} 筆紀錄`);
                 },
                 deleteUnselected: () => {
+                    // 利用 Set 過濾重複的 checkbox ID (因應響應式設計的重複方塊)
                     const checkedIds = Array.from(new Set(Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value)));
                     const removeCount = medList.length - checkedIds.length;
                     if(removeCount <= 0) return;
@@ -1136,6 +1136,7 @@
                     document.body.removeChild(link);
                     utils.showToast('已成功下載 CSV 檔案！');
                 },
+                
                 openPrintView: () => {
                     ui.updatePrintView();
                     const appUi = document.getElementById('app-ui');
