@@ -45,6 +45,14 @@
         body:not(.show-col-alternative) .col-alternative {
             display: none !important;
         }
+        
+        .img-lazy {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .img-lazy.loaded {
+            opacity: 1;
+        }
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -137,8 +145,8 @@
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
-<!-- 預設移除 show-col-image，使清單模式的外觀圖預設隱藏 -->
-<body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance">
+<!-- 預設移除 show-col-image，使清單模式的外觀圖預設隱藏，加入 show-col-nhicode 預設顯示健保碼 -->
+<body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance show-col-nhicode">
 
     <div id="app-ui" class="flex flex-col h-full w-full">
         <!-- 頂部精簡導覽列 -->
@@ -293,7 +301,7 @@
                 <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('generic', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 學名/成分</label>
                 <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('usage', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 用法用量</label>
                 <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('appearance', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 外觀描述</label>
-                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 健保碼</label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 健保碼</label>
                 <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" onchange="app.toggleColumn('alternative', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 替代品項/備註</label>
             </div>
         </div>
@@ -330,7 +338,7 @@
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="generic" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 學名/成分</label>
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="usage" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 用法用量</label>
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="appearance" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 外觀描述</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" value="nhicode" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 健保碼</label>
+                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="nhicode" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 健保碼</label>
                     <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" value="alternative" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 替代品項/備註</label>
                 </div>
             </div>
@@ -398,6 +406,8 @@
             let brandSortAscending = true;
             let currentParseMode = 'cloud';
             let isImageMode = false;
+            
+            const imageCache = new Map(); // 改用 Map 儲存壓縮後的 Base64 圖片資料
             
             const els = {
                 listContainer: document.getElementById('list-container'),
@@ -603,21 +613,34 @@
                             els.gridContainer.classList.remove('hidden');
                             els.tableBody.innerHTML = ''; 
 
-                            els.gridBody.innerHTML = medList.map((med, index) => `
+                            els.gridBody.innerHTML = medList.map((med, index) => {
+                                let imageHtml = `<i class="ph ph-image text-4xl text-slate-300"></i>`;
+                                if (med.imageUrl) {
+                                    const safeUrl = utils.escapeHtml(med.imageUrl);
+                                    // 判斷是否在快取中，若在則直接顯示壓縮後的 Base64，否則進入載入與壓縮流程
+                                    if (imageCache.has(safeUrl)) {
+                                        imageHtml = `<img src="${imageCache.get(safeUrl)}" class="w-full h-full object-cover loaded img-lazy" loading="lazy">`;
+                                    } else {
+                                        imageHtml = `<img data-original-src="${safeUrl}" class="lazy-image w-full h-full object-cover img-lazy opacity-0 transition-opacity" loading="lazy">`;
+                                    }
+                                }
+
+                                return `
                                 <div class="col-span-1 bg-white border border-slate-200 rounded-xl p-3 flex flex-col relative shadow-sm hover:shadow-md transition-shadow animate-fade-in-up card-item" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
                                     <div class="flex justify-between items-start mb-2">
                                         <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
                                         <button class="delete-btn text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1 transition-colors -mt-1 -mr-1" title="刪除此列"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
                                     </div>
                                     <div class="w-full aspect-square bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100 overflow-hidden mb-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="app.editImageUrl('${med.id}')" title="點擊設定圖片">
-                                        ${med.imageUrl ? `<img src="${utils.escapeHtml(med.imageUrl)}" class="w-full h-full object-cover">` : `<i class="ph ph-image text-4xl text-slate-300"></i>`}
+                                        ${imageHtml}
                                     </div>
                                     <div class="mt-auto">
                                         <div class="font-bold text-slate-800 text-sm leading-tight truncate mb-1" title="${utils.escapeHtml(med.brandName)}">${utils.escapeHtml(med.brandName) || '未命名商品'}</div>
                                         <div class="text-xs text-slate-500 leading-tight truncate" title="${utils.escapeHtml(med.appearance)}">${utils.escapeHtml(med.appearance) || '無外觀描述'}</div>
                                     </div>
                                 </div>
-                            `).join('');
+                                `;
+                            }).join('');
                         } else {
                             els.gridContainer.classList.add('hidden');
                             els.listContainer.classList.remove('hidden');
@@ -682,6 +705,43 @@
                             `).join('');
                         }
                     }
+
+                    // 執行 lazy-image 的壓縮與快取載入
+                    document.querySelectorAll('.lazy-image').forEach(imgEl => {
+                        const url = imgEl.dataset.originalSrc;
+                        if (!url) return;
+                        
+                        const img = new Image();
+                        img.crossOrigin = 'Anonymous'; // 嘗試以 CORS 獲取以支援 Canvas 轉換
+                        img.onload = () => {
+                            try {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const MAX_SIZE = 400; // 壓縮至最大 400px
+                                let { width, height } = img;
+                                if (width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
+                                else if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                                canvas.width = width; canvas.height = height;
+                                ctx.drawImage(img, 0, 0, width, height);
+                                
+                                const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // 轉換為 JPEG 並降低品質達到壓縮
+                                imageCache.set(url, dataUrl);
+                                imgEl.src = dataUrl;
+                            } catch(e) {
+                                // 若因圖片來源伺服器不支援 CORS 而阻斷 Canvas 讀取，降級使用原圖 URL 存入快取
+                                imageCache.set(url, url);
+                                imgEl.src = url;
+                            }
+                            imgEl.classList.add('loaded');
+                            imgEl.classList.remove('opacity-0');
+                            imgEl.classList.remove('lazy-image');
+                        };
+                        img.onerror = () => {
+                            imgEl.parentElement.innerHTML = '<i class="ph ph-image-broken text-4xl text-slate-300"></i>';
+                        };
+                        img.src = url;
+                    });
+
                     ui.updateMetrics();
                 },
                 updateMetrics: () => { els.medCount.textContent = `${medList.length} 筆`; },
@@ -702,7 +762,7 @@
                         generic: toggles.find(t => t.value === 'generic')?.checked ?? true,
                         usage: toggles.find(t => t.value === 'usage')?.checked ?? true,
                         appearance: toggles.find(t => t.value === 'appearance')?.checked ?? true,
-                        nhicode: toggles.find(t => t.value === 'nhicode')?.checked ?? false,
+                        nhicode: toggles.find(t => t.value === 'nhicode')?.checked ?? true,
                         alternative: toggles.find(t => t.value === 'alternative')?.checked ?? false
                     };
 
@@ -984,6 +1044,9 @@
                     medList = medList.filter(m => !duplicates.includes(m.id));
                     ui.renderTable(); storage.save();
                     utils.showToast(`已刪除 ${duplicates.length} 筆重複藥品`);
+                },
+                cacheImage: (url, dataUrl) => {
+                    imageCache.set(url, dataUrl);
                 },
                 editImageUrl: (id) => {
                     const med = medList.find(m => m.id === id);
