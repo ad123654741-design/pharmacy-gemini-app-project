@@ -617,10 +617,11 @@
                                 let imageHtml = `<i class="ph ph-image text-4xl text-slate-300"></i>`;
                                 if (med.imageUrl) {
                                     const safeUrl = utils.escapeHtml(med.imageUrl);
-                                    // 判斷是否在快取中，若在則直接顯示壓縮後的 Base64，否則進入載入與壓縮流程
+                                    // 判斷是否在快取中，若在則直接顯示，否則準備載入
                                     if (imageCache.has(safeUrl)) {
                                         imageHtml = `<img src="${imageCache.get(safeUrl)}" class="w-full h-full object-cover loaded img-lazy" loading="lazy">`;
                                     } else {
+                                        // 改回使用直接載入的方式，不再依賴 canvas 壓縮避免 CORS 阻擋
                                         imageHtml = `<img data-original-src="${safeUrl}" class="lazy-image w-full h-full object-cover img-lazy opacity-0 transition-opacity" loading="lazy">`;
                                     }
                                 }
@@ -706,39 +707,27 @@
                         }
                     }
 
-                    // 執行 lazy-image 的壓縮與快取載入
+                    // 執行 lazy-image 的載入與快取 (不再使用 Canvas 壓縮，避免 CORS 問題)
                     document.querySelectorAll('.lazy-image').forEach(imgEl => {
                         const url = imgEl.dataset.originalSrc;
                         if (!url) return;
                         
                         const img = new Image();
-                        img.crossOrigin = 'Anonymous'; // 嘗試以 CORS 獲取以支援 Canvas 轉換
+                        // 移除 crossOrigin = 'Anonymous'，直接以最普通的方式載入圖片
                         img.onload = () => {
-                            try {
-                                const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
-                                const MAX_SIZE = 400; // 壓縮至最大 400px
-                                let { width, height } = img;
-                                if (width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                                else if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                                canvas.width = width; canvas.height = height;
-                                ctx.drawImage(img, 0, 0, width, height);
-                                
-                                const dataUrl = canvas.toDataURL('image/jpeg', 0.7); // 轉換為 JPEG 並降低品質達到壓縮
-                                imageCache.set(url, dataUrl);
-                                imgEl.src = dataUrl;
-                            } catch(e) {
-                                // 若因圖片來源伺服器不支援 CORS 而阻斷 Canvas 讀取，降級使用原圖 URL 存入快取
-                                imageCache.set(url, url);
-                                imgEl.src = url;
-                            }
+                            // 圖片成功載入後，將 URL 存入快取 (雖然只是存 URL，但可以標記此圖片已處理過)
+                            imageCache.set(url, url);
+                            imgEl.src = url;
+                            
                             imgEl.classList.add('loaded');
                             imgEl.classList.remove('opacity-0');
                             imgEl.classList.remove('lazy-image');
                         };
                         img.onerror = () => {
-                            imgEl.parentElement.innerHTML = '<i class="ph ph-image-broken text-4xl text-slate-300"></i>';
+                            console.warn('圖片載入失敗:', url);
+                            imgEl.parentElement.innerHTML = '<i class="ph ph-image-broken text-4xl text-slate-300" title="圖片載入失敗"></i>';
                         };
+                        // 開始載入
                         img.src = url;
                     });
 
