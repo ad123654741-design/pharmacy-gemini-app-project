@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PediDose Rx 兒科藥品與塞劑計算系統 (臨床藥師版)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Noto Sans TC"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+    .custom-scroll::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-900 font-sans min-h-screen flex flex-col text-sm antialiased selection:bg-slate-700 selection:text-white">
+
+  <!-- 頂部工作列 -->
+  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="font-mono text-base font-black tracking-wider text-teal-400">RxPediDose</span>
+        <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 font-mono">臨床藥師版 v3.0</span>
+      </div>
+      <div class="flex items-center space-x-2 text-xs">
+        <button onclick="window.print()" class="no-print bg-slate-800 hover:bg-slate-700 text-slate-200 px-2.5 py-1 rounded transition border border-slate-700">
+          列印醫囑核方備忘
+        </button>
+      </div>
+    </div>
+
+    <!-- 參數輸入列：體重與年齡速查 -->
+    <div class="bg-slate-800 border-t border-slate-700/80 px-4 py-2">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-3">
+          <label class="text-slate-300 font-semibold flex items-center gap-1">
+            體重 (BW):
+            <div class="relative inline-block ml-1">
+              <input 
+                type="number" 
+                id="input-weight" 
+                step="0.1" 
+                min="1.5" 
+                max="80" 
+                value="12.0"
+                class="w-24 bg-slate-900 text-white font-mono font-bold text-base px-2 py-0.5 rounded border border-slate-600 focus:outline-none focus:border-teal-400 text-center"
+              />
+              <span class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-[10px]">kg</span>
+            </div>
+          </label>
+
+          <!-- 快速體重調整 -->
+          <div class="inline-flex rounded shadow-xs">
+            <button onclick="adjustWeight(-0.5)" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-0.5 rounded-l text-xs font-mono">-0.5</button>
+            <button onclick="adjustWeight(0.5)" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-0.5 rounded-r text-xs font-mono border-l border-slate-600">+0.5</button>
+          </div>
+
+          <!-- 體重快捷選單 -->
+          <div class="hidden sm:flex items-center gap-1 text-[11px] text-slate-300 font-mono">
+            <span>[</span>
+            <button onclick="setWeight(6)" class="hover:text-teal-300 px-1">6kg</button>
+            <button onclick="setWeight(10)" class="hover:text-teal-300 px-1">10kg</button>
+            <button onclick="setWeight(12)" class="hover:text-teal-300 px-1">12kg</button>
+            <button onclick="setWeight(15)" class="hover:text-teal-300 px-1">15kg</button>
+            <button onclick="setWeight(20)" class="hover:text-teal-300 px-1">20kg</button>
+            <button onclick="setWeight(25)" class="hover:text-teal-300 px-1">25kg</button>
+            <span>]</span>
+          </div>
+        </div>
+
+        <!-- 年齡速查 -->
+        <div class="flex items-center gap-2 text-slate-300">
+          <span class="text-slate-400">年齡速推:</span>
+          <select id="select-age-quick" onchange="onQuickAgeChange(this.value)" class="bg-slate-900 text-white text-xs px-2 py-0.5 rounded border border-slate-600 focus:outline-none focus:border-teal-400">
+            <option value="5.5">3個月 (~5.5kg)</option>
+            <option value="7.5">6個月 (~7.5kg)</option>
+            <option value="9.5">1歲 (~9.5kg)</option>
+            <option value="12.0" selected>2歲 (~12.0kg)</option>
+            <option value="14.0">3歲 (~14.0kg)</option>
+            <option value="16.0">4歲 (~16.0kg)</option>
+            <option value="18.5">5歲 (~18.5kg)</option>
+            <option value="21.0">6歲 (~21.0kg)</option>
+            <option value="27.0">8歲 (~27.0kg)</option>
+            <option value="32.0">10歲 (~32.0kg)</option>
+          </select>
+          <span id="badge-weight-status" class="px-2 py-0.5 rounded text-[11px] font-mono bg-teal-900/60 text-teal-300 border border-teal-700">幼童標準範圍</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主工作台 -->
+  <main class="max-w-7xl mx-auto w-full p-4 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+
+    <!-- 左欄：高密度藥品篩選與列表 -->
+    <section class="lg:col-span-5 bg-white border border-slate-300 rounded shadow-xs overflow-hidden flex flex-col">
+      <div class="p-2.5 bg-slate-50 border-b border-slate-200 flex flex-col gap-2">
+        <input 
+          type="text" 
+          id="search-input" 
+          oninput="onSearchChange(this.value)"
+          placeholder="搜尋學名 / 商品名 / 塞劑 / Actein / Smecta..." 
+          class="w-full bg-white border border-slate-300 px-2.5 py-1 text-xs rounded focus:outline-none focus:border-slate-800"
+        />
+        <!-- 分類標籤 -->
+        <div class="flex items-center gap-1 overflow-x-auto text-[11px] custom-scroll">
+          <button onclick="setCategory('ALL')" class="cat-pill bg-slate-900 text-white px-2 py-0.5 rounded font-medium shrink-0" data-cat="ALL">全部</button>
+          <button onclick="setCategory('SUPPOSITORY')" class="cat-pill bg-slate-200 text-slate-700 hover:bg-slate-300 px-2 py-0.5 rounded font-medium shrink-0" data-cat="SUPPOSITORY">💊 塞劑專區</button>
+          <button onclick="setCategory('FEVER')" class="cat-pill bg-slate-200 text-slate-700 hover:bg-slate-300 px-2 py-0.5 rounded font-medium shrink-0" data-cat="FEVER">口服退燒止痛</button>
+          <button onclick="setCategory('RESPIRATORY')" class="cat-pill bg-slate-200 text-slate-700 hover:bg-slate-300 px-2 py-0.5 rounded font-medium shrink-0" data-cat="RESPIRATORY">呼吸道/化痰粉劑</button>
+          <button onclick="setCategory('GI')" class="cat-pill bg-slate-200 text-slate-700 hover:bg-slate-300 px-2 py-0.5 rounded font-medium shrink-0" data-cat="GI">腸胃/止瀉粉劑</button>
+          <button onclick="setCategory('ANTIHISTAMINE')" class="cat-pill bg-slate-200 text-slate-700 hover:bg-slate-300 px-2 py-0.5 rounded font-medium shrink-0" data-cat="ANTIHISTAMINE">抗組織胺</button>
+          <button onclick="setCategory('ANTIBIOTIC')" class="cat-pill bg-slate-200 text-slate-700 hover:bg-slate-300 px-2 py-0.5 rounded font-medium shrink-0" data-cat="ANTIBIOTIC">抗生素懸浮</button>
+        </div>
+      </div>
+
+      <!-- 藥物清單 -->
+      <div id="drugs-container" class="divide-y divide-slate-100 max-h-[calc(100vh-210px)] overflow-y-auto custom-scroll">
+        <!-- 動態渲染 -->
+      </div>
+    </section>
+
+    <!-- 右欄：核心計算資訊 (專業工作站視角) -->
+    <section class="lg:col-span-7 space-y-3">
+      
+      <!-- 主劑量資訊面板 -->
+      <div class="bg-white border border-slate-300 rounded shadow-xs overflow-hidden">
+        
+        <!-- 面板頂部 -->
+        <div class="bg-slate-900 text-white px-4 py-3 flex items-start justify-between border-b border-slate-800">
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="calc-type-badge" class="px-1.5 py-0.2 rounded text-[10px] font-mono bg-teal-800 text-teal-200 border border-teal-600">SUPPOSITORY</span>
+              <h2 id="calc-drug-name" class="text-lg font-bold tracking-tight">非炎栓劑 (Voren Supp)</h2>
+            </div>
+            <p id="calc-generic" class="text-xs text-slate-300 font-mono mt-0.5">Diclofenac sodium 12.5 mg / supp</p>
+          </div>
+          <div class="text-right font-mono">
+            <span class="text-[11px] text-slate-400 block">基準體重</span>
+            <span id="calc-weight-view" class="text-lg font-bold text-teal-300">12.0 kg</span>
+          </div>
+        </div>
+
+        <!-- 劑量核心數據區 -->
+        <div class="p-4 bg-slate-50/70 border-b border-slate-200">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            
+            <!-- 主要給藥量 -->
+            <div>
+              <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-0.5">建議單次處方量 (Single Dose)</span>
+              <div class="flex items-baseline gap-2">
+                <span id="calc-primary-dose" class="text-4xl font-mono font-black text-slate-950">1</span>
+                <span id="calc-primary-unit" class="text-base font-bold text-slate-700">顆 (Supp)</span>
+              </div>
+              <div class="mt-1 flex items-center gap-2 text-xs font-mono text-slate-600">
+                <span id="calc-secondary-dose">相當於 12.5 mg</span>
+                <span class="text-slate-300">|</span>
+                <span id="calc-single-rate" class="text-slate-500">1.00 mg/kg</span>
+              </div>
+            </div>
+
+            <!-- 給藥原則與切法建議 -->
+            <div id="supp-instruction-box" class="bg-white border border-slate-200 rounded p-2.5 text-xs text-slate-700 space-y-1">
+              <div class="font-bold text-slate-900 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
+                <span id="supp-instruction-title">製劑分割與使用技巧：</span>
+              </div>
+              <p id="supp-instruction-text" class="text-slate-600 leading-snug">
+                建議縱切使用。若室溫軟化可先置於冷藏冰箱待其硬化後再以刀片俐落縱切。
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 臨床指引與上限規範 -->
+        <div class="p-4 text-xs space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="border-l-2 border-slate-400 pl-2.5 py-0.5">
+              <span class="text-slate-400 text-[11px] block">給藥頻率與時機 (Interval / Route)</span>
+              <span id="calc-frequency" class="font-semibold text-slate-900 block mt-0.5">每 8 小時一次 (TID prn)</span>
+              <span id="calc-timing" class="text-slate-500 text-[11px] block mt-0.5">體溫 &gt; 38.5°C 且病童無法口服退燒藥時使用</span>
+            </div>
+
+            <div class="border-l-2 border-rose-400 pl-2.5 py-0.5">
+              <span class="text-slate-400 text-[11px] block">單日極限與安全規範 (Max Limit)</span>
+              <span id="calc-max-day" class="font-semibold text-rose-800 block mt-0.5">每日不超過 3 次</span>
+              <span id="calc-ceiling" class="text-slate-500 text-[11px] block mt-0.5">每日最高上限 3 mg/kg/天 (單次上限 25mg / 成人 50mg)</span>
+            </div>
+          </div>
+
+          <!-- 藥師備註與警訊 -->
+          <div class="pt-2 border-t border-slate-200">
+            <span class="font-bold text-slate-800 text-[11px] uppercase tracking-wide flex items-center gap-1 mb-1">
+              <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              藥師核方要點 (Clinical Pearls & Interactions)
+            </span>
+            <p id="calc-notes" class="text-slate-600 leading-relaxed bg-slate-50 p-2 rounded border border-slate-200/80 font-sans">
+              Diclofenac 為 NSAID 類，與 Ibuprofen 具同類交叉腎毒性與腸胃刺激性，嚴禁同時重疊併用；脫水與水痘病童禁用。
+            </p>
+          </div>
+
+          <!-- 複製處方紀錄 -->
+          <div class="pt-1 flex justify-end no-print">
+            <button onclick="copyPrescriptionText()" class="bg-slate-900 hover:bg-slate-800 text-white font-medium px-3 py-1.5 rounded text-xs transition flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+              複製核方紀錄 / 醫囑指引
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 退燒製劑速算對照矩陣 -->
+      <div class="bg-white border border-slate-300 rounded shadow-xs p-3 text-xs">
+        <h3 class="font-bold text-slate-800 mb-2 flex items-center justify-between">
+          <span>退燒製劑速算對照矩陣 (Antipyretic Cross-Reference Table)</span>
+          <span id="matrix-weight-hint" class="text-[11px] text-slate-400 font-normal">以目前 12.0 kg 為基準</span>
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse font-mono text-[11px]">
+            <thead>
+              <tr class="border-b border-slate-300 bg-slate-50 text-slate-600">
+                <th class="py-1 px-2 font-semibold">藥品類別與製劑規格</th>
+                <th class="py-1 px-2 font-semibold">建議標準劑量</th>
+                <th class="py-1 px-2 font-semibold">即時推算量</th>
+                <th class="py-1 px-2 font-semibold">備註速算法</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-tbody" class="divide-y divide-slate-200 text-slate-700">
+              <!-- 動態生成對照 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 提示 Toast -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs px-3.5 py-1.5 rounded shadow pointer-events-none transition-all duration-200 opacity-0 transform translate-y-2 font-mono">
+    通知
+  </div>
+
+  <script>
+    /* ==========================================================================
+       藥品資料庫 (落實 Voren 單次 1.0 mg/kg/次、Actein、Smecta 等)
+       ========================================================================== */
+    const DRUG_DB = [
+      // 1. 非炎栓劑 (依要求設定為 1.0 mg/kg/次，每日 3 次分 TID)
+      {
+        id: 'voren_supp',
+        type: 'SUPPOSITORY',
+        brandName: '非炎栓劑 (Voren Supp)',
+        genericName: 'Diclofenac sodium 12.5 mg / supp',
+        category: 'SUPPOSITORY',
+        categoryLabel: '退燒/止痛塞劑',
+        dosageType: 'supp',
+        strength: 12.5,
+        unitStr: '顆 (Supp)',
+        dosePerKgMin: 0.5,
+        dosePerKgMax: 1.0,
+        dosePerKgStd: 1.0, // 單次 1.0 mg/kg
+        frequencyText: '每 8 小時一次 (TID prn，每日最多 3 次)',
+        timingText: '兒童 0.5~3 mg/kg/day 分 2~3 次；體溫 > 38.5°C 且劇吐無法口服時使用',
+        maxDailyTimes: '每日不超過 3 次 (單日最大總量 3 mg/kg/天，單次上限 25mg / 成人 50mg)',
+        adultCapSingleMg: 50,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 1.0, 25.0);
+          const rawSupp = targetMg / 12.5;
+          // 以 0.05 顆為精細刻度
+          let suppCount = Math.round(rawSupp * 20) / 20;
+          if (suppCount < 0.25) suppCount = 0.25;
+
+          let practicalAdvice = '';
+          if (suppCount <= 0.35) {
+            practicalAdvice = '約【1/3 顆】(或縱切 0.3 顆)。體重過輕嬰幼兒建議審慎評估。';
+          } else if (suppCount >= 0.45 && suppCount <= 0.55) {
+            practicalAdvice = '約【半顆 (0.5 顆)】，請以乾淨刀片俐落縱切。';
+          } else if (suppCount >= 0.65 && suppCount <= 0.78) {
+            practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議裁【3/4 顆 (約 0.75 顆)】。`;
+          } else if (suppCount >= 0.79 && suppCount <= 0.9) {
+            practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議切【約 4/5 顆 (0.8 顆)】。`;
+          } else if (suppCount >= 0.91 && suppCount <= 1.15) {
+            practicalAdvice = '建議使用完整【1 顆】栓劑 (12.5 mg)。塞入前可沾水潤滑。';
+          } else if (suppCount >= 1.2 && suppCount <= 1.6) {
+            practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議【1 顆 + 縱切半顆 (約 1.2~1.5 顆)】。`;
+          } else {
+            practicalAdvice = `精確算量為 ${suppCount} 顆。較大兒童建議優先評估口服製劑。`;
+          }
+
+          const actualMg = Math.round(suppCount * 12.5 * 10) / 10;
+          return {
+            primaryDose: suppCount.toString(),
+            primaryUnit: '顆 (Supp)',
+            secondaryText: `相當於 ${actualMg} mg`,
+            rateText: `${(actualMg / bw).toFixed(2)} mg/kg/次 (單次基準: 1.0 mg/kg，分 TID)`,
+            instruction: practicalAdvice
+          };
+        },
+        notes: '【禁忌提醒】Diclofenac 為 NSAID 類，與 Ibuprofen 具同類交叉腎毒性與腸胃刺激性，嚴禁重疊併用；脫水及水痘病童禁用。'
+      },
+      // 2. 乙醯胺酚塞劑
+      {
+        id: 'acetaminophen_supp_100',
+        type: 'SUPPOSITORY',
+        brandName: '乙醯胺酚塞劑 100mg',
+        genericName: 'Acetaminophen 100 mg / supp',
+        category: 'SUPPOSITORY',
+        categoryLabel: '退燒/止痛塞劑',
+        dosageType: 'supp',
+        strength: 100,
+        unitStr: '顆 (Supp)',
+        dosePerKgMin: 15,
+        dosePerKgMax: 20,
+        dosePerKgStd: 15,
+        frequencyText: '每 4 ~ 6 小時一次，必要時給予 (prn)',
+        timingText: '發燒 > 38.5°C 且病童無法口服退燒藥時使用',
+        maxDailyTimes: '每日不超過 4 次 (單日總量上限 60~75 mg/kg/天)',
+        adultCapSingleMg: 1000,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 15, 1000);
+          const rawSupp = targetMg / 100;
+          let suppCount = Math.round(rawSupp * 20) / 20;
+          if (suppCount < 0.25) suppCount = 0.25;
+
+          let practical = '';
+          if (suppCount <= 0.6) practical = `建議約【半顆 (0.5 顆)】(約 50 mg)。需縱切以保成份均勻。`;
+          else if (suppCount <= 0.85) practical = `理論 ${suppCount} 顆。實務建議【3/4 顆 (0.75 顆)】或【0.8 顆】。`;
+          else if (suppCount <= 1.15) practical = `建議使用完整【1 顆】栓劑 (100 mg)。`;
+          else if (suppCount <= 1.6) practical = `理論 ${suppCount} 顆。實務建議【1.5 顆】(1 顆 + 半顆)。`;
+          else practical = `理論 ${suppCount} 顆。實務建議【1.75 ~ 2 顆】。`;
+
+          const actualMg = Math.round(suppCount * 100);
+          return {
+            primaryDose: suppCount.toString(),
+            primaryUnit: '顆 (Supp)',
+            secondaryText: `相當於 ${actualMg} mg`,
+            rateText: `${(actualMg / bw).toFixed(1)} mg/kg (直腸可用率約80%)`,
+            instruction: practical
+          };
+        },
+        notes: '直腸吸收較口服慢且個體吸收差異大。病童能吞服時，優先建議口服安佳熱。'
+      },
+      // 3. Actein 粉劑
+      {
+        id: 'actein_powder',
+        type: 'ORAL_POWDER',
+        brandName: '愛克痰顆粒 200mg (Actein)',
+        genericName: 'Acetylcysteine 200 mg / sachet (包)',
+        category: 'RESPIRATORY',
+        categoryLabel: '化痰粉劑 (Sachet)',
+        dosageType: 'sachet',
+        strength: 200,
+        unitStr: '包 (Sachet)',
+        dosePerKgMin: 10,
+        dosePerKgMax: 15,
+        dosePerKgStd: 10,
+        frequencyText: '每日 2 ~ 3 次 (BID ~ TID)',
+        timingText: '飯後或隨餐服用；溶解於少許溫水或冷開水中飲用',
+        maxDailyTimes: '小兒每日上限 400 mg (2 包/天)；成人單日上限 600 mg',
+        adultCapSingleMg: 200,
+        calculateDose: function(bw) {
+          let sachetCount = 0.5;
+          let sachetFraction = '1/2 包';
+          if (bw < 7) {
+            sachetCount = 0.25;
+            sachetFraction = '1/4 包 (約 50 mg)';
+          } else if (bw < 11) {
+            sachetCount = 0.33;
+            sachetFraction = '1/3 包 (約 66 mg)';
+          } else if (bw <= 16) {
+            sachetCount = 0.5;
+            sachetFraction = '半包 (0.5 包, 100 mg)';
+          } else if (bw <= 24) {
+            sachetCount = 0.75;
+            sachetFraction = '3/4 包 (0.75 包, 150 mg)';
+          } else {
+            sachetCount = 1.0;
+            sachetFraction = '整包 (1.0 包, 200 mg)';
+          }
+          const actualMg = Math.round(sachetCount * 200);
+          return {
+            primaryDose: sachetCount.toString(),
+            primaryUnit: '包 (Sachet)',
+            secondaryText: `相當於 ${actualMg} mg (約 ${sachetFraction})`,
+            rateText: `每次約 ${(actualMg / bw).toFixed(1)} mg/kg (TID 投予)`,
+            instruction: '可加少許溫水溶解後服用。避免與抗生素同杯混和以防可能之化學不相容。'
+          };
+        },
+        notes: '具有黏液溶解作用。溶解後應盡速服用；小於 1 歲嬰兒咳痰反射未成熟者需注意痰液抽吸。'
+      },
+      // 4. Smecta 思密達
+      {
+        id: 'smecta_powder',
+        type: 'ORAL_POWDER',
+        brandName: '舒腹達 / 思密達散劑 (Smecta)',
+        genericName: 'Diosmectite 3 g / sachet (包)',
+        category: 'GI',
+        categoryLabel: '止瀉/腸道吸附粉劑',
+        dosageType: 'sachet',
+        strength: 3,
+        unitStr: '包 (Sachet)',
+        dosePerKgMin: 0,
+        dosePerKgMax: 0,
+        dosePerKgStd: 0,
+        frequencyText: '每日 2 ~ 3 次 (分次服用)',
+        timingText: '【空腹服用】或兩餐之間給藥；急性腹瀉起始可加倍劑量',
+        maxDailyTimes: '<1歲每日1包；1~2歲每日1~2包；>2歲每日2~3包',
+        adultCapSingleMg: null,
+        calculateDose: function(bw) {
+          let singleSachet = 0.5;
+          let textFraction = '1/2 包';
+          let dayMaxText = '每日共 1.5 包';
+          if (bw < 10) {
+            singleSachet = 0.33;
+            textFraction = '1/3 包 (約 1.0 g)';
+            dayMaxText = '每日總量不超過 1 包 (分 TID)';
+          } else if (bw <= 15) {
+            singleSachet = 0.5;
+            textFraction = '半包 (0.5 包, 1.5 g)';
+            dayMaxText = '每日總量 1.5 ~ 2 包 (分 TID)';
+          } else {
+            singleSachet = 1.0;
+            textFraction = '整包 (1.0 包, 3.0 g)';
+            dayMaxText = '每日總量 2 ~ 3 包 (分 TID)';
+          }
+          return {
+            primaryDose: singleSachet.toString(),
+            primaryUnit: '包 (Sachet)',
+            secondaryText: `每次約 ${textFraction}`,
+            rateText: `年齡/體重分級處方 (${dayMaxText})`,
+            instruction: '【重要】具強效物理吸附性，必須與其他所有口服藥物間隔至少 1.5 ~ 2 小時，以免阻礙其他藥物吸收！'
+          };
+        },
+        notes: '天然雙八面體蒙脫石，覆蓋黏膜並吸附毒素。腹瀉病童最關鍵仍為補充水分與電解質 (ORS)。'
+      },
+      // 5. 安佳熱糖漿
+      {
+        id: 'antipen',
+        type: 'ORAL',
+        brandName: '安佳熱糖漿 (Antipen)',
+        genericName: 'Acetaminophen 24 mg/mL',
+        category: 'FEVER',
+        categoryLabel: '口服解熱鎮痛',
+        dosageType: 'liquid',
+        strength: 24,
+        unitStr: 'mL',
+        dosePerKgMin: 10,
+        dosePerKgMax: 15,
+        dosePerKgStd: 12,
+        frequencyText: '每 4 ~ 6 小時一次 (q4h~q6h prn)',
+        timingText: '體溫高於 38.5°C 或疼痛不適時給予',
+        maxDailyTimes: '每日不超過 5 次 (最大劑量 < 60 mg/kg/天，成人單次上限 1000mg)',
+        adultCapSingleMg: 1000,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 12, 1000);
+          const ml = Math.round((targetMg / 24) * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${Math.round(targetMg)} mg`,
+            rateText: `基準: ${(targetMg / bw).toFixed(1)} mg/kg (速算: 體重/2 mL)`,
+            instruction: '建議使用有刻度之餵藥針筒精確抽取量取。'
+          };
+        },
+        notes: '兒童最安全的退燒第一線首選。若與 Ibuprofen 輪替退燒，兩種成份間隔需至少 2~3 小時。'
+      },
+      // 6. 依普芬懸液
+      {
+        id: 'iprofen',
+        type: 'ORAL',
+        brandName: '依普芬口服懸液 (Iprofen)',
+        genericName: 'Ibuprofen 20 mg/mL (2%)',
+        category: 'FEVER',
+        categoryLabel: '口服解熱鎮痛 (NSAID)',
+        dosageType: 'liquid',
+        strength: 20,
+        unitStr: 'mL',
+        dosePerKgMin: 5,
+        dosePerKgMax: 10,
+        dosePerKgStd: 10,
+        frequencyText: '每 6 ~ 8 小時一次 (q6h~q8h prn)',
+        timingText: '建議隨餐或飯後給予，以減低腸胃刺激',
+        maxDailyTimes: '每日不超過 4 次 (單日最大總量 40 mg/kg/天，成人單次上限 600mg)',
+        adultCapSingleMg: 600,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 10, 600);
+          const ml = Math.round((targetMg / 20) * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${Math.round(targetMg)} mg`,
+            rateText: `基準: 10 mg/kg (高燒 10mg/kg，輕度可採 5mg/kg)`,
+            instruction: '瓶身使用前請充分搖勻。小於 6 個月嬰兒及脫水患者慎用。'
+          };
+        },
+        notes: '具消炎與退高燒效果。脫水、腹瀉、腎功能不全或水痘病患應避免使用以防腎損害。'
+      },
+      // 7. 滅喘淨液 (Meptin)
+      {
+        id: 'meptin_liquid',
+        type: 'ORAL',
+        brandName: '滅喘淨液 (Meptin Liquid)',
+        genericName: 'Procaterol HCl 5 mcg/mL',
+        category: 'RESPIRATORY',
+        categoryLabel: '支氣管擴張劑 (β2-agonist)',
+        dosageType: 'liquid',
+        strength: 5,
+        unitStr: 'mL',
+        dosePerKgMin: 0.25,
+        dosePerKgMax: 0.25,
+        dosePerKgStd: 0.25,
+        frequencyText: '每日 2 次 (BID，早晚或睡前各一次)',
+        timingText: '急性喘鳴、支氣管痙攣或夜間咳喘時使用',
+        maxDailyTimes: '<6歲單次不超過 5 mL；>6歲單次不超過 10 mL',
+        adultCapSingleMg: 10,
+        calculateDose: function(bw) {
+          let ml = Math.round(bw * 0.25 * 10) / 10;
+          if (bw < 20 && ml > 5.0) ml = 5.0;
+          if (ml > 10.0) ml = 10.0;
+          const mcg = Math.round(ml * 5 * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${mcg} mcg`,
+            rateText: `速算基準: 0.25 mL/kg/次 (分 BID)`,
+            instruction: '若有手抖或心跳過速屬交感神經刺激常見反應，通常減量即可改善。'
+          };
+        },
+        notes: '長效型口服 β2 作用劑。急性嚴重呼吸困難喘鳴仍應緊急就醫。'
+      },
+      // 8. 希普利敏液
+      {
+        id: 'cypromin',
+        type: 'ORAL',
+        brandName: '希普利敏液 (Cypromin)',
+        genericName: 'Cyproheptadine HCl 0.4 mg/mL',
+        category: 'ANTIHISTAMINE',
+        categoryLabel: '第一代抗組織胺',
+        dosageType: 'liquid',
+        strength: 0.4,
+        unitStr: 'mL',
+        dosePerKgMin: 0.08,
+        dosePerKgMax: 0.1,
+        dosePerKgStd: 0.08,
+        frequencyText: '每日 2 ~ 3 次 (TID 或 BID)',
+        timingText: '鼻水、過敏性鼻炎、蕁麻疹止癢；常見嗜睡副作用',
+        maxDailyTimes: '每日總量不超過 0.25 mg/kg/天 (成人上限 16 mg/天)',
+        adultCapSingleMg: 4,
+        calculateDose: function(bw) {
+          const ml = Math.round((bw * 0.2) * 10) / 10;
+          const mg = Math.round(ml * 0.4 * 100) / 100;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${mg} mg`,
+            rateText: `速算法: 每次 0.2 mL/kg (約 0.08 mg/kg)`,
+            instruction: '服藥後常見嗜睡反應，具刺激食慾效果。'
+          };
+        },
+        notes: '早產兒與新生兒禁用。'
+      },
+      // 9. 安滅菌懸浮液
+      {
+        id: 'augmentin',
+        type: 'ORAL',
+        brandName: '安滅菌懸浮液 (Augmentin)',
+        genericName: 'Amoxicillin 400mg + Clavulanate 57mg / 5mL',
+        category: 'ANTIBIOTIC',
+        categoryLabel: '抗生素懸浮劑',
+        dosageType: 'liquid',
+        strength: 80,
+        unitStr: 'mL',
+        dosePerKgMin: 25,
+        dosePerKgMax: 45,
+        dosePerKgStd: 45,
+        frequencyText: '每日 2 次 (每 12 小時一次，固定間隔)',
+        timingText: '建議餐初 (隨餐第一口) 服用，吸收最佳且降胃腸副作用',
+        maxDailyTimes: '每日 2 次，必須服滿完整指定療程',
+        adultCapSingleMg: 875,
+        calculateDose: function(bw) {
+          const singleAmoxMg = Math.min((bw * 45) / 2, 875);
+          const ml = Math.round((singleAmoxMg / 80) * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `含 Amoxicillin ${Math.round(singleAmoxMg)} mg / 次`,
+            rateText: `相當於 45 mg/kg/天 (分 BID 投予)`,
+            instruction: '泡製後須置於冷藏冰箱 (2~8°C)，不可冷凍。'
+          };
+        },
+        notes: '中耳炎高劑量處方可達 80~90 mg/kg/天，請依感染部位裁量。'
+      }
+    ];
+
+    /* ==========================================================================
+       狀態與交互邏輯
+       ========================================================================== */
+    const state = {
+      weight: 12.0,
+      selectedDrugId: 'voren_supp',
+      category: 'ALL',
+      search: ''
+    };
+
+    const dom = {
+      inputWeight: document.getElementById('input-weight'),
+      badgeWeightStatus: document.getElementById('badge-weight-status'),
+      drugsContainer: document.getElementById('drugs-container'),
+      calcTypeBadge: document.getElementById('calc-type-badge'),
+      calcDrugName: document.getElementById('calc-drug-name'),
+      calcGeneric: document.getElementById('calc-generic'),
+      calcWeightView: document.getElementById('calc-weight-view'),
+      calcPrimaryDose: document.getElementById('calc-primary-dose'),
+      calcPrimaryUnit: document.getElementById('calc-primary-unit'),
+      calcSecondaryDose: document.getElementById('calc-secondary-dose'),
+      calcSingleRate: document.getElementById('calc-single-rate'),
+      suppInstructionBox: document.getElementById('supp-instruction-box'),
+      suppInstructionTitle: document.getElementById('supp-instruction-title'),
+      suppInstructionText: document.getElementById('supp-instruction-text'),
+      calcFrequency: document.getElementById('calc-frequency'),
+      calcTiming: document.getElementById('calc-timing'),
+      calcMaxDay: document.getElementById('calc-max-day'),
+      calcCeiling: document.getElementById('calc-ceiling'),
+      calcNotes: document.getElementById('calc-notes'),
+      matrixWeightHint: document.getElementById('matrix-weight-hint'),
+      matrixTbody: document.getElementById('matrix-tbody'),
+      toast: document.getElementById('toast')
+    };
+
+    function updateMatrixTable() {
+      if (!dom.matrixTbody) return;
+      dom.matrixWeightHint.textContent = `以目前 ${state.weight.toFixed(1)} kg 為基準動態計算`;
+
+      const voren = DRUG_DB.find(d => d.id === 'voren_supp');
+      const acetSupp = DRUG_DB.find(d => d.id === 'acetaminophen_supp_100');
+      const antipen = DRUG_DB.find(d => d.id === 'antipen');
+      const iprofen = DRUG_DB.find(d => d.id === 'iprofen');
+
+      const vorenRes = voren ? voren.calculateDose(state.weight) : null;
+      const acetSuppRes = acetSupp ? acetSupp.calculateDose(state.weight) : null;
+      const antipenRes = antipen ? antipen.calculateDose(state.weight) : null;
+      const iprofenRes = iprofen ? iprofen.calculateDose(state.weight) : null;
+
+      dom.matrixTbody.innerHTML = `
+        <tr>
+          <td class="py-1.5 px-2 font-sans font-medium text-slate-900">非炎栓劑 (Voren 12.5mg)</td>
+          <td class="py-1.5 px-2 text-teal-800 font-bold">1.0 mg/kg/次 (分 TID)</td>
+          <td class="py-1.5 px-2 font-bold text-teal-700">${vorenRes ? vorenRes.primaryDose + ' 顆 (' + vorenRes.secondaryText.replace('相當於 ', '') + ')' : '-'}</td>
+          <td class="py-1.5 px-2 font-sans text-slate-500">${vorenRes ? vorenRes.instruction : ''}</td>
+        </tr>
+        <tr>
+          <td class="py-1.5 px-2 font-sans font-medium text-slate-900">乙醯胺酚塞劑 (Acetaminophen 100mg)</td>
+          <td class="py-1.5 px-2">15~20 mg/kg</td>
+          <td class="py-1.5 px-2 font-bold text-teal-700">${acetSuppRes ? acetSuppRes.primaryDose + ' 顆 (' + acetSuppRes.secondaryText.replace('相當於 ', '') + ')' : '-'}</td>
+          <td class="py-1.5 px-2 font-sans text-slate-500">${acetSuppRes ? acetSuppRes.instruction : ''}</td>
+        </tr>
+        <tr>
+          <td class="py-1.5 px-2 font-sans font-medium text-slate-900">安佳熱糖漿 (Acetaminophen 24mg/mL)</td>
+          <td class="py-1.5 px-2">10~15 mg/kg</td>
+          <td class="py-1.5 px-2 font-bold text-teal-700">${antipenRes ? antipenRes.primaryDose + ' mL (' + antipenRes.secondaryText.replace('相當於 ', '') + ')' : '-'}</td>
+          <td class="py-1.5 px-2 font-sans text-slate-500">【體重 ÷ 2】mL (即約 12 mg/kg)</td>
+        </tr>
+        <tr>
+          <td class="py-1.5 px-2 font-sans font-medium text-slate-900">依普芬懸液 (Ibuprofen 20mg/mL)</td>
+          <td class="py-1.5 px-2">5~10 mg/kg</td>
+          <td class="py-1.5 px-2 font-bold text-teal-700">${iprofenRes ? iprofenRes.primaryDose + ' mL (' + iprofenRes.secondaryText.replace('相當於 ', '') + ')' : '-'}</td>
+          <td class="py-1.5 px-2 font-sans text-slate-500">高燒 10mg/kg (體重÷2 mL)；輕燒 5mg/kg</td>
+        </tr>
+      `;
+    }
+
+    function updateCalculation() {
+      const drug = DRUG_DB.find(d => d.id === state.selectedDrugId) || DRUG_DB[0];
+      const result = drug.calculateDose(state.weight);
+
+      dom.calcDrugName.textContent = drug.brandName;
+      dom.calcGeneric.textContent = drug.genericName;
+      dom.calcWeightView.textContent = `${state.weight.toFixed(1)} kg`;
+
+      if (drug.type === 'SUPPOSITORY') {
+        dom.calcTypeBadge.textContent = 'SUPPOSITORY 塞劑';
+        dom.calcTypeBadge.className = 'px-1.5 py-0.2 rounded text-[10px] font-mono bg-teal-800 text-teal-200 border border-teal-600';
+        dom.suppInstructionTitle.textContent = '塞劑精細切分與臨床技巧：';
+      } else if (drug.type === 'ORAL_POWDER') {
+        dom.calcTypeBadge.textContent = 'POWDER / SACHET 散劑/顆粒';
+        dom.calcTypeBadge.className = 'px-1.5 py-0.2 rounded text-[10px] font-mono bg-amber-800 text-amber-200 border border-amber-600';
+        dom.suppInstructionTitle.textContent = '粉劑調劑與服用指示：';
+      } else {
+        dom.calcTypeBadge.textContent = 'ORAL LIQUID 口服藥水';
+        dom.calcTypeBadge.className = 'px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-700 text-slate-200 border border-slate-600';
+        dom.suppInstructionTitle.textContent = '製劑給藥與調配注意：';
+      }
+
+      dom.suppInstructionBox.classList.remove('hidden');
+      dom.suppInstructionText.textContent = result.instruction;
+
+      dom.calcPrimaryDose.textContent = result.primaryDose;
+      dom.calcPrimaryUnit.textContent = result.primaryUnit;
+      dom.calcSecondaryDose.textContent = result.secondaryText;
+      dom.calcSingleRate.textContent = result.rateText;
+
+      dom.calcFrequency.textContent = drug.frequencyText;
+      dom.calcTiming.textContent = drug.timingText;
+      dom.calcMaxDay.textContent = drug.maxDailyTimes;
+      dom.calcCeiling.textContent = `單次成人上限: ${drug.adultCapSingleMg ? drug.adultCapSingleMg + ' mg' : '依仿單'}`;
+      dom.calcNotes.textContent = drug.notes;
+
+      if (state.weight < 5.0) {
+        dom.badgeWeightStatus.textContent = '⚠️ 新生兒/低體重 (需精確核算)';
+        dom.badgeWeightStatus.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-rose-900/60 text-rose-300 border border-rose-700';
+      } else if (state.weight > 40.0) {
+        dom.badgeWeightStatus.textContent = '大童/成人上限校驗中';
+        dom.badgeWeightStatus.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-amber-900/60 text-amber-300 border border-amber-700';
+      } else {
+        dom.badgeWeightStatus.textContent = '幼童標準範圍';
+        dom.badgeWeightStatus.className = 'px-2 py-0.5 rounded text-[11px] font-mono bg-teal-900/60 text-teal-300 border border-teal-700';
+      }
+
+      updateMatrixTable();
+    }
+
+    function renderDrugList() {
+      const container = dom.drugsContainer;
+      container.innerHTML = '';
+
+      const q = state.search.toLowerCase().trim();
+      const filtered = DRUG_DB.filter(d => {
+        if (state.category !== 'ALL' && d.category !== state.category) return false;
+        if (q) {
+          return d.brandName.toLowerCase().includes(q) || 
+                 d.genericName.toLowerCase().includes(q) ||
+                 d.categoryLabel.toLowerCase().includes(q);
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="p-6 text-center text-xs text-slate-400 font-mono">無符合條件之藥品</div>';
+        return;
+      }
+
+      filtered.forEach(d => {
+        const isSelected = d.id === state.selectedDrugId;
+        const res = d.calculateDose(state.weight);
+
+        let typeBadgeClass = 'bg-slate-200 text-slate-600';
+        let typeBadgeText = '口服水劑';
+        if (d.type === 'SUPPOSITORY') {
+          typeBadgeClass = isSelected ? 'bg-teal-950 text-teal-300 border border-teal-700' : 'bg-teal-50 text-teal-700 border border-teal-200';
+          typeBadgeText = '塞劑';
+        } else if (d.type === 'ORAL_POWDER') {
+          typeBadgeClass = isSelected ? 'bg-amber-950 text-amber-300 border border-amber-700' : 'bg-amber-50 text-amber-800 border border-amber-200';
+          typeBadgeText = '粉劑';
+        } else if (isSelected) {
+          typeBadgeClass = 'bg-slate-800 text-slate-300';
+        }
+
+        const row = document.createElement('div');
+        row.className = `p-2.5 transition cursor-pointer flex items-center justify-between gap-2 select-none ${
+          isSelected 
+            ? 'bg-slate-900 text-white font-medium' 
+            : 'hover:bg-slate-100 text-slate-800'
+        }`;
+        
+        row.onclick = () => {
+          state.selectedDrugId = d.id;
+          renderDrugList();
+          updateCalculation();
+        };
+
+        row.innerHTML = `
+          <div class="min-w-0 pr-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-900'}">${d.brandName}</span>
+              <span class="text-[10px] px-1 py-0.2 rounded font-mono ${typeBadgeClass}">${typeBadgeText}</span>
+            </div>
+            <p class="text-[11px] font-mono truncate mt-0.5 ${isSelected ? 'text-slate-300' : 'text-slate-500'}">${d.genericName}</p>
+          </div>
+          <div class="text-right shrink-0 font-mono">
+            <div class="text-sm font-bold ${isSelected ? 'text-teal-300' : 'text-slate-900'}">
+              ${res.primaryDose} <span class="text-xs font-normal">${res.primaryUnit}</span>
+            </div>
+            <div class="text-[10px] ${isSelected ? 'text-slate-400' : 'text-slate-500'}">${d.frequencyText.split('(')[0]}</div>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function setWeight(val) {
+      const num = parseFloat(val);
+      if (isNaN(num) || num <= 0) return;
+      state.weight = Math.round(num * 10) / 10;
+      dom.inputWeight.value = state.weight;
+      updateCalculation();
+      renderDrugList();
+    }
+
+    function adjustWeight(delta) {
+      let next = Math.round((state.weight + delta) * 10) / 10;
+      if (next < 1.5) next = 1.5;
+      if (next > 80.0) next = 80.0;
+      setWeight(next);
+    }
+
+    function onQuickAgeChange(weightVal) {
+      setWeight(weightVal);
+    }
+
+    function setCategory(cat) {
+      state.category = cat;
+      document.querySelectorAll('.cat-pill').forEach(btn => {
+        if (btn.getAttribute('data-cat') === cat) {
+          btn.className = 'cat-pill bg-slate-900 text-white px-2 py-0.5 rounded font-medium shrink-0';
+        } else {
+          btn.className = 'cat-pill bg-slate-200 text-slate-700 hover:bg-slate-300 px-2 py-0.5 rounded font-medium shrink-0';
+        }
+      });
+      renderDrugList();
+    }
+
+    function onSearchChange(val) {
+      state.search = val;
+      renderDrugList();
+    }
+
+    function copyPrescriptionText() {
+      const drug = DRUG_DB.find(d => d.id === state.selectedDrugId);
+      const res = drug.calculateDose(state.weight);
+
+      const clip = `【PediDose 兒科處方劑量核定單】
+病童體重: ${state.weight.toFixed(1)} kg
+品名: ${drug.brandName}
+成分規格: ${drug.genericName}
+建議處方單次量: 每次 ${res.primaryDose} ${res.primaryUnit} (${res.secondaryText})
+劑量基準: ${res.rateText}
+給藥頻率: ${drug.frequencyText}
+用法說明: ${drug.timingText}
+製劑說明: ${res.instruction}
+安全上限: ${drug.maxDailyTimes}
+臨床注意要點: ${drug.notes}`;
+
+      const t = document.createElement('textarea');
+      t.value = clip;
+      document.body.appendChild(t);
+      t.select();
+      try {
+        document.execCommand('copy');
+        showToast('已複製核方紀錄至剪貼簿');
+      } catch(e) {
+        showToast('複製失敗');
+      } finally {
+        document.body.removeChild(t);
+      }
+    }
+
+    let toastTimer;
+    function showToast(msg) {
+      clearTimeout(toastTimer);
+      dom.toast.textContent = msg;
+      dom.toast.classList.remove('opacity-0', 'translate-y-2');
+      dom.toast.classList.add('opacity-100', 'translate-y-0');
+      toastTimer = setTimeout(() => {
+        dom.toast.classList.remove('opacity-100', 'translate-y-0');
+        dom.toast.classList.add('opacity-0', 'translate-y-2');
+      }, 2000);
+    }
+
+    function init() {
+      dom.inputWeight.addEventListener('input', (e) => {
+        const v = parseFloat(e.target.value);
+        if (!isNaN(v) && v > 0) {
+          state.weight = v;
+          updateCalculation();
+          renderDrugList();
+        }
+      });
+
+      renderDrugList();
+      updateCalculation();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>
