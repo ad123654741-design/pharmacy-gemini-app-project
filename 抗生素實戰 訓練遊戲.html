@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>抗生素大師：值班實戰卡牌對決 (Antibiotic Master: 2026 PGY Edition)</title>
+  <title>抗生素大師：臨床實戰對決 (Antibiotic Master: 2026 PGY Edition)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome for medical & battle icons -->
@@ -92,16 +92,21 @@
         <div>
           <div class="flex items-center space-x-2">
             <h1 class="font-black text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-300">
-              抗生素大師：值班實戰卡牌對決
+              抗生素大師：臨床實戰對決
             </h1>
             <span class="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2 py-0.5 rounded font-mono">2026 PGY版</span>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">依據黃品叡醫師《臨床抗生素基礎入門》編制 · 2026 IDSA / 台灣 THAS 在地實戰</p>
+          <p class="text-xs text-slate-400 hidden sm:block">依據黃品叡醫師《臨床抗生素基礎入門》編制 · 2026 IDSA / 台灣 THAS  by 其仁藥師</p>
         </div>
       </div>
 
       <!-- Action buttons & Mode Switcher -->
       <div class="flex items-center space-x-2">
+        <!-- 置頂下一題按鈕 (電腦版位於白袍速查手冊左側，作答後即時浮現，手機版亦同步常駐於右上選單) -->
+        <button id="btn-top-next-case" class="hidden px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-sky-400 to-teal-400 hover:from-sky-300 hover:to-teal-300 text-slate-950 font-black text-xs sm:text-sm shadow-lg shadow-sky-500/25 items-center gap-1.5 transition transform active:scale-95 animate-pulse">
+          <span>下一位病患</span>
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
         <button id="btn-show-handbook" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition">
           <i class="fa-solid fa-book-medical"></i>
           <span>白袍速查手冊</span>
@@ -546,7 +551,7 @@
 
   <footer class="bg-slate-950 border-t border-slate-900 py-3 text-center text-xs text-slate-400 px-4">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-      <span>講義原著：黃品叡醫師《臨床抗生素基礎入門 2026 更新版》(大甲/苑裡李綜合醫院 泌尿科·重症醫學科)</span>
+      <span>講義原著：黃品叡醫師《臨床抗生素基礎入門 2026 更新版》(大甲/苑裡李綜合醫院 泌尿科·重症醫學科) · 遊戲化改編 by 其仁藥師</span>
       <span class="text-slate-400">僅供醫學教育模擬與臨床思維演練使用</span>
     </div>
   </footer>
@@ -2434,6 +2439,7 @@
     const feedbackBanner = document.getElementById('feedback-banner');
     const actionControls = document.getElementById('action-controls');
     const btnNextCase = document.getElementById('btn-next-case');
+    const btnTopNextCase = document.getElementById('btn-top-next-case');
 
     // Handbook Modal Elements
     const handbookModal = document.getElementById('handbook-modal');
@@ -2569,10 +2575,14 @@
       answered = false;
       const c = activeCases[index];
 
-      // Reset feedback and action button
+      // Reset feedback and action buttons
       feedbackBanner.classList.add('hidden');
       feedbackBanner.innerHTML = '';
       actionControls.classList.add('hidden');
+      if (btnTopNextCase) {
+        btnTopNextCase.classList.add('hidden');
+        btnTopNextCase.classList.remove('flex');
+      }
 
       // Populate Case Meta with neutral sequential bed titles
       caseBadgeType.textContent = c.type;
@@ -2724,7 +2734,7 @@
 
       updateHud();
 
-      if (patientHp <= 0) {
+      if (patientHp <= 0 || doctorSanity <= 0) {
         setTimeout(() => {
           showGameOver();
         }, 1200);
@@ -2732,12 +2742,23 @@
       }
 
       actionControls.classList.remove('hidden');
+      if (btnTopNextCase) {
+        btnTopNextCase.classList.remove('hidden');
+        btnTopNextCase.classList.add('flex');
+      }
     }
 
     btnNextCase.addEventListener('click', () => {
       currentCaseIndex++;
       loadCase(currentCaseIndex);
     });
+
+    if (btnTopNextCase) {
+      btnTopNextCase.addEventListener('click', () => {
+        currentCaseIndex++;
+        loadCase(currentCaseIndex);
+      });
+    }
 
     function showRunSummary() {
       summaryModal.classList.remove('hidden');
@@ -2765,9 +2786,17 @@
       summaryRank.className = `text-xl font-bold mt-1 ${rankColor}`;
       summaryDesc.textContent = descText;
 
+      // Append Sanity and Survival stats in the summary modal
+      const sanityPercent = Math.max(0, doctorSanity);
+      const hpPercent = Math.max(0, patientHp);
+
       if (mistakesLog.length > 0) {
         summaryFeedback.innerHTML = `
-          <div class="font-bold text-rose-400 mb-1 border-b border-slate-800 pb-1">
+          <div class="flex items-center justify-between text-[11px] pb-1.5 border-b border-slate-800 text-slate-400">
+            <span>值班終局理智度：<strong class="text-amber-300 font-mono">${sanityPercent} / 100</strong></span>
+            <span>平均病人存活穩定度：<strong class="text-rose-400 font-mono">${hpPercent}%</strong></span>
+          </div>
+          <div class="font-bold text-rose-400 mb-1 pt-1.5">
             <i class="fa-solid fa-clipboard-list mr-1"></i> 本次值班失誤紀錄與考點複習 (${mistakesLog.length} 處)：
           </div>
           ${mistakesLog.map((m) => `
@@ -2782,6 +2811,9 @@
           <div class="text-emerald-400 font-bold flex items-center gap-1.5">
             <i class="fa-solid fa-trophy"></i> 完美通關！本次 30 關值班毫無任何處方失誤，達到 100% AMS 合格準則！
           </div>
+          <div class="text-xs text-slate-400 mt-1">
+            PGY 理智度以滿分 100 分完封！精神狀況極佳，主治醫師與感染管制室給予最高榮譽評價！
+          </div>
         `;
       }
     }
@@ -2790,11 +2822,18 @@
       summaryModal.classList.remove('hidden');
       document.getElementById('summary-icon').innerHTML = `<i class="fa-solid fa-skull text-rose-500"></i>`;
       document.getElementById('summary-icon').className = "w-16 h-16 mx-auto rounded-full bg-rose-950 border border-rose-600 flex items-center justify-center text-3xl";
-      document.getElementById('summary-title').textContent = "敗血性休克惡化：值班中斷！";
+      
+      const isSanityDepleted = doctorSanity <= 0;
+      document.getElementById('summary-title').textContent = isSanityDepleted 
+        ? "PGY 理智度歸零：精神崩潰值班中斷！" 
+        : "敗血性休克惡化：值班中斷！";
+        
       summaryScore.textContent = `${totalScore} 分`;
-      summaryRank.textContent = "處方致命盲點 (被感染科電飛)";
+      summaryRank.textContent = isSanityDepleted ? "值班超載 Burnout" : "處方致命盲點 (被感染科電飛)";
       summaryRank.className = "text-xl font-bold mt-1 text-rose-500";
-      summaryDesc.textContent = "病患穩定度降至 0%，因致命處方錯誤造成病情不可逆進展。請重新翻閱白袍手冊再試一次！";
+      summaryDesc.textContent = isSanityDepleted
+        ? "連續踩中多次臨床抗藥性與毒性地雷，值班壓力過載引發精神崩潰！請重新整理思緒再出發！"
+        : "病患穩定度降至 0%，因致命處方錯誤造成病情不可逆進展。請重新翻閱白袍手冊再試一次！";
 
       summaryFeedback.innerHTML = mistakesLog.map(m => `
         <div class="py-1 text-slate-300 text-xs">
