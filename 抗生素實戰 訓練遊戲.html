@@ -96,7 +96,7 @@
             </h1>
             <span class="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2 py-0.5 rounded font-mono">2026 PGY版</span>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">依據黃品叡醫師《臨床抗生素基礎入門》編制 · 2026 IDSA / 台灣 THAS  by 其仁藥師</p>
+          <p class="text-xs text-slate-400 hidden sm:block">依據黃品叡醫師《臨床抗生素基礎入門》編制 · 2026 IDSA / 台灣 THAS by 其仁藥師</p>
         </div>
       </div>
 
@@ -2572,6 +2572,9 @@
         return;
       }
 
+      // 自動平滑滾動回頁面頂端，方便立即閱讀新病患的臨床資訊
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
       answered = false;
       const c = activeCases[index];
 
@@ -2750,12 +2753,14 @@
 
     btnNextCase.addEventListener('click', () => {
       currentCaseIndex++;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       loadCase(currentCaseIndex);
     });
 
     if (btnTopNextCase) {
       btnTopNextCase.addEventListener('click', () => {
         currentCaseIndex++;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         loadCase(currentCaseIndex);
       });
     }
