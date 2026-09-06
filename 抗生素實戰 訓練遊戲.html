@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>抗生素大師：值班實戰卡牌對決 (Antibiotic Master: 2026 PGY Edition)</title>
+  <title>抗生素大師：值班實戰對決 (Antibiotic Master: 2026 PGY Edition)</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome for medical & battle icons -->
@@ -92,11 +92,11 @@
         <div>
           <div class="flex items-center space-x-2">
             <h1 class="font-black text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-300">
-              抗生素大師：值班實戰卡牌對決
+              抗生素大師：值班實戰對決
             </h1>
             <span class="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2 py-0.5 rounded font-mono">2026 PGY版</span>
           </div>
-          <p class="text-xs text-slate-400 hidden sm:block">依據黃品叡醫師《臨床抗生素基礎入門》編制 · 2026 IDSA / 台灣 THAS 在地實戰</p>
+          <p class="text-xs text-slate-400 hidden sm:block">資料來源 : 黃品叡醫師《臨床抗生素基礎入門》編制 by其仁藥師 </p>
         </div>
       </div>
 
@@ -558,7 +558,7 @@
     const CLINICAL_CASES = [
       {
         id: "case-esbl-bsi",
-        title: "病房值班照會 (第 01 床)",
+        title: "病房值班照會",
         type: "急診收治評估",
         risk: "血液檢驗報陽",
         source: "疑似泌尿來源",
@@ -581,16 +581,16 @@
         cards: [
           {
             id: "ertapenem",
-            name: "Ertapenem (Invanz)",
+            name: "Ertapenem",
             category: "Carbapenem 類",
-            spec: "1g IV QD · 每日一次靜脈輸注",
+            spec: "1g IV QD 靜脈輸注",
             correct: true,
             score: 100,
             feedback: "【精準決策！】本案為 ESBL 菌血症。根據 2026 IDSA 指引與著名的 MERINO trial (JAMA 2018)：ESBL 菌血症首選為 Carbapenem！病患無綠膿桿菌或 AB 菌風險，使用 Ertapenem 落實「Carbapenem-sparing」保留 Meropenem。"
           },
           {
             id: "tazocin",
-            name: "Piperacillin/Tazobactam (Tazocin)",
+            name: "Piperacillin-tazobactam",
             category: "青黴素/抑制劑複合劑",
             spec: "4.5g IV Q8H 靜脈輸注",
             correct: false,
@@ -600,7 +600,7 @@
           },
           {
             id: "ceftriaxone",
-            name: "Ceftriaxone (Rocephin)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 靜脈輸注",
             correct: false,
@@ -610,7 +610,7 @@
           },
           {
             id: "ciprofloxacin",
-            name: "Ciprofloxacin (Ciproxin)",
+            name: "Ciprofloxacin",
             category: "Fluoroquinolone 類",
             spec: "400mg IV Q12H 靜脈輸注",
             correct: false,
@@ -622,7 +622,7 @@
       },
       {
         id: "case-mrsa-hap",
-        title: "病房值班照會 (第 02 床)",
+        title: "病房值班照會",
         type: "一般病房照會",
         risk: "住院後新發浸潤",
         source: "下呼吸道分泌物",
@@ -643,7 +643,7 @@
         cards: [
           {
             id: "linezolid",
-            name: "Linezolid (Zyvox)",
+            name: "Linezolid",
             category: "Oxazolidinone 類",
             spec: "600mg IV Q12H 靜脈輸注",
             correct: true,
@@ -652,8 +652,8 @@
           },
           {
             id: "daptomycin",
-            name: "Daptomycin (Cubicin)",
-            category: "環脂胜肽類 (Lipopeptide)",
+            name: "Daptomycin",
+            category: "環脂胜肽類",
             spec: "6 mg/kg IV QD 靜脈輸注",
             correct: false,
             score: -50,
@@ -663,8 +663,8 @@
           {
             id: "vancomycin",
             name: "Vancomycin",
-            category: "糖胜肽類 (Glycopeptide)",
-            spec: "1g IV Q12H (常規劑量未配合 eGFR 減量)",
+            category: "糖胜肽類",
+            spec: "1g IV Q12H 靜脈輸注",
             correct: false,
             score: 15,
             hpLoss: 20,
@@ -672,7 +672,7 @@
           },
           {
             id: "ceftriaxone",
-            name: "Ceftriaxone (Rocephin)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 靜脈輸注",
             correct: false,
@@ -684,7 +684,7 @@
       },
       {
         id: "case-ampc-risk",
-        title: "病房值班照會 (第 03 床)",
+        title: "病房值班照會",
         type: "外科術後照會",
         risk: "引流液培養出菌",
         source: "腹腔引流液",
@@ -692,7 +692,7 @@
         summary: "60歲男性，膽道手術後第5天，主訴右上腹悶痛、體溫上升至38.4°C。腹腔引流液送檢培養長出 Enterobacter cloacae。初版藥敏測試顯示多種抗生素皆呈現 Susceptible。",
         vitals: "BP 115/72, HR 95, BT 38.4°C",
         labs: "WBC 14,200, Total Bilirubin 2.8",
-        renal: "eGFR 88 mL/min (正常)",
+        renal: "eGFR 88 mL/min",
         history: "術中曾使用 Cefazolin 作為外科預防用藥",
         cultureStatus: "藥敏試驗初步報告",
         cultureDetails: [
@@ -706,7 +706,7 @@
         cards: [
           {
             id: "ceftriaxone",
-            name: "Ceftriaxone (Rocephin)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 靜脈輸注",
             correct: false,
@@ -716,7 +716,7 @@
           },
           {
             id: "cefepime",
-            name: "Cefepime (Maxipime)",
+            name: "Cefepime",
             category: "第 4 代頭孢菌素",
             spec: "2g IV Q8H 靜脈輸注",
             correct: true,
@@ -725,7 +725,7 @@
           },
           {
             id: "meropenem",
-            name: "Meropenem (Mepem)",
+            name: "Meropenem",
             category: "Carbapenem 類",
             spec: "1g IV Q8H 靜脈輸注",
             correct: true,
@@ -735,7 +735,7 @@
           {
             id: "ampicillin",
             name: "Ampicillin",
-            category: "胺基青黴素類",
+            category: "青黴素類",
             spec: "2g IV Q4H 靜脈輸注",
             correct: false,
             score: -30,
@@ -746,7 +746,7 @@
       },
       {
         id: "case-crab-icu",
-        title: "病房值班照會 (第 04 床)",
+        title: "病房值班照會",
         type: "加護病房照會",
         risk: "插管後新發浸潤",
         source: "氣管導管分泌物",
@@ -767,49 +767,49 @@
         revealedInfo: "【診斷解析】CRAB (碳青黴烯抗藥鮑氏不動桿菌) VAP (2026 ATTACK Trial 考點)",
         cards: [
           {
-            id: "colistin-mono",
-            name: "Colistin (多黏菌素) 單方",
-            category: "多黏菌素類",
-            spec: "CMS 5mg/kg/日 分次靜脈滴注",
+            id: "colistin-tige",
+            name: "Colistin + Tigecycline",
+            category: "多黏菌素併用甘胺醯環素",
+            spec: "Colistin CMS 5mg/kg/日 + Tigecycline 100mg Q12H",
             correct: false,
             score: 20,
-            hpLoss: 20,
-            feedback: "【已退居後線且腎毒性極大】在 2026 IDSA 指引中，Colistin 因腎毒性顯著偏高且臨床療效不如 Sulbactam-durlobactam，已退居後線；且單藥使用極易迅速篩選出抗藥株。"
-          },
-          {
-            id: "meropenem-mono",
-            name: "Meropenem (高劑量延長輸注)",
-            category: "Carbapenem 類",
-            spec: "2g IV Q8H 延長輸注 3 小時",
-            correct: false,
-            score: -30,
             hpLoss: 25,
-            feedback: "【無效處方】CRAB 帶有強效 OXA 碳青黴烯酶，IDSA 明確反對在 CRAB 感染中單獨使用 Carbapenem，單藥必致失敗！"
+            feedback: "【已退居後線且毒性高】在 2026 IDSA 指引中，Colistin 因腎毒性偏高已退居後線；Tigecycline 在呼吸道與血液之濃度表現不一，且此組合全因死亡率與不良反應率均顯著高於新型複合劑。"
           },
           {
-            id: "sulbactam-durlobactam",
-            name: "Sulbactam-durlobactam (Xacduro) + Carbapenem",
-            category: "新型抗藥菌專用複方",
-            spec: "1g/1g IV Q6H 合併 Carbapenem 骨幹",
+            id: "meropenem-mino",
+            name: "Meropenem + Minocycline",
+            category: "碳青黴烯併用四環黴素",
+            spec: "Meropenem 2g Q8H 延長輸注 + Minocycline 100mg Q12H",
+            correct: false,
+            score: 15,
+            hpLoss: 25,
+            feedback: "【缺乏關鍵核心保護】CRAB 帶有強效 OXA 酵素，在缺乏專屬抑制劑 (Durlobactam) 或高劑量 Sulbactam 骨幹保護下，單純合併傳統藥物失敗率高。"
+          },
+          {
+            id: "sulbactam-durlobactam-carba",
+            name: "Sulbactam-durlobactam + Meropenem",
+            category: "新型專用複方併用碳青黴烯骨幹",
+            spec: "Sulbactam-durlobactam 1g/1g Q6H + Meropenem 1g Q8H",
             correct: true,
             score: 100,
-            feedback: "【精準掌握 2026 最新指引！】ATTACK trial (Lancet ID 2023) 證實：Sulbactam-durlobactam + Carbapenem 治療 CRAB 其治癒率與安全性皆顯著優於傳統 Colistin，已獲 2026 IDSA 正式列為 CRAB 第一首選！"
+            feedback: "【精準掌握 2026 最新指引！】ATTACK trial (Lancet ID 2023) 證實：Sulbactam-durlobactam + Carbapenem 治療 CRAB 其治癒率與安全性皆顯著優於傳統 Colistin 組合，已獲 2026 IDSA 正式列為 CRAB 第一首選！"
           },
           {
-            id: "ceftriaxone",
-            name: "Ceftriaxone (Rocephin)",
-            category: "第 3 代頭孢菌素",
-            spec: "2g IV QD 靜脈輸注",
+            id: "zavicefta-aztreonam-crab",
+            name: "Ceftazidime-avibactam + Aztreonam",
+            category: "頭孢抑制劑併用單環內醯胺",
+            spec: "Ceftazidime-avibactam 2.5g Q8H + Aztreonam 2g Q8H",
             correct: false,
             score: -40,
             hpLoss: 30,
-            feedback: "【完全無效】3代頭孢菌素對 Acinetobacter baumannii 完全無抗菌活性。"
+            feedback: "【機轉不符】此組合專門用於對付腸桿菌科之 Class B (NDM) 金屬酶，對 Acinetobacter baumannii 的 OXA 酵素完全無效。"
           }
         ]
       },
       {
         id: "case-cre-mbl",
-        title: "病房值班照會 (第 05 床)",
+        title: "病房值班照會",
         type: "感染科照會",
         risk: "外院轉介收治",
         source: "泌尿系統相關",
@@ -823,56 +823,56 @@
         cultureDetails: [
           { text: "菌種：Klebsiella pneumoniae (CRE)", highlight: "text-slate-200 font-bold" },
           { text: "Carbapenemase 表型：Class B 金屬酶 (NDM-1)", highlight: "text-rose-400" },
-          { text: "Ceftazidime-avibactam (單獨): Resistant", highlight: "text-slate-300" },
+          { text: "Ceftazidime-avibactam: Resistant", highlight: "text-slate-300" },
           { text: "Meropenem-vaborbactam: Resistant", highlight: "text-slate-300" },
           { text: "Aztreonam: 本身不受金屬水解影響", highlight: "text-slate-400" }
         ],
         revealedInfo: "【診斷解析】CRE (Class B NDM 金屬酶) 感染 (Aztreonam + Avibactam 配對考點)",
         cards: [
           {
-            id: "zavicefta-alone",
-            name: "Ceftazidime-avibactam (Zavicefta)",
-            category: "新型頭孢/抑制劑複方",
-            spec: "2.5g IV Q8H 靜脈輸注",
+            id: "vaborbactam-colistin",
+            name: "Meropenem-vaborbactam + Colistin",
+            category: "碳青黴烯抑制劑併用多黏菌素",
+            spec: "Meropenem-vaborbactam 2g/2g Q8H + Colistin CMS 5mg/kg/日",
             correct: false,
-            score: -40,
-            hpLoss: 30,
-            feedback: "【觀念地雷！】Avibactam 能抑制 Class A (KPC) 與 Class D (OXA-48)，但對 Class B 金屬酶 (NDM/VIM/IMP) 完全無效！單獨使用會直接被金屬酶水解分解。"
+            score: -30,
+            hpLoss: 25,
+            feedback: "【抑制劑無效】Vaborbactam 專門抑制 Class A (KPC)，對 Class B (NDM) 金屬酶毫無抑制效果，依然會被 NDM 酶水解。"
           },
           {
             id: "zavicefta-aztreonam",
             name: "Ceftazidime-avibactam + Aztreonam",
-            category: "雙抗生素併用方案",
-            spec: "Zavicefta 2.5g Q8H + Aztreonam 2g Q8H",
+            category: "頭孢抑制劑併用單環內醯胺",
+            spec: "Ceftazidime-avibactam 2.5g Q8H + Aztreonam 2g Q8H",
             correct: true,
             score: 100,
-            feedback: "【教科書級的機轉配對！】NDM 等 Class B 金屬酶唯獨不水解 Aztreonam；然而該類超級細菌往往同時共帶 ESBL/AmpC 酵素破壞 Aztreonam。因此合併 Avibactam (Zavicefta) 保護 Aztreonam，是國際對付 NDM 的標準配對方案！"
+            feedback: "【教科書級的機轉配對！】NDM 等 Class B 金屬酶唯獨不水解 Aztreonam；然而該類超級細菌往往同時共帶 ESBL/AmpC 酵素破壞 Aztreonam。因此合併 Avibactam 保護 Aztreonam，是國際對付 NDM 的標準配對方案！"
           },
           {
-            id: "vaborbactam",
-            name: "Meropenem-vaborbactam (Vabomere)",
-            category: "Carbapenem/新抑制劑",
-            spec: "2g/2g IV Q8H 靜脈輸注",
+            id: "zavicefta-tige",
+            name: "Ceftazidime-avibactam + Tigecycline",
+            category: "頭孢抑制劑併用甘胺醯環素",
+            spec: "Ceftazidime-avibactam 2.5g Q8H + Tigecycline 100mg Q12H",
+            correct: false,
+            score: -20,
+            hpLoss: 25,
+            feedback: "【Avibactam 無法擋住 NDM】Avibactam 對 Class B 金屬酶完全無效，且 Tigecycline 在尿路中濃度極低，無法治療此泌尿來源感染。"
+          },
+          {
+            id: "imipenem-relebactam-amikacin",
+            name: "Imipenem-relebactam + Amikacin",
+            category: "碳青黴烯抑制劑併用胺基配醣體",
+            spec: "Imipenem-relebactam 1.25g Q6H + Amikacin 15mg/kg QD",
             correct: false,
             score: -30,
-            hpLoss: 20,
-            feedback: "【抑制劑無效】Vaborbactam 專門抑制 Class A (KPC)，對 Class B (NDM) 金屬酶毫無抑制效果。"
-          },
-          {
-            id: "cefazolin",
-            name: "Cefazolin (Cefa)",
-            category: "第 1 代頭孢菌素",
-            spec: "1g IV Q8H 靜脈輸注",
-            correct: false,
-            score: -50,
-            hpLoss: 35,
-            feedback: "【完全無效】1代頭孢菌素對抗藥性腸桿菌目與 CRE 完全不具備抗菌活性。"
+            hpLoss: 25,
+            feedback: "【抑制劑盲區】Relebactam 同樣無法抑制 Class B (NDM) 金屬水解酶，Imipenem 會直接被破壞。"
           }
         ]
       },
       {
         id: "case-nsti-shock",
-        title: "病房值班照會 (第 06 床)",
+        title: "病房值班照會",
         type: "急診會診評估",
         risk: "病程進展極迅速",
         source: "深部軟組織",
@@ -891,56 +891,56 @@
         revealedInfo: "【診斷解析】壞死性筋膜炎 (NSTI) 合併毒素性休克 (Source Control 優先與 Clindamycin 抑制毒素考點)",
         cards: [
           {
-            id: "antibiotic-alone-cefa",
-            name: "Cefazolin (單方保守觀察)",
-            category: "第 1 代頭孢菌素",
-            spec: "2g IV Q8H 靜脈輸注觀察",
+            id: "surgery-cefa",
+            name: "外科清創 + Cefazolin",
+            category: "外科處置併用第 1 代頭孢菌素",
+            spec: "外科清創處置 + Cefazolin 2g IV Q8H 靜脈輸注",
             correct: false,
-            score: -70,
-            hpLoss: 50,
-            feedback: "【致命醫療疏失！】壞死性軟組織感染中，血管已發生血栓微壞死，單純打抗生素根本無法穿透壞死組織！延遲手術清創每小時死亡率都在倍增！"
+            score: -35,
+            hpLoss: 30,
+            feedback: "【抗菌譜涵蓋不足】雖然已安排清創，但壞死性軟組織感染多為多重菌種 (包含 GNB 與厭氧菌) 或產毒性鏈球菌。單用 Cefazolin 無法覆蓋 GNB 與厭氧菌，且缺乏抑制外毒素效果！"
           },
           {
-            id: "tazocin-alone",
-            name: "Piperacillin/Tazobactam (單用)",
-            category: "青黴素/抑制劑複合劑",
-            spec: "4.5g IV Q8H 靜脈輸注",
+            id: "surgery-tazo",
+            name: "外科清創 + Piperacillin-tazobactam",
+            category: "外科處置併用青黴素複合劑",
+            spec: "外科清創處置 + Piperacillin-tazobactam 4.5g IV Q8H 靜脈輸注",
             correct: false,
-            score: 35,
-            hpLoss: 25,
-            feedback: "【處置不足】缺少了最關鍵的外科清創照會，且未加上能阻斷細菌核糖體產製超抗原外毒素的 Clindamycin。"
+            score: 25,
+            hpLoss: 20,
+            feedback: "【缺少外毒素抑制劑】已涵蓋 GPC、GNB 與厭氧菌並安排清創，但在高毒性壞死性軟組織感染或鏈球菌毒性休克症候群 (STSS) 中，缺少了能藉由抑制核糖體蛋白質轉譯來阻斷外毒素合成的 Clindamycin！"
           },
           {
             id: "surgery-vanco-tazo-clinda",
-            name: "緊急外科清創照會 + Vanco + Tazocin + Clindamycin",
-            category: "外科手術引流處置",
-            spec: "清創手術 + 靜脈輸注涵蓋 GPC/GNB/厭氧及毒素",
+            name: "外科清創 + Vancomycin + Piperacillin-tazobactam + Clindamycin",
+            category: "外科處置併用三聯抗生素",
+            spec: "外科清創處置 + 三聯靜脈抗生素輸注",
             correct: true,
             score: 100,
-            feedback: "【滿分救命決策！】壞死性筋膜炎 (NSTI) 是外科急症，手術清創是唯一挽救生命的根本手段！抗生素需覆蓋 GPC、GNB 與厭氧菌；加用 Clindamycin 則是為了抑制鏈球菌外毒素與超抗原的合成 (即使體外藥敏抗藥仍具抑制外毒素效益)！"
+            feedback: "【滿分救命決策！】壞死性筋膜炎 (NSTI) 是外科急症，手術清創是唯一挽救生命的根本手段！抗生素需廣效覆蓋 GPC、GNB 與厭氧菌；加用 Clindamycin 則是為了抑制鏈球菌外毒素與超抗原的合成 (打破高菌量下青黴素結合蛋白表現不足之 Eagle effect)！"
           },
           {
-            id: "doxycycline",
-            name: "Doxycycline",
-            category: "四環黴素類",
-            spec: "100mg PO BID 口服給藥",
+            id: "surgery-doxy",
+            name: "外科清創 + Doxycycline",
+            category: "外科處置併用四環黴素",
+            spec: "外科清創處置 + Doxycycline 100mg PO BID 口服給藥",
             correct: false,
             score: -40,
-            hpLoss: 30,
-            feedback: "【嚴重錯誤】病患已處於低血壓休克狀態，口服吸收不可預測，且殺菌廣度與深度完全不足。"
+            hpLoss: 35,
+            feedback: "【給藥途徑與廣度不足】病患已處於低血壓休克狀態，口服吸收不可預測，且 Doxycycline 之殺菌廣度與深度不足以控制嚴重全身性壞死感染。"
           }
         ]
       },
       {
         id: "case-asb-trap",
-        title: "病房值班照會 (第 07 床)",
+        title: "病房值班照會",
         type: "一般病房照會",
         risk: "長期留置管路照護",
         source: "尿液常規檢驗",
         avatar: "fa-solid fa-clipboard-check",
         summary: "80歲男性，腦中風長期臥床，已留置導尿管半年。今日神智如常、胃口良好、無發燒、無腹痛或肋脊角敲痛。常規驗尿顯示：WBC >100/HPF，培養長出 Pseudomonas aeruginosa >10^5 CFU/mL。",
-        vitals: "BP 124/76, HR 72, BT 36.8°C (平穩正常)",
-        labs: "WBC 6,400 (正常), CRP 3.2 (正常)",
+        vitals: "BP 124/76, HR 72, BT 36.8°C",
+        labs: "WBC 6,400, CRP 3.2",
         renal: "eGFR 60 mL/min",
         history: "半年來持續置放尿管，無排尿自覺不適",
         cultureStatus: "尿液培養檢驗回報",
@@ -955,18 +955,18 @@
         cards: [
           {
             id: "meropenem-for-psa",
-            name: "Meropenem (Mepem)",
+            name: "Meropenem",
             category: "Carbapenem 類",
             spec: "1g IV Q8H 靜脈輸注",
             correct: false,
             score: -50,
             hpLoss: 20,
-            feedback: "【抗生素濫用！】針對無症狀菌尿投予碳青黴烯只會將病患體內的正常菌叢完全消滅，進而篩選出如嗜麥芽窄食單胞菌 (S. maltophilia) 等超難治超級細菌！"
+            feedback: "【抗生素濫用！】針對無症狀菌尿投予碳青黴烯只會將病患體內的正常菌叢完全消滅，進而篩選出如嗜麥芽窄食單胞菌等超難治超級細菌！"
           },
           {
             id: "no-antibiotics",
-            name: "保守追蹤處置 (不給予抗生素，評估更換管路)",
-            category: "病房照護處置",
+            name: "更換導尿管並臨床觀察追蹤",
+            category: "管路照護與臨床追蹤",
             spec: "暫不給抗生素，維持衛教並密切臨床追蹤",
             correct: true,
             score: 100,
@@ -974,17 +974,17 @@
           },
           {
             id: "ciprofloxacin-psa",
-            name: "Ciprofloxacin (Ciproxin)",
+            name: "Ciprofloxacin",
             category: "Fluoroquinolone 類",
             spec: "500mg PO BID x 14天",
             correct: false,
             score: -40,
             hpLoss: 15,
-            feedback: "【過度治療】導尿管持續置放時，管壁生物膜 (Biofilm) 上的細菌是無法被抗生素殺乾淨的，徒增藥物副作用與抗藥風險。"
+            feedback: "【過度治療】導尿管持續置放時，管壁生物膜上的細菌是無法被抗生素殺乾淨的，徒增藥物副作用與抗藥風險。"
           },
           {
             id: "ceftazidime",
-            name: "Ceftazidime (Fortum)",
+            name: "Ceftazidime",
             category: "第 3 代頭孢菌素",
             spec: "2g IV Q8H 靜脈輸注",
             correct: false,
@@ -996,7 +996,7 @@
       },
       {
         id: "case-candida-uti",
-        title: "病房值班照會 (第 08 床)",
+        title: "病房值班照會",
         type: "專科病房照會",
         risk: "曾使用廣效抗生素",
         source: "膀胱與下泌尿道",
@@ -1017,7 +1017,7 @@
         cards: [
           {
             id: "caspofungin",
-            name: "Caspofungin (Cancidas)",
+            name: "Caspofungin",
             category: "Echinocandin 類抗黴菌藥",
             spec: "首劑 70mg 後 50mg IV QD 靜脈輸注",
             correct: false,
@@ -1027,9 +1027,9 @@
           },
           {
             id: "voriconazole",
-            name: "Voriconazole (Vfend)",
-            category: "三唑類抗黴菌藥 (Triazole)",
-            spec: "200mg PO/IV Q12H",
+            name: "Voriconazole",
+            category: "三唑類抗黴菌藥",
+            spec: "200mg PO Q12H 給藥",
             correct: false,
             score: -20,
             hpLoss: 15,
@@ -1037,9 +1037,9 @@
           },
           {
             id: "fluconazole",
-            name: "Fluconazole (Diflucan)",
-            category: "三唑類抗黴菌藥 (Triazole)",
-            spec: "200-400mg PO/IV QD · 經腎排泄",
+            name: "Fluconazole",
+            category: "三唑類抗黴菌藥",
+            spec: "200-400mg PO QD 給藥",
             correct: true,
             score: 100,
             feedback: "【處方精準！】Fluconazole 約有 80% 以原型經腎臟排泄至尿液中，尿中藥物濃度極高，為 Candida albicans 泌尿道感染的絕對首選！"
@@ -1058,15 +1058,15 @@
       },
       {
         id: "case-mssa-deescalation",
-        title: "病房值班照會 (第 09 床)",
+        title: "病房值班照會",
         type: "常規治療追蹤",
         risk: "血液培養結果追蹤",
         source: "先前導管相關感染",
         avatar: "fa-solid fa-code-merge",
         summary: "58歲男性，蜂窩性組織炎併寒顫入院。入院時已拔除周邊導管並經驗性給予 Vancomycin。治療至第3天病患退燒、發炎指標改善。今日正式血液藥敏報告出爐。",
-        vitals: "BP 120/75, HR 78, BT 37.0°C (症狀好轉)",
+        vitals: "BP 120/75, HR 78, BT 37.0°C",
         labs: "WBC 從 16,000 降至 8,500",
-        renal: "eGFR 80 mL/min (正常)",
+        renal: "eGFR 80 mL/min",
         history: "已使用 Vancomycin 滿 72 小時",
         cultureStatus: "正式微生物藥敏報告",
         cultureDetails: [
@@ -1079,9 +1079,9 @@
         cards: [
           {
             id: "continue-vancomycin",
-            name: "Vancomycin (維持原劑量續用)",
+            name: "Vancomycin",
             category: "糖胜肽類抗生素",
-            spec: "1g IV Q12H 靜脈輸注續用",
+            spec: "1g IV Q12H 靜脈輸注",
             correct: false,
             score: -35,
             hpLoss: 20,
@@ -1089,16 +1089,16 @@
           },
           {
             id: "cefazolin-oxacillin",
-            name: "Cefazolin (或 Oxacillin)",
+            name: "Cefazolin",
             category: "第 1 代頭孢菌素",
-            spec: "Cefazolin 2g IV Q8H (或 Oxacillin 2g IV Q4H)",
+            spec: "2g IV Q8H 靜脈輸注",
             correct: true,
             score: 100,
             feedback: "【優異的降階決策！】雖然藥敏報告顯示 Vancomycin 也是 Susceptible，但文獻已充分證實：Vancomycin 對 MSSA 的殺菌速率顯著慢於 β-lactams。MSSA 菌血症若未即時降階續用 Vancomycin，死亡率與復發率顯著高於 Cefazolin/Oxacillin！"
           },
           {
             id: "escalate-meropenem",
-            name: "Meropenem (Mepem)",
+            name: "Meropenem",
             category: "Carbapenem 類",
             spec: "1g IV Q8H 靜脈輸注",
             correct: false,
@@ -1110,7 +1110,7 @@
             id: "doxycycline-po",
             name: "Doxycycline",
             category: "四環黴素類",
-            spec: "100mg PO BID 口服出院",
+            spec: "100mg PO BID 口服給藥",
             correct: false,
             score: -40,
             hpLoss: 25,
@@ -1120,12 +1120,12 @@
       },
       {
         id: "case-tigecycline-trap",
-        title: "病房值班照會 (第 10 床)",
+        title: "病房值班照會",
         type: "重症感染照會",
         risk: "抗藥菌株移生",
         source: "血流與泌尿系統",
         avatar: "fa-solid fa-droplet",
-        summary: "69歲男性，置放導尿管後出現寒顫高燒、血壓偏低。血液與尿液培養均長出 Klebsiella pneumoniae。病歷記錄有住院醫師提議：「既然是院內多重抗藥株，是否直接使用超廣效的 Tigecycline？」",
+        summary: "69歲男性，置放導尿管後出現寒顫高燒、血壓偏低。血液與尿液培養均長出 Klebsiella pneumoniae。病歷記錄有住院醫師提議考慮使用 Tigecycline。",
         vitals: "BP 90/58, HR 112, BT 39.2°C",
         labs: "WBC 18,200, Cr 1.4",
         renal: "eGFR 50 mL/min",
@@ -1141,7 +1141,7 @@
         cards: [
           {
             id: "use-tigecycline-alone",
-            name: "Tigecycline (單方使用)",
+            name: "Tigecycline",
             category: "甘胺醯環素類",
             spec: "首劑 100mg 後 50mg IV Q12H",
             correct: false,
@@ -1151,7 +1151,7 @@
           },
           {
             id: "reject-tige-use-carbapenem",
-            name: "Meropenem (或依藥敏選用其他穿透良好藥物)",
+            name: "Meropenem",
             category: "Carbapenem 類",
             spec: "1g IV Q8H 靜脈輸注",
             correct: true,
@@ -1170,7 +1170,7 @@
           },
           {
             id: "daptomycin-for-gnb",
-            name: "Daptomycin (Cubicin)",
+            name: "Daptomycin",
             category: "環脂胜肽類",
             spec: "8 mg/kg IV QD 靜脈輸注",
             correct: false,
@@ -1182,7 +1182,7 @@
       },
       {
         id: "case-cystitis-fq-sparing",
-        title: "病房值班照會 (第 11 床)",
+        title: "病房值班照會",
         type: "門診初診照會",
         risk: "年輕女性急性症狀",
         source: "下泌尿道",
@@ -1202,18 +1202,18 @@
         cards: [
           {
             id: "oral-fosfomycin-single",
-            name: "Fosfomycin (口服單劑)",
+            name: "Fosfomycin",
             category: "環氧化物類抗生素",
-            spec: "3g PO 單劑溶於冷水服用 (或 Nitrofurantoin 5天)",
+            spec: "3g PO 單劑溶於水服用",
             correct: true,
             score: 100,
             feedback: "【精準遵循 2026 指引！】單純性膀胱炎首選為口服 Fosfomycin 3g 單劑或 Nitrofurantoin 5天。尿中殺菌濃度高且幾乎無交叉抗藥。FDA 已對 Fluoroquinolone 發布多重黑框警示，明令不可在有其他選擇時用於單純膀胱炎！"
           },
           {
             id: "oral-ciprofloxacin-7d",
-            name: "Ciprofloxacin (Ciproxin)",
+            name: "Ciprofloxacin",
             category: "Fluoroquinolone 類",
-            spec: "500mg PO BID x 7天",
+            spec: "500mg PO BID 服用 7 天",
             correct: false,
             score: -35,
             hpLoss: 20,
@@ -1221,7 +1221,7 @@
           },
           {
             id: "iv-ceftriaxone-admit",
-            name: "Ceftriaxone (住院靜脈輸注)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 靜脈輸注",
             correct: false,
@@ -1233,7 +1233,7 @@
             id: "oral-doxycycline",
             name: "Doxycycline",
             category: "四環黴素類",
-            spec: "100mg PO BID x 10天",
+            spec: "100mg PO BID 服用 10 天",
             correct: false,
             score: -25,
             hpLoss: 15,
@@ -1243,7 +1243,7 @@
       },
       {
         id: "case-meningitis-listeria",
-        title: "病房值班照會 (第 12 床)",
+        title: "病房值班照會",
         type: "急診收治照會",
         risk: "中樞神經感染急症",
         source: "腦脊髓液",
@@ -1262,56 +1262,56 @@
         revealedInfo: "【診斷解析】成人化膿性腦膜炎 (≥50歲族群 Listeria 盲點與 Ampicillin 考點)",
         cards: [
           {
-            id: "vanco-ceftriaxone-alone",
-            name: "Vancomycin + Ceftriaxone",
-            category: "雙聯靜脈抗生素",
-            spec: "Vancomycin 1g Q12H + Ceftriaxone 2g Q12H",
+            id: "vanco-ceftriaxone-genta",
+            name: "Vancomycin + Ceftriaxone + Gentamicin",
+            category: "三聯靜脈抗生素方案",
+            spec: "Vancomycin 1g Q12H + Ceftriaxone 2g Q12H + Gentamicin 5mg/kg QD",
             correct: false,
             score: 10,
             hpLoss: 25,
-            feedback: "【漏掉致命病原！】年齡 ≥ 50 歲或免疫低下族群，李斯特菌 (Listeria monocytogenes) 發生率顯著上升！重點考點：所有 Cephalosporins (包含第3、4、5代) 對 Listeria 通通完全無效！必須額外加上 Ampicillin！"
+            feedback: "【漏掉致命病原且穿透差】Gentamicin 穿透血腦屏障能力差；更關鍵的是所有 Cephalosporins (包含第3、4、5代) 對 Listeria 通通完全無效！必須額外加上 Ampicillin！"
           },
           {
             id: "vanco-ceftriaxone-ampicillin",
             name: "Vancomycin + Ceftriaxone + Ampicillin",
-            category: "三聯靜脈抗生素",
+            category: "三聯靜脈抗生素方案",
             spec: "Vancomycin 1g Q12H + Ceftriaxone 2g Q12H + Ampicillin 2g Q4H",
             correct: true,
             score: 100,
             feedback: "【完全正確！】年齡 ≥ 50 歲之成人細菌性腦膜炎，指引規範經驗性用藥必須涵蓋 Listeria monocytogenes。由於所有頭孢子素皆打不到李斯特菌，因此必須加上 Ampicillin (2g IV Q4H)！"
           },
           {
-            id: "ceftriaxone-mono",
-            name: "Ceftriaxone (單方常規劑量)",
-            category: "第 3 代頭孢菌素",
-            spec: "2g IV QD 靜脈輸注",
+            id: "vanco-ceftriaxone-metro",
+            name: "Vancomycin + Ceftriaxone + Metronidazole",
+            category: "三聯靜脈抗生素方案",
+            spec: "Vancomycin 1g Q12H + Ceftriaxone 2g Q12H + Metronidazole 500mg Q8H",
             correct: false,
-            score: -45,
-            hpLoss: 35,
-            feedback: "【處方雙重錯誤】腦膜炎必須使用 Q12H 的 CNS 穿透劑量；且未涵蓋 PRSP 肺炎鏈球菌 (需加 Vanco) 與 Listeria。"
+            score: -20,
+            hpLoss: 25,
+            feedback: "【對錯病原】Metronidazole 是用於腦膿瘍厭氧菌，在急性化膿性腦膜炎中並無適應症，且同樣漏掉李斯特菌。"
           },
           {
-            id: "meropenem-valproate",
-            name: "Cefazolin (Cefa)",
-            category: "第 1 代頭孢菌素",
-            spec: "2g IV Q8H 靜脈輸注",
+            id: "vanco-mepem",
+            name: "Vancomycin + Meropenem",
+            category: "雙聯靜脈抗生素方案",
+            spec: "Vancomycin 1g Q12H + Meropenem 2g Q8H 靜脈輸注",
             correct: false,
-            score: -60,
-            hpLoss: 45,
-            feedback: "【致命錯誤】Cefazolin 無法有效穿透血腦屏障 (Blood-Brain Barrier)，不可用於治療腦膜炎！"
+            score: 20,
+            hpLoss: 20,
+            feedback: "【非首選且覆蓋不可靠】Meropenem 對李斯特菌之體內殺菌活性顯著不如高劑量 Ampicillin，指引明定 ≥50 歲腦膜炎必須以 Ampicillin 作為 Listeria 核心首選。"
           }
         ]
       },
       {
         id: "case-stop-it-trial",
-        title: "病房值班照會 (第 13 床)",
+        title: "病房值班照會",
         type: "外科術後常規照會",
         risk: "術後療程天數評估",
         source: "腹腔感染控制後",
         avatar: "fa-solid fa-notes-medical",
         summary: "45歲男性，因闌尾破裂穿孔合併局限性腹膜炎接受腹腔鏡闌尾切除與充分腹腔沖洗。術後使用 Flomoxef 治療至第 4 天。病患已排氣進食、傷口無發紅、體溫正常(36.6°C)、WBC 降至 6,200。",
-        vitals: "BP 118/76, HR 70, BT 36.6°C (完全正常)",
-        labs: "WBC 6,200 (正常), CRP 12 (大幅下降)",
+        vitals: "BP 118/76, HR 70, BT 36.6°C",
+        labs: "WBC 6,200, CRP 12",
         renal: "eGFR 95 mL/min",
         history: "已接受滿 4 天之抗生素治療，手術引流徹底",
         cultureStatus: "術中檢體培養結果",
@@ -1324,7 +1324,7 @@
         cards: [
           {
             id: "continue-to-14d",
-            name: "Flomoxef (續用至滿 14 天)",
+            name: "Flomoxef",
             category: "第 2.5 代頭孢菌素",
             spec: "1g IV Q8H 繼續使用至滿 14 天",
             correct: false,
@@ -1334,16 +1334,16 @@
           },
           {
             id: "stop-antibiotics-now",
-            name: "臨床評估停藥處置 (即日起停用抗生素)",
+            name: "停用抗生素並安排出院",
             category: "病房照護處置",
-            spec: "停用抗生素，安排出院並門診追蹤",
+            spec: "今日停用抗生素，安排出院並門診追蹤",
             correct: true,
             score: 100,
             feedback: "【觀念一流！】STOP-IT trial (NEJM 2015) 奠定了腹內感染短療程基準：在充分 source control 後，4 天療程死亡率與復發率不劣於 10 天對照組。此時停藥正是抗生素管理 (AMS) 的卓越展現！"
           },
           {
             id: "escalate-to-tazocin",
-            name: "Piperacillin/Tazobactam (Tazocin)",
+            name: "Piperacillin-tazobactam",
             category: "青黴素/抑制劑複合劑",
             spec: "4.5g IV Q8H 靜脈輸注",
             correct: false,
@@ -1365,7 +1365,7 @@
       },
       {
         id: "case-stenotrophomonas",
-        title: "病房值班照會 (第 14 床)",
+        title: "病房值班照會",
         type: "加護病房照會",
         risk: "長期碳青黴烯暴露",
         source: "下呼吸道侵犯",
@@ -1385,7 +1385,7 @@
         cards: [
           {
             id: "increase-meropenem",
-            name: "Meropenem (加量延長輸注)",
+            name: "Meropenem",
             category: "Carbapenem 類",
             spec: "2g IV Q8H 延長輸注 3 小時",
             correct: false,
@@ -1395,16 +1395,16 @@
           },
           {
             id: "baktar-combination",
-            name: "Baktar (TMP-SMX) (± 合併 Minocycline)",
+            name: "Trimethoprim-sulfamethoxazole",
             category: "磺胺複合劑處方",
-            spec: "依體重計算 TMP 劑量 10-15mg/kg/日 分次輸注",
+            spec: "依體重計算 TMP 10-15mg/kg/日 分次輸注",
             correct: true,
             score: 100,
-            feedback: "【精準用藥！】Baktar (TMP-SMX) 是 Stenotrophomonas maltophilia 的首選基石！2026 IDSA 建議重症時可採用 Baktar 合併 Minocycline 或 Levofloxacin。"
+            feedback: "【精準用藥！】Trimethoprim-sulfamethoxazole (Baktar) 是 Stenotrophomonas maltophilia 的首選基石！2026 IDSA 建議重症時可採用 Baktar 合併 Minocycline 或 Levofloxacin。"
           },
           {
             id: "colistin-monotherapy",
-            name: "Colistin (多黏菌素)",
+            name: "Colistin",
             category: "多黏菌素類",
             spec: "CMS 5mg/kg/日 分次靜脈滴注",
             correct: false,
@@ -1414,7 +1414,7 @@
           },
           {
             id: "ceftriaxone",
-            name: "Ceftriaxone (Rocephin)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 靜脈輸注",
             correct: false,
@@ -1426,36 +1426,36 @@
       },
       {
         id: "case-cefepime-neurotoxicity",
-        title: "病房值班照會 (第 15 床)",
+        title: "病房值班照會",
         type: "急性神智變化照會",
         risk: "高齡腎衰竭用藥",
         source: "中樞神經/藥物不良反應",
         avatar: "fa-solid fa-brain",
         summary: "78歲女性，嚴重慢性腎病 (eGFR 18 mL/min)，因複雜性綠膿桿菌尿路感染接受 Cefepime 2g Q8H 注射已第 4 天。今晨被護理師發現嗜睡、叫不醒、伴隨四肢肌躍型抽搐 (myoclonus)。腦部 CT 無急性出血，腦電圖顯示非抽搐性癲癇重積狀態 (NCSE)。",
-        vitals: "BP 138/80, HR 82, GCS E2V2M4 (譫妄昏迷)",
+        vitals: "BP 138/80, HR 82, GCS E2V2M4",
         labs: "BUN 65, Cr 3.4 (eGFR 18 mL/min)",
-        renal: "重度腎功能不全 (未進行劑量調整)",
-        history: "使用 Cefepime 2g Q8H (全劑量未減量)",
+        renal: "重度腎功能不全",
+        history: "使用 Cefepime 2g Q8H",
         cultureStatus: "用藥安全回顧",
         cultureDetails: [
-          { text: "當前處方：Cefepime 2g IV Q8H (正常人劑量)", highlight: "text-rose-400" },
-          { text: "腎功能：eGFR 18 mL/min (需減量為 1g Q24H)", highlight: "text-rose-400" },
+          { text: "當前處方：Cefepime 2g IV Q8H", highlight: "text-rose-400" },
+          { text: "腎功能：eGFR 18 mL/min", highlight: "text-rose-400" },
           { text: "神經學：肌躍型抽搐 (Myoclonus)、腦電圖呈現三相波與 NCSE", highlight: "text-slate-200 font-bold" }
         ],
         revealedInfo: "【診斷解析】Cefepime-induced Neurotoxicity 非抽搐性癲癇 (PGY 十大常犯錯誤加碼警訊)",
         cards: [
           {
             id: "stop-cefepime-adjust",
-            name: "停用 Cefepime (或大幅減量) + 給予抗癲癇治療",
+            name: "停用 Cefepime 並給予抗癲癇藥物",
             category: "臨床用藥調整處置",
-            spec: "即刻停藥，給予抗癲癇藥並監測神經狀態",
+            spec: "停用 Cefepime 並投予抗癲癇治療",
             correct: true,
             score: 100,
             feedback: "【救人一命！】Cefepime 具有 GABA-A 受體拮抗作用。腎功能不全 (eGFR <50) 若未依指引減量，血中與腦脊髓液濃度累積，極易誘發 Cefepime 神經毒性 (CIN)，表現為意識障礙、肌躍症、非抽搐性癲癇重積 (NCSE)！停藥後通常數天內可完全恢復。"
           },
           {
             id: "escalate-to-meropenem",
-            name: "Cefepime (加量使用)",
+            name: "Cefepime",
             category: "第 4 代頭孢菌素",
             spec: "2g IV Q6H 靜脈輸注",
             correct: false,
@@ -1487,7 +1487,7 @@
       },
       {
         id: "case-depakine-carbapenem",
-        title: "病房值班照會 (第 16 床)",
+        title: "病房值班照會",
         type: "臨床藥理照會",
         risk: "重大藥物交互作用",
         source: "腹腔/神經共病",
@@ -1495,28 +1495,28 @@
         summary: "52歲男性，有腦外傷後頑固性癲癇病史，長期規律口服 Valproic acid (Depakine 500mg TID)，過去兩年癲癇控制良好無發作。今日因院內腹膜炎，住院醫師提議開立 Meropenem 1g IV Q8H 治療。",
         vitals: "BP 120/75, HR 88, BT 38.2°C",
         labs: "Depakine 血中濃度：75 ug/mL (治療窗內 50-100)",
-        renal: "eGFR 80 mL/min (正常)",
-        history: "長期使用 Valproic acid (Depakine) 預防癲癇",
+        renal: "eGFR 80 mL/min",
+        history: "長期使用 Valproic acid 預防癲癇",
         cultureStatus: "開方審查確認",
         cultureDetails: [
-          { text: "原處方藥物：Valproic acid (Depakine)", highlight: "text-slate-200 font-bold" },
-          { text: "擬開抗生素：Meropenem (碳青黴烯類)", highlight: "text-rose-400" },
-          { text: "警示等級：重大藥物交互作用 (Severity: Major)", highlight: "text-rose-400" }
+          { text: "原處方藥物：Valproic acid", highlight: "text-slate-200 font-bold" },
+          { text: "擬開抗生素：Meropenem", highlight: "text-rose-400" },
+          { text: "警示等級：重大藥物交互作用", highlight: "text-rose-400" }
         ],
         revealedInfo: "【診斷解析】Carbapenem 與 Valproic acid (Depakine 濃度崩跌 60-90% 考點)",
         cards: [
           {
             id: "avoid-carbapenem-use-alternative",
-            name: "Piperacillin/Tazobactam (或 Cefepime + Metronidazole)",
-            category: "青黴素/頭孢菌素方案",
-            spec: "Tazocin 4.5g IV Q8H 靜脈輸注",
+            name: "Piperacillin-tazobactam",
+            category: "青黴素/抑制劑複合劑",
+            spec: "4.5g IV Q8H 靜脈輸注",
             correct: true,
             score: 100,
             feedback: "【藥理大師級決策！】所有 Carbapenem 類抗生素 (Meropenem、Imipenem、Ertapenem) 都會抑制 acylpeptide hydrolase，導致 Valproic acid (Depakine) 血中濃度在數小時內崩跌 60-90% 且無法靠加量補回，極易誘發 Breakthrough seizures！在癲癇病患中應選擇其他廣效藥 (如 Tazocin)。"
           },
           {
             id: "proceed-meropenem",
-            name: "Meropenem (照原案開立)",
+            name: "Meropenem",
             category: "Carbapenem 類",
             spec: "1g IV Q8H 靜脈輸注",
             correct: false,
@@ -1526,9 +1526,9 @@
           },
           {
             id: "double-depakine",
-            name: "Meropenem + Depakine 加倍劑量",
-            category: "藥物劑量調整方案",
-            spec: "Meropenem 1g Q8H + Depakine 1000mg TID PO",
+            name: "Meropenem 併用加倍口服抗癲癇藥",
+            category: "抗生素併用劑量調整",
+            spec: "Meropenem 1g Q8H + Valproic acid 1000mg TID",
             correct: false,
             score: -30,
             hpLoss: 25,
@@ -1536,7 +1536,7 @@
           },
           {
             id: "ertapenem-instead",
-            name: "Ertapenem (Invanz)",
+            name: "Ertapenem",
             category: "Carbapenem 類",
             spec: "1g IV QD 靜脈輸注",
             correct: false,
@@ -1548,7 +1548,7 @@
       },
       {
         id: "case-penicillin-delabeling",
-        title: "病房值班照會 (第 17 床)",
+        title: "病房值班照會",
         type: "病房常規照會",
         risk: "藥物過敏史評估",
         source: "下肢皮膚軟組織",
@@ -1578,16 +1578,16 @@
           },
           {
             id: "cefazolin-safe-use",
-            name: "Cefazolin (或口服 Cephalexin)",
+            name: "Cefazolin",
             category: "第 1 代頭孢菌素",
-            spec: "Cefazolin 2g IV Q8H (或 Cephalexin 500mg QID PO)",
+            spec: "2g IV Q8H 靜脈輸注",
             correct: true,
             score: 100,
             feedback: "【現代化 AMS 視野！】Penicillin 與 1 代頭孢 Cefazolin 側鏈完全不同，交叉反應率 < 1-2%。病患僅有童年輕微疹子史，完全可以安全使用 Cefazolin (殺鏈球菌效能遠勝 Vancomycin)！2026 年抗生素管理五個 D 特別強調 De-labeling！"
           },
           {
             id: "colistin-iv",
-            name: "Colistin (多黏菌素)",
+            name: "Colistin",
             category: "多黏菌素類",
             spec: "CMS 5mg/kg/日 分次靜脈滴注",
             correct: false,
@@ -1597,8 +1597,8 @@
           },
           {
             id: "aztreonam-alone",
-            name: "Aztreonam (Azactam)",
-            category: "單環內醯胺類 (Monobactam)",
+            name: "Aztreonam",
+            category: "單環內醯胺類",
             spec: "2g IV Q8H 靜脈輸注",
             correct: false,
             score: -45,
@@ -1609,7 +1609,7 @@
       },
       {
         id: "case-neutropenic-fever",
-        title: "病房值班照會 (第 18 床)",
+        title: "病房值班照會",
         type: "血液腫瘤科急照會",
         risk: "嚴重骨髓抑制",
         source: "全身性不明熱",
@@ -1629,7 +1629,7 @@
         cards: [
           {
             id: "cefepime-monotherapy",
-            name: "Cefepime (Maxipime)",
+            name: "Cefepime",
             category: "第 4 代頭孢菌素",
             spec: "2g IV Q8H 靜脈輸注",
             correct: true,
@@ -1638,9 +1638,9 @@
           },
           {
             id: "routine-vanco-tazo",
-            name: "Vancomycin + Tazocin",
+            name: "Vancomycin + Piperacillin-tazobactam",
             category: "雙聯靜脈抗生素",
-            spec: "Vancomycin 1g Q12H + Tazocin 4.5g Q8H",
+            spec: "Vancomycin 1g Q12H + Piperacillin-tazobactam 4.5g Q8H",
             correct: false,
             score: 30,
             hpLoss: 10,
@@ -1648,7 +1648,7 @@
           },
           {
             id: "ceftriaxone-alone",
-            name: "Ceftriaxone (Rocephin)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 靜脈輸注",
             correct: false,
@@ -1658,9 +1658,9 @@
           },
           {
             id: "oral-ciprofloxacin",
-            name: "Ciprofloxacin + Augmentin",
+            name: "Ciprofloxacin + Amoxicillin-clavulanate",
             category: "口服抗生素組合",
-            spec: "Ciprofloxacin 500mg BID + Augmentin 1g BID PO",
+            spec: "Ciprofloxacin 500mg BID + Amoxicillin-clavulanate 1g BID",
             correct: false,
             score: -40,
             hpLoss: 30,
@@ -1670,14 +1670,14 @@
       },
       {
         id: "case-balance-trial",
-        title: "病房值班照會 (第 19 床)",
+        title: "病房值班照會",
         type: "感染科晨會討論",
         risk: "菌血症療程評估",
         source: "泌尿道來源菌血症",
         avatar: "fa-solid fa-scale-balanced",
-        summary: "64歲女性，因 E. coli 腎盂腎炎合併菌血症住院，使用 Ceftriaxone 治療。今日為治療第 7 天，病患已退燒滿 4 天、腰痛完全消失、小便順暢、WBC 恢復至 5,800，追蹤血液培養轉陰性。住院醫師正為「該打 7 天還是 14 天」感到猶豫。",
-        vitals: "BP 120/72, HR 68, BT 36.5°C (正常)",
-        labs: "WBC 5,800, CRP 6.5 (完全恢復正常)",
+        summary: "64歲女性，因 E. coli 腎盂腎炎合併菌血症住院，使用 Ceftriaxone 治療。今日為治療第 7 天，病患已退燒滿 4 天、腰痛完全消失、小便順暢、WBC 恢復至 5,800，追蹤血液培養轉陰性。住院醫師正為療程天數感到猶豫。",
+        vitals: "BP 120/72, HR 68, BT 36.5°C",
+        labs: "WBC 5,800, CRP 6.5",
         renal: "eGFR 80 mL/min",
         history: "已接受滿 7 天靜脈 Ceftriaxone 治療",
         cultureStatus: "血液培養轉陰確認",
@@ -1690,16 +1690,16 @@
         cards: [
           {
             id: "balance-trial-7d",
-            name: "臨床評估停藥處置 (滿 7 天安全停藥出院)",
+            name: "完成 7 天療程並停藥出院",
             category: "病房照護處置",
-            spec: "完成 7 天靜脈療程，今日予以停藥並安排出院",
+            spec: "完成 7 天靜脈療程，今日停藥並安排出院",
             correct: true,
             score: 100,
             feedback: "【掌握最新重磅實證！】2025 年 NEJM 發表之 BALANCE trial (n=3,608) 證實：對於非 S. aureus 菌血症病患，在感染源控制良好且臨床穩定前提下，7 天療程之 90 天死亡率 (14.5%) 不劣於傳統 14 天 (16.1%)！短療程帶來同等療效、更少副作用與更少抗藥性！"
           },
           {
             id: "must-give-14d",
-            name: "Ceftriaxone (續打滿 14 天)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 繼續給藥至滿 14 天",
             correct: false,
@@ -1709,7 +1709,7 @@
           },
           {
             id: "escalate-to-meropenem",
-            name: "Meropenem (Mepem)",
+            name: "Meropenem",
             category: "Carbapenem 類",
             spec: "1g IV Q8H 靜脈輸注續打 7 天",
             correct: false,
@@ -1719,9 +1719,9 @@
           },
           {
             id: "oral-doxycycline-prophylaxis",
-            name: "Doxycycline (長期預防性投藥)",
+            name: "Doxycycline",
             category: "四環黴素類",
-            spec: "100mg PO QD 長期口服",
+            spec: "100mg PO QD 長期口服預防",
             correct: false,
             score: -30,
             hpLoss: 15,
@@ -1731,7 +1731,7 @@
       },
       {
         id: "case-cdi-diarrhea",
-        title: "病房值班照會 (第 20 床)",
+        title: "病房值班照會",
         type: "院內感染照會",
         risk: "長期使用抗生素後腹瀉",
         source: "胃腸道毒素",
@@ -1751,18 +1751,18 @@
         cards: [
           {
             id: "oral-vancomycin",
-            name: "Vancomycin (口服劑型)",
+            name: "Vancomycin 口服給藥",
             category: "糖胜肽類抗生素",
-            spec: "125mg PO QID 口服投藥 10 天 (或 Fidaxomicin)",
+            spec: "125mg PO QID 服用 10 天",
             correct: true,
             score: 100,
             feedback: "【精準用藥！】2026 IDSA 與各大指引明定：CDI 第一線首選為口服 Vancomycin (125mg QID) 或 Fidaxomicin！口服 Vancomycin 腸道不吸收，可於糞便中達到數千 ug/mL 的極高殺菌濃度。注意：Metronidazole 治癒率與復發率顯著較差，已退居次線！"
           },
           {
             id: "oral-metronidazole",
-            name: "Metronidazole (Flagyl)",
+            name: "Metronidazole 口服給藥",
             category: "硝基咪唑類",
-            spec: "500mg PO TID 口服 10 天",
+            spec: "500mg PO TID 服用 10 天",
             correct: false,
             score: 20,
             hpLoss: 15,
@@ -1770,7 +1770,7 @@
           },
           {
             id: "iv-vancomycin",
-            name: "Vancomycin (靜脈滴注)",
+            name: "Vancomycin 靜脈輸注",
             category: "糖胜肽類抗生素",
             spec: "1g IV Q12H 靜脈輸注",
             correct: false,
@@ -1780,9 +1780,9 @@
           },
           {
             id: "anti-diarrheal-loperamide",
-            name: "Loperamide (止瀉劑處置)",
-            category: "止瀉調節藥物",
-            spec: "4mg PO 初始劑量，後續每次水便給予 2mg",
+            name: "Loperamide 止瀉調節處置",
+            category: "腸道蠕動抑制劑",
+            spec: "4mg PO 初劑量，隨後每次水瀉給予 2mg",
             correct: false,
             score: -70,
             hpLoss: 50,
@@ -1792,7 +1792,7 @@
       },
       {
         id: "case-candidemia-cvc",
-        title: "病房值班照會 (第 21 床)",
+        title: "病房值班照會",
         type: "加護病房照會",
         risk: "中心導管留置發燒",
         source: "血液循環系統",
@@ -1811,56 +1811,56 @@
         revealedInfo: "【診斷解析】念珠菌血症 Candidemia (Echinocandin 首選 + 拔管 + 散瞳眼底檢查考點)",
         cards: [
           {
-            id: "echinocandin-remove-line",
-            name: "Caspofungin (或 Micafungin) + 拔除 CVC + 照會眼科散瞳",
-            category: "Echinocandin 類抗黴菌藥",
-            spec: "首劑 70mg 後 50mg IV QD + 拔管處置",
+            id: "echinocandin-bundle",
+            name: "Caspofungin + 拔除中心導管 + 照會眼科散瞳檢查",
+            category: "Echinocandin 類抗黴菌藥處置組合",
+            spec: "Caspofungin 70mg loading 後 50mg QD + 處置照會",
             correct: true,
             score: 100,
             feedback: "【滿分標準處置！】2026 IDSA 與各大指引明定：念珠菌血症經驗性首選為 Echinocandins (Caspofungin、Micafungin、Anidulafungin)！關鍵三部曲：①起始 Echinocandin，待菌種敏感且臨床穩定再降階 Fluconazole；②務必盡速移除受感染之 CVC；③務必照會眼科進行散瞳眼底檢查以排除眼內炎 (Endophthalmitis)！"
           },
           {
-            id: "fluconazole-alone-keep-line",
-            name: "Fluconazole (保留 CVC 觀察)",
-            category: "三唑類抗黴菌藥 (Triazole)",
-            spec: "400mg IV QD 靜脈輸注",
+            id: "fluconazole-bundle",
+            name: "Fluconazole + 拔除中心導管 + 照會眼科散瞳檢查",
+            category: "三唑類抗黴菌藥處置組合",
+            spec: "Fluconazole 400mg IV QD + 處置照會",
             correct: false,
             score: 20,
             hpLoss: 25,
-            feedback: "【處置不足】重症或近期暴露過抗生素之念珠菌血症，第一線首選為殺菌性的 Echinocandin 而非 Fluconazole (有抗藥或非 albicans 風險)；且未拔除 CVC 會導致生物膜持續釋放菌體，顯著提高死亡率！"
+            feedback: "【抗黴菌藥強度不足】重症或近期暴露過廣效抗生素之念珠菌血症，第一線首選為殺真菌性的 Echinocandin 而非 Fluconazole (有抗藥或非 albicans 菌種風險)。"
           },
           {
-            id: "amphotericin-deoxycholate",
-            name: "Amphotericin B deoxycholate",
-            category: "多烯類抗黴菌藥 (Polyene)",
-            spec: "0.7 mg/kg IV QD 靜脈滴注",
+            id: "ampho-bundle",
+            name: "Liposomal Amphotericin B + 拔除中心導管 + 照會眼科散瞳檢查",
+            category: "多烯類抗黴菌藥處置組合",
+            spec: "Liposomal Ampho-B 3mg/kg QD + 處置照會",
             correct: false,
             score: 10,
             hpLoss: 20,
-            feedback: "【毒性過大】傳統 Amphotericin B 具有嚴重的腎毒性與輸注發冷寒顫反應，在念珠菌血症中已被 Echinocandins 取代為第一線首選。"
+            feedback: "【毒性過大】Amphotericin B 具有較高腎毒性與輸注反應，在一般念珠菌血症中已非第一線首選，指引優先推薦 Echinocandins。"
           },
           {
-            id: "vancomycin-escalate",
-            name: "Vancomycin (Mepem 升階)",
-            category: "糖胜肽類抗生素",
-            spec: "1g IV Q12H 靜脈輸注",
+            id: "lock-bundle",
+            name: "Caspofungin + 保留中心導管抗生素封管 + 照會眼科散瞳檢查",
+            category: "保留管路抗黴菌藥處置組合",
+            spec: "Caspofungin 70mg loading 後 50mg QD + 導管封管",
             correct: false,
-            score: -60,
-            hpLoss: 40,
-            feedback: "【致命延遲】抹片已明確回報為 Yeast (真菌)，升階抗細菌藥物 (Vancomycin) 完全無抗真菌效果，將導致真菌敗血性休克死亡！"
+            score: -40,
+            hpLoss: 35,
+            feedback: "【未清除感染源】念珠菌會牢固附著於導管壁形成生物膜 (Biofilm)，保留導管只做封管治療極難清除且菌血症復發率極高，指引強烈要求移除 CVC！"
           }
         ]
       },
       {
         id: "case-invasive-aspergillosis",
-        title: "病房值班照會 (第 22 床)",
+        title: "病房值班照會",
         type: "血液科照會",
         risk: "嚴重骨髓抑制發燒",
         source: "肺部浸潤病灶",
         avatar: "fa-solid fa-lungs-virus",
         summary: "48歲急性淋巴性白血病男性，誘導化療後嗜中性球低下 (ANC 80/uL) 已滿 14 天。使用 Cefepime 治療發燒第 5 天仍有高燒，並新出現乾咳、胸痛與微量咳血。胸部 CT 顯示肺部結節周圍環繞毛玻璃狀 Halo sign。血清 Galactomannan (GM) 抗原檢驗為 2.4 (強陽性)。",
         vitals: "BP 118/74, HR 102, BT 38.6°C",
-        labs: "ANC 80/uL, Serum GM antigen: 2.4 (陽性)",
+        labs: "ANC 80/uL, Serum GM antigen: 2.4",
         renal: "eGFR 82 mL/min",
         history: "化療後長期嗜中性球缺乏",
         cultureStatus: "真菌血清抗原與影像學",
@@ -1873,17 +1873,17 @@
         cards: [
           {
             id: "voriconazole-treatment",
-            name: "Voriconazole (Vfend)",
-            category: "三唑類抗黴菌藥 (Triazole)",
-            spec: "Loading 6mg/kg Q12H x 2 劑，後續 4mg/kg Q12H + TDM 監測",
+            name: "Voriconazole",
+            category: "三唑類抗黴菌藥",
+            spec: "首日 6mg/kg Q12H 後續 4mg/kg Q12H 併血中濃度監測",
             correct: true,
             score: 100,
             feedback: "【精準首選！】侵襲性麴菌病 (Invasive Aspergillosis) 國際指引第一線首選為 Voriconazole (或 Isavuconazole)！注意 Voriconazole 需常規監測血中濃度 (TDM 目標約 1-5 mg/L)，並防範幻覺、短暫視覺障礙、肝毒性與 QTc 延長。"
           },
           {
             id: "fluconazole-treatment",
-            name: "Fluconazole (Diflucan)",
-            category: "三唑類抗黴菌藥 (Triazole)",
+            name: "Fluconazole",
+            category: "三唑類抗黴菌藥",
             spec: "400mg IV QD 靜脈輸注",
             correct: false,
             score: -60,
@@ -1892,7 +1892,7 @@
           },
           {
             id: "caspofungin-mono",
-            name: "Caspofungin (單方使用)",
+            name: "Caspofungin",
             category: "Echinocandin 類抗黴菌藥",
             spec: "50mg IV QD 靜脈輸注",
             correct: false,
@@ -1902,7 +1902,7 @@
           },
           {
             id: "ceftriaxone-alone",
-            name: "Ceftriaxone (Rocephin)",
+            name: "Ceftriaxone",
             category: "第 3 代頭孢菌素",
             spec: "2g IV QD 靜脈輸注",
             correct: false,
@@ -1914,7 +1914,7 @@
       },
       {
         id: "case-crypto-meningitis",
-        title: "病房值班照會 (第 23 床)",
+        title: "病房值班照會",
         type: "急診收治照會",
         risk: "亞急性中樞神經感染",
         source: "腦脊髓液",
@@ -1934,54 +1934,54 @@
         cards: [
           {
             id: "ampho-flucytosine-combo",
-            name: "Liposomal Amphotericin B + Flucytosine (5-FC)",
-            category: "抗黴菌多烯類併用嘧啶類似物",
-            spec: "AmBisome 3-4 mg/kg/日 + 5-FC 100 mg/kg/日 分四次給予",
+            name: "Liposomal Amphotericin B + Flucytosine",
+            category: "多烯類併用嘧啶類似物",
+            spec: "Liposomal Ampho-B 3-4mg/kg QD + Flucytosine 100mg/kg/日 分四次",
             correct: true,
             score: 100,
             feedback: "【黃金組合首選！】隱球菌腦膜炎誘導期 (Induction therapy) 國際標準為 Liposomal Amphotericin B + Flucytosine (5-FC) 至少 2 週！Flucytosine 能加速腦脊髓液真菌清除率並顯著降低死亡率；同時需積極行腰椎穿刺降腦壓。待誘導成功後才接續 Fluconazole 鞏固治療。"
           },
           {
-            id: "fluconazole-mono-induction",
-            name: "Fluconazole (單方誘導治療)",
-            category: "三唑類抗黴菌藥 (Triazole)",
-            spec: "400mg PO QD 單藥給藥",
+            id: "ampho-fluco-combo",
+            name: "Liposomal Amphotericin B + Fluconazole",
+            category: "多烯類併用三唑類",
+            spec: "Liposomal Ampho-B 3-4mg/kg QD + Fluconazole 800mg QD",
             correct: false,
-            score: -20,
+            score: 25,
+            hpLoss: 20,
+            feedback: "【次選替代】此為 Flucytosine 無法取得或無法耐受時的次要替代方案，CSF 真菌清除速率較 Ampho-B + 5-FC 慢。"
+          },
+          {
+            id: "fluco-flucytosine-combo",
+            name: "Fluconazole + Flucytosine",
+            category: "口服三唑類併用嘧啶類似物",
+            spec: "Fluconazole 1200mg QD + Flucytosine 100mg/kg/日",
+            correct: false,
+            score: 10,
+            hpLoss: 25,
+            feedback: "【非重症首選誘導】此口服組合僅適用於資源極度缺乏、無法施打靜脈多烯類抗黴菌藥時的備用方案，在重症中樞神經感染死亡率偏高。"
+          },
+          {
+            id: "caspo-ampho-combo",
+            name: "Caspofungin + Liposomal Amphotericin B",
+            category: "Echinocandin 併用多烯類",
+            spec: "Caspofungin 50mg QD + Liposomal Ampho-B 3mg/kg QD",
+            correct: false,
+            score: -40,
             hpLoss: 30,
-            feedback: "【單藥誘導清除慢】Fluconazole 單藥於腦脊髓液中殺真菌速率顯著慢於 Ampho-B + 5-FC，單獨用於重症誘導期死亡率與神經後遺症比例極高！"
-          },
-          {
-            id: "caspofungin-mono",
-            name: "Caspofungin (Cancidas)",
-            category: "Echinocandin 類抗黴菌藥",
-            spec: "70mg loading 後 50mg IV QD",
-            correct: false,
-            score: -60,
-            hpLoss: 40,
-            feedback: "【致命機轉盲點！】Echinocandins (如 Caspofungin、Micafungin) 對隱球菌 (Cryptococcus) 具有天然內因性抗藥 (完全無效)！且 Echinocandin 無法穿透血腦屏障！"
-          },
-          {
-            id: "ceftriaxone-vanco",
-            name: "Ceftriaxone + Vancomycin",
-            category: "雙聯靜脈抗生素",
-            spec: "Ceftriaxone 2g Q12H + Vancomycin 1g Q12H",
-            correct: false,
-            score: -50,
-            hpLoss: 35,
-            feedback: "【方向錯誤】墨汁染色已證實為隱球菌真菌感染，投予抗細菌藥物無法抑制隱球菌增殖。"
+            feedback: "【致命機轉盲點！】Echinocandins (如 Caspofungin) 對隱球菌 (Cryptococcus) 具有天然內因性抗藥 (完全無效)！且無法穿透血腦屏障！"
           }
         ]
       },
       {
         id: "case-rhinocerebral-mucor",
-        title: "病房值班照會 (第 24 床)",
+        title: "病房值班照會",
         type: "急診會診評估",
         risk: "臉部黑痂壞死迅速進展",
         source: "鼻竇與眼窩",
         avatar: "fa-solid fa-head-side-mask",
         summary: "56歲男性，糖尿病控制極差，因酮酸中毒 (DKA) 送急診。家屬主訴病患近三天右臉麻木劇痛、眼眶紅腫突出、右側鼻孔流出黑褐色血水。耳鼻喉科急會診檢視發現硬顎與鼻甲黏膜出現大片黑色壞死焦痂 (Eschar)。急件病理切片見寬大、無中隔 (Non-septate)、呈現 90 度直角分支之粗大菌絲。",
-        vitals: "BP 138/85, HR 112, BT 38.5°C, DKA 治療中",
+        vitals: "BP 138/85, HR 112, BT 38.5°C",
         labs: "Blood Glucose 480 mg/dL, Ketone 4+, pH 7.15",
         renal: "eGFR 68 mL/min",
         history: "未規律服藥之重度第2型糖尿病",
@@ -1995,48 +1995,48 @@
         cards: [
           {
             id: "debridement-amphotericin",
-            name: "緊急外科手術清創 + 高劑量 Liposomal Amphotericin B",
-            category: "外科手術引流與多烯類抗黴菌藥",
-            spec: "清創手術 + AmBisome 5-10 mg/kg/日 靜脈輸注",
+            name: "外科清創 + Liposomal Amphotericin B",
+            category: "外科手術併用多烯類抗黴菌藥",
+            spec: "外科清創處置 + Liposomal Ampho-B 5-10 mg/kg/日 靜脈輸注",
             correct: true,
             score: 100,
             feedback: "【完全正確！救命決策！】毛黴菌 (Mucorales) 是進展極度凶暴的血管侵犯性真菌，死亡率高達 50-80%！唯一挽救生命的關鍵是：①極緊急外科徹底切除壞死組織 (清創)；②立即給予高劑量 Liposomal Amphotericin B (5-10 mg/kg/日)！後續口服可銜接 Posaconazole 或 Isavuconazole。"
           },
           {
-            id: "voriconazole-mono",
-            name: "Voriconazole (Vfend)",
-            category: "三唑類抗黴菌藥 (Triazole)",
-            spec: "Loading 6mg/kg Q12H 後 4mg/kg Q12H",
+            id: "voriconazole-surgery",
+            name: "外科清創 + Voriconazole",
+            category: "外科手術併用三唑類抗黴菌藥",
+            spec: "外科清創處置 + Voriconazole 4mg/kg Q12H",
             correct: false,
             score: -60,
             hpLoss: 50,
             feedback: "【致命地雷：毛黴菌專屬考點！】Voriconazole 對毛黴菌 (Mucorales) 完全 100% 零抗菌活性！文獻顯示使用 Voriconazole 甚至容易篩選出毛黴菌突破性感染 (Breakthrough mucormycosis)！"
           },
           {
-            id: "fluconazole-alone",
-            name: "Fluconazole (Diflucan)",
-            category: "三唑類抗黴菌藥 (Triazole)",
-            spec: "400mg IV QD 靜脈輸注",
-            correct: false,
-            score: -70,
-            hpLoss: 50,
-            feedback: "【毫無效果】Fluconazole 對毛黴菌完全無效，無法阻止鼻腦結構壞死。"
-          },
-          {
-            id: "caspofungin-mono",
-            name: "Caspofungin (Cancidas)",
-            category: "Echinocandin 類抗黴菌藥",
-            spec: "70mg loading 後 50mg IV QD",
+            id: "caspofungin-surgery",
+            name: "外科清創 + Caspofungin",
+            category: "外科手術併用 Echinocandin 類",
+            spec: "外科清創處置 + Caspofungin 50mg QD",
             correct: false,
             score: -50,
             hpLoss: 40,
             feedback: "【無效處方】毛黴菌細胞壁缺乏大量 1,3-beta-D-glucan，Echinocandins 對其幾乎無治療作用。"
+          },
+          {
+            id: "fluconazole-surgery",
+            name: "外科清創 + Fluconazole",
+            category: "外科手術併用三唑類抗黴菌藥",
+            spec: "外科清創處置 + Fluconazole 400mg QD",
+            correct: false,
+            score: -70,
+            hpLoss: 50,
+            feedback: "【毫無效果】Fluconazole 對毛黴菌完全無效，無法阻止鼻腦結構壞死。"
           }
         ]
       },
       {
         id: "case-candida-krusei",
-        title: "病房值班照會 (第 25 床)",
+        title: "病房值班照會",
         type: "血液腫瘤科照會",
         risk: "預防性用藥後突破感染",
         source: "血液循環系統",
@@ -2056,7 +2056,7 @@
         cards: [
           {
             id: "echinocandin-krusei",
-            name: "Caspofungin (或 Micafungin / Anidulafungin)",
+            name: "Caspofungin",
             category: "Echinocandin 類抗黴菌藥",
             spec: "首劑 70mg 後 50mg IV QD 靜脈輸注",
             correct: true,
@@ -2065,8 +2065,8 @@
           },
           {
             id: "escalate-fluconazole-double",
-            name: "Fluconazole (加倍劑量使用)",
-            category: "三唑類抗黴菌藥 (Triazole)",
+            name: "Fluconazole",
+            category: "三唑類抗黴菌藥",
             spec: "800mg IV QD 靜脈輸注",
             correct: false,
             score: -60,
@@ -2085,7 +2085,7 @@
           },
           {
             id: "cefepime-mono",
-            name: "Cefepime (Maxipime)",
+            name: "Cefepime",
             category: "第 4 代頭孢菌素",
             spec: "2g IV Q8H 靜脈輸注",
             correct: false,
@@ -2097,7 +2097,7 @@
       },
       {
         id: "case-hvkp-liver-abscess",
-        title: "病房值班照會 (第 26 床)",
+        title: "病房值班照會",
         type: "急診收治照會",
         risk: "本土特色高毒力菌株",
         source: "肝臟與腹腔",
@@ -2116,56 +2116,56 @@
         revealedInfo: "【診斷解析】高毒力克雷伯氏菌 (hvKP) 肝膿瘍合併轉移性眼內炎 (經皮穿刺引流 + 頭孢菌素 + 急會眼科考點)",
         cards: [
           {
-            id: "drainage-ceftriaxone-ophthalmology",
-            name: "超音波導引穿刺引流 (PCD) + Ceftriaxone + 緊急照會眼科散瞳",
-            category: "經皮引流處置與第 3 代頭孢菌素",
-            spec: "經皮引流 (PCD) + Ceftriaxone 2g IV QD + 急做眼底鏡檢查",
+            id: "drainage-ceftriaxone-ophtho",
+            name: "經皮導管引流 + Ceftriaxone + 急會眼科散瞳檢查",
+            category: "侵入性處置併用頭孢菌素與眼科會診",
+            spec: "經皮引流 + Ceftriaxone 2g IV QD + 急做眼底檢查",
             correct: true,
             score: 100,
             feedback: "【台灣加分題滿分！】台灣與東亞特有：糖尿病患原發性肝膿瘍多為 K1/K2 血清型高毒力克雷伯氏菌 (hvKP)。重點：①膿瘍 >3-5cm 必須進行 PCD 經皮導管引流 (Source control)；②經驗性用藥 Ceftriaxone 或 Flomoxef 多可有效涵蓋；③病患一旦主訴眼睛模糊，務必緊急照會眼科散瞳檢查，排除轉移性眼內炎 (Endophthalmitis) 以免 24-48 小時內永久失明！"
           },
           {
-            id: "ceftriaxone-alone-no-drainage",
-            name: "Ceftriaxone (單純給藥不引流，門診追蹤眼科)",
-            category: "第 3 代頭孢菌素",
-            spec: "2g IV QD 靜脈輸注",
+            id: "drainage-ceftriaxone-observe",
+            name: "經皮導管引流 + Ceftriaxone + 觀察眼部症狀",
+            category: "侵入性處置併用頭孢菌素與常規觀察",
+            spec: "經皮引流 + Ceftriaxone 2g IV QD + 觀察視力變化",
             correct: false,
-            score: 10,
-            hpLoss: 30,
-            feedback: "【處置嚴重不足！】6.5 公分大膿瘍單靠抗生素無法有效穿透，未及時引流極易破裂造成腹膜炎；且眼部症狀不可拖延至門診，hvKP 眼內炎需數小時內眼內注射抗生素以挽救視力！"
-          },
-          {
-            id: "escalate-colistin",
-            name: "Colistin (多黏菌素)",
-            category: "多黏菌素類",
-            spec: "CMS 5mg/kg/日 分次靜脈滴注",
-            correct: false,
-            score: -40,
+            score: 20,
             hpLoss: 25,
-            feedback: "【過度且不當用藥】社區型 hvKP 幾乎均為對傳統頭孢菌素高度敏感之 Wild-type，動用後線高毒性 Colistin 毫無必要。"
+            feedback: "【延遲眼科處置】hvKP 轉移性眼內炎病程極度兇猛，數十小時內即可造成不可逆失明，必須立即散瞳檢查並評估玻璃體內抗生素注射，不可單純觀察！"
           },
           {
-            id: "doxycycline-alone",
-            name: "Doxycycline",
-            category: "四環黴素類",
-            spec: "100mg PO BID 口服治療",
+            id: "drainage-cefazolin-ophtho",
+            name: "經皮導管引流 + Cefazolin + 急會眼科散瞳檢查",
+            category: "侵入性處置併用第 1 代頭孢與眼科會診",
+            spec: "經皮引流 + Cefazolin 2g IV Q8H + 急做眼底檢查",
             correct: false,
-            score: -50,
-            hpLoss: 35,
-            feedback: "【劑量與廣度不足】口服四環黴素無法控制深部高毒力細菌性肝膿瘍。"
+            score: -20,
+            hpLoss: 25,
+            feedback: "【抗菌深度不足】嚴重深部組織高毒力克雷伯氏菌肝膿瘍與菌血症，第 1 代頭孢菌素組織濃度與殺菌活性不如第 3 代頭孢菌素 (Ceftriaxone) 或 Flomoxef。"
+          },
+          {
+            id: "drainage-mepem-ophtho",
+            name: "經皮導管引流 + Meropenem + 急會眼科散瞳檢查",
+            category: "侵入性處置併用碳青黴烯與眼科會診",
+            spec: "經皮引流 + Meropenem 1g IV Q8H + 急做眼底檢查",
+            correct: false,
+            score: 40,
+            hpLoss: 10,
+            feedback: "【非必要之廣效升階】社區型 hvKP 幾乎均為野生型對頭孢菌素高度敏感之菌株，首選為 Ceftriaxone，無抗藥性危險因子下不必過度使用 Carbapenem。"
           }
         ]
       },
       {
         id: "case-neonatal-meningitis",
-        title: "病房值班照會 (第 27 床)",
+        title: "病房值班照會",
         type: "小兒急診照會",
         risk: "新生兒發燒急症",
         source: "腦脊髓液與血流",
         avatar: "fa-solid fa-baby",
-        summary: "出生第 12 天足月新生兒，因活動力低下、食慾差、體溫 38.4°C、前囟門膨出送急診。腰椎穿刺 CSF 呈現白血球增加、糖濃度低下，高度懷疑新生兒細菌性腦膜炎。同仁提議：「為了有效殺菌，直接使用第三代頭孢菌素 Ceftriaxone (Rocephin) 治療最方便」。",
-        vitals: "HR 165, RR 48, BT 38.4°C, 前囟門緊繃",
-        labs: "WBC 22,000, Total Bilirubin 11.5 mg/dL (偏高)",
+        summary: "出生第 12 天足月新生兒，因活動力低下、食慾差、體溫 38.4°C、前囟門膨出送急診。腰椎穿刺 CSF 呈現白血球增加、糖濃度低下，高度懷疑新生兒細菌性腦膜炎。同仁提議評估經驗性抗生素處方。",
+        vitals: "HR 165, RR 48, BT 38.4°C",
+        labs: "WBC 22,000, Total Bilirubin 11.5 mg/dL",
         renal: "新生兒腎功能",
         history: "母親產程自然分娩，GBS 篩檢陰性",
         cultureStatus: "CSF 急檢報告",
@@ -2179,21 +2179,21 @@
           {
             id: "ampicillin-cefotaxime",
             name: "Ampicillin + Cefotaxime",
-            category: "新生兒專用雙聯靜脈抗生素",
+            category: "新生兒雙聯靜脈抗生素方案",
             spec: "Ampicillin 150-200 mg/kg/日 + Cefotaxime 150-200 mg/kg/日",
             correct: true,
             score: 100,
             feedback: "【完全正確！】新生兒腦膜炎三大病原為 GBS、E. coli 與 Listeria monocytogenes。首選為 Ampicillin (打 Listeria 與 Enterococcus) + Cefotaxime (打 GNB)！絕對禁忌：新生兒絕對不可使用 Ceftriaxone (Rocephin)，因為 Ceftriaxone 會競爭白蛋白結合位導致游離膽紅素升高引發核黃疸 (Kernicterus)，且與含鈣輸液併用易沉澱致死！"
           },
           {
-            id: "ceftriaxone-alone-neonate",
-            name: "Ceftriaxone (Rocephin)",
-            category: "第 3 代頭孢菌素",
-            spec: "100 mg/kg/日 IV QD 靜脈輸注",
+            id: "ampicillin-ceftriaxone",
+            name: "Ampicillin + Ceftriaxone",
+            category: "雙聯靜脈抗生素方案",
+            spec: "Ampicillin 150-200 mg/kg/日 + Ceftriaxone 100 mg/kg/日",
             correct: false,
             score: -60,
             hpLoss: 50,
-            feedback: "【小兒加碼出人命禁忌！】Ceftriaxone 嚴格禁忌用於新生兒 (<28天)！其一會置換白蛋白上的膽紅素誘發不可逆核黃疸；其二會與含鈣輸液在體內形成致命結晶沉澱！且其無法對抗李斯特菌！"
+            feedback: "【新生兒致命禁忌！】Ceftriaxone 嚴格禁忌用於新生兒 (<28天)！其一會置換白蛋白上的膽紅素誘發不可逆核黃疸；其二會與含鈣輸液在體內形成致命結晶沉澱！小兒三代頭孢請務必選擇 Cefotaxime！"
           },
           {
             id: "vancomycin-gentamicin",
@@ -2206,25 +2206,25 @@
             feedback: "【不適合新生兒腦膜炎】Gentamicin 無法良好穿透血腦屏障 (CSF 濃度極低)；且此處方漏掉了重要之李斯特菌 (需 Ampicillin)。"
           },
           {
-            id: "cefazolin-mono",
-            name: "Cefazolin (Cefa)",
-            category: "第 1 代頭孢菌素",
-            spec: "50 mg/kg/日 分次靜脈輸注",
+            id: "ampicillin-gentamicin",
+            name: "Ampicillin + Gentamicin",
+            category: "胺基青黴素併用胺基配醣體",
+            spec: "Ampicillin 150-200 mg/kg/日 + Gentamicin 2.5 mg/kg Q12H",
             correct: false,
-            score: -45,
-            hpLoss: 35,
-            feedback: "【無法過血腦屏障】Cefazolin 無法穿透血腦屏障，絕對不可用於中樞神經感染。"
+            score: 20,
+            hpLoss: 20,
+            feedback: "【穿透受限】雖然適用於新生兒一般敗血症，但對腦膜炎而言，Gentamicin 在腦脊髓液的穿透率遠遜於 Cefotaxime，不足以單獨對抗革蘭氏陰性腦膜炎。"
           }
         ]
       },
       {
         id: "case-animal-bite-pasteurella",
-        title: "病房值班照會 (第 28 床)",
+        title: "病房值班照會",
         type: "急診外傷照會",
         risk: "動物咬傷快速紅腫",
         source: "手部軟組織",
         avatar: "fa-solid fa-paw",
-        summary: "34歲女性，今早整理家務時被家中受驚嚇之米克斯貓咬傷右手背。傷口深達皮下，約 6 小時後右手背迅速出現紅、腫、熱、劇烈跳痛與漿液性分泌物。X 光排除骨折與異物。同仁提議開立 Cefazolin 或 Cephalexin (一代頭孢) 給予治療。",
+        summary: "34歲女性，今早整理家務時被家中受驚嚇之米克斯貓咬傷右手背。傷口深達皮下，約 6 小時後右手背迅速出現紅、腫、熱、劇烈跳痛與漿液性分泌物。X 光排除骨折與異物。同仁提議評估合適之處方。",
         vitals: "BP 118/75, HR 80, BT 37.5°C",
         labs: "WBC 11,200, CRP 24",
         renal: "eGFR > 90 mL/min",
@@ -2239,18 +2239,18 @@
         cards: [
           {
             id: "augmentin-firstline",
-            name: "Amoxicillin-clavulanate (Augmentin)",
-            category: "口服青黴素/抑制劑複合劑",
-            spec: "1g (875/125mg) PO BID 口服治療 (重症可用 Unasyn IV)",
+            name: "Amoxicillin-clavulanate",
+            category: "青黴素/抑制劑複合劑",
+            spec: "1g PO BID 口服給藥",
             correct: true,
             score: 100,
             feedback: "【處方大師！】貓狗咬傷最關鍵且進展最迅速的病原體是 Pasteurella multocida (巴斯德桿菌)。重點考點：Pasteurella 天然對第 1 代頭孢菌素 (Cephalexin/Cefazolin)、Macrolides 與 Clindamycin 效果極差！首選絕對是 Amoxicillin-clavulanate (Augmentin) 或 Ampicillin-sulbactam (Unasyn)！"
           },
           {
             id: "cephalexin-alone",
-            name: "Cephalexin (Keflex)",
+            name: "Cephalexin",
             category: "第 1 代口服頭孢菌素",
-            spec: "500mg PO QID 口服治療",
+            spec: "500mg PO QID 口服給藥",
             correct: false,
             score: -40,
             hpLoss: 30,
@@ -2258,9 +2258,9 @@
           },
           {
             id: "clindamycin-alone",
-            name: "Clindamycin (Cleocin)",
-            category: "林可醯胺類 (Lincosamide)",
-            spec: "300mg PO QID 口服治療",
+            name: "Clindamycin",
+            category: "林可醯胺類",
+            spec: "300mg PO QID 口服給藥",
             correct: false,
             score: -30,
             hpLoss: 25,
@@ -2268,7 +2268,7 @@
           },
           {
             id: "vancomycin-iv",
-            name: "Vancomycin (收住院注射)",
+            name: "Vancomycin",
             category: "糖胜肽類抗生素",
             spec: "1g IV Q12H 靜脈輸注",
             correct: false,
@@ -2280,12 +2280,12 @@
       },
       {
         id: "case-dtr-psa",
-        title: "病房值班照會 (第 29 床)",
+        title: "病房值班照會",
         type: "加護病房照會",
         risk: "超廣效抗藥綠膿桿菌",
         source: "呼吸道與深部傷口",
         avatar: "fa-solid fa-bacterium",
-        summary: "62歲大面積燒傷住院一個月病患，在加護病房使用呼吸器中。近兩日再度高燒 38.9°C、傷口出現藍綠色帶有葡萄甜味之膿性分泌物。傷口與氣管抽吸培養分離出難治型綠膿桿菌 (DTR-P. aeruginosa)。初版藥敏測試對傳統抗生素全數耐藥。同仁提議：「既然傳統藥物都耐藥，是否直接改用超廣效的 Tigecycline？」",
+        summary: "62歲大面積燒傷住院一個月病患，在加護病房使用呼吸器中。近兩日再度高燒 38.9°C、傷口出現藍綠色帶有葡萄甜味之膿性分泌物。傷口與氣管抽吸培養分離出難治型綠膿桿菌 (DTR-P. aeruginosa)。初版藥敏測試對傳統抗生素全數耐藥。同仁提議評估合適之救援藥物。",
         vitals: "BP 105/65, HR 110, BT 38.9°C",
         labs: "WBC 19,500, Cr 1.2",
         renal: "eGFR 70 mL/min",
@@ -2301,16 +2301,16 @@
         cards: [
           {
             id: "ceftolozane-tazobactam",
-            name: "Ceftolozane-tazobactam (Zerbaxa)",
-            category: "抗綠膿新型頭孢菌素/抑制劑複合劑",
-            spec: "3g (2g/1g) IV Q8H 輸注 1 小時",
+            name: "Ceftolozane-tazobactam",
+            category: "新型頭孢菌素/抑制劑複合劑",
+            spec: "3g IV Q8H 輸注 1 小時",
             correct: true,
             score: 100,
             feedback: "【指引標準首選！】2026 IDSA 指引推薦：對難治性綠膿桿菌 (DTR-P. aeruginosa)，首選為新型頭孢複方 Ceftolozane-tazobactam (Zerbaxa) 或 Ceftazidime-avibactam (Zavicefta)！Ceftolozane 能克服綠膿桿菌常見之 OprD 孔蛋白缺損與 AmpC 過度表現！"
           },
           {
             id: "tigecycline-trap-psa",
-            name: "Tigecycline (Tygacil)",
+            name: "Tigecycline",
             category: "甘胺醯環素類",
             spec: "首劑 100mg 後 50mg IV Q12H",
             correct: false,
@@ -2320,7 +2320,7 @@
           },
           {
             id: "ertapenem-mono",
-            name: "Ertapenem (Invanz)",
+            name: "Ertapenem",
             category: "Carbapenem 類",
             spec: "1g IV QD 靜脈輸注",
             correct: false,
@@ -2342,7 +2342,7 @@
       },
       {
         id: "case-prosthetic-valve-endocarditis",
-        title: "病房值班照會 (第 30 床)",
+        title: "病房值班照會",
         type: "心臟外科照會",
         risk: "人工瓣膜菌血症",
         source: "心內膜生物膜感染",
@@ -2362,47 +2362,48 @@
         cards: [
           {
             id: "triple-pve-therapy",
-            name: "Vancomycin + Gentamicin + Rifampin (三聯治療方案)",
-            category: "心內膜炎多重機轉抗生素處方",
-            spec: "Vanco 15-20mg/kg Q12H + Gentamicin 1mg/kg Q8H + Rifampin 300mg PO TID",
+            name: "Vancomycin + Gentamicin + Rifampin",
+            category: "三聯靜脈抗生素方案",
+            spec: "Vancomycin 1g Q12H + Gentamicin 1mg/kg Q8H + Rifampin 300mg TID",
             correct: true,
             score: 100,
             feedback: "【心臟感染大師級決策！】人工瓣膜心內膜炎 (PVE) 葡萄球菌感染指引明定標準三聯療法：①Vancomycin 提供核心殺菌骨幹；②Gentamicin 在前 2 週提供早期殺菌協同作用 (Synergy)；③Rifampin 則是穿透人工金屬異物生物膜 (Biofilm) 唯一的關鍵救星！三藥齊下缺一不可，且需使用至少 6 週，同時急照會心臟外科評估開刀！"
           },
           {
-            id: "vanco-alone",
-            name: "Vancomycin (單方治療方案)",
-            category: "糖胜肽類抗生素",
-            spec: "1g IV Q12H 靜脈輸注",
+            id: "vanco-genta-ceftri",
+            name: "Vancomycin + Gentamicin + Ceftriaxone",
+            category: "三聯靜脈抗生素方案",
+            spec: "Vancomycin 1g Q12H + Gentamicin 1mg/kg Q8H + Ceftriaxone 2g QD",
             correct: false,
             score: 20,
             hpLoss: 25,
-            feedback: "【處方不足】單用 Vancomycin 無法有效穿透並清除附著在人工瓣膜金屬表面之葡萄球菌生物膜 (Biofilm)，復發率極高且難以避免瓣膜周圍膿瘍。"
+            feedback: "【缺少生物膜穿透劑】此處方多用於自體瓣膜感染，但在人工機械瓣膜上缺少了能有效穿透金屬生物膜的 Rifampin，極易治療失敗！"
           },
           {
-            id: "cefazolin-mono",
-            name: "Cefazolin (Cefa)",
-            category: "第 1 代頭孢菌素",
-            spec: "2g IV Q8H 靜脈輸注",
+            id: "cefa-genta-rifampin",
+            name: "Cefazolin + Gentamicin + Rifampin",
+            category: "三聯靜脈抗生素方案",
+            spec: "Cefazolin 2g Q8H + Gentamicin 1mg/kg Q8H + Rifampin 300mg TID",
             correct: false,
             score: -45,
             hpLoss: 35,
-            feedback: "【抗藥無效】菌種鑑定明確為 MRSE (Methicillin-resistant)，帶有 mecA 基因對所有傳統頭孢菌素全數抗藥！"
+            feedback: "【抗藥無效】菌種鑑定明確為 MRSE (Methicillin-resistant)，帶有 mecA 基因對所有傳統頭孢菌素全數抗藥，不可使用 Cefazolin！"
           },
           {
-            id: "two-week-short-course",
-            name: "Ceftriaxone (短療程 2 週)",
-            category: "第 3 代頭孢菌素",
-            spec: "2g IV QD 輸注滿 14 天",
+            id: "dapto-genta-cefepime",
+            name: "Daptomycin + Gentamicin + Cefepime",
+            category: "三聯靜脈抗生素方案",
+            spec: "Daptomycin 8mg/kg QD + Gentamicin 1mg/kg Q8H + Cefepime 2g Q8H",
             correct: false,
-            score: -60,
-            hpLoss: 40,
-            feedback: "【雙重錯誤】葡萄球菌人工瓣膜心內膜炎不適用短療程，必須打滿至少 6 週；且 Ceftriaxone 對 MRSE 完全無效！"
+            score: 10,
+            hpLoss: 30,
+            feedback: "【非指引標準三聯】指引針對人工瓣膜 MRSE 葡萄球菌感染，標準穿透生物膜的骨幹仍為 Vancomycin + Rifampin + Gentamicin。"
           }
         ]
       }
     ];
 
+    let activeCases = [];
     let currentCaseIndex = 0;
     let patientHp = 100;
     let doctorSanity = 100;
@@ -2540,6 +2541,8 @@
     };
 
     function initGame() {
+      // Shuffle cases randomly for a fresh clinical run every game
+      activeCases = [...CLINICAL_CASES].sort(() => Math.random() - 0.5);
       currentCaseIndex = 0;
       patientHp = 100;
       doctorSanity = 100;
@@ -2554,29 +2557,29 @@
       hudHp.className = `font-mono font-bold text-base ${patientHp <= 30 ? 'text-rose-500 pulse-danger' : patientHp <= 60 ? 'text-amber-400' : 'text-rose-400'}`;
       hudSanity.textContent = `${Math.max(0, doctorSanity)}`;
       hudScore.textContent = `${totalScore} 分`;
-      hudStage.textContent = `Case ${currentCaseIndex + 1} / ${CLINICAL_CASES.length}`;
+      hudStage.textContent = `Case ${currentCaseIndex + 1} / ${activeCases.length}`;
     }
 
     function loadCase(index) {
-      if (index >= CLINICAL_CASES.length) {
+      if (index >= activeCases.length) {
         showRunSummary();
         return;
       }
 
       answered = false;
-      const c = CLINICAL_CASES[index];
+      const c = activeCases[index];
 
       // Reset feedback and action button
       feedbackBanner.classList.add('hidden');
       feedbackBanner.innerHTML = '';
       actionControls.classList.add('hidden');
 
-      // Populate Case Meta with neutral titles
+      // Populate Case Meta with neutral sequential bed titles
       caseBadgeType.textContent = c.type;
       caseBadgeRisk.textContent = c.risk;
       caseSourceBadge.innerHTML = `<i class="fa-solid fa-location-crosshairs mr-1"></i>${c.source}`;
       caseAvatar.innerHTML = `<i class="${c.avatar}"></i>`;
-      caseTitle.textContent = c.title;
+      caseTitle.textContent = `病房值班照會 (第 ${String(index + 1).padStart(2, '0')} 床)`;
       caseSummary.textContent = c.summary;
 
       // Grid Info
@@ -2585,7 +2588,7 @@
       caseRenal.textContent = c.renal;
       caseHistory.textContent = c.history;
 
-      // Culture & AST Box (without suggestive hint bar)
+      // Culture & AST Box
       caseCultureStatus.textContent = c.cultureStatus;
       caseCultureDetails.innerHTML = c.cultureDetails.map(item => `
         <div class="flex items-start gap-1.5 leading-snug">
@@ -2648,7 +2651,7 @@
 
     function handleCardSelect(card, element) {
       answered = true;
-      const currentCase = CLINICAL_CASES[currentCaseIndex];
+      const currentCase = activeCases[currentCaseIndex];
 
       // Reveal diagnostic tags upon answer
       if (currentCase.revealedInfo) {
@@ -2692,7 +2695,7 @@
         doctorSanity -= 15;
 
         mistakesLog.push({
-          caseTitle: currentCase.title,
+          caseTitle: `第 ${String(currentCaseIndex + 1).padStart(2, '0')} 床 (${currentCase.title})`,
           revealedInfo: currentCase.revealedInfo,
           chosen: card.name,
           lesson: card.feedback
