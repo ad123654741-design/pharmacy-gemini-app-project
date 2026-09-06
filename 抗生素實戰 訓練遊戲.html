@@ -1,0 +1,2859 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抗生素大師：值班實戰卡牌對決 (Antibiotic Master: 2026 PGY Edition)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for medical & battle icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              800: '#0c4a6e',
+              900: '#082f49',
+            },
+            danger: {
+              400: '#f87171',
+              500: '#ef4444',
+              600: '#dc2626'
+            },
+            success: {
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Noto Sans TC', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom game styles & card hover transforms */
+    .card-glow:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 14px 25px -5px rgba(2, 132, 199, 0.4), 0 8px 10px -6px rgba(2, 132, 199, 0.3);
+    }
+    .trap-shake {
+      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+    .pulse-danger {
+      animation: pulseDanger 1.5s infinite;
+    }
+    @keyframes pulseDanger {
+      0%, 100% { opacity: 1; border-color: #ef4444; }
+      50% { opacity: 0.6; border-color: #7f1d1d; }
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 sticky top-0 z-40 px-4 py-2.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Title & Branding -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-teal-400 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-bold text-xl">
+          <i class="fa-solid fa-capsules"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="font-black text-lg sm:text-xl text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-300">
+              抗生素大師：值班實戰卡牌對決
+            </h1>
+            <span class="text-xs bg-sky-950 text-sky-300 border border-sky-800 px-2 py-0.5 rounded font-mono">2026 PGY版</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">依據黃品叡醫師《臨床抗生素基礎入門》編制 · 2026 IDSA / 台灣 THAS 在地實戰</p>
+        </div>
+      </div>
+
+      <!-- Action buttons & Mode Switcher -->
+      <div class="flex items-center space-x-2">
+        <button id="btn-show-handbook" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-400 border border-slate-700 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-book-medical"></i>
+          <span>白袍速查手冊</span>
+        </button>
+        <button id="btn-sound-toggle" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-sm transition" title="音效切換">
+          <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+        </button>
+        <button id="btn-restart-run" class="px-3 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800 text-xs sm:text-sm font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span class="hidden sm:inline">重啟值班</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="bg-slate-900 border-b border-slate-800/80 px-4 py-2">
+    <div class="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs sm:text-sm">
+      <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex items-center justify-between px-3">
+        <span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-heart-pulse text-rose-500"></i> 病人穩定度 (HP)</span>
+        <span id="hud-patient-hp" class="font-mono font-bold text-base text-rose-400">100 / 100</span>
+      </div>
+      <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex items-center justify-between px-3">
+        <span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-brain text-amber-400"></i> PGY理智度 (Sanity)</span>
+        <span id="hud-doctor-sanity" class="font-mono font-bold text-base text-amber-400">100</span>
+      </div>
+      <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex items-center justify-between px-3">
+        <span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-shield-virus text-teal-400"></i> AMS 管理評分</span>
+        <span id="hud-score" class="font-mono font-bold text-base text-teal-400">0 分</span>
+      </div>
+      <div class="bg-slate-950/60 p-2 rounded-lg border border-slate-800 flex items-center justify-between px-3">
+        <span class="text-slate-400 flex items-center gap-1"><i class="fa-solid fa-calendar-day text-sky-400"></i> 病房關卡</span>
+        <span id="hud-stage" class="font-mono font-bold text-base text-sky-400">Case 1 / 30</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 flex flex-col gap-5">
+    
+    <!-- Top Half: Patient Encounter / Case Presentation Card -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-xl relative overflow-hidden">
+      <!-- Glow decoration -->
+      <div class="absolute -top-12 -right-12 w-44 h-44 bg-sky-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <!-- Patient Clinical Info -->
+        <div class="flex-1 space-y-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="case-badge-type" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-950 text-indigo-300 border border-indigo-800">
+              臨床照會評估
+            </span>
+            <span id="case-badge-risk" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+              待評估風險
+            </span>
+            <span id="case-source-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+              <i class="fa-solid fa-notes-medical mr-1"></i>臨床主訴分析中
+            </span>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 text-2xl flex-shrink-0" id="case-avatar">
+              <i class="fa-solid fa-user-injured"></i>
+            </div>
+            <div>
+              <h2 id="case-title" class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                載入個案中...
+              </h2>
+              <p id="case-summary" class="text-sm text-slate-300 mt-1 leading-relaxed">
+                正在調閱電子病歷與檢驗報告...
+              </p>
+            </div>
+          </div>
+
+          <!-- Clinical Vitals & Lab Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 text-xs">
+            <div class="bg-slate-950/80 rounded-lg p-2 border border-slate-800">
+              <div class="text-slate-500 text-[11px]">生命徵象 / 意識</div>
+              <div id="case-vitals" class="font-mono text-slate-200 font-semibold mt-0.5">--</div>
+            </div>
+            <div class="bg-slate-950/80 rounded-lg p-2 border border-slate-800">
+              <div class="text-slate-500 text-[11px]">發炎指標 (WBC / CRP)</div>
+              <div id="case-labs" class="font-mono text-slate-200 font-semibold mt-0.5">--</div>
+            </div>
+            <div class="bg-slate-950/80 rounded-lg p-2 border border-slate-800">
+              <div class="text-slate-500 text-[11px]">腎肝功能 (eGFR / Cr)</div>
+              <div id="case-renal" class="font-mono text-slate-200 font-semibold mt-0.5">--</div>
+            </div>
+            <div class="bg-slate-950/80 rounded-lg p-2 border border-slate-800">
+              <div class="text-slate-500 text-[11px]">近期暴露史 / 結構</div>
+              <div id="case-history" class="text-slate-200 font-semibold mt-0.5">--</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Side: Culture & Gram Stain / Susceptibility Report Box -->
+        <div class="w-full md:w-80 lg:w-96 bg-slate-950 rounded-xl p-3.5 border border-sky-900/50 shadow-inner flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-2">
+              <div class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-microscope text-sky-400"></i>
+                <span>檢驗與微生物報告 (Microbiology Lab)</span>
+              </div>
+              <span id="case-culture-status" class="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">
+                檢體報告
+              </span>
+            </div>
+            <div id="case-culture-details" class="text-xs text-slate-300 space-y-1.5 font-mono">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+          
+          <!-- Hidden hint container to avoid spoiling answers beforehand -->
+          <div id="case-hint-container" class="hidden"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle: Decision Status / Feedback Banner -->
+    <div id="feedback-banner" class="hidden transition-all duration-300 rounded-xl p-4 border text-sm">
+      <!-- Rendered dynamically -->
+    </div>
+
+    <!-- Bottom Half: Clinical Card Hand (手牌與決策區) -->
+    <div class="space-y-3">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-bold text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-hand text-sky-400"></i> 你的處方手牌 (請點選一張最合適之藥物或處置卡)：
+          </span>
+          <span class="text-xs text-slate-500 hidden sm:inline">(思考 AMS 5個D：Right Drug, Dose, Duration, De-escalation)</span>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 良好殺菌
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-amber-500 ml-1"></span> 謹慎/次選
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 ml-1"></span> 禁忌/致命錯誤
+        </div>
+      </div>
+
+      <!-- Hand Cards Grid -->
+      <div id="card-hand-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3.5">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Action Bar / Next Button Area -->
+    <div id="action-controls" class="hidden flex items-center justify-end gap-3 pt-2">
+      <button id="btn-next-case" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-400 hover:to-teal-400 text-slate-950 font-bold text-sm shadow-lg shadow-sky-500/20 flex items-center gap-2 transition transform active:scale-95">
+        <span>下一位病患 (Next Case)</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+  </main>
+
+  <div id="handbook-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-6">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
+        <div class="flex items-center gap-2 text-sky-400 font-bold text-base sm:text-lg">
+          <i class="fa-solid fa-book-bookmark text-sky-400"></i>
+          <span>《臨床抗生素基礎入門 2026》白袍速查指南</span>
+        </div>
+        <button id="btn-close-handbook" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <div class="flex border-b border-slate-800 bg-slate-950 text-xs sm:text-sm overflow-x-auto">
+        <button class="tab-btn px-4 py-2.5 font-semibold text-sky-400 border-b-2 border-sky-400 transition" data-tab="tab-spectrum">
+          <i class="fa-solid fa-table-cells mr-1"></i> 抗菌譜總表 (8-1)
+        </button>
+        <button class="tab-btn px-4 py-2.5 font-semibold text-slate-400 hover:text-slate-200 transition" data-tab="tab-resistant">
+          <i class="fa-solid fa-dna mr-1"></i> 抗藥機轉與新藥 (Part 2)
+        </button>
+        <button class="tab-btn px-4 py-2.5 font-semibold text-slate-400 hover:text-slate-200 transition" data-tab="tab-trials">
+          <i class="fa-solid fa-scale-balanced mr-1"></i> 2026 短療程與試驗 (Part 5)
+        </button>
+        <button class="tab-btn px-4 py-2.5 font-semibold text-slate-400 hover:text-slate-200 transition" data-tab="tab-mistakes">
+          <i class="fa-solid fa-skull-crossbones mr-1 text-rose-400"></i> 十大常犯錯誤 (Part 7)
+        </button>
+      </div>
+
+      <!-- Modal Content Body (Scrollable) -->
+      <div class="p-5 overflow-y-auto space-y-4 text-xs sm:text-sm text-slate-300">
+        
+        <!-- Tab 1: Spectrum -->
+        <div id="tab-spectrum" class="tab-content block space-y-3">
+          <div class="bg-sky-950/40 p-3 rounded-xl border border-sky-800/60 text-sky-200 text-xs">
+            💡 <strong>光譜通則：</strong> GPC 覆蓋 1 > 2 > 3 代頭孢；GNB 覆蓋 3 > 2 > 1 代；4 代 (Cefepime) 兩邊都行；5 代 (Ceftaroline/Ceftobiprole) 往回打 MRSA！<strong>所有頭孢打不到 Enterococcus 與 Listeria！</strong>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead class="bg-slate-950 text-slate-300 font-bold border-b border-slate-800">
+                <tr>
+                  <th class="p-2.5">藥物</th>
+                  <th class="p-2.5">商品名</th>
+                  <th class="p-2.5">MRSA</th>
+                  <th class="p-2.5">MSSA</th>
+                  <th class="p-2.5">腸桿菌</th>
+                  <th class="p-2.5">綠膿 (PsA)</th>
+                  <th class="p-2.5">AB 菌</th>
+                  <th class="p-2.5">厭氧菌</th>
+                  <th class="p-2.5">BBB</th>
+                  <th class="p-2.5">致命盲點 / 特色</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800 font-mono text-[11px]">
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Cefazolin</td>
+                  <td class="p-2 text-slate-400">Cefa</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-sky-300">+ (PECK)</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">否</td>
+                  <td class="p-2 font-sans text-slate-300">MSSA首選，外科預防，不過BBB</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Ceftriaxone</td>
+                  <td class="p-2 text-slate-400">Rocephin</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">可</td>
+                  <td class="p-2 font-sans text-slate-300">不可與含鈣輸液併用 (沉澱)</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Tazocin</td>
+                  <td class="p-2 text-slate-400">Pip/Tazo</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-amber-400">+</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-rose-500">否</td>
+                  <td class="p-2 font-sans text-rose-300">MERINO證實不宜用於 ESBL 菌血症</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Ertapenem</td>
+                  <td class="p-2 text-slate-400">Invanz</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-rose-500">差</td>
+                  <td class="p-2 font-sans text-slate-300">ESBL 社區首選；打不到 PsA 與 AB菌！</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Meropenem</td>
+                  <td class="p-2 text-slate-400">Mepem</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">可</td>
+                  <td class="p-2 font-sans text-slate-300">重症/CNS首選；讓 Depakine 濃度崩跌！</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Cefepime</td>
+                  <td class="p-2 text-slate-400">Maxipime</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">可</td>
+                  <td class="p-2 font-sans text-amber-300">AmpC首選；腎不全未調量易致癲癇昏迷</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Ceftobiprole</td>
+                  <td class="p-2 text-slate-400">Zevtera</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">否</td>
+                  <td class="p-2 font-sans text-sky-300">5代兼顧 MRSA + PsA，取得SAB適應症</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Daptomycin</td>
+                  <td class="p-2 text-slate-400">Cubicin</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-emerald-400">+++</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-rose-500">否</td>
+                  <td class="p-2 font-sans text-rose-400 font-bold">被Surfactant破壞，絕對不用於肺炎！</td>
+                </tr>
+                <tr class="hover:bg-slate-800/40">
+                  <td class="p-2 font-sans font-bold text-white">Tigecycline</td>
+                  <td class="p-2 text-slate-400">Tygacil</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-rose-500">-</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-emerald-400">++</td>
+                  <td class="p-2 text-rose-500">否</td>
+                  <td class="p-2 font-sans text-rose-400">老虎怕水：血/尿濃度極低，不可治BSI/UTI</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Resistant Mechanisms -->
+        <div id="tab-resistant" class="tab-content hidden space-y-3">
+          <h3 class="font-bold text-sky-300 text-sm">2-1 β-lactamase Ambler 分類與新一代抑制劑對照</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <span class="text-xs px-2 py-0.5 rounded bg-blue-900 text-blue-200 font-bold">Class A (Serine)</span>
+              <p class="text-xs text-slate-300 mt-1"><strong>酵素：</strong> TEM, SHV, CTX-M (ESBL), KPC</p>
+              <p class="text-xs text-slate-400 mt-1"><strong>對策：</strong> ESBL首選 Carbapenem；KPC首選 <strong>Vaborbactam</strong> 或 <strong>Avibactam</strong> (Zavicefta)。</p>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <span class="text-xs px-2 py-0.5 rounded bg-rose-900 text-rose-200 font-bold">Class B (Metallo, MBL)</span>
+              <p class="text-xs text-slate-300 mt-1"><strong>酵素：</strong> NDM, VIM, IMP (依賴鋅離子)</p>
+              <p class="text-xs text-slate-400 mt-1"><strong>對策：</strong> 傳統抑制劑與Avibactam皆無效！唯一解：<strong>Aztreonam + Avibactam</strong> 或 <strong>Cefiderocol</strong>。</p>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <span class="text-xs px-2 py-0.5 rounded bg-amber-900 text-amber-200 font-bold">Class C (AmpC)</span>
+              <p class="text-xs text-slate-300 mt-1"><strong>高風險三菌：</strong> E. cloacae, K. aerogenes, C. freundii</p>
+              <p class="text-xs text-slate-400 mt-1"><strong>對策：</strong> 避免3代頭孢與Tazocin；首選 <strong>Cefepime</strong> (若MIC≤2) 或 Carbapenem。</p>
+            </div>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+              <span class="text-xs px-2 py-0.5 rounded bg-purple-900 text-purple-200 font-bold">Class D (OXA)</span>
+              <p class="text-xs text-slate-300 mt-1"><strong>酵素：</strong> OXA-48 (腸桿菌)、OXA-23/24/58 (AB菌)</p>
+              <p class="text-xs text-slate-400 mt-1"><strong>對策：</strong> OXA-48用 Avibactam；CRAB OXA首選 <strong>Sulbactam-durlobactam (Xacduro)</strong>。</p>
+            </div>
+          </div>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs">
+            <span class="text-sky-400 font-bold">口訣精華：</span> K看V (KPC→Vaborbactam) · O看A (OXA-48→Avibactam) · N看ATM (NDM→Aztreonam) · CRAB看D (Durlobactam)。
+          </div>
+        </div>
+
+        <!-- Tab 3: Trials -->
+        <div id="tab-trials" class="tab-content hidden space-y-3">
+          <h3 class="font-bold text-teal-300 text-sm">2026 短療程實證與里程碑試驗 (Landmark Trials)</h3>
+          <div class="space-y-2 text-xs">
+            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <div class="flex items-center justify-between text-sky-300 font-bold">
+                <span>BALANCE Trial (NEJM 2025)</span>
+                <span class="text-emerald-400">菌血症 7天不劣於 14天</span>
+              </div>
+              <p class="text-slate-400 mt-1">針對非 S. aureus 菌血症 (n=3,608)，前提為臨床穩定、感染源控制良好，7天療程死亡率不劣於14天。</p>
+            </div>
+            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <div class="flex items-center justify-between text-rose-300 font-bold">
+                <span>MERINO Trial (JAMA 2018)</span>
+                <span class="text-rose-400">ESBL 菌血症 Tazocin 死亡率倍增！</span>
+              </div>
+              <p class="text-slate-400 mt-1">即使藥敏報告 Tazocin 顯示 Susceptible，30天死亡率仍顯著高於 Meropenem (12.3% vs 3.7%)，因此嚴禁使用。</p>
+            </div>
+            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <div class="flex items-center justify-between text-teal-300 font-bold">
+                <span>STOP-IT Trial (NEJM 2015)</span>
+                <span class="text-emerald-400">腹腔內感染 source control 後 4天</span>
+              </div>
+              <p class="text-slate-400 mt-1">充分外科引流或手術後，抗生素使用 4 天即足夠，延長使用無額外益處。</p>
+            </div>
+            <div class="p-2.5 bg-slate-950 rounded-lg border border-slate-800">
+              <div class="flex items-center justify-between text-indigo-300 font-bold">
+                <span>ATTACK Trial (Lancet ID 2023)</span>
+                <span class="text-emerald-400">CRAB 首選 Sulbactam-durlobactam</span>
+              </div>
+              <p class="text-slate-400 mt-1">相較 Colistin，Sulbactam-durlobactam + Carbapenem 治療嚴重 AB 菌感染具更佳治癒率且腎毒性極低。</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Top 10 Mistakes -->
+        <div id="tab-mistakes" class="tab-content hidden space-y-2">
+          <h3 class="font-bold text-rose-400 text-sm">Part 7: PGY 最常犯的十個抗生素錯誤</h3>
+          <ul class="space-y-1.5 text-xs text-slate-300">
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">1. 治療無症狀菌尿 (ASB)：</strong> 長期導尿管尿液有菌但無全身症狀時不要打抗生素！(孕婦/泌尿處置除外)</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">2. 用 Daptomycin 治肺炎：</strong> 會被肺泡表面張力素 (Surfactant) 破壞而失活。</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">3. 用 Tigecycline 治菌血症或尿路感染：</strong> 老虎怕水，血中與尿中濃度極低！</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">4. ESBL 菌血症用 Tazocin：</strong> MERINO 試驗證實死亡率大增，Carbapenem 才是首選。</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">5. Tazocin / Mepem 再外加 Metronidazole：</strong> 厭氧菌覆蓋重複，浪費且增加副作用。</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">6. 看到 Penicillin 過敏標籤直接跳後線：</strong> >90% 其實不過敏，頭孢交叉反應極低 (&lt;1-2%)。</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">7. MSSA 繼續打 Vancomycin：</strong> Vancomycin 殺 MSSA 效率遠遜於 Cefazolin/Oxacillin。</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">8. Ertapenem 用於 ICU 經驗性用藥：</strong> Ertapenem 打不到綠膿與 AB 菌，台灣 ICU 不適用。</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">9. 三天沒進步就一直升階：</strong> 先回頭找 Source control (引流、拔管) 而不是狂加藥！</li>
+            <li class="p-2 bg-slate-950 rounded border border-rose-900/40"><strong class="text-rose-400">10. 開藥時沒有寫預計療程：</strong> 需落實 48-72 小時 Antibiotic Time-out。</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 bg-slate-950/90 border-t border-slate-800 flex justify-end">
+        <button id="btn-close-handbook-2" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold">
+          關閉速查手冊
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="summary-modal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl p-6 text-center space-y-4">
+      <div class="w-16 h-16 mx-auto rounded-full bg-sky-950 border border-sky-600 flex items-center justify-center text-sky-400 text-3xl" id="summary-icon">
+        <i class="fa-solid fa-award"></i>
+      </div>
+      <h3 class="text-xl font-black text-white" id="summary-title">值班實戰完成！</h3>
+      <p class="text-sm text-slate-300" id="summary-desc">評估你在 2026 PGY 臨床抗生素決策中的綜合表現：</p>
+
+      <div class="grid grid-cols-2 gap-3 py-2 text-left">
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <div class="text-slate-400 text-xs">總 AMS 積分</div>
+          <div id="summary-score" class="text-xl font-bold text-teal-400 mt-1">0 分</div>
+        </div>
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
+          <div class="text-slate-400 text-xs">臨床評價評級</div>
+          <div id="summary-rank" class="text-xl font-bold text-amber-400 mt-1">合格 PGY</div>
+        </div>
+      </div>
+
+      <div id="summary-feedback" class="text-xs text-slate-300 bg-slate-950 p-3 rounded-xl border border-slate-800 text-left space-y-1">
+        <!-- feedback details -->
+      </div>
+
+      <button id="btn-restart-game" class="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-teal-500 hover:from-sky-400 hover:to-teal-400 text-slate-950 font-black text-sm shadow-lg transition">
+        重新挑戰值班輪迴 (New Shift)
+      </button>
+    </div>
+  </div>
+
+  <footer class="bg-slate-950 border-t border-slate-900 py-3 text-center text-xs text-slate-400 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span>講義原著：黃品叡醫師《臨床抗生素基礎入門 2026 更新版》(大甲/苑裡李綜合醫院 泌尿科·重症醫學科)</span>
+      <span class="text-slate-400">僅供醫學教育模擬與臨床思維演練使用</span>
+    </div>
+  </footer>
+
+  <script>
+    /* =========================================================
+       CLINICAL CASES REPOSITORY (30 Full Cases, Completely Neutralized)
+       ========================================================= */
+    const CLINICAL_CASES = [
+      {
+        id: "case-esbl-bsi",
+        title: "病房值班照會 (第 01 床)",
+        type: "急診收治評估",
+        risk: "血液檢驗報陽",
+        source: "疑似泌尿來源",
+        avatar: "fa-solid fa-bed-pulse",
+        summary: "68歲女性，第二型糖尿病與反覆感染史。畏寒高燒(39.1°C)與嗜睡，血壓偏低。兩套血液培養於18小時內長出革蘭氏陰性桿菌 (GNB)。",
+        vitals: "BP 88/54, HR 122, BT 39.1°C",
+        labs: "WBC 19,400 (Band 14%), CRP 182",
+        renal: "eGFR 48 mL/min, Cr 1.5",
+        history: "近2個月內曾因肺炎使用 Ceftriaxone 治療",
+        cultureStatus: "藥敏初步報告",
+        cultureDetails: [
+          { text: "檢體來源：周邊靜脈血液 (兩套報陽)", highlight: "text-slate-300" },
+          { text: "分離菌種：Klebsiella pneumoniae", highlight: "text-slate-200 font-bold" },
+          { text: "Ceftriaxone: Resistant (MIC > 64)", highlight: "text-rose-400" },
+          { text: "Piperacillin/Tazobactam: Susceptible (MIC = 8)", highlight: "text-slate-300" },
+          { text: "Ertapenem: Susceptible (MIC ≤ 0.5)", highlight: "text-slate-300" },
+          { text: "Meropenem: Susceptible (MIC ≤ 0.25)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】ESBL-producing K. pneumoniae 菌血症 (MERINO Trial 關鍵考點)",
+        cards: [
+          {
+            id: "ertapenem",
+            name: "Ertapenem (Invanz)",
+            category: "Carbapenem 類",
+            spec: "1g IV QD · 每日一次靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【精準決策！】本案為 ESBL 菌血症。根據 2026 IDSA 指引與著名的 MERINO trial (JAMA 2018)：ESBL 菌血症首選為 Carbapenem！病患無綠膿桿菌或 AB 菌風險，使用 Ertapenem 落實「Carbapenem-sparing」保留 Meropenem。"
+          },
+          {
+            id: "tazocin",
+            name: "Piperacillin/Tazobactam (Tazocin)",
+            category: "青黴素/抑制劑複合劑",
+            spec: "4.5g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【嚴重陷阱：MERINO Trial 的重大教訓！】MERINO trial (JAMA 2018) 明確證實：即使藥敏報告顯示 Tazocin 為 Susceptible (S)，用於 ESBL 菌血症時，30天死亡率仍顯著高於 Carbapenem (12.3% vs 3.7%)！因此 2026 IDSA 明確禁止用 Tazocin 治療 ESBL 菌血症！"
+          },
+          {
+            id: "ceftriaxone",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -30,
+            hpLoss: 25,
+            feedback: "【無效處方】藥敏報告已明確顯示 Ceftriaxone 為 Resistant (MIC > 64)，ESBL 會強力水解 3 代頭孢菌素，繼續使用將導致敗血症持續惡化！"
+          },
+          {
+            id: "ciprofloxacin",
+            name: "Ciprofloxacin (Ciproxin)",
+            category: "Fluoroquinolone 類",
+            spec: "400mg IV Q12H 靜脈輸注",
+            correct: false,
+            score: 10,
+            hpLoss: 10,
+            feedback: "【不建議作為首選】病患處於敗血性休克早期且生命徵象尚未穩定，重症 ESBL 菌血症初期不應以 Fluoroquinolone 作為經驗治療。"
+          }
+        ]
+      },
+      {
+        id: "case-mrsa-hap",
+        title: "病房值班照會 (第 02 床)",
+        type: "一般病房照會",
+        risk: "住院後新發浸潤",
+        source: "下呼吸道分泌物",
+        avatar: "fa-solid fa-lungs",
+        summary: "72歲男性，慢性腎病，住院第8天出現畏寒高燒、濃稠痰液與喘促。胸部 X 光顯示右下肺葉浸潤。氣管抽吸痰抹片見多量白血球與革蘭氏陽性球菌成群。",
+        vitals: "BP 128/78, HR 108, RR 26, SpO2 89%",
+        labs: "WBC 16,800, CRP 145",
+        renal: "eGFR 35 mL/min, Cr 1.9 (腎功能不全)",
+        history: "曾有長期洗腎室接觸史與褥瘡移生史",
+        cultureStatus: "痰液抹片回報",
+        cultureDetails: [
+          { text: "檢體種類：氣管抽吸痰 (Aspirate)", highlight: "text-slate-300" },
+          { text: "白血球：多量 (>25 / LPF)", highlight: "text-slate-300" },
+          { text: "細菌型態：革蘭氏陽性球菌成群 (GPC in clusters)", highlight: "text-slate-200 font-bold" },
+          { text: "臨床診斷：院內型肺炎 (HAP)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】院內 MRSA 肺炎 (Daptomycin Surfactant 失活禁忌考點)",
+        cards: [
+          {
+            id: "linezolid",
+            name: "Linezolid (Zyvox)",
+            category: "Oxazolidinone 類",
+            spec: "600mg IV Q12H 靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【精準處方！】Linezolid 於肺泡上皮襯液 (ELF) 濃度極高，且主要經肝臟代謝，不需依腎功能調整劑量。在腎功能不全 (eGFR 35) 的 MRSA 肺炎病患中為非常優質的首選！"
+          },
+          {
+            id: "daptomycin",
+            name: "Daptomycin (Cubicin)",
+            category: "環脂胜肽類 (Lipopeptide)",
+            spec: "6 mg/kg IV QD 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 40,
+            feedback: "【致命錯誤：PGY 最常犯錯誤 #2！】Daptomycin 會與肺部的「肺泡表面張力素 (Pulmonary Surfactant)」牢固結合而完全失去殺菌活性！因此 Daptomycin 絕對禁忌用於治療任何肺炎！"
+          },
+          {
+            id: "vancomycin",
+            name: "Vancomycin",
+            category: "糖胜肽類 (Glycopeptide)",
+            spec: "1g IV Q12H (常規劑量未配合 eGFR 減量)",
+            correct: false,
+            score: 15,
+            hpLoss: 20,
+            feedback: "【潛在腎毒性風險】Vancomycin 可打 MRSA，但病患已有急性腎功能受損 (eGFR 35)，若未調降頻率與做 AUC-guided TDM 監測，極易引發嚴重腎小管壞死。"
+          },
+          {
+            id: "ceftriaxone",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -30,
+            hpLoss: 25,
+            feedback: "【光譜不足】Ceftriaxone 無法對抗 MRSA (對 PBP2a 親和力極低)，無法控制葡萄球菌院內肺炎。"
+          }
+        ]
+      },
+      {
+        id: "case-ampc-risk",
+        title: "病房值班照會 (第 03 床)",
+        type: "外科術後照會",
+        risk: "引流液培養出菌",
+        source: "腹腔引流液",
+        avatar: "fa-solid fa-syringe",
+        summary: "60歲男性，膽道手術後第5天，主訴右上腹悶痛、體溫上升至38.4°C。腹腔引流液送檢培養長出 Enterobacter cloacae。初版藥敏測試顯示多種抗生素皆呈現 Susceptible。",
+        vitals: "BP 115/72, HR 95, BT 38.4°C",
+        labs: "WBC 14,200, Total Bilirubin 2.8",
+        renal: "eGFR 88 mL/min (正常)",
+        history: "術中曾使用 Cefazolin 作為外科預防用藥",
+        cultureStatus: "藥敏試驗初步報告",
+        cultureDetails: [
+          { text: "分離菌種：Enterobacter cloacae", highlight: "text-slate-200 font-bold" },
+          { text: "Ceftriaxone: Susceptible (MIC ≤ 1)", highlight: "text-slate-300" },
+          { text: "Ceftazidime: Susceptible (MIC ≤ 1)", highlight: "text-slate-300" },
+          { text: "Cefepime: Susceptible (MIC ≤ 1)", highlight: "text-slate-300" },
+          { text: "Meropenem: Susceptible (MIC ≤ 0.25)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】Enterobacter cloacae (AmpC 高風險菌誘導抗藥考點)",
+        cards: [
+          {
+            id: "ceftriaxone",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 25,
+            feedback: "【處方地雷：誘導 AmpC 抗藥！】雖然體外藥敏顯示 Susceptible，但 3 代頭孢菌素是強烈的 AmpC 誘導劑。治療數天內染色體 AmpC 基因會去抑制大量表現，在治療中迅速爆發抗藥導致臨床治療失敗！"
+          },
+          {
+            id: "cefepime",
+            name: "Cefepime (Maxipime)",
+            category: "第 4 代頭孢菌素",
+            spec: "2g IV Q8H 靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【最佳解答！】Enterobacter cloacae 是三大臨床顯著 AmpC 誘導高風險菌之一 (誘導率 >20%)。Cefepime 為兩性離子，穿透快速且對 AmpC 酵素相對穩定，2026 IDSA 推薦在 MIC ≤ 2 時為首選！"
+          },
+          {
+            id: "meropenem",
+            name: "Meropenem (Mepem)",
+            category: "Carbapenem 類",
+            spec: "1g IV Q8H 靜脈輸注",
+            correct: true,
+            score: 80,
+            feedback: "【臨床有效但非第一優選】Carbapenem 不被 AmpC 水解，在重症或 Cefepime MIC ≥ 4 時為首選。但此案病患生命徵象穩定且 Cefepime MIC ≤ 1，優先使用 Cefepime 能落實抗生素管理 (Carbapenem-sparing)。"
+          },
+          {
+            id: "ampicillin",
+            name: "Ampicillin",
+            category: "胺基青黴素類",
+            spec: "2g IV Q4H 靜脈輸注",
+            correct: false,
+            score: -30,
+            hpLoss: 20,
+            feedback: "【無效處方】Enterobacter 天然對 Ampicillin 耐藥，完全無治療效果。"
+          }
+        ]
+      },
+      {
+        id: "case-crab-icu",
+        title: "病房值班照會 (第 04 床)",
+        type: "加護病房照會",
+        risk: "插管後新發浸潤",
+        source: "氣管導管分泌物",
+        avatar: "fa-solid fa-hospital",
+        summary: "65歲男性，嚴重外傷插管住院第14天。出現體溫升高至 38.8°C、胸部 X 光兩側下肺浸潤加劇、氧合指數 (PaO2/FiO2) 下降至 180。抽吸痰培養長出 Acinetobacter baumannii。",
+        vitals: "BP 96/60, HR 118, PaO2/FiO2 180",
+        labs: "WBC 21,000, Procalcitonin 8.4 ng/mL",
+        renal: "eGFR 55 mL/min",
+        history: "過去兩週內曾使用過 Meropenem 共 7 天",
+        cultureStatus: "藥敏試驗結果",
+        cultureDetails: [
+          { text: "分離菌種：Acinetobacter baumannii", highlight: "text-slate-200 font-bold" },
+          { text: "Meropenem / Imipenem: Resistant (MIC > 32)", highlight: "text-rose-400" },
+          { text: "Cefepime / Tazocin: Resistant", highlight: "text-rose-400" },
+          { text: "Ciprofloxacin: Resistant", highlight: "text-rose-400" },
+          { text: "Sulbactam-durlobactam: Susceptible", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】CRAB (碳青黴烯抗藥鮑氏不動桿菌) VAP (2026 ATTACK Trial 考點)",
+        cards: [
+          {
+            id: "colistin-mono",
+            name: "Colistin (多黏菌素) 單方",
+            category: "多黏菌素類",
+            spec: "CMS 5mg/kg/日 分次靜脈滴注",
+            correct: false,
+            score: 20,
+            hpLoss: 20,
+            feedback: "【已退居後線且腎毒性極大】在 2026 IDSA 指引中，Colistin 因腎毒性顯著偏高且臨床療效不如 Sulbactam-durlobactam，已退居後線；且單藥使用極易迅速篩選出抗藥株。"
+          },
+          {
+            id: "meropenem-mono",
+            name: "Meropenem (高劑量延長輸注)",
+            category: "Carbapenem 類",
+            spec: "2g IV Q8H 延長輸注 3 小時",
+            correct: false,
+            score: -30,
+            hpLoss: 25,
+            feedback: "【無效處方】CRAB 帶有強效 OXA 碳青黴烯酶，IDSA 明確反對在 CRAB 感染中單獨使用 Carbapenem，單藥必致失敗！"
+          },
+          {
+            id: "sulbactam-durlobactam",
+            name: "Sulbactam-durlobactam (Xacduro) + Carbapenem",
+            category: "新型抗藥菌專用複方",
+            spec: "1g/1g IV Q6H 合併 Carbapenem 骨幹",
+            correct: true,
+            score: 100,
+            feedback: "【精準掌握 2026 最新指引！】ATTACK trial (Lancet ID 2023) 證實：Sulbactam-durlobactam + Carbapenem 治療 CRAB 其治癒率與安全性皆顯著優於傳統 Colistin，已獲 2026 IDSA 正式列為 CRAB 第一首選！"
+          },
+          {
+            id: "ceftriaxone",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【完全無效】3代頭孢菌素對 Acinetobacter baumannii 完全無抗菌活性。"
+          }
+        ]
+      },
+      {
+        id: "case-cre-mbl",
+        title: "病房值班照會 (第 05 床)",
+        type: "感染科照會",
+        risk: "外院轉介收治",
+        source: "泌尿系統相關",
+        avatar: "fa-solid fa-passport",
+        summary: "70歲男性，三週前於東南亞接受攝護腺切除手術，返台後突發高燒(38.9°C)與腰痛。血液與尿液培養均長出 Klebsiella pneumoniae，對所有 Carbapenem 均耐藥。實驗室確認型別為 Metallo-β-lactamase (NDM-1)。",
+        vitals: "BP 102/65, HR 105, BT 38.9°C",
+        labs: "WBC 17,500, Cr 1.6",
+        renal: "eGFR 44 mL/min",
+        history: "近期頻繁接受多種廣效抗生素治療",
+        cultureStatus: "碳青黴烯酶型別分析",
+        cultureDetails: [
+          { text: "菌種：Klebsiella pneumoniae (CRE)", highlight: "text-slate-200 font-bold" },
+          { text: "Carbapenemase 表型：Class B 金屬酶 (NDM-1)", highlight: "text-rose-400" },
+          { text: "Ceftazidime-avibactam (單獨): Resistant", highlight: "text-slate-300" },
+          { text: "Meropenem-vaborbactam: Resistant", highlight: "text-slate-300" },
+          { text: "Aztreonam: 本身不受金屬水解影響", highlight: "text-slate-400" }
+        ],
+        revealedInfo: "【診斷解析】CRE (Class B NDM 金屬酶) 感染 (Aztreonam + Avibactam 配對考點)",
+        cards: [
+          {
+            id: "zavicefta-alone",
+            name: "Ceftazidime-avibactam (Zavicefta)",
+            category: "新型頭孢/抑制劑複方",
+            spec: "2.5g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【觀念地雷！】Avibactam 能抑制 Class A (KPC) 與 Class D (OXA-48)，但對 Class B 金屬酶 (NDM/VIM/IMP) 完全無效！單獨使用會直接被金屬酶水解分解。"
+          },
+          {
+            id: "zavicefta-aztreonam",
+            name: "Ceftazidime-avibactam + Aztreonam",
+            category: "雙抗生素併用方案",
+            spec: "Zavicefta 2.5g Q8H + Aztreonam 2g Q8H",
+            correct: true,
+            score: 100,
+            feedback: "【教科書級的機轉配對！】NDM 等 Class B 金屬酶唯獨不水解 Aztreonam；然而該類超級細菌往往同時共帶 ESBL/AmpC 酵素破壞 Aztreonam。因此合併 Avibactam (Zavicefta) 保護 Aztreonam，是國際對付 NDM 的標準配對方案！"
+          },
+          {
+            id: "vaborbactam",
+            name: "Meropenem-vaborbactam (Vabomere)",
+            category: "Carbapenem/新抑制劑",
+            spec: "2g/2g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -30,
+            hpLoss: 20,
+            feedback: "【抑制劑無效】Vaborbactam 專門抑制 Class A (KPC)，對 Class B (NDM) 金屬酶毫無抑制效果。"
+          },
+          {
+            id: "cefazolin",
+            name: "Cefazolin (Cefa)",
+            category: "第 1 代頭孢菌素",
+            spec: "1g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 35,
+            feedback: "【完全無效】1代頭孢菌素對抗藥性腸桿菌目與 CRE 完全不具備抗菌活性。"
+          }
+        ]
+      },
+      {
+        id: "case-nsti-shock",
+        title: "病房值班照會 (第 06 床)",
+        type: "急診會診評估",
+        risk: "病程進展極迅速",
+        source: "深部軟組織",
+        avatar: "fa-solid fa-triangle-exclamation",
+        summary: "54歲女性，左小腿紅腫，主訴劇烈疼痛且疼痛程度與外觀不成比例。數小時內局部皮膚出現紫黑瘀斑及血性水泡，血壓持續下探。LRINEC 分數為 8 分。",
+        vitals: "BP 82/48, HR 135, BT 39.5°C",
+        labs: "WBC 24,000 (Band 20%), CRP 260, Na 128",
+        renal: "eGFR 40 mL/min, 凝血異常 (INR 1.6)",
+        history: "一天前曾有輕微小腿擦傷史",
+        cultureStatus: "檢體採集中",
+        cultureDetails: [
+          { text: "臨床表現：疼痛程度與紅腫外觀嚴重不成比例", highlight: "text-slate-300" },
+          { text: "局部皮損：見血性水泡與微小捻髮音 (Crepitus)", highlight: "text-slate-300" },
+          { text: "LRINEC 評分：8 分 (高度疑似壞死性軟組織感染)", highlight: "text-slate-200 font-bold" }
+        ],
+        revealedInfo: "【診斷解析】壞死性筋膜炎 (NSTI) 合併毒素性休克 (Source Control 優先與 Clindamycin 抑制毒素考點)",
+        cards: [
+          {
+            id: "antibiotic-alone-cefa",
+            name: "Cefazolin (單方保守觀察)",
+            category: "第 1 代頭孢菌素",
+            spec: "2g IV Q8H 靜脈輸注觀察",
+            correct: false,
+            score: -70,
+            hpLoss: 50,
+            feedback: "【致命醫療疏失！】壞死性軟組織感染中，血管已發生血栓微壞死，單純打抗生素根本無法穿透壞死組織！延遲手術清創每小時死亡率都在倍增！"
+          },
+          {
+            id: "tazocin-alone",
+            name: "Piperacillin/Tazobactam (單用)",
+            category: "青黴素/抑制劑複合劑",
+            spec: "4.5g IV Q8H 靜脈輸注",
+            correct: false,
+            score: 35,
+            hpLoss: 25,
+            feedback: "【處置不足】缺少了最關鍵的外科清創照會，且未加上能阻斷細菌核糖體產製超抗原外毒素的 Clindamycin。"
+          },
+          {
+            id: "surgery-vanco-tazo-clinda",
+            name: "緊急外科清創照會 + Vanco + Tazocin + Clindamycin",
+            category: "外科手術引流處置",
+            spec: "清創手術 + 靜脈輸注涵蓋 GPC/GNB/厭氧及毒素",
+            correct: true,
+            score: 100,
+            feedback: "【滿分救命決策！】壞死性筋膜炎 (NSTI) 是外科急症，手術清創是唯一挽救生命的根本手段！抗生素需覆蓋 GPC、GNB 與厭氧菌；加用 Clindamycin 則是為了抑制鏈球菌外毒素與超抗原的合成 (即使體外藥敏抗藥仍具抑制外毒素效益)！"
+          },
+          {
+            id: "doxycycline",
+            name: "Doxycycline",
+            category: "四環黴素類",
+            spec: "100mg PO BID 口服給藥",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【嚴重錯誤】病患已處於低血壓休克狀態，口服吸收不可預測，且殺菌廣度與深度完全不足。"
+          }
+        ]
+      },
+      {
+        id: "case-asb-trap",
+        title: "病房值班照會 (第 07 床)",
+        type: "一般病房照會",
+        risk: "長期留置管路照護",
+        source: "尿液常規檢驗",
+        avatar: "fa-solid fa-clipboard-check",
+        summary: "80歲男性，腦中風長期臥床，已留置導尿管半年。今日神智如常、胃口良好、無發燒、無腹痛或肋脊角敲痛。常規驗尿顯示：WBC >100/HPF，培養長出 Pseudomonas aeruginosa >10^5 CFU/mL。",
+        vitals: "BP 124/76, HR 72, BT 36.8°C (平穩正常)",
+        labs: "WBC 6,400 (正常), CRP 3.2 (正常)",
+        renal: "eGFR 60 mL/min",
+        history: "半年來持續置放尿管，無排尿自覺不適",
+        cultureStatus: "尿液培養檢驗回報",
+        cultureDetails: [
+          { text: "檢體種類：長期留置導尿管尿液", highlight: "text-slate-300" },
+          { text: "分離菌種：Pseudomonas aeruginosa", highlight: "text-slate-200 font-bold" },
+          { text: "菌落計數：> 10^5 CFU/mL", highlight: "text-slate-300" },
+          { text: "白血球鏡檢：WBC > 100 / HPF (膿尿)", highlight: "text-slate-300" },
+          { text: "臨床表現：無發燒、無腰痛、生命徵象完全正常", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】無症狀菌尿 Asymptomatic Bacteriuria (PGY 最常犯錯誤 #1 考點)",
+        cards: [
+          {
+            id: "meropenem-for-psa",
+            name: "Meropenem (Mepem)",
+            category: "Carbapenem 類",
+            spec: "1g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 20,
+            feedback: "【抗生素濫用！】針對無症狀菌尿投予碳青黴烯只會將病患體內的正常菌叢完全消滅，進而篩選出如嗜麥芽窄食單胞菌 (S. maltophilia) 等超難治超級細菌！"
+          },
+          {
+            id: "no-antibiotics",
+            name: "保守追蹤處置 (不給予抗生素，評估更換管路)",
+            category: "病房照護處置",
+            spec: "暫不給抗生素，維持衛教並密切臨床追蹤",
+            correct: true,
+            score: 100,
+            feedback: "【觀念一流！】這是 PGY 最常犯錯誤排行榜的第一名！長期留置尿管者幾乎 100% 存在細菌移生與白血球浸潤。病患無任何全身性發燒或器官感染徵兆時，給予抗生素不僅毫無益處，反會誘發嚴重抗藥菌！唯二需治療 ASB 的例外只有：孕婦、即將接受黏膜出血之侵入性泌尿處置者。"
+          },
+          {
+            id: "ciprofloxacin-psa",
+            name: "Ciprofloxacin (Ciproxin)",
+            category: "Fluoroquinolone 類",
+            spec: "500mg PO BID x 14天",
+            correct: false,
+            score: -40,
+            hpLoss: 15,
+            feedback: "【過度治療】導尿管持續置放時，管壁生物膜 (Biofilm) 上的細菌是無法被抗生素殺乾淨的，徒增藥物副作用與抗藥風險。"
+          },
+          {
+            id: "ceftazidime",
+            name: "Ceftazidime (Fortum)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -30,
+            hpLoss: 15,
+            feedback: "【無適應症】病患缺乏感染臨床表徵，不應使用抗綠膿桿菌抗生素。"
+          }
+        ]
+      },
+      {
+        id: "case-candida-uti",
+        title: "病房值班照會 (第 08 床)",
+        type: "專科病房照會",
+        risk: "曾使用廣效抗生素",
+        source: "膀胱與下泌尿道",
+        avatar: "fa-solid fa-person",
+        summary: "75歲女性糖尿病患，近期因腹膜炎接受廣效抗生素治療後出院。近日出現解尿燒灼刺痛、頻尿、恥骨上壓痛與體溫升高(38.2°C)。尿液離心鏡檢見多量白血球與芽生酵母菌。",
+        vitals: "BP 130/80, HR 88, BT 38.2°C",
+        labs: "WBC 12,300, CRP 28",
+        renal: "eGFR 65 mL/min",
+        history: "近期曾使用過兩週廣效頭孢抗生素",
+        cultureStatus: "微生物檢驗回報",
+        cultureDetails: [
+          { text: "檢體來源：膀胱導尿尿液", highlight: "text-slate-300" },
+          { text: "鏡檢發現：多量白血球、見芽生菌體 (Yeast cells)", highlight: "text-slate-300" },
+          { text: "微生物鑑定：Candida albicans (白色念珠菌)", highlight: "text-slate-200 font-bold" },
+          { text: "藥敏試驗：Fluconazole Susceptible", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】Candida albicans 泌尿道感染 (Echinocandin 尿中濃度極低盲點考點)",
+        cards: [
+          {
+            id: "caspofungin",
+            name: "Caspofungin (Cancidas)",
+            category: "Echinocandin 類抗黴菌藥",
+            spec: "首劑 70mg 後 50mg IV QD 靜脈輸注",
+            correct: false,
+            score: -45,
+            hpLoss: 30,
+            feedback: "【重大盲點！】Echinocandins (如 Caspofungin、Micafungin) 雖然在念珠菌血症是第一線首選，但其主要經肝臟代謝，在尿液中原型排出率極低 (<2%)！在尿路中無法達到有效殺菌濃度，絕不可用於念珠菌 UTI！"
+          },
+          {
+            id: "voriconazole",
+            name: "Voriconazole (Vfend)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "200mg PO/IV Q12H",
+            correct: false,
+            score: -20,
+            hpLoss: 15,
+            feedback: "【不合適】Voriconazole 同樣幾乎不以活性原型由尿液排泄 (<2%)，在泌尿道感染中效果極差。"
+          },
+          {
+            id: "fluconazole",
+            name: "Fluconazole (Diflucan)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "200-400mg PO/IV QD · 經腎排泄",
+            correct: true,
+            score: 100,
+            feedback: "【處方精準！】Fluconazole 約有 80% 以原型經腎臟排泄至尿液中，尿中藥物濃度極高，為 Candida albicans 泌尿道感染的絕對首選！"
+          },
+          {
+            id: "vancomycin",
+            name: "Vancomycin",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 25,
+            feedback: "【完全無效】Vancomycin 是抑制細菌細胞壁胜肽聚醣的抗細菌藥，對真菌（念珠菌）毫無殺滅作用！"
+          }
+        ]
+      },
+      {
+        id: "case-mssa-deescalation",
+        title: "病房值班照會 (第 09 床)",
+        type: "常規治療追蹤",
+        risk: "血液培養結果追蹤",
+        source: "先前導管相關感染",
+        avatar: "fa-solid fa-code-merge",
+        summary: "58歲男性，蜂窩性組織炎併寒顫入院。入院時已拔除周邊導管並經驗性給予 Vancomycin。治療至第3天病患退燒、發炎指標改善。今日正式血液藥敏報告出爐。",
+        vitals: "BP 120/75, HR 78, BT 37.0°C (症狀好轉)",
+        labs: "WBC 從 16,000 降至 8,500",
+        renal: "eGFR 80 mL/min (正常)",
+        history: "已使用 Vancomycin 滿 72 小時",
+        cultureStatus: "正式微生物藥敏報告",
+        cultureDetails: [
+          { text: "檢體來源：入院血液培養", highlight: "text-slate-300" },
+          { text: "鑑定菌種：Staphylococcus aureus", highlight: "text-slate-200 font-bold" },
+          { text: "Oxacillin: Susceptible (MIC ≤ 0.25)", highlight: "text-slate-300" },
+          { text: "Vancomycin: Susceptible (MIC = 1)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】MSSA 菌血症降階評估 (PGY 犯錯 #7：MSSA 續用 Vancomycin 殺菌較差考點)",
+        cards: [
+          {
+            id: "continue-vancomycin",
+            name: "Vancomycin (維持原劑量續用)",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注續用",
+            correct: false,
+            score: -35,
+            hpLoss: 20,
+            feedback: "【常見錯誤：PGY 犯錯 #7！】初學者常以為「報告標註 S 就可以不換藥」，但在 MSSA 治療中，β-lactam 的殺菌力與臨床預後全面優於 Vancomycin，且能避免不必要的 Vancomycin 腎毒性！"
+          },
+          {
+            id: "cefazolin-oxacillin",
+            name: "Cefazolin (或 Oxacillin)",
+            category: "第 1 代頭孢菌素",
+            spec: "Cefazolin 2g IV Q8H (或 Oxacillin 2g IV Q4H)",
+            correct: true,
+            score: 100,
+            feedback: "【優異的降階決策！】雖然藥敏報告顯示 Vancomycin 也是 Susceptible，但文獻已充分證實：Vancomycin 對 MSSA 的殺菌速率顯著慢於 β-lactams。MSSA 菌血症若未即時降階續用 Vancomycin，死亡率與復發率顯著高於 Cefazolin/Oxacillin！"
+          },
+          {
+            id: "escalate-meropenem",
+            name: "Meropenem (Mepem)",
+            category: "Carbapenem 類",
+            spec: "1g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 20,
+            feedback: "【不合理升階】病況已顯著改善且菌種明確，升階使用碳青黴烯嚴重違背抗生素管理原則。"
+          },
+          {
+            id: "doxycycline-po",
+            name: "Doxycycline",
+            category: "四環黴素類",
+            spec: "100mg PO BID 口服出院",
+            correct: false,
+            score: -40,
+            hpLoss: 25,
+            feedback: "【危險】金黃色葡萄球菌菌血症 (SAB) 具有極高心內膜炎與轉移性深部感染風險，早期絕對不可貿然換成口服抑菌劑！"
+          }
+        ]
+      },
+      {
+        id: "case-tigecycline-trap",
+        title: "病房值班照會 (第 10 床)",
+        type: "重症感染照會",
+        risk: "抗藥菌株移生",
+        source: "血流與泌尿系統",
+        avatar: "fa-solid fa-droplet",
+        summary: "69歲男性，置放導尿管後出現寒顫高燒、血壓偏低。血液與尿液培養均長出 Klebsiella pneumoniae。病歷記錄有住院醫師提議：「既然是院內多重抗藥株，是否直接使用超廣效的 Tigecycline？」",
+        vitals: "BP 90/58, HR 112, BT 39.2°C",
+        labs: "WBC 18,200, Cr 1.4",
+        renal: "eGFR 50 mL/min",
+        history: "長期使用導尿管與呼吸器",
+        cultureStatus: "檢驗報告與藥敏數據",
+        cultureDetails: [
+          { text: "分離菌種：Klebsiella pneumoniae", highlight: "text-slate-200 font-bold" },
+          { text: "檢體培養：周邊血液 (+) 且 導尿管尿液 (+)", highlight: "text-slate-300" },
+          { text: "體外藥敏：Tigecycline 體外測試 MIC ≤ 1 (S)", highlight: "text-slate-300" },
+          { text: "藥動學特徵：分佈體積極大 (Vd > 10 L/kg)", highlight: "text-slate-400" }
+        ],
+        revealedInfo: "【診斷解析】泌尿道來源之菌血症 (Tigecycline「老虎怕水」盲點考點)",
+        cards: [
+          {
+            id: "use-tigecycline-alone",
+            name: "Tigecycline (單方使用)",
+            category: "甘胺醯環素類",
+            spec: "首劑 100mg 後 50mg IV Q12H",
+            correct: false,
+            score: -60,
+            hpLoss: 45,
+            feedback: "【處方地雷：PGY 犯錯 #3！】Tigecycline 在血液與尿液中的濃度不足以殺滅細菌。單用於菌血症將導致持續性感染與死亡率顯著上升！FDA 已對此發布黑框警示。"
+          },
+          {
+            id: "reject-tige-use-carbapenem",
+            name: "Meropenem (或依藥敏選用其他穿透良好藥物)",
+            category: "Carbapenem 類",
+            spec: "1g IV Q8H 靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【卓越的臨床洞察！】「老虎怕水」—— Tigecycline 雖然組織分佈極廣，但給藥後血中濃度極低 (Cmax 僅約 0.6 mg/L)，且尿液排泄比例極少。因此 Tigecycline 絕對不可單獨用於治療菌血症 (BSI) 與泌尿道感染 (UTI)！"
+          },
+          {
+            id: "add-metronidazole",
+            name: "Metronidazole",
+            category: "硝基咪唑類",
+            spec: "500mg IV Q8H 靜脈輸注",
+            correct: false,
+            score: -20,
+            hpLoss: 10,
+            feedback: "【對不上病原】純 Klebsiella pneumoniae 感染加用 Metronidazole 毫無額外治療效果。"
+          },
+          {
+            id: "daptomycin-for-gnb",
+            name: "Daptomycin (Cubicin)",
+            category: "環脂胜肽類",
+            spec: "8 mg/kg IV QD 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【機轉錯誤】Daptomycin 對革蘭氏陰性桿菌 (GNB) 完全不具抗菌活性。"
+          }
+        ]
+      },
+      {
+        id: "case-cystitis-fq-sparing",
+        title: "病房值班照會 (第 11 床)",
+        type: "門診初診照會",
+        risk: "年輕女性急性症狀",
+        source: "下泌尿道",
+        avatar: "fa-solid fa-person-dress",
+        summary: "26歲女性，無任何慢性病，主訴昨天起解尿劇烈刺痛、急尿、頻尿伴隨下腹悶脹。體溫 36.8°C，無腰痛或發燒。驗尿顯示 WBC 30-50/HPF，尿試紙白血球酯酶(+)、亞硝酸鹽(+)。",
+        vitals: "BP 110/70, HR 74, BT 36.8°C",
+        labs: "Urine routine: WBC 30-50/HPF, RBC 5-10/HPF",
+        renal: "eGFR > 90 mL/min",
+        history: "近半年未曾使用抗生素，無過敏史",
+        cultureStatus: "檢驗初步確認",
+        cultureDetails: [
+          { text: "檢體來源：中段小便 (Midstream urine)", highlight: "text-slate-300" },
+          { text: "初步診斷：急性單純性膀胱炎 (Uncomplicated Cystitis)", highlight: "text-slate-200 font-bold" },
+          { text: "常見病原：Escherichia coli (>80%)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】急性單純性膀胱炎 (2026 短療程與 FQ-Sparing 避免黑框警示考點)",
+        cards: [
+          {
+            id: "oral-fosfomycin-single",
+            name: "Fosfomycin (口服單劑)",
+            category: "環氧化物類抗生素",
+            spec: "3g PO 單劑溶於冷水服用 (或 Nitrofurantoin 5天)",
+            correct: true,
+            score: 100,
+            feedback: "【精準遵循 2026 指引！】單純性膀胱炎首選為口服 Fosfomycin 3g 單劑或 Nitrofurantoin 5天。尿中殺菌濃度高且幾乎無交叉抗藥。FDA 已對 Fluoroquinolone 發布多重黑框警示，明令不可在有其他選擇時用於單純膀胱炎！"
+          },
+          {
+            id: "oral-ciprofloxacin-7d",
+            name: "Ciprofloxacin (Ciproxin)",
+            category: "Fluoroquinolone 類",
+            spec: "500mg PO BID x 7天",
+            correct: false,
+            score: -35,
+            hpLoss: 20,
+            feedback: "【違背最新指引】FDA 與 IDSA 明確禁止在單純性膀胱炎中首選 Fluoroquinolones (因肌腱斷裂、主動脈剝離、QTc 延長風險)！此外 7 天療程過長，造成抗藥性篩選。"
+          },
+          {
+            id: "iv-ceftriaxone-admit",
+            name: "Ceftriaxone (住院靜脈輸注)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 20,
+            feedback: "【醫療過度】單純性膀胱炎無發燒或全身中毒症狀，完全不需住院注射廣效抗生素。"
+          },
+          {
+            id: "oral-doxycycline",
+            name: "Doxycycline",
+            category: "四環黴素類",
+            spec: "100mg PO BID x 10天",
+            correct: false,
+            score: -25,
+            hpLoss: 15,
+            feedback: "【效果不佳】Doxycycline 在尿液中的排泄濃度不足以有效治療大腸桿菌引起的膀胱炎。"
+          }
+        ]
+      },
+      {
+        id: "case-meningitis-listeria",
+        title: "病房值班照會 (第 12 床)",
+        type: "急診收治照會",
+        risk: "中樞神經感染急症",
+        source: "腦脊髓液",
+        avatar: "fa-solid fa-head-side-virus",
+        summary: "62歲男性，慢性糖尿病合併酗酒病史。因發燒、頭痛、頸部僵硬與意識混亂送急診。腰椎穿刺腦脊髓液 (CSF)：混濁、壓力 280 mmH2O、WBC 1,800/uL (多核球佔比 88%)、蛋白質升高、葡萄糖比值低。",
+        vitals: "BP 132/84, HR 102, BT 38.8°C",
+        labs: "CSF: WBC 1,800, Glu 22 mg/dL (Blood Glu 140)",
+        renal: "eGFR 70 mL/min",
+        history: "常食用生食與冷藏乳製品",
+        cultureStatus: "CSF 急件檢驗",
+        cultureDetails: [
+          { text: "外觀：混濁，開壓力 280 mmH2O", highlight: "text-slate-300" },
+          { text: "生化：Protein 190 mg/dL, CSF/Blood Glucose < 0.2", highlight: "text-slate-300" },
+          { text: "病患特徵：年齡 ≥ 50 歲且具酗酒病史", highlight: "text-slate-200 font-bold" }
+        ],
+        revealedInfo: "【診斷解析】成人化膿性腦膜炎 (≥50歲族群 Listeria 盲點與 Ampicillin 考點)",
+        cards: [
+          {
+            id: "vanco-ceftriaxone-alone",
+            name: "Vancomycin + Ceftriaxone",
+            category: "雙聯靜脈抗生素",
+            spec: "Vancomycin 1g Q12H + Ceftriaxone 2g Q12H",
+            correct: false,
+            score: 10,
+            hpLoss: 25,
+            feedback: "【漏掉致命病原！】年齡 ≥ 50 歲或免疫低下族群，李斯特菌 (Listeria monocytogenes) 發生率顯著上升！重點考點：所有 Cephalosporins (包含第3、4、5代) 對 Listeria 通通完全無效！必須額外加上 Ampicillin！"
+          },
+          {
+            id: "vanco-ceftriaxone-ampicillin",
+            name: "Vancomycin + Ceftriaxone + Ampicillin",
+            category: "三聯靜脈抗生素",
+            spec: "Vancomycin 1g Q12H + Ceftriaxone 2g Q12H + Ampicillin 2g Q4H",
+            correct: true,
+            score: 100,
+            feedback: "【完全正確！】年齡 ≥ 50 歲之成人細菌性腦膜炎，指引規範經驗性用藥必須涵蓋 Listeria monocytogenes。由於所有頭孢子素皆打不到李斯特菌，因此必須加上 Ampicillin (2g IV Q4H)！"
+          },
+          {
+            id: "ceftriaxone-mono",
+            name: "Ceftriaxone (單方常規劑量)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -45,
+            hpLoss: 35,
+            feedback: "【處方雙重錯誤】腦膜炎必須使用 Q12H 的 CNS 穿透劑量；且未涵蓋 PRSP 肺炎鏈球菌 (需加 Vanco) 與 Listeria。"
+          },
+          {
+            id: "meropenem-valproate",
+            name: "Cefazolin (Cefa)",
+            category: "第 1 代頭孢菌素",
+            spec: "2g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -60,
+            hpLoss: 45,
+            feedback: "【致命錯誤】Cefazolin 無法有效穿透血腦屏障 (Blood-Brain Barrier)，不可用於治療腦膜炎！"
+          }
+        ]
+      },
+      {
+        id: "case-stop-it-trial",
+        title: "病房值班照會 (第 13 床)",
+        type: "外科術後常規照會",
+        risk: "術後療程天數評估",
+        source: "腹腔感染控制後",
+        avatar: "fa-solid fa-notes-medical",
+        summary: "45歲男性，因闌尾破裂穿孔合併局限性腹膜炎接受腹腔鏡闌尾切除與充分腹腔沖洗。術後使用 Flomoxef 治療至第 4 天。病患已排氣進食、傷口無發紅、體溫正常(36.6°C)、WBC 降至 6,200。",
+        vitals: "BP 118/76, HR 70, BT 36.6°C (完全正常)",
+        labs: "WBC 6,200 (正常), CRP 12 (大幅下降)",
+        renal: "eGFR 95 mL/min",
+        history: "已接受滿 4 天之抗生素治療，手術引流徹底",
+        cultureStatus: "術中檢體培養結果",
+        cultureDetails: [
+          { text: "檢體來源：術中腹膜沖洗液", highlight: "text-slate-300" },
+          { text: "培養結果：混合腸道菌叢 (E. coli 及厭氧菌)", highlight: "text-slate-300" },
+          { text: "外科病歷：感染源控制徹底 (Adequate source control)", highlight: "text-slate-200 font-bold" }
+        ],
+        revealedInfo: "【診斷解析】腹內感染術後評估 (STOP-IT Trial：Source control 後 4 天療程足矣考點)",
+        cards: [
+          {
+            id: "continue-to-14d",
+            name: "Flomoxef (續用至滿 14 天)",
+            category: "第 2.5 代頭孢菌素",
+            spec: "1g IV Q8H 繼續使用至滿 14 天",
+            correct: false,
+            score: -35,
+            hpLoss: 15,
+            feedback: "【過時觀念】著名 STOP-IT trial (NEJM 2015) 證實：腹腔內感染在完成良好的手術/引流 (Source control) 之後，抗生素使用 4 天即可停藥，延長至 10-14 天不僅沒有額外好處，反而顯著增加抗藥菌與 C. difficile 感染！"
+          },
+          {
+            id: "stop-antibiotics-now",
+            name: "臨床評估停藥處置 (即日起停用抗生素)",
+            category: "病房照護處置",
+            spec: "停用抗生素，安排出院並門診追蹤",
+            correct: true,
+            score: 100,
+            feedback: "【觀念一流！】STOP-IT trial (NEJM 2015) 奠定了腹內感染短療程基準：在充分 source control 後，4 天療程死亡率與復發率不劣於 10 天對照組。此時停藥正是抗生素管理 (AMS) 的卓越展現！"
+          },
+          {
+            id: "escalate-to-tazocin",
+            name: "Piperacillin/Tazobactam (Tazocin)",
+            category: "青黴素/抑制劑複合劑",
+            spec: "4.5g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 25,
+            feedback: "【錯誤決策】病患臨床反應極佳、發炎指數正常，毫無任何升階的適應症。"
+          },
+          {
+            id: "add-metronidazole",
+            name: "Flomoxef + Metronidazole",
+            category: "雙抗生素併用方案",
+            spec: "Flomoxef 1g Q8H + Metronidazole 500mg Q8H",
+            correct: false,
+            score: -30,
+            hpLoss: 10,
+            feedback: "【重複覆蓋】Flomoxef (2.5代頭孢) 本身即具有極強的厭氧菌覆蓋能力，外加 Metronidazole 完全是多餘的浪費與毒性負擔。"
+          }
+        ]
+      },
+      {
+        id: "case-stenotrophomonas",
+        title: "病房值班照會 (第 14 床)",
+        type: "加護病房照會",
+        risk: "長期碳青黴烯暴露",
+        source: "下呼吸道侵犯",
+        avatar: "fa-solid fa-virus",
+        summary: "71歲男性，因重症吸入性肺炎插管，已使用 Meropenem 滿 12 天。昨日再度發燒至 38.7°C、氣管抽吸膿痰激增、胸部 X 光出現新實質浸潤。抽吸痰培養長出 Stenotrophomonas maltophilia 大量生長。",
+        vitals: "BP 110/68, HR 105, BT 38.7°C",
+        labs: "WBC 17,200, PaO2/FiO2 195",
+        renal: "eGFR 52 mL/min",
+        history: "過去兩週持續暴露於 Meropenem 治療",
+        cultureStatus: "呼吸道檢體微生物報告",
+        cultureDetails: [
+          { text: "分離菌種：Stenotrophomonas maltophilia (嗜麥芽窄食單胞菌)", highlight: "text-slate-200 font-bold" },
+          { text: "Meropenem / Imipenem: 耐藥 (天然帶有 L1 金屬酶)", highlight: "text-rose-400" },
+          { text: "臨床表現：新浸潤、發燒、痰量與膿性顯著增加", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】Stenotrophomonas maltophilia 呼吸道感染 (天生 Carbapenem 抗藥與 Baktar 考點)",
+        cards: [
+          {
+            id: "increase-meropenem",
+            name: "Meropenem (加量延長輸注)",
+            category: "Carbapenem 類",
+            spec: "2g IV Q8H 延長輸注 3 小時",
+            correct: false,
+            score: -50,
+            hpLoss: 35,
+            feedback: "【觀念地雷！】S. maltophilia 天生具有染色體 L1 metallo-β-lactamase，對所有 Carbapenems 天然 100% 抗藥！碳青黴烯用得越多，S. maltophilia 越容易被篩選出來！"
+          },
+          {
+            id: "baktar-combination",
+            name: "Baktar (TMP-SMX) (± 合併 Minocycline)",
+            category: "磺胺複合劑處方",
+            spec: "依體重計算 TMP 劑量 10-15mg/kg/日 分次輸注",
+            correct: true,
+            score: 100,
+            feedback: "【精準用藥！】Baktar (TMP-SMX) 是 Stenotrophomonas maltophilia 的首選基石！2026 IDSA 建議重症時可採用 Baktar 合併 Minocycline 或 Levofloxacin。"
+          },
+          {
+            id: "colistin-monotherapy",
+            name: "Colistin (多黏菌素)",
+            category: "多黏菌素類",
+            spec: "CMS 5mg/kg/日 分次靜脈滴注",
+            correct: false,
+            score: -20,
+            hpLoss: 20,
+            feedback: "【效果不可靠】S. maltophilia 對 Polymyxin 的敏感度極不穩定且臨床失敗率高，不應單方依賴。"
+          },
+          {
+            id: "ceftriaxone",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 25,
+            feedback: "【無效處方】S. maltophilia 同時帶有 L2 廣效絲胺酸酵素，對大部分傳統頭孢菌素皆抗藥。"
+          }
+        ]
+      },
+      {
+        id: "case-cefepime-neurotoxicity",
+        title: "病房值班照會 (第 15 床)",
+        type: "急性神智變化照會",
+        risk: "高齡腎衰竭用藥",
+        source: "中樞神經/藥物不良反應",
+        avatar: "fa-solid fa-brain",
+        summary: "78歲女性，嚴重慢性腎病 (eGFR 18 mL/min)，因複雜性綠膿桿菌尿路感染接受 Cefepime 2g Q8H 注射已第 4 天。今晨被護理師發現嗜睡、叫不醒、伴隨四肢肌躍型抽搐 (myoclonus)。腦部 CT 無急性出血，腦電圖顯示非抽搐性癲癇重積狀態 (NCSE)。",
+        vitals: "BP 138/80, HR 82, GCS E2V2M4 (譫妄昏迷)",
+        labs: "BUN 65, Cr 3.4 (eGFR 18 mL/min)",
+        renal: "重度腎功能不全 (未進行劑量調整)",
+        history: "使用 Cefepime 2g Q8H (全劑量未減量)",
+        cultureStatus: "用藥安全回顧",
+        cultureDetails: [
+          { text: "當前處方：Cefepime 2g IV Q8H (正常人劑量)", highlight: "text-rose-400" },
+          { text: "腎功能：eGFR 18 mL/min (需減量為 1g Q24H)", highlight: "text-rose-400" },
+          { text: "神經學：肌躍型抽搐 (Myoclonus)、腦電圖呈現三相波與 NCSE", highlight: "text-slate-200 font-bold" }
+        ],
+        revealedInfo: "【診斷解析】Cefepime-induced Neurotoxicity 非抽搐性癲癇 (PGY 十大常犯錯誤加碼警訊)",
+        cards: [
+          {
+            id: "stop-cefepime-adjust",
+            name: "停用 Cefepime (或大幅減量) + 給予抗癲癇治療",
+            category: "臨床用藥調整處置",
+            spec: "即刻停藥，給予抗癲癇藥並監測神經狀態",
+            correct: true,
+            score: 100,
+            feedback: "【救人一命！】Cefepime 具有 GABA-A 受體拮抗作用。腎功能不全 (eGFR <50) 若未依指引減量，血中與腦脊髓液濃度累積，極易誘發 Cefepime 神經毒性 (CIN)，表現為意識障礙、肌躍症、非抽搐性癲癇重積 (NCSE)！停藥後通常數天內可完全恢復。"
+          },
+          {
+            id: "escalate-to-meropenem",
+            name: "Cefepime (加量使用)",
+            category: "第 4 代頭孢菌素",
+            spec: "2g IV Q6H 靜脈輸注",
+            correct: false,
+            score: -70,
+            hpLoss: 50,
+            feedback: "【致命醫療疏失！】這不是感染惡化，而是 Cefepime 蓄積中毒！進一步加量將導致重度昏迷與不可逆神經損傷！"
+          },
+          {
+            id: "add-vancomycin",
+            name: "Vancomycin",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -30,
+            hpLoss: 20,
+            feedback: "【加重負擔】病患主要問題為 Cefepime 中毒，外加 Vancomycin 不僅無法解決 NCSE，反進一步摧毀剩餘的微弱腎功能。"
+          },
+          {
+            id: "antipsychotic-alone",
+            name: "Haloperidol",
+            category: "抗精神病藥物",
+            spec: "5mg IM 肌肉注射",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【危險】Haldol 會降低癲癇門檻，在未停用 Cefepime 的情況下可能誘發更嚴重的癲癇發作。"
+          }
+        ]
+      },
+      {
+        id: "case-depakine-carbapenem",
+        title: "病房值班照會 (第 16 床)",
+        type: "臨床藥理照會",
+        risk: "重大藥物交互作用",
+        source: "腹腔/神經共病",
+        avatar: "fa-solid fa-pills",
+        summary: "52歲男性，有腦外傷後頑固性癲癇病史，長期規律口服 Valproic acid (Depakine 500mg TID)，過去兩年癲癇控制良好無發作。今日因院內腹膜炎，住院醫師提議開立 Meropenem 1g IV Q8H 治療。",
+        vitals: "BP 120/75, HR 88, BT 38.2°C",
+        labs: "Depakine 血中濃度：75 ug/mL (治療窗內 50-100)",
+        renal: "eGFR 80 mL/min (正常)",
+        history: "長期使用 Valproic acid (Depakine) 預防癲癇",
+        cultureStatus: "開方審查確認",
+        cultureDetails: [
+          { text: "原處方藥物：Valproic acid (Depakine)", highlight: "text-slate-200 font-bold" },
+          { text: "擬開抗生素：Meropenem (碳青黴烯類)", highlight: "text-rose-400" },
+          { text: "警示等級：重大藥物交互作用 (Severity: Major)", highlight: "text-rose-400" }
+        ],
+        revealedInfo: "【診斷解析】Carbapenem 與 Valproic acid (Depakine 濃度崩跌 60-90% 考點)",
+        cards: [
+          {
+            id: "avoid-carbapenem-use-alternative",
+            name: "Piperacillin/Tazobactam (或 Cefepime + Metronidazole)",
+            category: "青黴素/頭孢菌素方案",
+            spec: "Tazocin 4.5g IV Q8H 靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【藥理大師級決策！】所有 Carbapenem 類抗生素 (Meropenem、Imipenem、Ertapenem) 都會抑制 acylpeptide hydrolase，導致 Valproic acid (Depakine) 血中濃度在數小時內崩跌 60-90% 且無法靠加量補回，極易誘發 Breakthrough seizures！在癲癇病患中應選擇其他廣效藥 (如 Tazocin)。"
+          },
+          {
+            id: "proceed-meropenem",
+            name: "Meropenem (照原案開立)",
+            category: "Carbapenem 類",
+            spec: "1g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -60,
+            hpLoss: 40,
+            feedback: "【重大疏失：加碼小事但會出人命 #2！】Meropenem 會讓 Depakine 濃度瞬間崩跌至幾乎測不到，病患將在 24 小時內引發癲癇重積重症！"
+          },
+          {
+            id: "double-depakine",
+            name: "Meropenem + Depakine 加倍劑量",
+            category: "藥物劑量調整方案",
+            spec: "Meropenem 1g Q8H + Depakine 1000mg TID PO",
+            correct: false,
+            score: -30,
+            hpLoss: 25,
+            feedback: "【藥理無效】該交互作用為不可逆的代謝抑制與腸肝循環阻斷，臨床文獻證實即使加倍口服 Depakine 劑量仍無法拉回血中有效濃度。"
+          },
+          {
+            id: "ertapenem-instead",
+            name: "Ertapenem (Invanz)",
+            category: "Carbapenem 類",
+            spec: "1g IV QD 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【全類別效應】Ertapenem 同樣屬於 Carbapenem，對 Depakine 具有一模一樣的崩跌破壞作用。"
+          }
+        ]
+      },
+      {
+        id: "case-penicillin-delabeling",
+        title: "病房值班照會 (第 17 床)",
+        type: "病房常規照會",
+        risk: "藥物過敏史評估",
+        source: "下肢皮膚軟組織",
+        avatar: "fa-solid fa-shield-halved",
+        summary: "50歲男性，左小腿輕微非化膿性蜂窩性組織炎，局部發紅溫熱。病歷首頁貼有「Penicillin 過敏」紅色警告貼紙。病史詢問：病人回憶 7 歲時感冒吃安莫西林後有過輕微小紅疹，無呼吸困難或喉頭水腫，之後40年未再接觸過。",
+        vitals: "BP 125/78, HR 76, BT 37.2°C",
+        labs: "WBC 9,200, CRP 14",
+        renal: "eGFR 90 mL/min",
+        history: "幼時單純斑丘疹，40年以上未發",
+        cultureStatus: "過敏風險評估 (PALACE Trial)",
+        cultureDetails: [
+          { text: "過敏紀錄：Penicillin (兒童時期輕微小疹)", highlight: "text-slate-300" },
+          { text: "嚴重反應：無過敏性休克、無血管性水腫、無 SJS/TEN", highlight: "text-slate-300" },
+          { text: "臨床診斷：單純非化膿性蜂窩性組織炎 (GAS/MSSA)", highlight: "text-slate-200 font-bold" }
+        ],
+        revealedInfo: "【診斷解析】低風險 Penicillin 過敏去標籤化 (PGY 犯錯 #6 與 Cefazolin 安全使用考點)",
+        cards: [
+          {
+            id: "jump-to-vancomycin",
+            name: "Vancomycin",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 20,
+            feedback: "【常見迷思：PGY 犯錯 #6！】台灣與國際實證一致：被標記 Penicillin 過敏者中 >90% 經正式評估後根本不過敏！看到標籤直接跳後線 Vancomycin 會大幅增加腎毒性、住院日數與抗藥菌 (VRE) 篩選！"
+          },
+          {
+            id: "cefazolin-safe-use",
+            name: "Cefazolin (或口服 Cephalexin)",
+            category: "第 1 代頭孢菌素",
+            spec: "Cefazolin 2g IV Q8H (或 Cephalexin 500mg QID PO)",
+            correct: true,
+            score: 100,
+            feedback: "【現代化 AMS 視野！】Penicillin 與 1 代頭孢 Cefazolin 側鏈完全不同，交叉反應率 < 1-2%。病患僅有童年輕微疹子史，完全可以安全使用 Cefazolin (殺鏈球菌效能遠勝 Vancomycin)！2026 年抗生素管理五個 D 特別強調 De-labeling！"
+          },
+          {
+            id: "colistin-iv",
+            name: "Colistin (多黏菌素)",
+            category: "多黏菌素類",
+            spec: "CMS 5mg/kg/日 分次靜脈滴注",
+            correct: false,
+            score: -60,
+            hpLoss: 30,
+            feedback: "【嚴重荒謬】Colistin 只對革蘭氏陰性桿菌有效，對蜂窩性組織炎的陽性菌完全無效！"
+          },
+          {
+            id: "aztreonam-alone",
+            name: "Aztreonam (Azactam)",
+            category: "單環內醯胺類 (Monobactam)",
+            spec: "2g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -45,
+            hpLoss: 25,
+            feedback: "【光譜盲區】Aztreonam 雖然不過敏，但它是純 GNB 藥物，對所有 GPC (鏈球菌、葡萄球菌) 完全無效！"
+          }
+        ]
+      },
+      {
+        id: "case-neutropenic-fever",
+        title: "病房值班照會 (第 18 床)",
+        type: "血液腫瘤科急照會",
+        risk: "嚴重骨髓抑制",
+        source: "全身性不明熱",
+        avatar: "fa-solid fa-shield-virus",
+        summary: "38歲女性，急性骨髓性白血病 (AML) 接受誘導化療後第 10 天。今日突發高燒 38.9°C，無明顯局部感染病灶，血壓正常。急件血液常規：WBC 400/uL，絕對嗜中性球計數 (ANC) 僅 120/uL (嚴重低下)。",
+        vitals: "BP 112/68, HR 108, BT 38.9°C",
+        labs: "WBC 400 (Seg 15%, Band 15% -> ANC 120)",
+        renal: "eGFR 88 mL/min",
+        history: "人工血管 Hickman 置放中，無紅腫熱痛",
+        cultureStatus: "雙套血液培養採集中",
+        cultureDetails: [
+          { text: "病患狀況：嗜中性球低下發燒 (Febrile Neutropenia)", highlight: "text-slate-200 font-bold" },
+          { text: "ANC 數值：120 / uL (< 500 為高危險群)", highlight: "text-rose-400" },
+          { text: "血流動力：血壓平穩，無敗血性休克", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】嗜中性球低下發燒 (Febrile Neutropenia) 經驗性單藥抗綠膿考點",
+        cards: [
+          {
+            id: "cefepime-monotherapy",
+            name: "Cefepime (Maxipime)",
+            category: "第 4 代頭孢菌素",
+            spec: "2g IV Q8H 靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【完全符合國際指引！】高危險嗜中性球低下發燒第一線首選為具抗綠膿活性之 β-lactam 單藥 (Cefepime 2g Q8H、Tazocin 或 Meropenem)。指引明確反對「常規預防性外加 Vancomycin」，除非出現血流動力學不穩、嚴重導管紅腫或已知 MRSA 移生！"
+          },
+          {
+            id: "routine-vanco-tazo",
+            name: "Vancomycin + Tazocin",
+            category: "雙聯靜脈抗生素",
+            spec: "Vancomycin 1g Q12H + Tazocin 4.5g Q8H",
+            correct: false,
+            score: 30,
+            hpLoss: 10,
+            feedback: "【過度處方】在無休克或皮膚導管感染時，常規預先加 Vancomycin 不會降低死亡率，反而顯著增加急性腎損傷 (AKI) 風險。"
+          },
+          {
+            id: "ceftriaxone-alone",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 40,
+            feedback: "【致命處方】嗜中性球低下發燒經驗用藥必須能有效覆蓋綠膿桿菌 (P. aeruginosa)！Ceftriaxone 對綠膿完全無效，延遲覆蓋會導致極高死亡率！"
+          },
+          {
+            id: "oral-ciprofloxacin",
+            name: "Ciprofloxacin + Augmentin",
+            category: "口服抗生素組合",
+            spec: "Ciprofloxacin 500mg BID + Augmentin 1g BID PO",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【危險】病患為白血病化療嚴重低下 (ANC < 100) 的極高危險群，絕對不可使用門診口服方案！"
+          }
+        ]
+      },
+      {
+        id: "case-balance-trial",
+        title: "病房值班照會 (第 19 床)",
+        type: "感染科晨會討論",
+        risk: "菌血症療程評估",
+        source: "泌尿道來源菌血症",
+        avatar: "fa-solid fa-scale-balanced",
+        summary: "64歲女性，因 E. coli 腎盂腎炎合併菌血症住院，使用 Ceftriaxone 治療。今日為治療第 7 天，病患已退燒滿 4 天、腰痛完全消失、小便順暢、WBC 恢復至 5,800，追蹤血液培養轉陰性。住院醫師正為「該打 7 天還是 14 天」感到猶豫。",
+        vitals: "BP 120/72, HR 68, BT 36.5°C (正常)",
+        labs: "WBC 5,800, CRP 6.5 (完全恢復正常)",
+        renal: "eGFR 80 mL/min",
+        history: "已接受滿 7 天靜脈 Ceftriaxone 治療",
+        cultureStatus: "血液培養轉陰確認",
+        cultureDetails: [
+          { text: "原血液培養：E. coli (Ceftriaxone Susceptible)", highlight: "text-slate-300" },
+          { text: "追蹤血液培養：無菌生長 (Negative for growth)", highlight: "text-slate-300" },
+          { text: "臨床評估：感染源控制良好、生命徵象與發炎指數完全正常", highlight: "text-slate-200 font-bold" }
+        ],
+        revealedInfo: "【診斷解析】非金黃色葡萄球菌菌血症短療程 (BALANCE Trial NEJM 2025 考點)",
+        cards: [
+          {
+            id: "balance-trial-7d",
+            name: "臨床評估停藥處置 (滿 7 天安全停藥出院)",
+            category: "病房照護處置",
+            spec: "完成 7 天靜脈療程，今日予以停藥並安排出院",
+            correct: true,
+            score: 100,
+            feedback: "【掌握最新重磅實證！】2025 年 NEJM 發表之 BALANCE trial (n=3,608) 證實：對於非 S. aureus 菌血症病患，在感染源控制良好且臨床穩定前提下，7 天療程之 90 天死亡率 (14.5%) 不劣於傳統 14 天 (16.1%)！短療程帶來同等療效、更少副作用與更少抗藥性！"
+          },
+          {
+            id: "must-give-14d",
+            name: "Ceftriaxone (續打滿 14 天)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 繼續給藥至滿 14 天",
+            correct: false,
+            score: -20,
+            hpLoss: 10,
+            feedback: "【觀念已更新】過去傳統認為菌血症必須打 14 天，但 BALANCE trial 與多項 RCT 已證實非金黃色葡萄球菌菌血症打 7 天即已足夠。"
+          },
+          {
+            id: "escalate-to-meropenem",
+            name: "Meropenem (Mepem)",
+            category: "Carbapenem 類",
+            spec: "1g IV Q8H 靜脈輸注續打 7 天",
+            correct: false,
+            score: -50,
+            hpLoss: 20,
+            feedback: "【嚴重違背 AMS】病患已完全痊癒且培養轉陰，升階為碳青黴烯是不良醫療行為。"
+          },
+          {
+            id: "oral-doxycycline-prophylaxis",
+            name: "Doxycycline (長期預防性投藥)",
+            category: "四環黴素類",
+            spec: "100mg PO QD 長期口服",
+            correct: false,
+            score: -30,
+            hpLoss: 15,
+            feedback: "【無適應症】單純菌血症痊癒後不應進行長期抗生素預防投藥。"
+          }
+        ]
+      },
+      {
+        id: "case-cdi-diarrhea",
+        title: "病房值班照會 (第 20 床)",
+        type: "院內感染照會",
+        risk: "長期使用抗生素後腹瀉",
+        source: "胃腸道毒素",
+        avatar: "fa-solid fa-toilet",
+        summary: "66歲女性，因肺炎住院接受 Clindamycin 及 Ceftriaxone 治療兩週。昨日起每日解水瀉高達 8-10 次，伴隨下腹痙攣絞痛、體溫 38.3°C、WBC 暴增至 18,500。糞便毒素檢驗回報：C. difficile Toxin A/B (+)。",
+        vitals: "BP 105/65, HR 98, BT 38.3°C",
+        labs: "WBC 18,500, Cr 1.5",
+        renal: "eGFR 48 mL/min",
+        history: "使用 Clindamycin 滿 14 天",
+        cultureStatus: "糞便急件檢驗回報",
+        cultureDetails: [
+          { text: "檢體種類：未成形水便 (Watery stool)", highlight: "text-slate-300" },
+          { text: "毒素檢驗：C. difficile Toxin A/B 陽性 (+)", highlight: "text-rose-400 font-bold" },
+          { text: "前導誘因：長期暴露於 Clindamycin 高風險抗生素", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】困難梭狀桿菌結腸炎 (CDI) (口服 Vancomycin 第一線與 Metronidazole 退位考點)",
+        cards: [
+          {
+            id: "oral-vancomycin",
+            name: "Vancomycin (口服劑型)",
+            category: "糖胜肽類抗生素",
+            spec: "125mg PO QID 口服投藥 10 天 (或 Fidaxomicin)",
+            correct: true,
+            score: 100,
+            feedback: "【精準用藥！】2026 IDSA 與各大指引明定：CDI 第一線首選為口服 Vancomycin (125mg QID) 或 Fidaxomicin！口服 Vancomycin 腸道不吸收，可於糞便中達到數千 ug/mL 的極高殺菌濃度。注意：Metronidazole 治癒率與復發率顯著較差，已退居次線！"
+          },
+          {
+            id: "oral-metronidazole",
+            name: "Metronidazole (Flagyl)",
+            category: "硝基咪唑類",
+            spec: "500mg PO TID 口服 10 天",
+            correct: false,
+            score: 20,
+            hpLoss: 15,
+            feedback: "【指引已降階】Metronidazole 過去曾是首選，但多項 RCT 證實其臨床治癒率顯著低於口服 Vancomycin，且復發率高，目前指引已不再推薦為首選。"
+          },
+          {
+            id: "iv-vancomycin",
+            name: "Vancomycin (靜脈滴注)",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -60,
+            hpLoss: 40,
+            feedback: "【重大給藥途徑地雷！】靜脈注射 (IV) 的 Vancomycin 不會分泌進入腸道腔室，糞便中完全測不到藥物濃度，對治療腸道 CDI 100% 無效！必須使用口服 (PO) 劑型！"
+          },
+          {
+            id: "anti-diarrheal-loperamide",
+            name: "Loperamide (止瀉劑處置)",
+            category: "止瀉調節藥物",
+            spec: "4mg PO 初始劑量，後續每次水便給予 2mg",
+            correct: false,
+            score: -70,
+            hpLoss: 50,
+            feedback: "【致命禁忌！】在 CDI 中單純使用腸道蠕動抑制劑 (如 Loperamide) 會阻礙毒素排出，引發毒性巨結腸症 (Toxic megacolon) 與腸穿孔致命！"
+          }
+        ]
+      },
+      {
+        id: "case-candidemia-cvc",
+        title: "病房值班照會 (第 21 床)",
+        type: "加護病房照會",
+        risk: "中心導管留置發燒",
+        source: "血液循環系統",
+        avatar: "fa-solid fa-droplet",
+        summary: "64歲女性，重度急性胰臟炎住院第12天，置有右側頸靜脈 CVC 與全靜脈營養 (TPN)。病患已使用 Tazocin 滿 7 天，今日突發畏寒與高燒 (38.8°C)。血液培養瓶報陽，抹片見芽生酵母菌 (Yeast)。",
+        vitals: "BP 102/64, HR 115, BT 38.8°C",
+        labs: "WBC 17,600, CRP 142",
+        renal: "eGFR 72 mL/min",
+        history: "持續留置 CVC 與 TPN 輸注",
+        cultureStatus: "血液抹片急件回報",
+        cultureDetails: [
+          { text: "檢體來源：兩套周邊靜脈血液培養", highlight: "text-slate-300" },
+          { text: "抹片結果：見大量出芽酵母菌體 (Budding yeasts)", highlight: "text-rose-400 font-bold" },
+          { text: "臨床診斷：疑似導管相關念珠菌血症 (Candidemia)", highlight: "text-slate-200" }
+        ],
+        revealedInfo: "【診斷解析】念珠菌血症 Candidemia (Echinocandin 首選 + 拔管 + 散瞳眼底檢查考點)",
+        cards: [
+          {
+            id: "echinocandin-remove-line",
+            name: "Caspofungin (或 Micafungin) + 拔除 CVC + 照會眼科散瞳",
+            category: "Echinocandin 類抗黴菌藥",
+            spec: "首劑 70mg 後 50mg IV QD + 拔管處置",
+            correct: true,
+            score: 100,
+            feedback: "【滿分標準處置！】2026 IDSA 與各大指引明定：念珠菌血症經驗性首選為 Echinocandins (Caspofungin、Micafungin、Anidulafungin)！關鍵三部曲：①起始 Echinocandin，待菌種敏感且臨床穩定再降階 Fluconazole；②務必盡速移除受感染之 CVC；③務必照會眼科進行散瞳眼底檢查以排除眼內炎 (Endophthalmitis)！"
+          },
+          {
+            id: "fluconazole-alone-keep-line",
+            name: "Fluconazole (保留 CVC 觀察)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "400mg IV QD 靜脈輸注",
+            correct: false,
+            score: 20,
+            hpLoss: 25,
+            feedback: "【處置不足】重症或近期暴露過抗生素之念珠菌血症，第一線首選為殺菌性的 Echinocandin 而非 Fluconazole (有抗藥或非 albicans 風險)；且未拔除 CVC 會導致生物膜持續釋放菌體，顯著提高死亡率！"
+          },
+          {
+            id: "amphotericin-deoxycholate",
+            name: "Amphotericin B deoxycholate",
+            category: "多烯類抗黴菌藥 (Polyene)",
+            spec: "0.7 mg/kg IV QD 靜脈滴注",
+            correct: false,
+            score: 10,
+            hpLoss: 20,
+            feedback: "【毒性過大】傳統 Amphotericin B 具有嚴重的腎毒性與輸注發冷寒顫反應，在念珠菌血症中已被 Echinocandins 取代為第一線首選。"
+          },
+          {
+            id: "vancomycin-escalate",
+            name: "Vancomycin (Mepem 升階)",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -60,
+            hpLoss: 40,
+            feedback: "【致命延遲】抹片已明確回報為 Yeast (真菌)，升階抗細菌藥物 (Vancomycin) 完全無抗真菌效果，將導致真菌敗血性休克死亡！"
+          }
+        ]
+      },
+      {
+        id: "case-invasive-aspergillosis",
+        title: "病房值班照會 (第 22 床)",
+        type: "血液科照會",
+        risk: "嚴重骨髓抑制發燒",
+        source: "肺部浸潤病灶",
+        avatar: "fa-solid fa-lungs-virus",
+        summary: "48歲急性淋巴性白血病男性，誘導化療後嗜中性球低下 (ANC 80/uL) 已滿 14 天。使用 Cefepime 治療發燒第 5 天仍有高燒，並新出現乾咳、胸痛與微量咳血。胸部 CT 顯示肺部結節周圍環繞毛玻璃狀 Halo sign。血清 Galactomannan (GM) 抗原檢驗為 2.4 (強陽性)。",
+        vitals: "BP 118/74, HR 102, BT 38.6°C",
+        labs: "ANC 80/uL, Serum GM antigen: 2.4 (陽性)",
+        renal: "eGFR 82 mL/min",
+        history: "化療後長期嗜中性球缺乏",
+        cultureStatus: "真菌血清抗原與影像學",
+        cultureDetails: [
+          { text: "胸部 CT 特徵：肺部結節合併毛玻璃暈輪徵象 (Halo sign)", highlight: "text-slate-200 font-bold" },
+          { text: "Aspergillus GM 抗原：2.4 (Cut-off ≥ 0.5 陽性)", highlight: "text-rose-400 font-bold" },
+          { text: "臨床診斷：侵襲性肺麴菌病 (Invasive Pulmonary Aspergillosis)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】侵襲性肺麴菌病 (Voriconazole 首選與 Fluconazole 零活性考點)",
+        cards: [
+          {
+            id: "voriconazole-treatment",
+            name: "Voriconazole (Vfend)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "Loading 6mg/kg Q12H x 2 劑，後續 4mg/kg Q12H + TDM 監測",
+            correct: true,
+            score: 100,
+            feedback: "【精準首選！】侵襲性麴菌病 (Invasive Aspergillosis) 國際指引第一線首選為 Voriconazole (或 Isavuconazole)！注意 Voriconazole 需常規監測血中濃度 (TDM 目標約 1-5 mg/L)，並防範幻覺、短暫視覺障礙、肝毒性與 QTc 延長。"
+          },
+          {
+            id: "fluconazole-treatment",
+            name: "Fluconazole (Diflucan)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "400mg IV QD 靜脈輸注",
+            correct: false,
+            score: -60,
+            hpLoss: 45,
+            feedback: "【致命盲點！】Fluconazole 對麴菌 (Aspergillus) 是完全 100% 零活性！給予 Fluconazole 治療麴菌感染等於毫無治療，致死率極高！"
+          },
+          {
+            id: "caspofungin-mono",
+            name: "Caspofungin (單方使用)",
+            category: "Echinocandin 類抗黴菌藥",
+            spec: "50mg IV QD 靜脈輸注",
+            correct: false,
+            score: 10,
+            hpLoss: 25,
+            feedback: "【次選救援】Echinocandins 對 Aspergillus 僅具抑真菌 (fungistatic) 與部分活性，指引僅列為 Voriconazole 無法耐受時的救援或合併用藥，不可作為第一線單方首選。"
+          },
+          {
+            id: "ceftriaxone-alone",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 35,
+            feedback: "【方向錯誤】病患已明確診斷為黴菌性侵襲性肺炎 (GM 抗原 2.4 + Halo sign)，抗細菌頭孢菌素毫無抗真菌活性。"
+          }
+        ]
+      },
+      {
+        id: "case-crypto-meningitis",
+        title: "病房值班照會 (第 23 床)",
+        type: "急診收治照會",
+        risk: "亞急性中樞神經感染",
+        source: "腦脊髓液",
+        avatar: "fa-solid fa-head-side-virus",
+        summary: "35歲男性，有未規則服藥之 HIV 病史 (CD4 35/uL)。近兩週來持續劇烈漸進性頭痛、發燒、噁心與複視。神經學檢查見輕微頸部僵硬與兩側視乳突水腫。急做腰椎穿刺：初壓 340 mmH2O，CSF 墨汁染色 (India ink) 見帶有厚莢膜之酵母菌體，隱球菌抗原 (Cryptococcal Antigen) 效價 1:1024。",
+        vitals: "BP 130/80, HR 68, BT 38.2°C",
+        labs: "CSF: 開壓力 340 mmH2O, India ink (+), CrAg 1:1024",
+        renal: "eGFR 95 mL/min",
+        history: "HIV 感染合併重度免疫缺乏",
+        cultureStatus: "CSF 急件染色與抗原分析",
+        cultureDetails: [
+          { text: "外觀：微混濁，開壓力 > 300 mmH2O (顱內高壓)", highlight: "text-rose-400" },
+          { text: "墨汁染色：見厚多醣體莢膜出芽酵母菌 (India ink +)", highlight: "text-slate-200 font-bold" },
+          { text: "臨床診斷：隱球菌腦膜炎 (Cryptococcal Meningitis)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】隱球菌腦膜炎 (Amphotericin B + Flucytosine 誘導期黃金組合考點)",
+        cards: [
+          {
+            id: "ampho-flucytosine-combo",
+            name: "Liposomal Amphotericin B + Flucytosine (5-FC)",
+            category: "抗黴菌多烯類併用嘧啶類似物",
+            spec: "AmBisome 3-4 mg/kg/日 + 5-FC 100 mg/kg/日 分四次給予",
+            correct: true,
+            score: 100,
+            feedback: "【黃金組合首選！】隱球菌腦膜炎誘導期 (Induction therapy) 國際標準為 Liposomal Amphotericin B + Flucytosine (5-FC) 至少 2 週！Flucytosine 能加速腦脊髓液真菌清除率並顯著降低死亡率；同時需積極行腰椎穿刺降腦壓。待誘導成功後才接續 Fluconazole 鞏固治療。"
+          },
+          {
+            id: "fluconazole-mono-induction",
+            name: "Fluconazole (單方誘導治療)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "400mg PO QD 單藥給藥",
+            correct: false,
+            score: -20,
+            hpLoss: 30,
+            feedback: "【單藥誘導清除慢】Fluconazole 單藥於腦脊髓液中殺真菌速率顯著慢於 Ampho-B + 5-FC，單獨用於重症誘導期死亡率與神經後遺症比例極高！"
+          },
+          {
+            id: "caspofungin-mono",
+            name: "Caspofungin (Cancidas)",
+            category: "Echinocandin 類抗黴菌藥",
+            spec: "70mg loading 後 50mg IV QD",
+            correct: false,
+            score: -60,
+            hpLoss: 40,
+            feedback: "【致命機轉盲點！】Echinocandins (如 Caspofungin、Micafungin) 對隱球菌 (Cryptococcus) 具有天然內因性抗藥 (完全無效)！且 Echinocandin 無法穿透血腦屏障！"
+          },
+          {
+            id: "ceftriaxone-vanco",
+            name: "Ceftriaxone + Vancomycin",
+            category: "雙聯靜脈抗生素",
+            spec: "Ceftriaxone 2g Q12H + Vancomycin 1g Q12H",
+            correct: false,
+            score: -50,
+            hpLoss: 35,
+            feedback: "【方向錯誤】墨汁染色已證實為隱球菌真菌感染，投予抗細菌藥物無法抑制隱球菌增殖。"
+          }
+        ]
+      },
+      {
+        id: "case-rhinocerebral-mucor",
+        title: "病房值班照會 (第 24 床)",
+        type: "急診會診評估",
+        risk: "臉部黑痂壞死迅速進展",
+        source: "鼻竇與眼窩",
+        avatar: "fa-solid fa-head-side-mask",
+        summary: "56歲男性，糖尿病控制極差，因酮酸中毒 (DKA) 送急診。家屬主訴病患近三天右臉麻木劇痛、眼眶紅腫突出、右側鼻孔流出黑褐色血水。耳鼻喉科急會診檢視發現硬顎與鼻甲黏膜出現大片黑色壞死焦痂 (Eschar)。急件病理切片見寬大、無中隔 (Non-septate)、呈現 90 度直角分支之粗大菌絲。",
+        vitals: "BP 138/85, HR 112, BT 38.5°C, DKA 治療中",
+        labs: "Blood Glucose 480 mg/dL, Ketone 4+, pH 7.15",
+        renal: "eGFR 68 mL/min",
+        history: "未規律服藥之重度第2型糖尿病",
+        cultureStatus: "病理冷凍切片結果",
+        cultureDetails: [
+          { text: "病理抹片：寬大無分隔菌絲，呈 90 度直角分叉 (Right-angle branching)", highlight: "text-rose-400 font-bold" },
+          { text: "組織侵犯：血管壁廣泛栓塞與黏膜全層壞死黑痂", highlight: "text-slate-200" },
+          { text: "臨床診斷：鼻腦毛黴菌症 (Rhinocerebral Mucormycosis)", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】鼻腦毛黴菌症 Mucormycosis (緊急手術清創 + Liposomal Ampho-B / Posaconazole 考點)",
+        cards: [
+          {
+            id: "debridement-amphotericin",
+            name: "緊急外科手術清創 + 高劑量 Liposomal Amphotericin B",
+            category: "外科手術引流與多烯類抗黴菌藥",
+            spec: "清創手術 + AmBisome 5-10 mg/kg/日 靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【完全正確！救命決策！】毛黴菌 (Mucorales) 是進展極度凶暴的血管侵犯性真菌，死亡率高達 50-80%！唯一挽救生命的關鍵是：①極緊急外科徹底切除壞死組織 (清創)；②立即給予高劑量 Liposomal Amphotericin B (5-10 mg/kg/日)！後續口服可銜接 Posaconazole 或 Isavuconazole。"
+          },
+          {
+            id: "voriconazole-mono",
+            name: "Voriconazole (Vfend)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "Loading 6mg/kg Q12H 後 4mg/kg Q12H",
+            correct: false,
+            score: -60,
+            hpLoss: 50,
+            feedback: "【致命地雷：毛黴菌專屬考點！】Voriconazole 對毛黴菌 (Mucorales) 完全 100% 零抗菌活性！文獻顯示使用 Voriconazole 甚至容易篩選出毛黴菌突破性感染 (Breakthrough mucormycosis)！"
+          },
+          {
+            id: "fluconazole-alone",
+            name: "Fluconazole (Diflucan)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "400mg IV QD 靜脈輸注",
+            correct: false,
+            score: -70,
+            hpLoss: 50,
+            feedback: "【毫無效果】Fluconazole 對毛黴菌完全無效，無法阻止鼻腦結構壞死。"
+          },
+          {
+            id: "caspofungin-mono",
+            name: "Caspofungin (Cancidas)",
+            category: "Echinocandin 類抗黴菌藥",
+            spec: "70mg loading 後 50mg IV QD",
+            correct: false,
+            score: -50,
+            hpLoss: 40,
+            feedback: "【無效處方】毛黴菌細胞壁缺乏大量 1,3-beta-D-glucan，Echinocandins 對其幾乎無治療作用。"
+          }
+        ]
+      },
+      {
+        id: "case-candida-krusei",
+        title: "病房值班照會 (第 25 床)",
+        type: "血液腫瘤科照會",
+        risk: "預防性用藥後突破感染",
+        source: "血液循環系統",
+        avatar: "fa-solid fa-virus-covid",
+        summary: "60歲多發性骨髓瘤女性，接受自體造血幹細胞移植後第 14 天。病患在此期間規律口服低劑量 Fluconazole 作為預防。今日突發高燒 39.0°C、寒顫與血壓偏低。急件周邊血液培養於 24 小時長出酵母菌，MALDI-TOF 質譜儀鑑定正式回報為 Candida krusei。",
+        vitals: "BP 92/58, HR 118, BT 39.0°C",
+        labs: "WBC 1,100, Plt 32,000",
+        renal: "eGFR 65 mL/min",
+        history: "先前持續接受 Fluconazole 預防性投藥",
+        cultureStatus: "質譜儀菌種鑑定報告",
+        cultureDetails: [
+          { text: "分離菌種：Candida krusei (克柔念珠菌)", highlight: "text-rose-400 font-bold" },
+          { text: "檢體來源：兩套周邊血液培養報陽", highlight: "text-slate-300" },
+          { text: "藥敏特性：天生具備特定抗真菌藥之耐藥機轉", highlight: "text-slate-200" }
+        ],
+        revealedInfo: "【診斷解析】Candida krusei 菌血症 (Fluconazole 天生抗藥與 Echinocandin 首選考點)",
+        cards: [
+          {
+            id: "echinocandin-krusei",
+            name: "Caspofungin (或 Micafungin / Anidulafungin)",
+            category: "Echinocandin 類抗黴菌藥",
+            spec: "首劑 70mg 後 50mg IV QD 靜脈輸注",
+            correct: true,
+            score: 100,
+            feedback: "【精準用藥！】Candida krusei 對 Fluconazole 具有天然內因性抗藥 (Intrinsically resistant)！因此凡是在 Fluconazole 預防期間爆發的突破性念珠菌血症，高度懷疑 C. krusei 或 C. glabrata。首選必為 Echinocandins (如 Caspofungin、Micafungin)！"
+          },
+          {
+            id: "escalate-fluconazole-double",
+            name: "Fluconazole (加倍劑量使用)",
+            category: "三唑類抗黴菌藥 (Triazole)",
+            spec: "800mg IV QD 靜脈輸注",
+            correct: false,
+            score: -60,
+            hpLoss: 40,
+            feedback: "【重大機轉地雷！】Candida krusei 對 Fluconazole 是「天生抗藥」，不論劑量加到多大都絕對無效！加量只會增加肝毒性而延誤救治！"
+          },
+          {
+            id: "vancomycin-mono",
+            name: "Vancomycin",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 30,
+            feedback: "【無效抗真菌】Vancomycin 是對抗革蘭氏陽性細菌的抗生素，對真菌（念珠菌）毫無殺滅效果。"
+          },
+          {
+            id: "cefepime-mono",
+            name: "Cefepime (Maxipime)",
+            category: "第 4 代頭孢菌素",
+            spec: "2g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -40,
+            hpLoss: 25,
+            feedback: "【方向錯誤】頭孢菌素對真菌血症完全無效。"
+          }
+        ]
+      },
+      {
+        id: "case-hvkp-liver-abscess",
+        title: "病房值班照會 (第 26 床)",
+        type: "急診收治照會",
+        risk: "本土特色高毒力菌株",
+        source: "肝臟與腹腔",
+        avatar: "fa-solid fa-hospital-user",
+        summary: "55歲男性，患有多年第二型糖尿病但未規律服藥 (HbA1c 10.2%)。主訴畏寒發燒一週、右上腹悶痛。腹部超音波顯示右肝葉有一顆 6.5 公分單發性肝膿瘍。病患在問診時提及：「今天看東西覺得有點霧霧的、右眼微紅刺痛」。急做穿刺引流液與血液均長出黏液型 (Hypermucoviscous) Klebsiella pneumoniae。",
+        vitals: "BP 115/72, HR 100, BT 38.8°C",
+        labs: "WBC 18,200, Total Bilirubin 1.8, Sugar 320",
+        renal: "eGFR 80 mL/min",
+        history: "血糖控制極差，初發肝膿瘍",
+        cultureStatus: "血液與膿液檢驗報告",
+        cultureDetails: [
+          { text: "分離菌種：Klebsiella pneumoniae (野生型敏感株)", highlight: "text-slate-200 font-bold" },
+          { text: "菌落型態：拉絲試驗陽性 (String test > 5mm, hvKP)", highlight: "text-rose-400 font-bold" },
+          { text: "合併症狀：伴隨單側視力模糊與眼球刺痛", highlight: "text-rose-400" }
+        ],
+        revealedInfo: "【診斷解析】高毒力克雷伯氏菌 (hvKP) 肝膿瘍合併轉移性眼內炎 (經皮穿刺引流 + 頭孢菌素 + 急會眼科考點)",
+        cards: [
+          {
+            id: "drainage-ceftriaxone-ophthalmology",
+            name: "超音波導引穿刺引流 (PCD) + Ceftriaxone + 緊急照會眼科散瞳",
+            category: "經皮引流處置與第 3 代頭孢菌素",
+            spec: "經皮引流 (PCD) + Ceftriaxone 2g IV QD + 急做眼底鏡檢查",
+            correct: true,
+            score: 100,
+            feedback: "【台灣加分題滿分！】台灣與東亞特有：糖尿病患原發性肝膿瘍多為 K1/K2 血清型高毒力克雷伯氏菌 (hvKP)。重點：①膿瘍 >3-5cm 必須進行 PCD 經皮導管引流 (Source control)；②經驗性用藥 Ceftriaxone 或 Flomoxef 多可有效涵蓋；③病患一旦主訴眼睛模糊，務必緊急照會眼科散瞳檢查，排除轉移性眼內炎 (Endophthalmitis) 以免 24-48 小時內永久失明！"
+          },
+          {
+            id: "ceftriaxone-alone-no-drainage",
+            name: "Ceftriaxone (單純給藥不引流，門診追蹤眼科)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 靜脈輸注",
+            correct: false,
+            score: 10,
+            hpLoss: 30,
+            feedback: "【處置嚴重不足！】6.5 公分大膿瘍單靠抗生素無法有效穿透，未及時引流極易破裂造成腹膜炎；且眼部症狀不可拖延至門診，hvKP 眼內炎需數小時內眼內注射抗生素以挽救視力！"
+          },
+          {
+            id: "escalate-colistin",
+            name: "Colistin (多黏菌素)",
+            category: "多黏菌素類",
+            spec: "CMS 5mg/kg/日 分次靜脈滴注",
+            correct: false,
+            score: -40,
+            hpLoss: 25,
+            feedback: "【過度且不當用藥】社區型 hvKP 幾乎均為對傳統頭孢菌素高度敏感之 Wild-type，動用後線高毒性 Colistin 毫無必要。"
+          },
+          {
+            id: "doxycycline-alone",
+            name: "Doxycycline",
+            category: "四環黴素類",
+            spec: "100mg PO BID 口服治療",
+            correct: false,
+            score: -50,
+            hpLoss: 35,
+            feedback: "【劑量與廣度不足】口服四環黴素無法控制深部高毒力細菌性肝膿瘍。"
+          }
+        ]
+      },
+      {
+        id: "case-neonatal-meningitis",
+        title: "病房值班照會 (第 27 床)",
+        type: "小兒急診照會",
+        risk: "新生兒發燒急症",
+        source: "腦脊髓液與血流",
+        avatar: "fa-solid fa-baby",
+        summary: "出生第 12 天足月新生兒，因活動力低下、食慾差、體溫 38.4°C、前囟門膨出送急診。腰椎穿刺 CSF 呈現白血球增加、糖濃度低下，高度懷疑新生兒細菌性腦膜炎。同仁提議：「為了有效殺菌，直接使用第三代頭孢菌素 Ceftriaxone (Rocephin) 治療最方便」。",
+        vitals: "HR 165, RR 48, BT 38.4°C, 前囟門緊繃",
+        labs: "WBC 22,000, Total Bilirubin 11.5 mg/dL (偏高)",
+        renal: "新生兒腎功能",
+        history: "母親產程自然分娩，GBS 篩檢陰性",
+        cultureStatus: "CSF 急檢報告",
+        cultureDetails: [
+          { text: "病患年齡：出生 12 天 (新生兒 Neonate)", highlight: "text-rose-400 font-bold" },
+          { text: "常見病原：GBS、E. coli、Listeria monocytogenes", highlight: "text-slate-200" },
+          { text: "重要禁忌：評估新生兒特定抗生素安全性", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】新生兒腦膜炎 (Ampicillin + Cefotaxime 首選，嚴禁使用 Ceftriaxone 考點)",
+        cards: [
+          {
+            id: "ampicillin-cefotaxime",
+            name: "Ampicillin + Cefotaxime",
+            category: "新生兒專用雙聯靜脈抗生素",
+            spec: "Ampicillin 150-200 mg/kg/日 + Cefotaxime 150-200 mg/kg/日",
+            correct: true,
+            score: 100,
+            feedback: "【完全正確！】新生兒腦膜炎三大病原為 GBS、E. coli 與 Listeria monocytogenes。首選為 Ampicillin (打 Listeria 與 Enterococcus) + Cefotaxime (打 GNB)！絕對禁忌：新生兒絕對不可使用 Ceftriaxone (Rocephin)，因為 Ceftriaxone 會競爭白蛋白結合位導致游離膽紅素升高引發核黃疸 (Kernicterus)，且與含鈣輸液併用易沉澱致死！"
+          },
+          {
+            id: "ceftriaxone-alone-neonate",
+            name: "Ceftriaxone (Rocephin)",
+            category: "第 3 代頭孢菌素",
+            spec: "100 mg/kg/日 IV QD 靜脈輸注",
+            correct: false,
+            score: -60,
+            hpLoss: 50,
+            feedback: "【小兒加碼出人命禁忌！】Ceftriaxone 嚴格禁忌用於新生兒 (<28天)！其一會置換白蛋白上的膽紅素誘發不可逆核黃疸；其二會與含鈣輸液在體內形成致命結晶沉澱！且其無法對抗李斯特菌！"
+          },
+          {
+            id: "vancomycin-gentamicin",
+            name: "Vancomycin + Gentamicin",
+            category: "糖胜肽類併用胺基配醣體",
+            spec: "Vancomycin 15 mg/kg Q8H + Gentamicin 2.5 mg/kg Q12H",
+            correct: false,
+            score: 10,
+            hpLoss: 20,
+            feedback: "【不適合新生兒腦膜炎】Gentamicin 無法良好穿透血腦屏障 (CSF 濃度極低)；且此處方漏掉了重要之李斯特菌 (需 Ampicillin)。"
+          },
+          {
+            id: "cefazolin-mono",
+            name: "Cefazolin (Cefa)",
+            category: "第 1 代頭孢菌素",
+            spec: "50 mg/kg/日 分次靜脈輸注",
+            correct: false,
+            score: -45,
+            hpLoss: 35,
+            feedback: "【無法過血腦屏障】Cefazolin 無法穿透血腦屏障，絕對不可用於中樞神經感染。"
+          }
+        ]
+      },
+      {
+        id: "case-animal-bite-pasteurella",
+        title: "病房值班照會 (第 28 床)",
+        type: "急診外傷照會",
+        risk: "動物咬傷快速紅腫",
+        source: "手部軟組織",
+        avatar: "fa-solid fa-paw",
+        summary: "34歲女性，今早整理家務時被家中受驚嚇之米克斯貓咬傷右手背。傷口深達皮下，約 6 小時後右手背迅速出現紅、腫、熱、劇烈跳痛與漿液性分泌物。X 光排除骨折與異物。同仁提議開立 Cefazolin 或 Cephalexin (一代頭孢) 給予治療。",
+        vitals: "BP 118/75, HR 80, BT 37.5°C",
+        labs: "WBC 11,200, CRP 24",
+        renal: "eGFR > 90 mL/min",
+        history: "健康成人，無藥物過敏史",
+        cultureStatus: "傷口抹片與臨床診斷",
+        cultureDetails: [
+          { text: "致傷原因：家貓深部穿刺咬傷 (Cat bite wound)", highlight: "text-slate-200" },
+          { text: "關鍵病原：Pasteurella multocida (多殺性巴斯德桿菌)", highlight: "text-rose-400 font-bold" },
+          { text: "混合菌種：合併口咽部厭氧菌與葡萄球菌", highlight: "text-slate-300" }
+        ],
+        revealedInfo: "【診斷解析】貓狗咬傷感染 Pasteurella multocida (Augmentin 首選與一代頭孢無效考點)",
+        cards: [
+          {
+            id: "augmentin-firstline",
+            name: "Amoxicillin-clavulanate (Augmentin)",
+            category: "口服青黴素/抑制劑複合劑",
+            spec: "1g (875/125mg) PO BID 口服治療 (重症可用 Unasyn IV)",
+            correct: true,
+            score: 100,
+            feedback: "【處方大師！】貓狗咬傷最關鍵且進展最迅速的病原體是 Pasteurella multocida (巴斯德桿菌)。重點考點：Pasteurella 天然對第 1 代頭孢菌素 (Cephalexin/Cefazolin)、Macrolides 與 Clindamycin 效果極差！首選絕對是 Amoxicillin-clavulanate (Augmentin) 或 Ampicillin-sulbactam (Unasyn)！"
+          },
+          {
+            id: "cephalexin-alone",
+            name: "Cephalexin (Keflex)",
+            category: "第 1 代口服頭孢菌素",
+            spec: "500mg PO QID 口服治療",
+            correct: false,
+            score: -40,
+            hpLoss: 30,
+            feedback: "【經典處方盲點！】雖然 Cephalexin 是一般蜂窩性組織炎常用藥，但 Pasteurella multocida 對第 1 代頭孢菌素極不敏感 (MIC 高且療效不可靠)，單用極易導致感染快速擴散成深部腱鞘炎！"
+          },
+          {
+            id: "clindamycin-alone",
+            name: "Clindamycin (Cleocin)",
+            category: "林可醯胺類 (Lincosamide)",
+            spec: "300mg PO QID 口服治療",
+            correct: false,
+            score: -30,
+            hpLoss: 25,
+            feedback: "【光譜不足】Clindamycin 是純 GPC 與厭氧菌藥物，對巴斯德桿菌 (革蘭氏陰性小桿菌) 完全無抗菌活性！"
+          },
+          {
+            id: "vancomycin-iv",
+            name: "Vancomycin (收住院注射)",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -20,
+            hpLoss: 20,
+            feedback: "【機轉錯誤】Vancomycin 無法殺滅革蘭氏陰性桿菌 Pasteurella，且單純咬傷無住院注射 Vancomycin 之適應症。"
+          }
+        ]
+      },
+      {
+        id: "case-dtr-psa",
+        title: "病房值班照會 (第 29 床)",
+        type: "加護病房照會",
+        risk: "超廣效抗藥綠膿桿菌",
+        source: "呼吸道與深部傷口",
+        avatar: "fa-solid fa-bacterium",
+        summary: "62歲大面積燒傷住院一個月病患，在加護病房使用呼吸器中。近兩日再度高燒 38.9°C、傷口出現藍綠色帶有葡萄甜味之膿性分泌物。傷口與氣管抽吸培養分離出難治型綠膿桿菌 (DTR-P. aeruginosa)。初版藥敏測試對傳統抗生素全數耐藥。同仁提議：「既然傳統藥物都耐藥，是否直接改用超廣效的 Tigecycline？」",
+        vitals: "BP 105/65, HR 110, BT 38.9°C",
+        labs: "WBC 19,500, Cr 1.2",
+        renal: "eGFR 70 mL/min",
+        history: "曾陸續暴露於 Tazocin, Cefepime, Meropenem, Ciprofloxacin",
+        cultureStatus: "廣效抗藥性綠膿藥敏報告",
+        cultureDetails: [
+          { text: "分離菌種：Pseudomonas aeruginosa (DTR-PsA)", highlight: "text-slate-200 font-bold" },
+          { text: "Tazocin / Cefepime / Ceftazidime: Resistant", highlight: "text-rose-400" },
+          { text: "Meropenem / Imipenem: Resistant", highlight: "text-rose-400" },
+          { text: "Ciprofloxacin / Levofloxacin: Resistant", highlight: "text-rose-400" }
+        ],
+        revealedInfo: "【診斷解析】DTR-P. aeruginosa 難治性綠膿桿菌 (Ceftolozane-tazobactam 首選與 Tigecycline 3P1B 考點)",
+        cards: [
+          {
+            id: "ceftolozane-tazobactam",
+            name: "Ceftolozane-tazobactam (Zerbaxa)",
+            category: "抗綠膿新型頭孢菌素/抑制劑複合劑",
+            spec: "3g (2g/1g) IV Q8H 輸注 1 小時",
+            correct: true,
+            score: 100,
+            feedback: "【指引標準首選！】2026 IDSA 指引推薦：對難治性綠膿桿菌 (DTR-P. aeruginosa)，首選為新型頭孢複方 Ceftolozane-tazobactam (Zerbaxa) 或 Ceftazidime-avibactam (Zavicefta)！Ceftolozane 能克服綠膿桿菌常見之 OprD 孔蛋白缺損與 AmpC 過度表現！"
+          },
+          {
+            id: "tigecycline-trap-psa",
+            name: "Tigecycline (Tygacil)",
+            category: "甘胺醯環素類",
+            spec: "首劑 100mg 後 50mg IV Q12H",
+            correct: false,
+            score: -70,
+            hpLoss: 50,
+            feedback: "【不可饒恕的抗菌譜盲點！】牢記「3P1B 打不到」口訣：Pseudomonas、Proteus、Providencia、Burkholderia 天生帶有外排幫浦，Tigecycline 對綠膿桿菌是 100% 絕對無效！開 Tigecycline 治綠膿是嚴重醫療失誤！"
+          },
+          {
+            id: "ertapenem-mono",
+            name: "Ertapenem (Invanz)",
+            category: "Carbapenem 類",
+            spec: "1g IV QD 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 35,
+            feedback: "【常識錯誤】Ertapenem 在設計上天生就無法對抗綠膿桿菌 (Pseudomonas aeruginosa) 與 AB 菌，絕不可用於抗綠膿治療。"
+          },
+          {
+            id: "vancomycin-mono",
+            name: "Vancomycin",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: -50,
+            hpLoss: 30,
+            feedback: "【完全無效】Vancomycin 對所有革蘭氏陰性菌（包含綠膿桿菌）皆毫無活性。"
+          }
+        ]
+      },
+      {
+        id: "case-prosthetic-valve-endocarditis",
+        title: "病房值班照會 (第 30 床)",
+        type: "心臟外科照會",
+        risk: "人工瓣膜菌血症",
+        source: "心內膜生物膜感染",
+        avatar: "fa-solid fa-heart-pulse",
+        summary: "62歲男性，8個月前接受機械性主動脈瓣置換手術 (Mechanical AVR)。近三週持續不明原因低溫發燒、全身倦怠、新出現心臟雜音。經食道超音波 (TEE) 見主動脈人工瓣環有 1.2 公分移動性贅生物 (Vegetation)。三套血液培養均分離出 Methicillin-resistant Staphylococcus epidermidis (MRSE)。",
+        vitals: "BP 112/68, HR 92, BT 38.2°C",
+        labs: "WBC 13,800, CRP 88",
+        renal: "eGFR 75 mL/min",
+        history: "8個月前置放人工機械瓣膜",
+        cultureStatus: "血液培養與心臟超音波",
+        cultureDetails: [
+          { text: "檢體種類：3 套不同時間點血液培養", highlight: "text-slate-300" },
+          { text: "分離菌種：Staphylococcus epidermidis (MRSE 耐藥株)", highlight: "text-rose-400 font-bold" },
+          { text: "TEE 結果：人工機械主動脈瓣環見 12mm 贅生物", highlight: "text-slate-200" }
+        ],
+        revealedInfo: "【診斷解析】人工瓣膜心內膜炎 PVE (Vancomycin + Gentamicin + Rifampin 三聯破壞生物膜考點)",
+        cards: [
+          {
+            id: "triple-pve-therapy",
+            name: "Vancomycin + Gentamicin + Rifampin (三聯治療方案)",
+            category: "心內膜炎多重機轉抗生素處方",
+            spec: "Vanco 15-20mg/kg Q12H + Gentamicin 1mg/kg Q8H + Rifampin 300mg PO TID",
+            correct: true,
+            score: 100,
+            feedback: "【心臟感染大師級決策！】人工瓣膜心內膜炎 (PVE) 葡萄球菌感染指引明定標準三聯療法：①Vancomycin 提供核心殺菌骨幹；②Gentamicin 在前 2 週提供早期殺菌協同作用 (Synergy)；③Rifampin 則是穿透人工金屬異物生物膜 (Biofilm) 唯一的關鍵救星！三藥齊下缺一不可，且需使用至少 6 週，同時急照會心臟外科評估開刀！"
+          },
+          {
+            id: "vanco-alone",
+            name: "Vancomycin (單方治療方案)",
+            category: "糖胜肽類抗生素",
+            spec: "1g IV Q12H 靜脈輸注",
+            correct: false,
+            score: 20,
+            hpLoss: 25,
+            feedback: "【處方不足】單用 Vancomycin 無法有效穿透並清除附著在人工瓣膜金屬表面之葡萄球菌生物膜 (Biofilm)，復發率極高且難以避免瓣膜周圍膿瘍。"
+          },
+          {
+            id: "cefazolin-mono",
+            name: "Cefazolin (Cefa)",
+            category: "第 1 代頭孢菌素",
+            spec: "2g IV Q8H 靜脈輸注",
+            correct: false,
+            score: -45,
+            hpLoss: 35,
+            feedback: "【抗藥無效】菌種鑑定明確為 MRSE (Methicillin-resistant)，帶有 mecA 基因對所有傳統頭孢菌素全數抗藥！"
+          },
+          {
+            id: "two-week-short-course",
+            name: "Ceftriaxone (短療程 2 週)",
+            category: "第 3 代頭孢菌素",
+            spec: "2g IV QD 輸注滿 14 天",
+            correct: false,
+            score: -60,
+            hpLoss: 40,
+            feedback: "【雙重錯誤】葡萄球菌人工瓣膜心內膜炎不適用短療程，必須打滿至少 6 週；且 Ceftriaxone 對 MRSE 完全無效！"
+          }
+        ]
+      }
+    ];
+
+    let currentCaseIndex = 0;
+    let patientHp = 100;
+    let doctorSanity = 100;
+    let totalScore = 0;
+    let answered = false;
+    let mistakesLog = [];
+
+    // DOM Elements
+    const hudHp = document.getElementById('hud-patient-hp');
+    const hudSanity = document.getElementById('hud-doctor-sanity');
+    const hudScore = document.getElementById('hud-score');
+    const hudStage = document.getElementById('hud-stage');
+
+    const caseBadgeType = document.getElementById('case-badge-type');
+    const caseBadgeRisk = document.getElementById('case-badge-risk');
+    const caseSourceBadge = document.getElementById('case-source-badge');
+    const caseAvatar = document.getElementById('case-avatar');
+    const caseTitle = document.getElementById('case-title');
+    const caseSummary = document.getElementById('case-summary');
+    const caseVitals = document.getElementById('case-vitals');
+    const caseLabs = document.getElementById('case-labs');
+    const caseRenal = document.getElementById('case-renal');
+    const caseHistory = document.getElementById('case-history');
+    const caseCultureStatus = document.getElementById('case-culture-status');
+    const caseCultureDetails = document.getElementById('case-culture-details');
+
+    const cardHandContainer = document.getElementById('card-hand-container');
+    const feedbackBanner = document.getElementById('feedback-banner');
+    const actionControls = document.getElementById('action-controls');
+    const btnNextCase = document.getElementById('btn-next-case');
+
+    // Handbook Modal Elements
+    const handbookModal = document.getElementById('handbook-modal');
+    const btnShowHandbook = document.getElementById('btn-show-handbook');
+    const btnCloseHandbook = document.getElementById('btn-close-handbook');
+    const btnCloseHandbook2 = document.getElementById('btn-close-handbook-2');
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    // Summary Modal Elements
+    const summaryModal = document.getElementById('summary-modal');
+    const summaryScore = document.getElementById('summary-score');
+    const summaryRank = document.getElementById('summary-rank');
+    const summaryDesc = document.getElementById('summary-desc');
+    const summaryFeedback = document.getElementById('summary-feedback');
+    const btnRestartGame = document.getElementById('btn-restart-game');
+    const btnRestartRun = document.getElementById('btn-restart-run');
+
+    // Audio Elements
+    const btnSoundToggle = document.getElementById('btn-sound-toggle');
+    const soundIcon = document.getElementById('sound-icon');
+
+    const sound = {
+      enabled: true,
+      ctx: null,
+      getAudioContext() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            this.ctx = new AudioContextClass();
+          }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+        return this.ctx;
+      },
+      playTone(freq, type = 'sine', duration = 0.15, gainVal = 0.1) {
+        if (!this.enabled) return;
+        try {
+          const ctx = this.getAudioContext();
+          if (!ctx) return;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, ctx.currentTime);
+          gain.gain.setValueAtTime(gainVal, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          osc.stop(ctx.currentTime + duration);
+        } catch (e) {
+          console.warn('Audio playback error:', e);
+        }
+      },
+      playCorrect() {
+        if (!this.enabled) return;
+        try {
+          const ctx = this.getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          [523.25, 659.25, 783.99].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            gain.gain.setValueAtTime(0.12, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.25);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.26);
+          });
+        } catch (e) {
+          console.warn(e);
+        }
+      },
+      playWrong() {
+        if (!this.enabled) return;
+        try {
+          const ctx = this.getAudioContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          [280, 220, 160].forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.09);
+            gain.gain.setValueAtTime(0.14, now + idx * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.09 + 0.22);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.09);
+            osc.stop(now + idx * 0.09 + 0.24);
+          });
+        } catch (e) {
+          console.warn(e);
+        }
+      },
+      playCriticalWarning() {
+        if (!this.enabled) return;
+        this.playTone(180, 'sawtooth', 0.4, 0.25);
+      }
+    };
+
+    function initGame() {
+      currentCaseIndex = 0;
+      patientHp = 100;
+      doctorSanity = 100;
+      totalScore = 0;
+      mistakesLog = [];
+      updateHud();
+      loadCase(currentCaseIndex);
+    }
+
+    function updateHud() {
+      hudHp.textContent = `${Math.max(0, patientHp)} / 100`;
+      hudHp.className = `font-mono font-bold text-base ${patientHp <= 30 ? 'text-rose-500 pulse-danger' : patientHp <= 60 ? 'text-amber-400' : 'text-rose-400'}`;
+      hudSanity.textContent = `${Math.max(0, doctorSanity)}`;
+      hudScore.textContent = `${totalScore} 分`;
+      hudStage.textContent = `Case ${currentCaseIndex + 1} / ${CLINICAL_CASES.length}`;
+    }
+
+    function loadCase(index) {
+      if (index >= CLINICAL_CASES.length) {
+        showRunSummary();
+        return;
+      }
+
+      answered = false;
+      const c = CLINICAL_CASES[index];
+
+      // Reset feedback and action button
+      feedbackBanner.classList.add('hidden');
+      feedbackBanner.innerHTML = '';
+      actionControls.classList.add('hidden');
+
+      // Populate Case Meta with neutral titles
+      caseBadgeType.textContent = c.type;
+      caseBadgeRisk.textContent = c.risk;
+      caseSourceBadge.innerHTML = `<i class="fa-solid fa-location-crosshairs mr-1"></i>${c.source}`;
+      caseAvatar.innerHTML = `<i class="${c.avatar}"></i>`;
+      caseTitle.textContent = c.title;
+      caseSummary.textContent = c.summary;
+
+      // Grid Info
+      caseVitals.textContent = c.vitals;
+      caseLabs.textContent = c.labs;
+      caseRenal.textContent = c.renal;
+      caseHistory.textContent = c.history;
+
+      // Culture & AST Box (without suggestive hint bar)
+      caseCultureStatus.textContent = c.cultureStatus;
+      caseCultureDetails.innerHTML = c.cultureDetails.map(item => `
+        <div class="flex items-start gap-1.5 leading-snug">
+          <span class="text-sky-500 text-[10px] mt-0.5">•</span>
+          <span class="${item.highlight || 'text-slate-300'}">${item.text}</span>
+        </div>
+      `).join('');
+
+      // Dynamic Shuffling: Fisher-Yates shuffle cards so the correct answer is NEVER always 'A'
+      const shuffledCards = [...c.cards].sort(() => Math.random() - 0.5);
+      shuffledCards.forEach((card, idx) => {
+        card.tag = `處方選擇 ${['A', 'B', 'C', 'D', 'E'][idx] || (idx + 1)}`;
+      });
+
+      // Render Cards Hand
+      renderCardHand(shuffledCards);
+      updateHud();
+    }
+
+    function renderCardHand(cards) {
+      cardHandContainer.innerHTML = '';
+
+      cards.forEach((card) => {
+        const cardEl = document.createElement('div');
+        cardEl.className = `card-glow group cursor-pointer bg-slate-900 hover:bg-slate-850 border border-slate-800 hover:border-sky-500/80 rounded-xl p-4 transition duration-200 flex flex-col justify-between relative overflow-hidden shadow-lg`;
+        
+        // Neutral Border top accent
+        cardEl.innerHTML = `
+          <div class="h-1 w-full absolute top-0 left-0 bg-slate-700 group-hover:bg-sky-500 transition"></div>
+          <div>
+            <div class="flex items-center justify-between text-[11px] mb-1.5">
+              <span class="text-sky-400 font-semibold tracking-wide uppercase">${card.category}</span>
+              <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-mono text-[10px] border border-slate-700">${card.tag}</span>
+            </div>
+            <h4 class="font-bold text-white text-sm sm:text-base group-hover:text-sky-300 transition flex items-center gap-1.5">
+              <i class="fa-solid fa-capsules text-xs text-sky-400"></i>
+              <span>${card.name}</span>
+            </h4>
+            <p class="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">${card.spec}</p>
+          </div>
+
+          <div class="mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-[11px] text-slate-500 group-hover:text-slate-300 transition flex items-center gap-1">
+              <i class="fa-solid fa-hand-pointer text-sky-400"></i> 點選開立此處方
+            </span>
+            <span class="w-6 h-6 rounded-full bg-slate-800 group-hover:bg-sky-500 text-slate-400 group-hover:text-slate-950 flex items-center justify-center text-xs transition">
+              <i class="fa-solid fa-check"></i>
+            </span>
+          </div>
+        `;
+
+        cardEl.addEventListener('click', () => {
+          if (answered) return;
+          handleCardSelect(card, cardEl);
+        });
+
+        cardHandContainer.appendChild(cardEl);
+      });
+    }
+
+    function handleCardSelect(card, element) {
+      answered = true;
+      const currentCase = CLINICAL_CASES[currentCaseIndex];
+
+      // Reveal diagnostic tags upon answer
+      if (currentCase.revealedInfo) {
+        caseBadgeRisk.textContent = currentCase.risk;
+        caseBadgeRisk.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-950 text-rose-300 border border-rose-800 animate-pulse";
+        caseSourceBadge.innerHTML = `<i class="fa-solid fa-crosshairs mr-1"></i>${currentCase.source}`;
+        caseSourceBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-teal-950 text-teal-300 border border-teal-800";
+      }
+
+      // Disable other cards styling
+      const allCards = cardHandContainer.children;
+      for (let c of allCards) {
+        c.classList.remove('card-glow', 'cursor-pointer');
+        c.classList.add('opacity-50', 'pointer-events-none');
+      }
+      element.classList.remove('opacity-50');
+
+      feedbackBanner.classList.remove('hidden');
+
+      if (card.correct) {
+        sound.playCorrect();
+        totalScore += card.score;
+        element.classList.add('border-emerald-500', 'bg-emerald-950/30', 'ring-2', 'ring-emerald-500/50');
+
+        feedbackBanner.className = "bg-emerald-950/80 border border-emerald-600/80 text-emerald-200 rounded-xl p-4 shadow-xl space-y-2";
+        feedbackBanner.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 font-bold text-emerald-400 text-base">
+              <i class="fa-solid fa-circle-check text-xl"></i>
+              <span>處方決策正確！獲得 +${card.score} AMS 積分</span>
+            </div>
+            <span class="text-xs font-mono bg-emerald-900/60 px-2 py-0.5 rounded text-emerald-300">${currentCase.revealedInfo || ''}</span>
+          </div>
+          <p class="text-xs sm:text-sm text-emerald-100 leading-relaxed">${card.feedback}</p>
+        `;
+      } else {
+        sound.playWrong();
+        totalScore += (card.score || 0);
+        const hpDmg = card.hpLoss || 20;
+        patientHp -= hpDmg;
+        doctorSanity -= 15;
+
+        mistakesLog.push({
+          caseTitle: currentCase.title,
+          revealedInfo: currentCase.revealedInfo,
+          chosen: card.name,
+          lesson: card.feedback
+        });
+
+        element.classList.add('trap-shake', 'border-rose-500', 'bg-rose-950/40', 'ring-2', 'ring-rose-500/60');
+        if (patientHp <= 30) {
+          sound.playCriticalWarning();
+        }
+
+        feedbackBanner.className = "bg-rose-950/90 border border-rose-600/80 text-rose-200 rounded-xl p-4 shadow-xl space-y-2";
+        feedbackBanner.innerHTML = `
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2 font-bold text-rose-400 text-base">
+              <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+              <span>處方警訊！踩中臨床地雷 (病人 HP -${hpDmg})</span>
+            </div>
+            <span class="text-xs font-mono bg-rose-900/60 px-2 py-0.5 rounded text-rose-300">AMS 懲罰 ${card.score} 分</span>
+          </div>
+          <div class="text-xs text-amber-300 font-semibold mb-1">
+            <i class="fa-solid fa-circle-info mr-1"></i>${currentCase.revealedInfo || ''}
+          </div>
+          <p class="text-xs sm:text-sm text-rose-100 leading-relaxed">${card.feedback}</p>
+        `;
+      }
+
+      updateHud();
+
+      if (patientHp <= 0) {
+        setTimeout(() => {
+          showGameOver();
+        }, 1200);
+        return;
+      }
+
+      actionControls.classList.remove('hidden');
+    }
+
+    btnNextCase.addEventListener('click', () => {
+      currentCaseIndex++;
+      loadCase(currentCaseIndex);
+    });
+
+    function showRunSummary() {
+      summaryModal.classList.remove('hidden');
+      summaryScore.textContent = `${totalScore} 分`;
+
+      let rank = "優良 PGY (合格住院醫師)";
+      let rankColor = "text-sky-400";
+      let descText = "你已順利跑完所有個案！";
+
+      if (totalScore >= 2500) {
+        rank = "抗生素感染症總監 (ID Fellow / Attending 等級)";
+        rankColor = "text-emerald-400";
+        descText = "神乎其技！你完全內化了 2026 最新指引、MERINO / BALANCE / ATTACK trial 實證、抗真菌藥物盲區與台灣在地抗藥菌譜！值班完全不用怕！";
+      } else if (totalScore >= 1800) {
+        rank = "實力堅強的實戰 PGY (主治醫師強力靠山)";
+        rankColor = "text-teal-300";
+        descText = "表現優異！大部分關鍵核心觀念、抗真菌藥物穿透與組織盲點都清晰掌握，少數陷阱需再複習！";
+      } else {
+        rank = "值班驚險過關 (建議詳讀速查本)";
+        rankColor = "text-amber-400";
+        descText = "完成了 30 關值班考驗，但踩中了部分高危險的抗生素與抗黴菌地雷！請參考下方回饋。";
+      }
+
+      summaryRank.textContent = rank;
+      summaryRank.className = `text-xl font-bold mt-1 ${rankColor}`;
+      summaryDesc.textContent = descText;
+
+      if (mistakesLog.length > 0) {
+        summaryFeedback.innerHTML = `
+          <div class="font-bold text-rose-400 mb-1 border-b border-slate-800 pb-1">
+            <i class="fa-solid fa-clipboard-list mr-1"></i> 本次值班失誤紀錄與考點複習 (${mistakesLog.length} 處)：
+          </div>
+          ${mistakesLog.map((m) => `
+            <div class="py-1 text-slate-300">
+              <span class="text-amber-300 font-semibold">[${m.caseTitle}]</span> 誤選 <em>${m.chosen}</em>：
+              <div class="text-slate-400 text-[11px] mt-0.5">${m.lesson}</div>
+            </div>
+          `).join('')}
+        `;
+      } else {
+        summaryFeedback.innerHTML = `
+          <div class="text-emerald-400 font-bold flex items-center gap-1.5">
+            <i class="fa-solid fa-trophy"></i> 完美通關！本次 30 關值班毫無任何處方失誤，達到 100% AMS 合格準則！
+          </div>
+        `;
+      }
+    }
+
+    function showGameOver() {
+      summaryModal.classList.remove('hidden');
+      document.getElementById('summary-icon').innerHTML = `<i class="fa-solid fa-skull text-rose-500"></i>`;
+      document.getElementById('summary-icon').className = "w-16 h-16 mx-auto rounded-full bg-rose-950 border border-rose-600 flex items-center justify-center text-3xl";
+      document.getElementById('summary-title').textContent = "敗血性休克惡化：值班中斷！";
+      summaryScore.textContent = `${totalScore} 分`;
+      summaryRank.textContent = "處方致命盲點 (被感染科電飛)";
+      summaryRank.className = "text-xl font-bold mt-1 text-rose-500";
+      summaryDesc.textContent = "病患穩定度降至 0%，因致命處方錯誤造成病情不可逆進展。請重新翻閱白袍手冊再試一次！";
+
+      summaryFeedback.innerHTML = mistakesLog.map(m => `
+        <div class="py-1 text-slate-300 text-xs">
+          <span class="text-rose-400 font-semibold">[${m.caseTitle}]</span>: ${m.lesson}
+        </div>
+      `).join('');
+    }
+
+    btnRestartGame.addEventListener('click', () => {
+      summaryModal.classList.add('hidden');
+      initGame();
+    });
+
+    btnRestartRun.addEventListener('click', () => {
+      initGame();
+    });
+
+    btnShowHandbook.addEventListener('click', () => {
+      handbookModal.classList.remove('hidden');
+    });
+    btnCloseHandbook.addEventListener('click', () => {
+      handbookModal.classList.add('hidden');
+    });
+    btnCloseHandbook2.addEventListener('click', () => {
+      handbookModal.classList.add('hidden');
+    });
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.getAttribute('data-tab');
+        tabButtons.forEach(b => {
+          b.classList.remove('text-sky-400', 'border-b-2', 'border-sky-400');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('text-sky-400', 'border-b-2', 'border-sky-400');
+        btn.classList.remove('text-slate-400');
+
+        tabContents.forEach(content => {
+          if (content.id === targetTab) {
+            content.classList.remove('hidden');
+            content.classList.add('block');
+          } else {
+            content.classList.add('hidden');
+            content.classList.remove('block');
+          }
+        });
+      });
+    });
+
+    btnSoundToggle.addEventListener('click', () => {
+      sound.enabled = !sound.enabled;
+      if (sound.enabled) {
+        soundIcon.className = "fa-solid fa-volume-high text-sky-400";
+        sound.playTone(520, 'sine', 0.1);
+      } else {
+        soundIcon.className = "fa-solid fa-volume-xmark text-slate-500";
+      }
+    });
+
+    window.onload = () => {
+      initGame();
+    };
+  </script>
+</body>
+</html>
