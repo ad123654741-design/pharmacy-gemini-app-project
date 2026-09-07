@@ -212,7 +212,7 @@
           <div class="pt-2 border-t border-slate-200">
             <span class="font-bold text-slate-800 text-[11px] uppercase tracking-wide flex items-center gap-1 mb-1">
               <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-              藥師核方要點 (Clinical Pearls & Interactions)
+              藥師注意事項
             </span>
             <p id="calc-notes" class="text-slate-600 leading-relaxed bg-slate-50 p-2 rounded border border-slate-200/80 font-sans">
               Diclofenac 為 NSAID 類，與 Ibuprofen 具同類交叉腎毒性與腸胃刺激性，嚴禁同時重疊併用；脫水與水痘病童禁用。
@@ -230,10 +230,10 @@
 
       </div>
 
-      <!-- 退燒製劑速算對照矩陣 -->
+      <!-- 退燒藥品速算對照表 -->
       <div class="bg-white border border-slate-300 rounded shadow-xs p-3 text-xs">
         <h3 class="font-bold text-slate-800 mb-2 flex items-center justify-between">
-          <span>退燒製劑速算對照矩陣 (Antipyretic Cross-Reference Table)</span>
+          <span>退燒藥品速算對照表</span>
           <span id="matrix-weight-hint" class="text-[11px] text-slate-400 font-normal">以目前 12.0 kg 為基準</span>
         </h3>
         <div class="overflow-x-auto">
@@ -264,10 +264,10 @@
 
   <script>
     /* ==========================================================================
-       藥品資料庫 (落實 Voren 單次 1.0 mg/kg/次、Actein、Smecta 等)
+       藥品資料庫 (含推導公式、塞劑精切、克流感、PSEU、Acyclovir、Kidsolone、Zithromax 等)
        ========================================================================== */
     const DRUG_DB = [
-      // 1. 非炎栓劑 (依要求設定為 1.0 mg/kg/次，每日 3 次分 TID)
+      // 1. 非炎栓劑 (1.0 mg/kg/次，每日 3 次分 TID)
       {
         id: 'voren_supp',
         type: 'SUPPOSITORY',
@@ -278,36 +278,25 @@
         dosageType: 'supp',
         strength: 12.5,
         unitStr: '顆 (Supp)',
-        dosePerKgMin: 0.5,
-        dosePerKgMax: 1.0,
-        dosePerKgStd: 1.0, // 單次 1.0 mg/kg
+        dosePerKgStd: 1.0,
         frequencyText: '每 8 小時一次 (TID prn，每日最多 3 次)',
         timingText: '兒童 0.5~3 mg/kg/day 分 2~3 次；體溫 > 38.5°C 且劇吐無法口服時使用',
-        maxDailyTimes: '每日不超過 3 次 (單日最大總量 3 mg/kg/天，單次上限 25mg / 成人 50mg)',
+        maxDailyTimes: '每日不超過 3 次 (單日總量上限 3 mg/kg/天，單次上限 25mg / 成人 50mg)',
         adultCapSingleMg: 50,
         calculateDose: function(bw) {
           const targetMg = Math.min(bw * 1.0, 25.0);
           const rawSupp = targetMg / 12.5;
-          // 以 0.05 顆為精細刻度
           let suppCount = Math.round(rawSupp * 20) / 20;
           if (suppCount < 0.25) suppCount = 0.25;
 
           let practicalAdvice = '';
-          if (suppCount <= 0.35) {
-            practicalAdvice = '約【1/3 顆】(或縱切 0.3 顆)。體重過輕嬰幼兒建議審慎評估。';
-          } else if (suppCount >= 0.45 && suppCount <= 0.55) {
-            practicalAdvice = '約【半顆 (0.5 顆)】，請以乾淨刀片俐落縱切。';
-          } else if (suppCount >= 0.65 && suppCount <= 0.78) {
-            practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議裁【3/4 顆 (約 0.75 顆)】。`;
-          } else if (suppCount >= 0.79 && suppCount <= 0.9) {
-            practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議切【約 4/5 顆 (0.8 顆)】。`;
-          } else if (suppCount >= 0.91 && suppCount <= 1.15) {
-            practicalAdvice = '建議使用完整【1 顆】栓劑 (12.5 mg)。塞入前可沾水潤滑。';
-          } else if (suppCount >= 1.2 && suppCount <= 1.6) {
-            practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議【1 顆 + 縱切半顆 (約 1.2~1.5 顆)】。`;
-          } else {
-            practicalAdvice = `精確算量為 ${suppCount} 顆。較大兒童建議優先評估口服製劑。`;
-          }
+          if (suppCount <= 0.35) practicalAdvice = '約【1/3 顆】(或縱切 0.3 顆)。體重過輕嬰幼兒建議審慎評估。';
+          else if (suppCount >= 0.45 && suppCount <= 0.55) practicalAdvice = '約【半顆 (0.5 顆)】，請以乾淨刀片俐落縱切。';
+          else if (suppCount >= 0.65 && suppCount <= 0.78) practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議裁【3/4 顆 (約 0.75 顆)】。`;
+          else if (suppCount >= 0.79 && suppCount <= 0.9) practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議切【約 4/5 顆 (0.8 顆)】。`;
+          else if (suppCount >= 0.91 && suppCount <= 1.15) practicalAdvice = '建議使用完整【1 顆】栓劑 (12.5 mg)。塞入前可沾水潤滑。';
+          else if (suppCount >= 1.2 && suppCount <= 1.6) practicalAdvice = `精確算量為 ${suppCount} 顆。實務建議【1 顆 + 縱切半顆 (約 1.2~1.5 顆)】。`;
+          else practicalAdvice = `精確算量為 ${suppCount} 顆。較大兒童建議優先評估口服製劑。`;
 
           const actualMg = Math.round(suppCount * 12.5 * 10) / 10;
           return {
@@ -315,12 +304,14 @@
             primaryUnit: '顆 (Supp)',
             secondaryText: `相當於 ${actualMg} mg`,
             rateText: `${(actualMg / bw).toFixed(2)} mg/kg/次 (單次基準: 1.0 mg/kg，分 TID)`,
-            instruction: practicalAdvice
+            instruction: practicalAdvice,
+            auditFormula: `單次目標 mg = min(${bw}kg × 1.0 mg/kg, 25mg) = ${targetMg.toFixed(1)} mg\n理論顆數 = ${targetMg.toFixed(1)} mg ÷ 12.5 mg/顆 = ${rawSupp.toFixed(2)} 顆\n臨床精密切分刻度 (以 0.05 顆圓整) = ${suppCount} 顆 (相當於 ${actualMg} mg, ${(actualMg/bw).toFixed(2)} mg/kg/次)`
           };
         },
         notes: '【禁忌提醒】Diclofenac 為 NSAID 類，與 Ibuprofen 具同類交叉腎毒性與腸胃刺激性，嚴禁重疊併用；脫水及水痘病童禁用。'
       },
-      // 2. 乙醯胺酚塞劑
+
+      // 2. 乙醯胺酚塞劑 100mg
       {
         id: 'acetaminophen_supp_100',
         type: 'SUPPOSITORY',
@@ -331,8 +322,6 @@
         dosageType: 'supp',
         strength: 100,
         unitStr: '顆 (Supp)',
-        dosePerKgMin: 15,
-        dosePerKgMax: 20,
         dosePerKgStd: 15,
         frequencyText: '每 4 ~ 6 小時一次，必要時給予 (prn)',
         timingText: '發燒 > 38.5°C 且病童無法口服退燒藥時使用',
@@ -356,13 +345,292 @@
             primaryDose: suppCount.toString(),
             primaryUnit: '顆 (Supp)',
             secondaryText: `相當於 ${actualMg} mg`,
-            rateText: `${(actualMg / bw).toFixed(1)} mg/kg (直腸可用率約80%)`,
-            instruction: practical
+            rateText: `${(actualMg / bw).toFixed(1)} mg/kg (直腸生體可用率約 80%)`,
+            instruction: practical,
+            auditFormula: `單次目標 mg = min(${bw}kg × 15 mg/kg, 1000mg) = ${targetMg.toFixed(1)} mg\n理論顆數 = ${targetMg.toFixed(1)} mg ÷ 100 mg/顆 = ${rawSupp.toFixed(2)} 顆\n臨床修整量 = ${suppCount} 顆 (${actualMg} mg, ${(actualMg/bw).toFixed(1)} mg/kg/次)`
           };
         },
         notes: '直腸吸收較口服慢且個體吸收差異大。病童能吞服時，優先建議口服安佳熱。'
       },
-      // 3. Actein 粉劑
+
+      // 3. 克流感 (Tamiflu / Oseltamivir)
+      {
+        id: 'tamiflu',
+        type: 'ORAL',
+        brandName: '克流感膠囊/懸浮 (Tamiflu)',
+        genericName: 'Oseltamivir 75mg/cap (或泡製 6mg/mL)',
+        category: 'ANTIVIRAL_ANTIBIOTIC',
+        categoryLabel: '抗流感病毒劑',
+        dosageType: 'mg',
+        strength: 75,
+        unitStr: 'mg',
+        dosePerKgStd: 0,
+        frequencyText: '治療：每日 2 次 (BID，共 5 天)；預防：每日 1 次 (QD，共 10 天)',
+        timingText: '建議隨餐服用減少腸胃道不適；發病 48 小時內投藥療效最佳',
+        maxDailyTimes: '成人單次 75 mg，每日 2 次',
+        adultCapSingleMg: 75,
+        calculateDose: function(bw) {
+          let doseMg = 30;
+          let tier = '';
+          if (bw <= 15.0) {
+            doseMg = 30;
+            tier = 'BW ≤ 15 kg: 每次 30 mg';
+          } else if (bw <= 23.0) {
+            doseMg = 45;
+            tier = '15.1 ~ 23 kg: 每次 45 mg';
+          } else if (bw <= 40.0) {
+            doseMg = 60;
+            tier = '23.1 ~ 40 kg: 每次 60 mg';
+          } else {
+            doseMg = 75;
+            tier = '> 40 kg: 每次 75 mg (成人劑量)';
+          }
+          const mlEquivalent = (doseMg / 6).toFixed(1);
+          return {
+            primaryDose: doseMg.toString(),
+            primaryUnit: 'mg / 次',
+            secondaryText: `泡製藥水(6mg/mL)相當於 ${mlEquivalent} mL`,
+            rateText: `依 CDC/仿單體重分級處方 (${tier})`,
+            instruction: `【調配技巧】若使用 75mg 膠囊打開加 5mL 糖漿/水溶勻(15mg/mL)，${doseMg}mg 需抽取 ${(doseMg/15).toFixed(1)} mL 服用。`,
+            auditFormula: `CDC標準體重級距：\n病童體重: ${bw} kg 落在階梯 [${tier}]\n→ 單次處方量 = ${doseMg} mg (BID 治療 × 5天)\n換算懸浮液(6mg/mL) = ${doseMg} ÷ 6 = ${mlEquivalent} mL/次`
+          };
+        },
+        notes: '【流感抗病毒】發病 48 小時內儘速投藥效果最好。若膠囊過大無法吞服，可遵照指引由藥師或家屬打開膠囊以甜糖漿調配分服。'
+      },
+
+      // 4. PSEU 鼻舒口服液 (Pseudoephedrine 6mg/mL)
+      {
+        id: 'pseu_solution',
+        type: 'ORAL',
+        brandName: '鼻舒口服液 (PSEU Oral Solution)',
+        genericName: 'Pseudoephedrine HCl 6 mg/mL',
+        category: 'RESPIRATORY',
+        categoryLabel: '血管收縮去充血/鼻舒液',
+        dosageType: 'liquid',
+        strength: 6,
+        unitStr: 'mL',
+        dosePerKgStd: 1.0, // 1 mg/kg/dose
+        frequencyText: '每日 3 ~ 4 次 (TID ~ QID)',
+        timingText: '緩解鼻塞、鼻咽黏膜腫脹；幼童睡前服用留意可能興奮難眠',
+        maxDailyTimes: '單次劑量不超過 30 mg (5 mL)；>12歲上限 60 mg',
+        adultCapSingleMg: 60,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 1.0, 30.0);
+          const ml = Math.round((targetMg / 6) * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${Math.round(targetMg * 10) / 10} mg`,
+            rateText: `單次基準: 1.0 mg/kg/次 (約 0.17 mL/kg)`,
+            instruction: '建議使用專用刻度餵藥針筒量取。服藥後若出現手抖或過度興奮躁動可微幅減量。',
+            auditFormula: `單次目標 mg = min(${bw}kg × 1.0 mg/kg, 30mg) = ${targetMg.toFixed(1)} mg\nPseudoephedrine 規格 = 6 mg/mL\n處方體積 = ${targetMg.toFixed(1)} mg ÷ 6 mg/mL = ${(targetMg/6).toFixed(2)} mL → 修整為 ${ml.toFixed(1)} mL`
+          };
+        },
+        notes: '擬交感神經刺激劑，藉由收縮鼻黏膜小血管緩解鼻塞。高血壓、嚴重心律不整、甲狀腺亢進患童慎用。'
+      },
+
+      // 5. Acyclovir 200mg 錠劑
+      {
+        id: 'acyclovir_tab',
+        type: 'TABLET',
+        brandName: '熱威樂素/艾賽可威錠 200mg (Acyclovir)',
+        genericName: 'Acyclovir 200 mg / tab',
+        category: 'ANTIVIRAL_ANTIBIOTIC',
+        categoryLabel: '抗疱疹/水痘病毒劑',
+        dosageType: 'tab',
+        strength: 200,
+        unitStr: '顆 (Tab)',
+        dosePerKgStd: 20, // 水痘標準單次 20 mg/kg (QID)
+        frequencyText: '每日 4 次 (QID) 或 每日 5 次 (q4h 醒時)',
+        timingText: '水痘：每次 20 mg/kg (QID) 連續 5 天；單純疱疹依適應症調整',
+        maxDailyTimes: '單次上限 800 mg (4 顆)，服藥期間需攝取足量水分',
+        adultCapSingleMg: 800,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 20, 800);
+          const rawTab = targetMg / 200;
+          let tabCount = Math.round(rawTab * 4) / 4; // 以 0.25 顆為刻度
+          if (tabCount < 0.25) tabCount = 0.25;
+
+          let advice = '';
+          if (tabCount === 0.25) advice = '【1/4 顆】(50 mg)，可磨粉分包或懸浮給藥。';
+          else if (tabCount === 0.5) advice = '【半顆 (0.5 顆)】(100 mg)，以切藥器切半。';
+          else if (tabCount === 0.75) advice = '【3/4 顆 (0.75 顆)】(150 mg)。';
+          else if (tabCount === 1.0) advice = '【完整 1 顆】(200 mg)。';
+          else advice = `【${tabCount} 顆】(約 ${Math.round(tabCount * 200)} mg)。`;
+
+          const actualMg = Math.round(tabCount * 200);
+          return {
+            primaryDose: tabCount.toString(),
+            primaryUnit: '顆 (Tab)',
+            secondaryText: `相當於 ${actualMg} mg`,
+            rateText: `水痘常規: 20 mg/kg/次 (QID 給藥)`,
+            instruction: advice + ' 服藥期間必須補充足量水分，預防腎小管結晶尿 (Crystalluria)。',
+            auditFormula: `水痘單次劑量 = min(${bw}kg × 20 mg/kg, 800mg) = ${targetMg.toFixed(1)} mg\n規格 = 200 mg/錠\n理論錠數 = ${targetMg.toFixed(1)} ÷ 200 = ${rawTab.toFixed(2)} 顆 → 圓整至 1/4 錠刻度: ${tabCount} 顆 (${actualMg} mg)`
+          };
+        },
+        notes: '【腎毒性防護】Acyclovir 在腎小管代謝濃度高，水分不足極易結晶沈積造成急性腎損傷，服藥期間務必叮嚀多喝水。'
+      },
+
+      // 6. Kidsolone 兒童類固醇口服液
+      {
+        id: 'kidsolone',
+        type: 'ORAL',
+        brandName: '必爾生口服液 (Kidsolone)',
+        genericName: 'Prednisolone 1 mg/mL',
+        category: 'STEROID',
+        categoryLabel: '口服類固醇液',
+        dosageType: 'liquid',
+        strength: 1,
+        unitStr: 'mL',
+        dosePerKgStd: 1.0, // 氣喘急性發作/抗發炎 1~2 mg/kg/day
+        frequencyText: '每日 2 ~ 3 次 (BID ~ TID) 或 每日 1 次 (晨服)',
+        timingText: '【建議隨餐或飯後服用】減少腸胃刺激；急性氣喘通常療程 3~5 天',
+        maxDailyTimes: '急性氣喘發作每日總量不超過 60 mg (60 mL/天)',
+        adultCapSingleMg: 60,
+        calculateDose: function(bw) {
+          // 常規單次處方量：以 1.0 mg/kg/day 分 BID 估算單次量約 0.5 mg/kg，或急性抗發炎單次 1.0 mg/kg
+          const singleMg = Math.min(bw * 0.5, 30.0);
+          const ml = Math.round(singleMg * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${ml.toFixed(1)} mg (Prednisolone)`,
+            rateText: `以 1.0 mg/kg/day 分 BID 投予 (每次 0.5 mg/kg)`,
+            instruction: '短療程 (3~5天) 通常不需漸進式減藥 (Tapering)。若有急性氣喘發作可由醫師加倍至 2 mg/kg/day。',
+            auditFormula: `標準抗發炎劑量 = 1.0 mg/kg/day 分 BID 投予\n單次處方量 = (${bw}kg × 1.0 mg/kg) ÷ 2 = ${(bw * 0.5).toFixed(1)} mg\nPrednisolone 規格: 1 mg/mL → 單次處方體積 = ${ml.toFixed(1)} mL (BID 給藥)`
+          };
+        },
+        notes: '【類固醇臨床要點】短天數 (≤5天) 衝刺療程安全性高，能快速抑制氣道過敏水腫。若服用超過兩週需依醫囑緩慢遞減劑量以防腎上腺機能低下。'
+      },
+
+      // 7. Zithromax 日舒懸浮液
+      {
+        id: 'zithromax',
+        type: 'ORAL',
+        brandName: '日舒口服懸浮液 (Zithromax)',
+        genericName: 'Azithromycin 200 mg / 5 mL (40 mg/mL)',
+        category: 'ANTIVIRAL_ANTIBIOTIC',
+        categoryLabel: '巨環類抗生素 (Macrolide)',
+        dosageType: 'liquid',
+        strength: 40, // 200mg/5ml = 40 mg/ml
+        unitStr: 'mL',
+        dosePerKgStd: 10, // 10 mg/kg/day QD x 3 days
+        frequencyText: '每日 1 次 (QD，固定時間連續服用 3 天)',
+        timingText: '【每日一次，空腹或隨餐均可】；治療黴漿菌肺炎黃金首選',
+        maxDailyTimes: '單日最大劑量不超過 500 mg (12.5 mL/天)',
+        adultCapSingleMg: 500,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 10, 500);
+          const ml = Math.round((targetMg / 40) * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${Math.round(targetMg)} mg (QD 給予)`,
+            rateText: `標準 3 日療法: 10 mg/kg/day (QD × 3天)`,
+            instruction: '【服藥療程】半衰期極長 (約68小時)，服完 3 天後體內組織仍可維持有效濃度達 7~10 天。泡製後室溫或冷藏皆可保存 10 天。',
+            auditFormula: `單日目標量 = min(${bw}kg × 10 mg/kg/day, 500mg) = ${targetMg.toFixed(1)} mg\n規格 = 200 mg / 5 mL = 40 mg/mL\n處方量 = ${targetMg.toFixed(1)} mg ÷ 40 mg/mL = ${(targetMg/40).toFixed(2)} mL → 修整為 ${ml.toFixed(1)} mL (QD × 3天)`
+          };
+        },
+        notes: '【心臟與腸胃注意】組織穿透力極強。少數病患偶有腸胃絞痛腹瀉；心律不整或有 QT 間隔延長病童應慎用。'
+      },
+
+      // 8. 希普利敏液 (依使用者指定：0.25 mg/kg/day 算完後分成 TID)
+      {
+        id: 'cypromin',
+        type: 'ORAL',
+        brandName: '希普利敏液 (Cypromin)',
+        genericName: 'Cyproheptadine HCl 0.4 mg/mL',
+        category: 'ANTIHISTAMINE',
+        categoryLabel: '第一代抗組織胺',
+        dosageType: 'liquid',
+        strength: 0.4,
+        unitStr: 'mL',
+        dosePerKgStd: 0.25, // 0.25 mg/kg/day
+        frequencyText: '每日 3 次 (TID，三餐後或早中晚)',
+        timingText: '過敏性鼻炎、打噴嚏、流鼻水、蕁麻疹止癢；具明顯抗膽鹼嗜睡性',
+        maxDailyTimes: '每日總量不超過 0.25 mg/kg/天 (成人上限 16 mg/天)',
+        adultCapSingleMg: 4,
+        calculateDose: function(bw) {
+          // 依指定原則：先以 0.25 mg/kg/day 計算單日總量，再分成 TID 給藥
+          const dailyMg = Math.min(bw * 0.25, 12.0);
+          const singleMg = dailyMg / 3;
+          const singleMlRaw = singleMg / 0.4;
+          const singleMl = Math.round(singleMlRaw * 10) / 10;
+          return {
+            primaryDose: singleMl.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於單次 ${(Math.round(singleMg * 100) / 100).toFixed(2)} mg`,
+            rateText: `由 0.25 mg/kg/day 換算總量後分 TID 投予`,
+            instruction: '常見副作用為嗜睡與食慾增加。早產兒及新生兒禁用。',
+            auditFormula: `核算推導步驟 (使用者指定標準)：\n1. 單日總 mg = ${bw}kg × 0.25 mg/kg/day = ${dailyMg.toFixed(2)} mg/day\n2. 分成 TID 單次 mg = ${dailyMg.toFixed(2)} ÷ 3 = ${singleMg.toFixed(3)} mg/次\n3. 換算 0.4 mg/mL 體積 = ${singleMg.toFixed(3)} mg ÷ 0.4 = ${singleMlRaw.toFixed(2)} mL → 建議取 ${singleMl.toFixed(1)} mL`
+          };
+        },
+        notes: '第一代抗組織胺，具抗組織胺與抗血清素作用。容易產生中樞鎮靜與嗜睡，臨床也常被用於改善幼兒食慾。'
+      },
+
+      // 9. 安佳熱糖漿
+      {
+        id: 'antipen',
+        type: 'ORAL',
+        brandName: '安佳熱糖漿 (Antipen)',
+        genericName: 'Acetaminophen 24 mg/mL',
+        category: 'FEVER',
+        categoryLabel: '口服解熱鎮痛',
+        dosageType: 'liquid',
+        strength: 24,
+        unitStr: 'mL',
+        dosePerKgStd: 12,
+        frequencyText: '每 4 ~ 6 小時一次 (q4h~q6h prn)',
+        timingText: '體溫高於 38.5°C 或疼痛不適時給予',
+        maxDailyTimes: '每日不超過 5 次 (最大劑量 < 60 mg/kg/天，成人單次上限 1000mg)',
+        adultCapSingleMg: 1000,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 12, 1000);
+          const ml = Math.round((targetMg / 24) * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${Math.round(targetMg)} mg`,
+            rateText: `基準: ${(targetMg / bw).toFixed(1)} mg/kg (速算: 體重 ÷ 2 mL)`,
+            instruction: '建議使用有刻度之餵藥針筒精確抽取量取。',
+            auditFormula: `單次目標 mg = min(${bw}kg × 12 mg/kg, 1000mg) = ${targetMg.toFixed(1)} mg\nAcetaminophen 24 mg/mL → 處方量 = ${targetMg.toFixed(1)} ÷ 24 = ${(targetMg/24).toFixed(2)} mL → ${ml.toFixed(1)} mL (相當於 BW/2)`
+          };
+        },
+        notes: '兒童最安全的退燒第一線首選。若與 Ibuprofen 輪替退燒，兩種成份間隔需至少 2~3 小時。'
+      },
+
+      // 10. 依普芬懸液
+      {
+        id: 'iprofen',
+        type: 'ORAL',
+        brandName: '依普芬口服懸液 (Iprofen)',
+        genericName: 'Ibuprofen 20 mg/mL (2%)',
+        category: 'FEVER',
+        categoryLabel: '口服解熱鎮痛 (NSAID)',
+        dosageType: 'liquid',
+        strength: 20,
+        unitStr: 'mL',
+        dosePerKgStd: 10,
+        frequencyText: '每 6 ~ 8 小時一次 (q6h~q8h prn)',
+        timingText: '建議隨餐或飯後給予，以減低腸胃刺激',
+        maxDailyTimes: '每日不超過 4 次 (單日最大總量 40 mg/kg/天，成人單次上限 600mg)',
+        adultCapSingleMg: 600,
+        calculateDose: function(bw) {
+          const targetMg = Math.min(bw * 10, 600);
+          const ml = Math.round((targetMg / 20) * 10) / 10;
+          return {
+            primaryDose: ml.toFixed(1),
+            primaryUnit: 'mL',
+            secondaryText: `相當於 ${Math.round(targetMg)} mg`,
+            rateText: `基準: 10 mg/kg (高燒 10mg/kg，輕度可採 5mg/kg)`,
+            instruction: '瓶身使用前請充分搖勻。小於 6 個月嬰兒及脫水患者慎用。',
+            auditFormula: `單次目標 mg = min(${bw}kg × 10 mg/kg, 600mg) = ${targetMg.toFixed(1)} mg\nIbuprofen 20 mg/mL → 處方量 = ${targetMg.toFixed(1)} ÷ 20 = ${(targetMg/20).toFixed(2)} mL → ${ml.toFixed(1)} mL`
+          };
+        },
+        notes: '具消炎與退高燒效果。脫水、腹瀉、腎功能不全或水痘病患應避免使用以防腎損害。'
+      },
+
+      // 11. Actein 粉劑
       {
         id: 'actein_powder',
         type: 'ORAL_POWDER',
@@ -373,8 +641,6 @@
         dosageType: 'sachet',
         strength: 200,
         unitStr: '包 (Sachet)',
-        dosePerKgMin: 10,
-        dosePerKgMax: 15,
         dosePerKgStd: 10,
         frequencyText: '每日 2 ~ 3 次 (BID ~ TID)',
         timingText: '飯後或隨餐服用；溶解於少許溫水或冷開水中飲用',
@@ -405,12 +671,14 @@
             primaryUnit: '包 (Sachet)',
             secondaryText: `相當於 ${actualMg} mg (約 ${sachetFraction})`,
             rateText: `每次約 ${(actualMg / bw).toFixed(1)} mg/kg (TID 投予)`,
-            instruction: '可加少許溫水溶解後服用。避免與抗生素同杯混和以防可能之化學不相容。'
+            instruction: '可加少許溫水溶解後服用。避免與抗生素同杯混和以防可能之化學不相容。',
+            auditFormula: `體重階梯指引：\n<7kg: 1/4包 | 7~10kg: 1/3包 | 11~16kg: 1/2包 | 17~24kg: 3/4包 | >24kg: 1包\n當前體重 ${bw}kg → 處方 ${sachetCount} 包 (${actualMg} mg, ${(actualMg/bw).toFixed(1)} mg/kg/次, TID)`
           };
         },
         notes: '具有黏液溶解作用。溶解後應盡速服用；小於 1 歲嬰兒咳痰反射未成熟者需注意痰液抽吸。'
       },
-      // 4. Smecta 思密達
+
+      // 12. Smecta 思密達
       {
         id: 'smecta_powder',
         type: 'ORAL_POWDER',
@@ -421,8 +689,6 @@
         dosageType: 'sachet',
         strength: 3,
         unitStr: '包 (Sachet)',
-        dosePerKgMin: 0,
-        dosePerKgMax: 0,
         dosePerKgStd: 0,
         frequencyText: '每日 2 ~ 3 次 (分次服用)',
         timingText: '【空腹服用】或兩餐之間給藥；急性腹瀉起始可加倍劑量',
@@ -450,150 +716,24 @@
             primaryUnit: '包 (Sachet)',
             secondaryText: `每次約 ${textFraction}`,
             rateText: `年齡/體重分級處方 (${dayMaxText})`,
-            instruction: '【重要】具強效物理吸附性，必須與其他所有口服藥物間隔至少 1.5 ~ 2 小時，以免阻礙其他藥物吸收！'
+            instruction: '【重要】具強效物理吸附性，必須與其他所有口服藥物間隔至少 1.5 ~ 2 小時，以免阻礙其他藥物吸收！',
+            auditFormula: `仿單兒科階梯：\n<10kg (<1歲): 每次1/3包 (日限1包)\n10~15kg (1~2歲): 每次半包 (日限1.5~2包)\n>15kg (>2歲): 每次1包 (日限2~3包)\n當前體重 ${bw}kg → 每次 ${singleSachet} 包 (約 ${textFraction})`
           };
         },
         notes: '天然雙八面體蒙脫石，覆蓋黏膜並吸附毒素。腹瀉病童最關鍵仍為補充水分與電解質 (ORS)。'
       },
-      // 5. 安佳熱糖漿
-      {
-        id: 'antipen',
-        type: 'ORAL',
-        brandName: '安佳熱糖漿 (Antipen)',
-        genericName: 'Acetaminophen 24 mg/mL',
-        category: 'FEVER',
-        categoryLabel: '口服解熱鎮痛',
-        dosageType: 'liquid',
-        strength: 24,
-        unitStr: 'mL',
-        dosePerKgMin: 10,
-        dosePerKgMax: 15,
-        dosePerKgStd: 12,
-        frequencyText: '每 4 ~ 6 小時一次 (q4h~q6h prn)',
-        timingText: '體溫高於 38.5°C 或疼痛不適時給予',
-        maxDailyTimes: '每日不超過 5 次 (最大劑量 < 60 mg/kg/天，成人單次上限 1000mg)',
-        adultCapSingleMg: 1000,
-        calculateDose: function(bw) {
-          const targetMg = Math.min(bw * 12, 1000);
-          const ml = Math.round((targetMg / 24) * 10) / 10;
-          return {
-            primaryDose: ml.toFixed(1),
-            primaryUnit: 'mL',
-            secondaryText: `相當於 ${Math.round(targetMg)} mg`,
-            rateText: `基準: ${(targetMg / bw).toFixed(1)} mg/kg (速算: 體重/2 mL)`,
-            instruction: '建議使用有刻度之餵藥針筒精確抽取量取。'
-          };
-        },
-        notes: '兒童最安全的退燒第一線首選。若與 Ibuprofen 輪替退燒，兩種成份間隔需至少 2~3 小時。'
-      },
-      // 6. 依普芬懸液
-      {
-        id: 'iprofen',
-        type: 'ORAL',
-        brandName: '依普芬口服懸液 (Iprofen)',
-        genericName: 'Ibuprofen 20 mg/mL (2%)',
-        category: 'FEVER',
-        categoryLabel: '口服解熱鎮痛 (NSAID)',
-        dosageType: 'liquid',
-        strength: 20,
-        unitStr: 'mL',
-        dosePerKgMin: 5,
-        dosePerKgMax: 10,
-        dosePerKgStd: 10,
-        frequencyText: '每 6 ~ 8 小時一次 (q6h~q8h prn)',
-        timingText: '建議隨餐或飯後給予，以減低腸胃刺激',
-        maxDailyTimes: '每日不超過 4 次 (單日最大總量 40 mg/kg/天，成人單次上限 600mg)',
-        adultCapSingleMg: 600,
-        calculateDose: function(bw) {
-          const targetMg = Math.min(bw * 10, 600);
-          const ml = Math.round((targetMg / 20) * 10) / 10;
-          return {
-            primaryDose: ml.toFixed(1),
-            primaryUnit: 'mL',
-            secondaryText: `相當於 ${Math.round(targetMg)} mg`,
-            rateText: `基準: 10 mg/kg (高燒 10mg/kg，輕度可採 5mg/kg)`,
-            instruction: '瓶身使用前請充分搖勻。小於 6 個月嬰兒及脫水患者慎用。'
-          };
-        },
-        notes: '具消炎與退高燒效果。脫水、腹瀉、腎功能不全或水痘病患應避免使用以防腎損害。'
-      },
-      // 7. 滅喘淨液 (Meptin)
-      {
-        id: 'meptin_liquid',
-        type: 'ORAL',
-        brandName: '滅喘淨液 (Meptin Liquid)',
-        genericName: 'Procaterol HCl 5 mcg/mL',
-        category: 'RESPIRATORY',
-        categoryLabel: '支氣管擴張劑 (β2-agonist)',
-        dosageType: 'liquid',
-        strength: 5,
-        unitStr: 'mL',
-        dosePerKgMin: 0.25,
-        dosePerKgMax: 0.25,
-        dosePerKgStd: 0.25,
-        frequencyText: '每日 2 次 (BID，早晚或睡前各一次)',
-        timingText: '急性喘鳴、支氣管痙攣或夜間咳喘時使用',
-        maxDailyTimes: '<6歲單次不超過 5 mL；>6歲單次不超過 10 mL',
-        adultCapSingleMg: 10,
-        calculateDose: function(bw) {
-          let ml = Math.round(bw * 0.25 * 10) / 10;
-          if (bw < 20 && ml > 5.0) ml = 5.0;
-          if (ml > 10.0) ml = 10.0;
-          const mcg = Math.round(ml * 5 * 10) / 10;
-          return {
-            primaryDose: ml.toFixed(1),
-            primaryUnit: 'mL',
-            secondaryText: `相當於 ${mcg} mcg`,
-            rateText: `速算基準: 0.25 mL/kg/次 (分 BID)`,
-            instruction: '若有手抖或心跳過速屬交感神經刺激常見反應，通常減量即可改善。'
-          };
-        },
-        notes: '長效型口服 β2 作用劑。急性嚴重呼吸困難喘鳴仍應緊急就醫。'
-      },
-      // 8. 希普利敏液
-      {
-        id: 'cypromin',
-        type: 'ORAL',
-        brandName: '希普利敏液 (Cypromin)',
-        genericName: 'Cyproheptadine HCl 0.4 mg/mL',
-        category: 'ANTIHISTAMINE',
-        categoryLabel: '第一代抗組織胺',
-        dosageType: 'liquid',
-        strength: 0.4,
-        unitStr: 'mL',
-        dosePerKgMin: 0.08,
-        dosePerKgMax: 0.1,
-        dosePerKgStd: 0.08,
-        frequencyText: '每日 2 ~ 3 次 (TID 或 BID)',
-        timingText: '鼻水、過敏性鼻炎、蕁麻疹止癢；常見嗜睡副作用',
-        maxDailyTimes: '每日總量不超過 0.25 mg/kg/天 (成人上限 16 mg/天)',
-        adultCapSingleMg: 4,
-        calculateDose: function(bw) {
-          const ml = Math.round((bw * 0.2) * 10) / 10;
-          const mg = Math.round(ml * 0.4 * 100) / 100;
-          return {
-            primaryDose: ml.toFixed(1),
-            primaryUnit: 'mL',
-            secondaryText: `相當於 ${mg} mg`,
-            rateText: `速算法: 每次 0.2 mL/kg (約 0.08 mg/kg)`,
-            instruction: '服藥後常見嗜睡反應，具刺激食慾效果。'
-          };
-        },
-        notes: '早產兒與新生兒禁用。'
-      },
-      // 9. 安滅菌懸浮液
+
+      // 13. 安滅菌懸浮液 (Augmentin)
       {
         id: 'augmentin',
         type: 'ORAL',
         brandName: '安滅菌懸浮液 (Augmentin)',
         genericName: 'Amoxicillin 400mg + Clavulanate 57mg / 5mL',
-        category: 'ANTIBIOTIC',
+        category: 'ANTIVIRAL_ANTIBIOTIC',
         categoryLabel: '抗生素懸浮劑',
         dosageType: 'liquid',
         strength: 80,
         unitStr: 'mL',
-        dosePerKgMin: 25,
-        dosePerKgMax: 45,
         dosePerKgStd: 45,
         frequencyText: '每日 2 次 (每 12 小時一次，固定間隔)',
         timingText: '建議餐初 (隨餐第一口) 服用，吸收最佳且降胃腸副作用',
@@ -607,7 +747,8 @@
             primaryUnit: 'mL',
             secondaryText: `含 Amoxicillin ${Math.round(singleAmoxMg)} mg / 次`,
             rateText: `相當於 45 mg/kg/天 (分 BID 投予)`,
-            instruction: '泡製後須置於冷藏冰箱 (2~8°C)，不可冷凍。'
+            instruction: '泡製後須置於冷藏冰箱 (2~8°C)，不可冷凍。',
+            auditFormula: `標準感染劑量: 45 mg/kg/day 分 BID 投予\n單次 Amoxicillin 目標 mg = (${bw}kg × 45) ÷ 2 = ${((bw * 45)/2).toFixed(1)} mg\n懸浮液 Amoxicillin 濃度 = 400mg/5mL = 80 mg/mL\n處方體積 = ${singleAmoxMg.toFixed(1)} ÷ 80 = ${(singleAmoxMg/80).toFixed(2)} mL → 修整為 ${ml.toFixed(1)} mL (BID)`
           };
         },
         notes: '中耳炎高劑量處方可達 80~90 mg/kg/天，請依感染部位裁量。'
@@ -639,6 +780,7 @@
       suppInstructionBox: document.getElementById('supp-instruction-box'),
       suppInstructionTitle: document.getElementById('supp-instruction-title'),
       suppInstructionText: document.getElementById('supp-instruction-text'),
+      calcAuditFormula: document.getElementById('calc-audit-formula'),
       calcFrequency: document.getElementById('calc-frequency'),
       calcTiming: document.getElementById('calc-timing'),
       calcMaxDay: document.getElementById('calc-max-day'),
@@ -707,14 +849,23 @@
         dom.calcTypeBadge.textContent = 'POWDER / SACHET 散劑/顆粒';
         dom.calcTypeBadge.className = 'px-1.5 py-0.2 rounded text-[10px] font-mono bg-amber-800 text-amber-200 border border-amber-600';
         dom.suppInstructionTitle.textContent = '粉劑調劑與服用指示：';
+      } else if (drug.type === 'TABLET') {
+        dom.calcTypeBadge.textContent = 'TABLET 錠劑/分包磨粉';
+        dom.calcTypeBadge.className = 'px-1.5 py-0.2 rounded text-[10px] font-mono bg-indigo-800 text-indigo-200 border border-indigo-600';
+        dom.suppInstructionTitle.textContent = '錠劑分割與調配指示：';
       } else {
-        dom.calcTypeBadge.textContent = 'ORAL LIQUID 口服藥水';
+        dom.calcTypeBadge.textContent = 'ORAL LIQUID 口服水劑/懸液';
         dom.calcTypeBadge.className = 'px-1.5 py-0.2 rounded text-[10px] font-mono bg-slate-700 text-slate-200 border border-slate-600';
         dom.suppInstructionTitle.textContent = '製劑給藥與調配注意：';
       }
 
       dom.suppInstructionBox.classList.remove('hidden');
       dom.suppInstructionText.textContent = result.instruction;
+
+      // 藥師推導公式 audit trail
+      if (dom.calcAuditFormula) {
+        dom.calcAuditFormula.innerText = result.auditFormula || '依據年齡/體重標準常規推算';
+      }
 
       dom.calcPrimaryDose.textContent = result.primaryDose;
       dom.calcPrimaryUnit.textContent = result.primaryUnit;
@@ -773,6 +924,9 @@
         } else if (d.type === 'ORAL_POWDER') {
           typeBadgeClass = isSelected ? 'bg-amber-950 text-amber-300 border border-amber-700' : 'bg-amber-50 text-amber-800 border border-amber-200';
           typeBadgeText = '粉劑';
+        } else if (d.type === 'TABLET') {
+          typeBadgeClass = isSelected ? 'bg-indigo-950 text-indigo-300 border border-indigo-700' : 'bg-indigo-50 text-indigo-800 border border-indigo-200';
+          typeBadgeText = '錠劑';
         } else if (isSelected) {
           typeBadgeClass = 'bg-slate-800 text-slate-300';
         }
@@ -856,11 +1010,13 @@
 成分規格: ${drug.genericName}
 建議處方單次量: 每次 ${res.primaryDose} ${res.primaryUnit} (${res.secondaryText})
 劑量基準: ${res.rateText}
+【藥師核方推導】:
+${res.auditFormula || '標準常規劑量'}
 給藥頻率: ${drug.frequencyText}
 用法說明: ${drug.timingText}
 製劑說明: ${res.instruction}
 安全上限: ${drug.maxDailyTimes}
-臨床注意要點: ${drug.notes}`;
+藥師注意事項: ${drug.notes}`;
 
       const t = document.createElement('textarea');
       t.value = clip;
