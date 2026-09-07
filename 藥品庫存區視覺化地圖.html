@@ -239,7 +239,7 @@
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="editModalContent">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
                 <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg" id="modalTitle">新增/編輯藥品</h3>
-                <button onclick="Controllers.closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                <button onclick="Controllers.closeEditModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hoverrotate-90">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -344,6 +344,16 @@
                         <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">依層架分類匯出藥品標籤，橫向雙排方便剪貼</div>
                     </div>
                 </button>
+
+                <button onclick="Controllers.closeSettingsModal(); Controllers.openCustomLabelModal()" class="flex items-center gap-4 p-4 rounded-xl border-2 border-cyan-300 dark:border-cyan-700 bg-cyan-50/50 dark:bg-cyan-950/20 hover:bg-cyan-50 dark:hover:bg-cyan-950/40 transition-colors shadow-sm group text-left">
+                    <div class="w-10 h-10 rounded-full bg-cyan-500/10 text-cyan-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <i data-lucide="check-square" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-800 dark:text-slate-100">自選藥品標籤列印</div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">自由搜尋並挑選欲補印之藥品標籤貼紙，不受層架限制</div>
+                    </div>
+                </button>
                 
                 <button onclick="Controllers.closeSettingsModal(); Controllers.openPrintFilterModal('list')" class="flex items-center gap-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm group text-left">
                     <div class="w-10 h-10 rounded-full bg-violet-500/10 text-violet-500 flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -399,6 +409,79 @@
         </div>
     </div>
     
+    <!-- 自選藥品標籤列印 Modal -->
+    <div id="customLabelModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[70] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-all duration-300 flex flex-col max-h-[88vh]" id="customLabelModalContent">
+            <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+                        <i data-lucide="check-square" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-lg leading-tight">自選藥品標籤列印</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">自由搜尋全庫存藥品並挑選，專為補印標籤貼紙設計</p>
+                    </div>
+                </div>
+                <button onclick="Controllers.closeCustomLabelModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-transform duration-200 hover:rotate-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 flex-1 overflow-y-auto flex flex-col gap-4 no-scrollbar">
+                <!-- 搜尋與加入區 -->
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-300">搜尋藥品並加入：</label>
+                        <span class="text-[11px] text-slate-400">支援英文藥名、中文名稱與代碼</span>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                        </div>
+                        <input type="text" id="customLabelSearchInput" 
+                            class="w-full pl-9 pr-24 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                            placeholder="請輸入關鍵字搜尋藥品..."
+                            oninput="Controllers.handleCustomLabelSearch(this.value)">
+                        <button onclick="Controllers.addAllFilteredCustomLabels()" id="addAllFilteredBtn" class="hidden absolute inset-y-1.5 right-1.5 px-3 bg-cyan-50 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-900/60 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 border border-cyan-200 dark:border-cyan-700">
+                            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> 加入全部
+                        </button>
+                    </div>
+                    
+                    <!-- 搜尋候選結果 -->
+                    <div id="customLabelCandidates" class="mt-2 max-h-44 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800 hidden no-scrollbar shadow-inner">
+                    </div>
+                </div>
+
+                <!-- 已選取標籤清單 -->
+                <div class="flex-1 flex flex-col min-h-0 pt-2 border-t border-slate-100 dark:border-slate-700">
+                    <div class="flex justify-between items-center mb-2 shrink-0">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            已選取的藥品標籤清單 (<span id="customSelectedCount" class="text-primary font-black">0</span> 筆)
+                        </span>
+                        <button onclick="Controllers.clearAllCustomLabels()" class="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-400 flex items-center gap-1 transition-colors font-medium">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> 清空已選清單
+                        </button>
+                    </div>
+                    
+                    <div id="customSelectedList" class="flex-1 min-h-[140px] max-h-56 overflow-y-auto border border-slate-200 dark:border-slate-700 rounded-xl p-2 bg-slate-50/50 dark:bg-slate-900/30 space-y-1.5 no-scrollbar">
+                    </div>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center shrink-0">
+                <div class="text-xs text-slate-500 dark:text-slate-400">
+                    標準格式：A4 (3×10，53×25.5mm 貼紙)
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="Controllers.closeCustomLabelModal()" class="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 hover:-translate-y-0.5">取消 (Esc)</button>
+                    <button onclick="Controllers.confirmPrintCustomLabels()" id="printCustomLabelsBtn" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition-all duration-200 hover:-translate-y-0.5 shadow-sm flex items-center gap-2">
+                        <i data-lucide="printer" class="w-4 h-4"></i> 確認列印 (<span id="customPrintCount">0</span>)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="appearanceModal" class="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 z-[70] hidden flex items-center justify-center backdrop-blur-sm opacity-0 transition-opacity duration-300">
         <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden transform scale-95 transition-all duration-300" id="appearanceModalContent">
             <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50">
@@ -854,6 +937,9 @@
             settingsModal: document.getElementById('settingsModal'),
             settingsModalContent: document.getElementById('settingsModalContent'),
 
+            customLabelModal: document.getElementById('customLabelModal'),
+            customLabelModalContent: document.getElementById('customLabelModalContent'),
+
             printFilterModal: document.getElementById('printFilterModal'),
             printFilterModalContent: document.getElementById('printFilterModalContent'),
             
@@ -1124,6 +1210,300 @@
         let searchDebounceTimer;
 
         const Controllers = {
+            selectedCustomMeds: [],
+            filteredCandidates: [],
+
+            openCustomLabelModal() {
+                DOM.customLabelModal.classList.remove('hidden');
+                setTimeout(() => {
+                    DOM.customLabelModal.classList.remove('opacity-0');
+                    DOM.customLabelModalContent.classList.remove('scale-95');
+                    const input = document.getElementById('customLabelSearchInput');
+                    if (input) {
+                        input.value = '';
+                        input.focus();
+                    }
+                    this.handleCustomLabelSearch('');
+                    this.renderCustomSelectedList();
+                }, 10);
+            },
+
+            closeCustomLabelModal() {
+                DOM.customLabelModal.classList.add('opacity-0');
+                DOM.customLabelModalContent.classList.add('scale-95');
+                setTimeout(() => {
+                    DOM.customLabelModal.classList.add('hidden');
+                }, 300);
+            },
+
+            handleCustomLabelSearch(query) {
+                const container = document.getElementById('customLabelCandidates');
+                const addAllBtn = document.getElementById('addAllFilteredBtn');
+                const q = query.trim().toLowerCase();
+                
+                if (!q) {
+                    container.classList.add('hidden');
+                    container.innerHTML = '';
+                    if (addAllBtn) addAllBtn.classList.add('hidden');
+                    this.filteredCandidates = [];
+                    return;
+                }
+
+                this.filteredCandidates = AppState.medicines.filter(med => 
+                    med.name.toLowerCase().includes(q) || 
+                    (med.chName && med.chName.toLowerCase().includes(q)) ||
+                    (med.id && String(med.id).toLowerCase().includes(q))
+                );
+
+                if (addAllBtn) {
+                    if (this.filteredCandidates.length > 0) addAllBtn.classList.remove('hidden');
+                    else addAllBtn.classList.add('hidden');
+                }
+
+                container.classList.remove('hidden');
+                if (this.filteredCandidates.length === 0) {
+                    container.innerHTML = `<div class="p-3 text-center text-xs text-slate-400">找不到符合「${q}」的藥品</div>`;
+                    return;
+                }
+
+                container.innerHTML = this.filteredCandidates.map(med => {
+                    const rackObj = RACKS_CONFIG.find(r => r.id === med.rackId);
+                    const rackName = rackObj ? rackObj.name : med.rackId;
+                    const locStr = rackObj && rackObj.id === 'Rack-I' ? rackName : `${rackName}-${med.shelf}`;
+                    const safeId = String(med.id || '').replace(/'/g, "\\'");
+                    const isSelected = this.selectedCustomMeds.some(m => m.id === med.id && m.rackId === med.rackId && m.shelf === med.shelf);
+
+                    return `
+                        <div class="p-2.5 px-3 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <div class="flex-1 pr-2 overflow-hidden">
+                                <div class="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">${med.name}</div>
+                                <div class="text-[11px] text-slate-500 dark:text-slate-400 truncate">${med.chName || '-'} <span class="ml-1.5 text-primary font-medium">(${locStr})</span></div>
+                            </div>
+                            <button onclick="Controllers.toggleCustomLabelItem('${safeId}', '${med.rackId}', ${med.shelf})" 
+                                class="px-2.5 py-1 text-xs font-bold rounded-lg transition-all flex items-center gap-1 ${
+                                    isSelected 
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800' 
+                                    : 'bg-primary text-white hover:bg-primaryDark'
+                                }">
+                                <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-3 h-3"></i>
+                                <span>${isSelected ? '已加入' : '加入'}</span>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+                lucide.createIcons({ root: container });
+            },
+
+            toggleCustomLabelItem(medId, rackId, shelf) {
+                const idx = this.selectedCustomMeds.findIndex(m => m.id === medId && m.rackId === rackId && m.shelf === shelf);
+                if (idx >= 0) {
+                    this.selectedCustomMeds.splice(idx, 1);
+                } else {
+                    const targetMed = AppState.medicines.find(m => m.id === medId && m.rackId === rackId && m.shelf === shelf);
+                    if (targetMed) {
+                        this.selectedCustomMeds.push(targetMed);
+                    }
+                }
+                this.renderCustomSelectedList();
+                const input = document.getElementById('customLabelSearchInput');
+                if (input && input.value.trim()) {
+                    this.handleCustomLabelSearch(input.value);
+                }
+            },
+
+            addAllFilteredCustomLabels() {
+                if (!this.filteredCandidates || this.filteredCandidates.length === 0) return;
+                this.filteredCandidates.forEach(med => {
+                    const exists = this.selectedCustomMeds.some(m => m.id === med.id && m.rackId === med.rackId && m.shelf === med.shelf);
+                    if (!exists) {
+                        this.selectedCustomMeds.push(med);
+                    }
+                });
+                this.renderCustomSelectedList();
+                const input = document.getElementById('customLabelSearchInput');
+                if (input && input.value.trim()) {
+                    this.handleCustomLabelSearch(input.value);
+                }
+            },
+
+            removeCustomLabelItem(index) {
+                this.selectedCustomMeds.splice(index, 1);
+                this.renderCustomSelectedList();
+                const input = document.getElementById('customLabelSearchInput');
+                if (input && input.value.trim()) {
+                    this.handleCustomLabelSearch(input.value);
+                }
+            },
+
+            clearAllCustomLabels() {
+                if (this.selectedCustomMeds.length === 0) return;
+                this.selectedCustomMeds = [];
+                this.renderCustomSelectedList();
+                const input = document.getElementById('customLabelSearchInput');
+                if (input && input.value.trim()) {
+                    this.handleCustomLabelSearch(input.value);
+                }
+            },
+
+            renderCustomSelectedList() {
+                const listEl = document.getElementById('customSelectedList');
+                const countEl = document.getElementById('customSelectedCount');
+                const printCountEl = document.getElementById('customPrintCount');
+                const total = this.selectedCustomMeds.length;
+                
+                if (countEl) countEl.textContent = total;
+                if (printCountEl) printCountEl.textContent = total;
+
+                if (!listEl) return;
+                if (total === 0) {
+                    listEl.innerHTML = `
+                        <div class="h-full min-h-[120px] flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 py-6 text-center">
+                            <i data-lucide="tag" class="w-8 h-8 mb-2 opacity-40"></i>
+                            <p class="text-xs font-medium">尚未加入任何藥品標籤</p>
+                            <p class="text-[11px] text-slate-400 mt-0.5">請在上方輸入藥名搜尋並點擊「加入」</p>
+                        </div>
+                    `;
+                    lucide.createIcons({ root: listEl });
+                    return;
+                }
+
+                listEl.innerHTML = this.selectedCustomMeds.map((med, index) => {
+                    const rackObj = RACKS_CONFIG.find(r => r.id === med.rackId);
+                    const rackName = rackObj ? rackObj.name : med.rackId;
+                    const locStr = rackObj && rackObj.id === 'Rack-I' ? rackName : `${rackName}-${med.shelf}`;
+
+                    return `
+                        <div class="flex items-center justify-between p-2 px-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm text-xs">
+                            <div class="flex items-center gap-2 overflow-hidden mr-2">
+                                <span class="w-5 h-5 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold text-slate-500 shrink-0">${index + 1}</span>
+                                <div class="overflow-hidden">
+                                    <div class="font-bold text-slate-800 dark:text-slate-100 truncate">${med.name}</div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 truncate">${med.chName || '-'}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-[11px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">${locStr}</span>
+                                <button onclick="Controllers.removeCustomLabelItem(${index})" class="p-1 text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="移除此項目">
+                                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                lucide.createIcons({ root: listEl });
+            },
+
+            confirmPrintCustomLabels() {
+                if (this.selectedCustomMeds.length === 0) {
+                    alert("請先搜尋並至少加入一筆藥品標籤！");
+                    return;
+                }
+
+                const printWindow = window.open('', '_blank');
+                if (!printWindow) {
+                    alert('請允許瀏覽器開啟彈出視窗以進行列印！');
+                    return;
+                }
+
+                const today = new Date().toLocaleDateString('zh-TW');
+                const LABELS_PER_PAGE = 30;
+                const pages = [];
+                for (let i = 0; i < this.selectedCustomMeds.length; i += LABELS_PER_PAGE) {
+                    pages.push(this.selectedCustomMeds.slice(i, i + LABELS_PER_PAGE));
+                }
+
+                let htmlContent = `
+                <!DOCTYPE html>
+                <html lang="zh-TW">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>自選藥品標籤列印 - ${today}</title>
+                    <style>
+                        @page { size: A4; margin: 0; }
+                        body { 
+                            margin: 0; 
+                            padding: 0;
+                            font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; 
+                            background: #fff; 
+                            box-sizing: border-box;
+                        }
+                        .page-container {
+                            width: 210mm;
+                            height: 297mm;
+                            padding: 21mm 0 0 21mm; 
+                            box-sizing: border-box;
+                            page-break-after: always;
+                            position: relative;
+                        }
+                        .page-container:last-child {
+                            page-break-after: auto;
+                        }
+                        .labels-grid { 
+                            display: grid; 
+                            grid-template-columns: repeat(3, 53mm);
+                            grid-auto-rows: 25.5mm;
+                            column-gap: 4mm;
+                            row-gap: 0;
+                        }
+                        .med-label { 
+                            width: 53mm; 
+                            height: 25.5mm; 
+                            box-sizing: border-box; 
+                            padding: 1mm 2mm; 
+                            display: flex; 
+                            flex-direction: column; 
+                            justify-content: center; 
+                            align-items: flex-start; 
+                            overflow: hidden; 
+                            border: 1px dashed #cbd5e1;
+                            page-break-inside: avoid;
+                        }
+                        .med-loc { font-size: 11px; color: #1d4ed8; font-weight: bold; margin-bottom: 2px; }
+                        .med-name { font-size: 16px; font-weight: 900; color: #0f172a; line-height: 1.30; margin-bottom: 3px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
+                        .med-chName { font-size: 13px; color: #047857; font-weight: bold; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
+                        @media print {
+                            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                            .med-label { border: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                `;
+
+                pages.forEach(pageLabels => {
+                    htmlContent += `
+                    <div class="page-container">
+                        <div class="labels-grid">
+                    `;
+                    pageLabels.forEach(med => {
+                        const rack = RACKS_CONFIG.find(r => r.id === med.rackId) || { name: med.rackId, id: med.rackId };
+                        const locStr = rack.id === 'Rack-I' ? rack.name : `${rack.name}-${med.shelf}`;
+                        htmlContent += `
+                            <div class="med-label">
+                                <div class="med-loc">${locStr}</div>
+                                <div class="med-name">${med.name}</div>
+                                ${med.chName ? `<div class="med-chName">${med.chName}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                    htmlContent += `
+                        </div>
+                    </div>
+                    `;
+                });
+
+                htmlContent += `
+                </body>
+                <script>
+                    window.onload = function() { setTimeout(() => { window.print(); }, 500); }
+                <\/script>
+                </html>
+                `;
+
+                printWindow.document.write(htmlContent);
+                printWindow.document.close();
+            },
+
             handleInput(e) {
                 clearTimeout(searchDebounceTimer);
                 DOM.searchLoader.classList.remove('hidden');
@@ -3131,6 +3511,7 @@
                     if (!DOM.editModal.classList.contains('hidden')) Controllers.closeEditModal();
                     if (!DOM.rackEditModal.classList.contains('hidden')) Controllers.closeRackEditModal();
                     if (!DOM.settingsModal.classList.contains('hidden')) Controllers.closeSettingsModal();
+                    if (!DOM.customLabelModal.classList.contains('hidden')) Controllers.closeCustomLabelModal();
                     if (!DOM.appearanceModal.classList.contains('hidden')) Controllers.closeAppearanceModal();
                     if (!DOM.loginModal.classList.contains('hidden')) Controllers.closeLoginModal();
                     if (!DOM.printFilterModal.classList.contains('hidden')) Controllers.closePrintFilterModal();
