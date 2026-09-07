@@ -524,7 +524,7 @@
                             let str = line.trim().replace(/^處理中(?:\.\.\.)?\s*/, '').replace(/^\d{2,3}[/\\-]?\d{2}[/\\-]?\d{2}\s*/, '').replace(/^\(\d+\)\s*/, '');
                             if (!str) return;
                             let brandName = str, genericName = '', usage = '';
-                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PACK|PKG|SYRI)\s*([A-Z0-9&]+)?$/i);
+                            const usageMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(TAB|PILL|AMP|BOT|CAP|CC|ML|VIAL|G|GM|MG|MCG|U|IU|TUB|TUBE|DROP|DROPS|EA|PUFF|PAK|PACK|PKG|SYRI)\s*([A-Z0-9&]+)?$/i);
                             if (usageMatch) {
                                 brandName = usageMatch[1].trim(); usage = `${usageMatch[2]} ${usageMatch[3].toUpperCase()} ${usageMatch[4]?usageMatch[4].toUpperCase():''}`.trim();
                             } else {
