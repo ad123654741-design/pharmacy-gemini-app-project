@@ -26,13 +26,14 @@
                     boxShadow: {
                         'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
                         'glow': '0 0 15px rgba(59, 130, 246, 0.5)',
+                        'float': '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
                     }
                 }
             }
         }
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
 
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: theme('colors.background'); overscroll-behavior-y: none; }
 
@@ -52,29 +53,54 @@
         .img-lazy { opacity: 0; transition: opacity 0.3s ease-in-out; }
         .img-lazy.loaded { opacity: 1; }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; transition: background 0.2s; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; border: 2px solid theme('colors.background'); transition: background 0.2s; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+        /* 現代化表格輸入框設計 */
         .table-input {
-            width: 100%; background-color: transparent; border: none; outline: none; padding: 0.5rem;
-            transition: all 0.2s ease-in-out; border-radius: 0.375rem;
+            width: 100%; 
+            background-color: transparent; 
+            border: 1px solid transparent; 
+            outline: none; 
+            padding: 0.4rem 0.6rem;
+            transition: all 0.2s ease-in-out; 
+            border-radius: 0.5rem;
             min-height: 44px; 
+            font-size: 0.875rem;
         }
         @media (min-width: 768px) {
-            .table-input { min-height: 36px; } 
+            .table-input { min-height: 38px; } 
+        }
+        .table-input:hover { 
+            background-color: theme('colors.slate.50'); 
+            border-color: theme('colors.slate.200'); 
         }
         .table-input:focus { 
-            background-color: theme('colors.primary.50'); 
-            box-shadow: inset 0 0 0 1px theme('colors.primary.400'), 0 0 0 3px theme('colors.primary.100'); 
+            background-color: theme('colors.white'); 
+            border-color: theme('colors.blue.400');
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 0 0 3px theme('colors.blue.100'); 
         }
 
-        /* 術前評估停藥警示樣式 */
+        /* 術前評估停藥警示樣式 (精緻化) */
         .stop-med-alert {
-            background-color: #fee2e2; color: #b91c1c; font-weight: bold; border: 1px solid #fecaca;
+            background-color: #fef2f2 !important; 
+            color: #b91c1c !important; 
+            font-weight: 600 !important; 
+            border: 1px solid #fecaca !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .stop-med-alert:hover {
+            border-color: #fca5a5 !important;
+        }
+        .stop-med-alert:focus {
+            background-color: #ffffff !important;
+            box-shadow: 0 0 0 3px #fee2e2 !important;
+            border-color: #f87171 !important;
         }
         
+        /* 列印樣式保留 */
         @media print {
             body { background-color: white; height: auto; overflow: visible !important; }
             #app-ui, #bottom-nav, #toast-container, .print-hide { display: none !important; }
@@ -117,24 +143,8 @@
                 overflow: hidden !important;
                 gap: 1px !important;
             }
-            .label-box .label-brand {
-                font-size: 12.5px !important;
-                line-height: 1.1 !important;
-                overflow: hidden !important;
-                display: -webkit-box !important;
-                -webkit-box-orient: vertical !important;
-                -webkit-line-clamp: 2 !important;
-                overflow-wrap: anywhere !important;
-                word-break: break-word !important;
-            }
-            .label-box .label-generic {
-                font-size: 9px !important;
-                line-height: 1.1 !important;
-                overflow: hidden !important;
-                display: -webkit-box !important;
-                -webkit-box-orient: vertical !important;
-                -webkit-line-clamp: 2 !important;
-            }
+            .label-box .label-brand { font-size: 12.5px !important; line-height: 1.1 !important; overflow: hidden !important; display: -webkit-box !important; -webkit-box-orient: vertical !important; -webkit-line-clamp: 2 !important; overflow-wrap: anywhere !important; word-break: break-word !important; }
+            .label-box .label-generic { font-size: 9px !important; line-height: 1.1 !important; overflow: hidden !important; display: -webkit-box !important; -webkit-box-orient: vertical !important; -webkit-line-clamp: 2 !important; }
             .label-box .text-\[9px\] { font-size: 7px !important; }
         }
 
@@ -144,60 +154,62 @@
         
         .toast-enter { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: fadeOut 0.3s ease-out forwards; }
-        .animate-fade-in-up { animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
     </style>
 </head>
 <body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance show-col-nhicode">
 
-    <div id="app-ui" class="flex flex-col h-full w-full">
-        <!-- 頂部精簡導覽列 -->
-        <header class="bg-surface border-b border-slate-200/80 px-4 md:px-6 py-2.5 flex justify-between items-center shrink-0 z-10 shadow-sm overflow-x-auto">
+    <div id="app-ui" class="flex flex-col h-full w-full bg-slate-50">
+        <!-- 頂部精簡導覽列 (採用純淨醫療藍色系，降低視覺干擾) -->
+        <header class="bg-blue-700 px-4 md:px-6 py-3 flex justify-between items-center shrink-0 z-20 shadow-md border-none overflow-x-auto">
             <div class="flex items-center gap-4 shrink-0">
-                <div class="flex items-center gap-2">
-                    <div class="bg-primary-100 text-primary-600 p-1.5 rounded-lg shrink-0 shadow-sm"><i class="ph ph-pills text-xl"></i></div>
-                    <h1 class="text-lg font-semibold text-slate-800 tracking-tight hidden sm:block">臨床自備藥辨識與術前評估系統</h1>
+                <div class="flex items-center gap-2.5">
+                    <div class="bg-white/20 backdrop-blur-md text-white p-1.5 rounded-lg shrink-0 shadow-inner border border-white/20"><i class="ph ph-pills text-xl"></i></div>
+                    <h1 class="text-lg font-bold text-white tracking-wide hidden sm:block drop-shadow-sm">自備藥辨識與術前評估系統</h1>
                 </div>
                 
-                <!-- 核心模式切換按鈕 -->
-                <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200 shrink-0">
-                    <button id="app-mode-btn-identify" onclick="app.setAppMode('identify')" class="px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm bg-white text-primary-600 transition-all flex items-center gap-1"><i class="ph ph-pill"></i> 自備藥辨識</button>
-                    <button id="app-mode-btn-preop" onclick="app.setAppMode('preop')" class="px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all flex items-center gap-1"><i class="ph ph-heartbeat"></i> 術前評估</button>
+                <!-- 核心模式切換按鈕 (Glassmorphism 風格) -->
+                <div class="flex bg-black/20 p-1.5 rounded-xl border border-white/10 shrink-0 ml-1 backdrop-blur-sm shadow-inner">
+                    <button id="app-mode-btn-identify" onclick="app.setAppMode('identify')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-blue-700 transition-all flex items-center gap-1.5"><i class="ph ph-pill text-sm"></i> 自備藥辨識</button>
+                    <button id="app-mode-btn-preop" onclick="app.setAppMode('preop')" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5"><i class="ph ph-heartbeat text-sm"></i> 術前評估</button>
                 </div>
                 
                 <!-- 製作者資訊版權宣告 -->
-                <p class="text-[11px] text-slate-400 hidden lg:block ml-1 border-l border-slate-200 pl-4 font-medium tracking-wide">製作者 : 其仁藥師 2026 版權所有&copy;</p>
+                <p class="text-[11px] text-blue-200 hidden lg:block ml-2 border-l border-blue-400/40 pl-4 font-medium tracking-wide">製作者 : 其仁藥師 2026 版權所有&copy;</p>
             </div>
             
-            <div class="hidden md:flex items-center gap-2 shrink-0">
-                <a href="https://mcp.fda.gov.tw/" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"><i class="ph ph-link text-base"></i> 仿單查詢</a>
-                <a href="https://drugtw.com/figure" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"><i class="ph ph-link text-base"></i> 藥台灣</a>
-                <button onclick="app.openConfirmModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-pink-600 bg-pink-50 hover:bg-pink-100 rounded-lg transition-all"><i class="ph ph-trash text-base"></i> 清空</button>
-                <button onclick="app.copyTextContent()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all"><i class="ph ph-copy text-base"></i> 複製</button>
-                <button onclick="app.exportToCSV()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all"><i class="ph ph-download-simple text-base"></i> CSV</button>
-                <button onclick="app.openPrintLabelView()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-all"><i class="ph ph-tag text-base"></i> 標籤</button>
-                <button onclick="app.openPrintView()" class="flex items-center gap-1.5 px-4 py-1.5 text-xs font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-all shadow-sm"><i class="ph ph-printer text-base"></i> 列印</button>
+            <!-- 統一化右側按鈕樣式，採用白框半透明設計，清晰且具備設計感 -->
+            <div class="hidden md:flex items-center gap-2.5 shrink-0">
+                <a href="https://mcp.fda.gov.tw/" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm"><i class="ph ph-link text-base"></i> 仿單查詢</a>
+                <a href="https://drugtw.com/figure" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm"><i class="ph ph-link text-base"></i> 藥台灣</a>
+                
+                <button onclick="app.openConfirmModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-pink-200 hover:border-pink-300/50"><i class="ph ph-trash text-base"></i> 清空</button>
+                <button onclick="app.copyTextContent()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-indigo-200 hover:border-indigo-300/50"><i class="ph ph-copy text-base"></i> 複製</button>
+                <button onclick="app.exportToCSV()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-emerald-200 hover:border-emerald-300/50"><i class="ph ph-download-simple text-base"></i> CSV</button>
+                <button onclick="app.openPrintLabelView()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-amber-200 hover:border-amber-300/50"><i class="ph ph-tag text-base"></i> 標籤</button>
+                <button onclick="app.openPrintView()" class="flex items-center gap-1.5 px-5 py-1.5 text-xs font-bold text-blue-700 bg-white hover:bg-blue-50 rounded-lg transition-all shadow-float transform hover:-translate-y-0.5"><i class="ph ph-printer text-base"></i> 列印</button>
             </div>
         </header>
 
         <!-- 主要工作區 (上下分割) -->
-        <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50">
+        <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative">
             
-            <!-- 上方：醫囑清理工具 (極度壓縮高度) -->
-            <section class="w-full shrink-0 bg-surface border-b border-slate-200/60 p-3 flex flex-col gap-2 z-10 shadow-sm relative">
+            <!-- 上方：醫囑清理工具 (卡片式懸浮設計) -->
+            <section class="w-full shrink-0 bg-white border-b border-slate-200 p-3 flex flex-col gap-2 z-10 shadow-sm relative">
                 <div class="flex items-center justify-between max-w-7xl mx-auto w-full gap-4">
                     <div class="flex items-center gap-2 shrink-0">
-                        <div class="p-1 bg-primary-50 rounded text-primary-500"><i class="ph ph-magic-wand"></i></div>
-                        <h2 class="font-semibold text-slate-800 text-sm">1. 醫囑清理工具</h2>
-                        <div class="flex bg-slate-100 p-0.5 rounded-md ml-2">
-                            <button id="mode-btn-cloud" onclick="app.setParseMode('cloud')" class="px-2.5 py-1 text-[11px] font-medium rounded shadow-sm bg-white text-primary-600 transition-all">雲端藥歷</button>
-                            <button id="mode-btn-ud" onclick="app.setParseMode('ud')" class="px-2.5 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 transition-all">UD處方</button>
+                        <div class="p-1.5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg text-blue-600 shadow-inner border border-blue-100/50"><i class="ph ph-magic-wand text-lg"></i></div>
+                        <h2 class="font-bold text-slate-700 text-sm tracking-wide">1. 醫囑清理工具</h2>
+                        <div class="flex bg-slate-100 p-1 rounded-lg ml-3 border border-slate-200/60 shadow-inner">
+                            <button id="mode-btn-cloud" onclick="app.setParseMode('cloud')" class="px-3 py-1 text-[11px] font-bold rounded shadow-sm bg-white text-blue-600 transition-all">雲端藥歷</button>
+                            <button id="mode-btn-ud" onclick="app.setParseMode('ud')" class="px-3 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transition-all">UD處方</button>
                         </div>
                     </div>
-                    <div class="flex-1 flex items-center gap-2">
-                        <textarea id="rawText" class="flex-1 h-[36px] p-1.5 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-400 focus:bg-white transition-all overflow-hidden whitespace-nowrap" placeholder="貼上雲端藥歷內容..."></textarea>
-                        <button onclick="app.parseAndAddText()" class="px-4 h-[36px] bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium rounded-lg transition-all shadow-sm shrink-0 flex items-center gap-1.5 active:scale-95">
-                            解析內容並加入清單
+                    <div class="flex-1 flex items-center gap-2.5">
+                        <textarea id="rawText" class="flex-1 h-[40px] p-2.5 px-3.5 text-xs bg-slate-50/50 border border-slate-200 rounded-xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 focus:bg-white transition-all shadow-inner whitespace-nowrap overflow-hidden" placeholder="貼上雲端藥歷內容..."></textarea>
+                        <button onclick="app.parseAndAddText()" class="px-5 h-[40px] bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white text-xs font-bold rounded-xl transition-all shadow-md shrink-0 flex items-center gap-2 active:scale-95 transform hover:-translate-y-0.5">
+                            解析內容並加入
                         </button>
                     </div>
                 </div>
@@ -206,127 +218,132 @@
             <!-- 下方：自備藥清單編輯區 (全幅主體) -->
             <section class="flex-1 bg-surface flex flex-col overflow-hidden">
                 <!-- 清單工具列 -->
-                <div class="p-3 md:px-5 border-b border-slate-100 flex flex-wrap justify-between items-center bg-white z-10 shrink-0 gap-3">
+                <div class="p-3 md:px-5 border-b border-slate-200 flex flex-wrap justify-between items-center bg-white z-10 shrink-0 gap-3 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)]">
                     <div class="flex items-center gap-3">
-                        <div class="p-1.5 bg-primary-50 rounded-lg text-primary-500 hidden sm:block"><i class="ph ph-table text-lg"></i></div>
-                        <h2 id="main-list-title" class="font-semibold text-slate-800">2. 藥物清單</h2>
-                        <div class="flex items-center gap-2 ml-2 border-l border-slate-200 pl-3">
-                            <button id="sort-brand-btn" onclick="app.sortByBrand()" class="flex items-center gap-1 text-xs text-slate-600 hover:text-primary-600 hover:bg-primary-50 px-2 py-1 rounded border border-slate-200 transition-colors">
-                                <i class="ph ph-sort-ascending"></i><span>商品名排序</span>
+                        <div class="p-1.5 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg text-teal-600 shadow-inner border border-teal-100/50 hidden sm:block"><i class="ph ph-table text-lg"></i></div>
+                        <h2 id="main-list-title" class="font-bold text-slate-700 tracking-wide">2. 藥物清單</h2>
+                        <div class="flex items-center gap-2.5 ml-3 border-l border-slate-200 pl-4">
+                            <button id="sort-brand-btn" onclick="app.sortByBrand()" class="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-blue-700 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors shadow-sm">
+                                <i class="ph ph-sort-ascending text-sm"></i><span>商品名排序</span>
                             </button>
                         </div>
                     </div>
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="flex items-center justify-end gap-2.5">
                         <div class="relative hidden sm:block mr-2">
-                            <i class="ph ph-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                            <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-7 pr-2 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-primary-500 w-36">
+                            <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="search-input" placeholder="搜尋藥品..." class="pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:border-blue-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 transition-all w-40 shadow-inner">
                         </div>
                         
                         <!-- 雲端比對按鈕 -->
-                        <button onclick="app.manualMatch()" class="text-xs font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-200/50 transition-all flex items-center gap-1" title="自動用健保碼比對雲端資料庫">
-                            <i class="ph ph-cloud-arrow-down text-sm"></i> 雲端比對
+                        <button onclick="app.manualMatch()" class="text-xs font-bold bg-blue-50 hover:bg-blue-100 text-blue-700 px-3.5 py-1.5 rounded-lg border border-blue-200/60 transition-all flex items-center gap-1.5 shadow-sm" title="自動用健保碼比對雲端資料庫">
+                            <i class="ph ph-cloud-arrow-down text-base"></i> 雲端比對
                         </button>
 
                         <!-- 模式切換按鈕 -->
-                        <button id="toggle-mode-btn" onclick="app.toggleViewMode()" class="text-xs font-medium bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-200/50 transition-all flex items-center gap-1">
-                            <i id="view-mode-icon" class="ph ph-image text-sm"></i> <span id="view-mode-text">圖片模式</span>
+                        <button id="toggle-mode-btn" onclick="app.toggleViewMode()" class="text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-3.5 py-1.5 rounded-lg border border-indigo-200/60 transition-all flex items-center gap-1.5 shadow-sm">
+                            <i id="view-mode-icon" class="ph ph-image text-base"></i> <span id="view-mode-text">圖片模式</span>
                         </button>
 
                         <!-- 獨立欄位選擇彈窗觸發鈕 -->
-                        <button id="col-setting-btn" onclick="app.toggleColModal()" class="text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg border border-slate-200/50 transition-all flex items-center gap-1">
-                            <i class="ph ph-columns text-sm"></i> 欄位
+                        <button id="col-setting-btn" onclick="app.toggleColModal()" class="text-xs font-medium bg-white hover:bg-slate-50 text-slate-700 px-3.5 py-1.5 rounded-lg border border-slate-200 transition-all flex items-center gap-1.5 shadow-sm">
+                            <i class="ph ph-columns text-base text-slate-500"></i> 欄位
                         </button>
                         
                         <!-- 術前評估專用：保留需停藥按鈕 -->
-                        <button id="keep-stopmed-btn" onclick="app.keepOnlyStopMed()" class="hidden text-xs font-medium bg-rose-50 hover:bg-rose-100 text-rose-700 px-3 py-1.5 rounded-lg border border-rose-200/50 transition-all flex items-center gap-1" title="自動刪除無停藥建議的品項">
-                            <i class="ph ph-funnel text-sm"></i> 保留需停藥
+                        <button id="keep-stopmed-btn" onclick="app.keepOnlyStopMed()" class="hidden text-xs font-bold bg-rose-50 hover:bg-rose-100 text-rose-700 px-3.5 py-1.5 rounded-lg border border-rose-200/60 transition-all flex items-center gap-1.5 shadow-sm" title="自動刪除無停藥建議的品項">
+                            <i class="ph ph-funnel text-base"></i> 保留需停藥
                         </button>
 
                         <!-- 批次動作群組 -->
-                        <div id="batch-actions" class="hidden items-center bg-red-50 border border-red-100 rounded-lg overflow-hidden">
-                            <button onclick="app.deleteSelected()" class="text-xs font-medium hover:bg-red-100 text-red-600 px-2 py-1.5 transition-all border-r border-red-100" title="刪除已打勾的項目">刪除已選</button>
-                            <button onclick="app.deleteUnselected()" class="text-xs font-medium hover:bg-red-100 text-red-600 px-2 py-1.5 transition-all" title="保留打勾，刪除未打勾的項目">刪除未選</button>
+                        <div id="batch-actions" class="hidden items-center bg-red-50 border border-red-200/60 rounded-lg overflow-hidden shadow-sm">
+                            <button onclick="app.deleteSelected()" class="text-xs font-bold hover:bg-red-100 text-red-600 px-3 py-1.5 transition-all border-r border-red-200" title="刪除已打勾的項目">刪除已選</button>
+                            <button onclick="app.deleteUnselected()" class="text-xs font-bold hover:bg-red-100 text-red-600 px-3 py-1.5 transition-all" title="保留打勾，刪除未打勾的項目">刪除未選</button>
                         </div>
 
-                        <button onclick="app.deleteDuplicates()" class="text-xs font-medium bg-amber-50 hover:bg-amber-100 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200/50 transition-all flex items-center gap-1"><i class="ph ph-copy text-sm"></i> 刪除重複</button>
+                        <button onclick="app.deleteDuplicates()" class="text-xs font-medium bg-white hover:bg-slate-50 text-amber-700 px-3.5 py-1.5 rounded-lg border border-amber-200/60 transition-all flex items-center gap-1.5 shadow-sm"><i class="ph ph-copy text-base text-amber-500"></i> 刪除重複</button>
                         
                         <!-- 新增按鈕 -->
-                        <button id="add-new-btn" onclick="app.addNewRow()" class="text-xs font-medium bg-primary-50 hover:bg-primary-100 text-primary-700 px-3 py-1.5 rounded-lg border border-primary-200/50 transition-all flex items-center gap-1">
-                            <i class="ph ph-plus-circle text-sm"></i> 新增
+                        <button id="add-new-btn" onclick="app.addNewRow()" class="text-xs font-bold bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-1.5 rounded-lg border border-blue-600 transition-all flex items-center gap-1.5 shadow-md transform hover:-translate-y-0.5">
+                            <i class="ph ph-plus-circle text-base"></i> 新增
                         </button>
 
-                        <span id="med-count" class="text-xs font-medium bg-slate-100 text-slate-600 px-2.5 py-1.5 rounded-lg border border-slate-200/50">0 筆</span>
+                        <span id="med-count" class="text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg border border-slate-200/60 shadow-inner">0 筆</span>
                     </div>
                 </div>
                 
-                <!-- 術前評估臨床提醒 (預設隱藏) -->
-                <div id="preop-clinical-alert" class="hidden bg-amber-50 border-b border-amber-200 p-3 md:px-5">
-                    <div class="max-w-7xl mx-auto flex gap-3">
-                        <i class="ph ph-warning text-amber-500 text-xl shrink-0 mt-0.5"></i>
-                        <div class="text-xs text-amber-800 space-y-1.5 leading-relaxed font-medium">
-                            <p>1. 停藥建議僅供參考，請務必權衡病人與侵入性診療之出血風險、停藥產生血栓風險、腎功能、服藥順從性。整體出血風險輕微者可考慮不停藥。</p>
+                <!-- 術前評估臨床提醒 (預設隱藏, 精緻警示卡片設計) -->
+                <div id="preop-clinical-alert" class="hidden bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200 p-3.5 md:px-6 relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
+                    <div class="max-w-7xl mx-auto flex gap-4 items-start">
+                        <!-- 去背並放大的警示圖示 -->
+                        <div class="shrink-0 mt-0.5"><i class="ph ph-warning text-amber-500 text-[28px] drop-shadow-sm"></i></div>
+                        <div class="text-xs text-amber-900/90 space-y-1.5 leading-relaxed font-medium">
+                            <p>1. 停藥建議僅供參考，請務必權衡病人與侵入性診療之<strong class="text-amber-900">出血風險、停藥產生血栓風險、腎功能、服藥順從性</strong>。整體出血風險輕微者可考慮不停藥。</p>
                             <p>2. 在給予停藥建議前，建議與原處方醫師和執行手術醫師討論及評估出血風險、栓塞風險，務必以個別化方式評估為原則。另外也需考慮病人有無服用保健食品。</p>
-                            <p>3. 下列用藥原因，請先照會原處方醫師：心肌梗塞後12個月內、冠狀動脈植入支架後6個月內、中風後3個月內、深部靜脈栓塞後1個月內、頭頸部動脈支架。</p>
+                            <p>3. 下列用藥原因，請先照會原處方醫師：<strong class="text-amber-900">心肌梗塞後12個月內、冠狀動脈植入支架後6個月內、中風後3個月內、深部靜脈栓塞後1個月內、頭頸部動脈支架</strong>。</p>
                         </div>
                     </div>
                 </div>
                 
                 <!-- 清單模式容器 -->
-                <div id="list-container" class="md:flex-1 md:overflow-auto bg-slate-50/30 p-3 md:p-0">
-                    <table class="w-full text-left border-collapse md:min-w-[900px]">
-                        <thead class="hidden md:table-header-group bg-white sticky top-0 z-10 shadow-sm border-b border-slate-200/80 text-xs text-slate-500 font-medium">
+                <div id="list-container" class="md:flex-1 md:overflow-auto bg-slate-50 p-3 md:p-0">
+                    <table class="w-full text-left border-collapse md:min-w-[950px]">
+                        <thead class="hidden md:table-header-group bg-slate-100/90 backdrop-blur-md sticky top-0 z-10 shadow-[0_1px_2px_0_rgba(0,0,0,0.05)] border-y border-slate-200 text-[11px] uppercase tracking-wider text-slate-500 font-bold">
                             <tr>
-                                <th class="py-2.5 px-3 w-10 text-center"><input type="checkbox" id="select-all" onchange="app.toggleSelectAll(this)" class="rounded border-slate-300 text-primary-600 w-3.5 h-3.5"></th>
-                                <th class="py-2.5 px-3 w-10 text-center">#</th>
-                                <th class="col-image py-2.5 px-3 w-16 text-center">外觀圖</th>
-                                <th class="col-brand py-2.5 px-3 w-1/6">商品名</th>
+                                <th class="py-3 px-3 w-10 text-center"><input type="checkbox" id="select-all" onchange="app.toggleSelectAll(this)" class="rounded border-slate-300 text-blue-600 w-3.5 h-3.5 focus:ring-blue-500"></th>
+                                <th class="py-3 px-3 w-10 text-center">#</th>
+                                <th class="col-image py-3 px-3 w-16 text-center">外觀圖</th>
+                                <th class="col-brand py-3 px-3 w-1/6">商品名</th>
                                 <!-- 新增術前評估專用欄位 -->
-                                <th class="col-chbrand py-2.5 px-3 w-1/6">中文商品名</th>
-                                <th class="col-generic py-2.5 px-3 w-1/5">學名/成分</th>
+                                <th class="col-chbrand py-3 px-3 w-[15%]">中文商品名</th>
+                                <th class="col-generic py-3 px-3 w-1/5">學名/成分</th>
                                 <!-- 新增術前評估專用欄位 -->
-                                <th class="col-pharmclass py-2.5 px-3 w-[15%]">藥理分類</th>
+                                <th class="col-pharmclass py-3 px-3 w-[14%]">藥理分類</th>
                                 
-                                <th class="col-usage py-2.5 px-3 w-[12%]">用法用量</th>
-                                <th class="col-appearance py-2.5 px-3 w-[12%]">外觀描述</th>
+                                <th class="col-usage py-3 px-3 w-[12%]">用法用量</th>
+                                <th class="col-appearance py-3 px-3 w-[12%]">外觀描述</th>
                                 
                                 <!-- 新增術前評估專用欄位 -->
-                                <th class="col-stopmed py-2.5 px-3 w-[15%]">停藥建議</th>
+                                <th class="col-stopmed py-3 px-3 w-[14%]">停藥建議</th>
                                 
-                                <th class="col-nhicode py-2.5 px-3 w-24">健保碼</th>
-                                <th class="col-alternative py-2.5 px-3 w-1/5">替代品項 / 備註</th>
-                                <th class="py-2.5 px-3 w-12 text-center">操作</th>
+                                <th class="col-nhicode py-3 px-3 w-24">健保碼</th>
+                                <th class="col-alternative py-3 px-3 w-1/5">替代品項 / 備註</th>
+                                <th class="py-3 px-3 w-12 text-center">操作</th>
                             </tr>
                         </thead>
-                        <tbody id="med-table-body" class="text-sm md:divide-y divide-slate-100/80 block md:table-row-group">
+                        <tbody id="med-table-body" class="text-sm md:divide-y divide-slate-200/60 block md:table-row-group bg-white">
                             <!-- 列表內容動態生成 -->
                         </tbody>
                     </table>
                 </div>
 
                 <!-- 圖片模式容器 (初始隱藏) -->
-                <div id="grid-container" class="hidden md:flex-1 md:overflow-auto bg-slate-50/30 p-4 md:p-6">
-                    <div id="med-grid-body" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div id="grid-container" class="hidden md:flex-1 md:overflow-auto bg-slate-50/80 p-5 md:p-8">
+                    <div id="med-grid-body" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
                         <!-- 圖片卡片動態生成 -->
                     </div>
                 </div>
 
                 <!-- 空狀態提示 -->
-                <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 animate-fade-in-up h-full">
-                    <div class="bg-slate-50 p-4 rounded-full mb-4 shadow-sm"><i class="ph ph-folder-open text-5xl opacity-50"></i></div>
-                    <p class="text-center px-4 font-medium text-slate-500">目前清單為空<br><span class="text-sm font-normal text-slate-400 mt-1 block">請透過上方工具解析或手動新增藥品。</span></p>
+                <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-slate-400 animate-fade-in-up h-full bg-slate-50">
+                    <div class="bg-white p-6 rounded-full mb-5 shadow-sm border border-slate-100"><i class="ph ph-folder-open text-6xl text-slate-300"></i></div>
+                    <p class="text-center px-4 font-bold text-slate-500 text-base">目前清單為空<br><span class="text-sm font-medium text-slate-400 mt-2 block">請透過上方工具解析或手動新增藥品。</span></p>
                 </div>
             </section>
         </main>
     </div>
 
     <!-- 欄位設定彈跳視窗 -->
-    <div id="col-settings-modal" class="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[150] hidden items-center justify-center transition-opacity opacity-0" onclick="if(event.target===this) app.toggleColModal()">
-        <div class="bg-white rounded-xl shadow-xl p-5 w-64 transform scale-95 transition-transform" id="col-settings-content">
-            <div class="flex justify-between items-center mb-4 border-b border-slate-100 pb-2">
-                <h3 class="text-sm font-bold text-slate-800">顯示欄位設定</h3>
-                <button onclick="app.toggleColModal()" class="text-slate-400 hover:text-slate-600"><i class="ph ph-x"></i></button>
+    <div id="col-settings-modal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[150] hidden items-center justify-center transition-opacity opacity-0" onclick="if(event.target===this) app.toggleColModal()">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-64 transform scale-95 transition-transform border border-slate-100" id="col-settings-content">
+            <div class="flex justify-between items-center mb-5 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2 text-slate-800">
+                    <i class="ph ph-columns text-lg text-blue-500"></i>
+                    <h3 class="text-sm font-bold">顯示欄位設定</h3>
+                </div>
+                <button onclick="app.toggleColModal()" class="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"><i class="ph ph-x"></i></button>
             </div>
-            <div class="space-y-3 text-sm text-slate-700" id="col-setting-checkboxes">
+            <div class="space-y-3.5 text-sm text-slate-700 font-medium" id="col-setting-checkboxes">
                 <!-- 動態由 JavaScript 生成欄位控制 -->
             </div>
         </div>
@@ -334,15 +351,15 @@
 
     <!-- 清空確認彈窗 -->
     <div id="confirm-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[150] hidden flex-col items-center justify-center opacity-0 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm transform scale-95 transition-transform duration-200" id="confirm-modal-content">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-[90%] max-w-sm transform scale-95 transition-transform duration-200 border border-slate-100" id="confirm-modal-content">
             <div class="flex items-center gap-3 mb-4 text-pink-500">
-                <div class="p-2 bg-pink-50 rounded-full"><i class="ph ph-warning-circle text-2xl"></i></div>
+                <div class="p-2.5 bg-pink-50 rounded-full border border-pink-100"><i class="ph ph-warning-circle text-2xl"></i></div>
                 <h3 class="text-lg font-bold text-slate-800">確認清空</h3>
             </div>
-            <p class="text-sm text-slate-500 mb-6 pl-1">確定要清空所有資料嗎？此動作無法復原。</p>
+            <p class="text-sm text-slate-500 mb-6 pl-1 font-medium">確定要清空所有資料嗎？此動作無法復原。</p>
             <div class="flex gap-3 justify-end">
-                <button onclick="app.closeConfirmModal()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">取消</button>
-                <button onclick="app.executeClearData()" class="px-5 py-2.5 text-sm font-medium text-white bg-pink-500 hover:bg-pink-600 rounded-xl transition-colors shadow-sm shadow-pink-500/30">確定清空</button>
+                <button onclick="app.closeConfirmModal()" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">取消</button>
+                <button onclick="app.executeClearData()" class="px-5 py-2.5 text-sm font-bold text-white bg-pink-500 hover:bg-pink-600 rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">確定清空</button>
             </div>
         </div>
     </div>
@@ -350,38 +367,38 @@
     <!-- 列印視圖 -->
     <div id="print-view" class="hidden bg-white p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
         <div class="max-w-5xl mx-auto print-hide">
-            <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
-                <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
-                <p><strong>列印排版提醒：</strong>為了畫面乾淨，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
+            <div class="bg-blue-50 text-blue-700 px-5 py-4 rounded-xl text-sm mb-5 flex items-start gap-3 border border-blue-100 shadow-sm">
+                <i class="ph ph-info mt-0.5 text-xl shrink-0"></i>
+                <p class="font-medium leading-relaxed"><strong>列印排版提醒：</strong>為了畫面乾淨，請在列印視窗的「更多設定」或「選項」中，<strong>手動取消勾選「頁首及頁尾」</strong>。</p>
             </div>
         </div>
-        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 print-hide max-w-5xl mx-auto border-b border-slate-200 pb-4 gap-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-6 print-hide max-w-5xl mx-auto border-b border-slate-200 pb-5 gap-4">
             <div>
-                <h3 class="text-sm font-bold text-slate-700 mb-2">自訂列印顯示欄位：</h3>
-                <div class="flex flex-wrap gap-4 text-sm text-slate-600" id="print-col-toggles">
+                <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2"><i class="ph ph-list-checks text-blue-500 text-lg"></i> 自訂列印顯示欄位：</h3>
+                <div class="flex flex-wrap gap-4 text-sm font-medium text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100" id="print-col-toggles">
                     <!-- 動態由 JavaScript 管理，預設全部建立出來 -->
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="brand" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 商品名</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="chbrand" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 中文商品名</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="generic" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 學名/成分</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="pharmclass" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 藥理分類</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="usage" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 用法用量</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="appearance" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 外觀描述</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="stopmed" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 停藥建議</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" checked value="nhicode" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 健保碼</label>
-                    <label class="flex items-center gap-1 cursor-pointer hover:text-primary-600"><input type="checkbox" value="alternative" onchange="app.updatePrintView()" class="accent-primary-600 w-4 h-4"> 替代品項/備註</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="brand" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 商品名</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="chbrand" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 中文商品名</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="generic" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 學名/成分</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="pharmclass" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 藥理分類</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="usage" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 用法用量</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="appearance" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 外觀描述</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="stopmed" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 停藥建議</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="nhicode" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 健保碼</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" value="alternative" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 替代品項/備註</label>
                 </div>
             </div>
             <div class="flex gap-3 shrink-0 ml-auto">
-                <button onclick="app.closePrintView()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">返回編輯</button>
-                <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-xl transition-colors shadow-sm">
+                <button onclick="app.closePrintView()" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">返回編輯</button>
+                <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-md transform hover:-translate-y-0.5">
                     <i class="ph ph-printer text-lg"></i> 呼叫系統列印
                 </button>
             </div>
         </div>
         <div class="max-w-5xl mx-auto">
-            <div class="text-center mb-6">
-                <h1 id="print-main-title" class="text-2xl font-bold text-black mb-2">病患藥物清單</h1>
-                <p class="text-gray-600">列印日期：<span id="print-date"></span></p>
+            <div class="text-center mb-8">
+                <h1 id="print-main-title" class="text-2xl font-bold text-black mb-2 tracking-wide">病患藥物清單 - 自備藥辨識</h1>
+                <p class="text-gray-500 font-medium text-sm">列印日期：<span id="print-date"></span></p>
             </div>
             <table class="w-full border-collapse border border-gray-400 text-sm">
                 <thead class="bg-gray-100" id="print-table-head">
@@ -391,8 +408,8 @@
                     <!-- 列印內容動態生成 -->
                 </tbody>
             </table>
-            <div class="mt-8 flex justify-between items-end text-sm text-gray-600">
-                <p>藥師簽章：_________________</p>
+            <div class="mt-10 flex justify-between items-end text-sm text-gray-600 font-medium">
+                <p>藥師/醫師簽章：_________________</p>
                 <p class="text-xs text-gray-400">程式製作 : 其仁藥師 &nbsp;|&nbsp; 版本日期 : 2026/05</p>
             </div>
         </div>
@@ -401,14 +418,14 @@
     <!-- 標籤列印視圖 -->
     <div id="print-label-view" class="hidden bg-slate-100 p-8 absolute inset-0 z-[100] min-h-screen overflow-y-auto">
         <div class="max-w-5xl mx-auto print-hide">
-            <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-xl text-sm mb-4 flex items-start gap-3 border border-blue-100">
-                <i class="ph ph-info mt-0.5 text-lg shrink-0"></i>
-                <p><strong>列印排版提醒：</strong>請手動取消勾選「頁首及頁尾」。</p>
+            <div class="bg-blue-50 text-blue-700 px-5 py-4 rounded-xl text-sm mb-5 flex items-start gap-3 border border-blue-100 shadow-sm">
+                <i class="ph ph-info mt-0.5 text-xl shrink-0"></i>
+                <p class="font-medium"><strong>列印排版提醒：</strong>請手動取消勾選「頁首及頁尾」。</p>
             </div>
         </div>
-        <div class="flex justify-end gap-3 mb-6 print-hide max-w-5xl mx-auto border-b border-slate-300 pb-4">
-            <button onclick="app.closePrintLabelView()" class="px-5 py-2.5 text-sm font-medium text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors shadow-sm">返回編輯</button>
-            <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition-colors shadow-sm">
+        <div class="flex justify-end gap-3 mb-6 print-hide max-w-5xl mx-auto border-b border-slate-300 pb-5">
+            <button onclick="app.closePrintLabelView()" class="px-5 py-2.5 text-sm font-bold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl transition-colors shadow-sm">返回編輯</button>
+            <button onclick="window.print()" class="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-xl transition-all shadow-md transform hover:-translate-y-0.5">
                 <i class="ph ph-printer text-lg"></i> 呼叫系統列印標籤
             </button>
         </div>
@@ -427,7 +444,6 @@
         // ★ 資料庫綁定區：Google Sheet 發佈網址 ★
         // ==========================================
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEkPpe4mSBnairSmqQNRYj_4JqEdaD5rWqzgVvH3Ar6raBfbT6lzGN_jwbP3ak4sqWAf6kI7alhhCw/pub?gid=1080497094&single=true&output=csv"; 
-        // 🚨 這裡請貼上您的「術前評估」工作表的 CSV 發佈網址
         const PREOP_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEkPpe4mSBnairSmqQNRYj_4JqEdaD5rWqzgVvH3Ar6raBfbT6lzGN_jwbP3ak4sqWAf6kI7alhhCw/pub?gid=1227051250&single=true&output=csv"; 
         
         const app = (function() {
@@ -439,7 +455,7 @@
             let isImageMode = false;
             let currentAppMode = 'identify'; // 'identify' = 自備藥, 'preop' = 術前評估
             
-            const imageCache = new Map(); // 用來儲存已處理過的圖片網址
+            const imageCache = new Map(); 
             
             const els = {
                 listContainer: document.getElementById('list-container'),
@@ -470,9 +486,9 @@
                 showToast: (message, type = 'success') => {
                     const toast = document.createElement('div');
                     const isSuccess = type === 'success';
-                    const icon = isSuccess ? '<i class="ph ph-check-circle text-green-500 text-xl"></i>' : '<i class="ph ph-info text-blue-500 text-xl"></i>';
-                    const bgColor = isSuccess ? 'bg-white border-green-100' : 'bg-white border-blue-100';
-                    toast.className = `toast-enter pointer-events-auto flex items-center gap-3 px-5 py-3 rounded-xl shadow-lg border ${bgColor} text-slate-700 text-sm font-medium w-max max-w-[90vw] transition-all`;
+                    const icon = isSuccess ? '<i class="ph ph-check-circle text-emerald-500 text-xl"></i>' : '<i class="ph ph-info text-blue-500 text-xl"></i>';
+                    const bgColor = isSuccess ? 'bg-white border-emerald-100' : 'bg-white border-blue-100';
+                    toast.className = `toast-enter pointer-events-auto flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.1)] border ${bgColor} text-slate-700 text-sm font-bold w-max max-w-[90vw] transition-all`;
                     toast.innerHTML = `${icon} <span>${message}</span>`;
                     els.toastContainer.appendChild(toast);
                     setTimeout(() => {
@@ -500,7 +516,6 @@
 
             const db = {
                 fetchData: async (url) => {
-                    // 攔截假網址與未設定的網址，避免觸發網路錯誤
                     if (!url || url.includes("您的網址請貼在這裡") || url.includes("999999999")) {
                         console.warn('略過無效或尚未設定的資料庫網址:', url);
                         return null;
@@ -509,7 +524,6 @@
                     try {
                         const fetchUrl = url + (url.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
                         
-                        // 改用現代原生 fetch API 進行下載，避開 PapaParse 的 XHR 缺陷
                         const response = await fetch(fetchUrl);
                         if (!response.ok) {
                             console.error(`連線資料庫失敗 HTTP Status: ${response.status}`);
@@ -520,7 +534,7 @@
                         
                         return new Promise((resolve) => {
                             Papa.parse(csvText, {
-                                header: false, // 依賴 A, B, C 絕對欄位定位
+                                header: false,
                                 skipEmptyLines: true,
                                 complete: function(results) {
                                     const getColLetter = (index) => {
@@ -666,17 +680,17 @@
                                 }
 
                                 return `
-                                <div class="col-span-1 bg-white border border-slate-200 rounded-xl p-3 flex flex-col relative shadow-sm hover:shadow-md transition-shadow animate-fade-in-up card-item" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer w-4 h-4" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
-                                        <button class="delete-btn text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1 transition-colors -mt-1 -mr-1" title="刪除此列"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
+                                <div class="col-span-1 bg-white border border-slate-100 rounded-2xl p-3.5 flex flex-col relative shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-up card-item" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.04, 0.2)}s">
+                                    <div class="flex justify-between items-start mb-2.5">
+                                        <input type="checkbox" class="row-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                        <button class="delete-btn text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1.5 transition-colors -mt-1 -mr-1" title="刪除此列"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
                                     </div>
-                                    <div class="w-full aspect-square bg-slate-50 rounded-lg flex items-center justify-center border border-slate-100 overflow-hidden mb-2 cursor-pointer hover:opacity-80 transition-opacity" onclick="app.editImageUrl('${med.id}')" title="點擊設定圖片">
+                                    <div class="w-full aspect-square bg-slate-50/80 rounded-xl flex items-center justify-center border border-slate-100 overflow-hidden mb-3 cursor-pointer hover:opacity-80 transition-opacity" onclick="app.editImageUrl('${med.id}')" title="點擊設定圖片">
                                         ${imageHtml}
                                     </div>
                                     <div class="mt-auto">
                                         <div class="font-bold text-slate-800 text-sm leading-tight truncate mb-1" title="${utils.escapeHtml(med.brandName)}">${utils.escapeHtml(med.brandName) || '未命名商品'}</div>
-                                        <div class="text-xs text-slate-500 leading-tight truncate" title="${utils.escapeHtml(med.appearance)}">${utils.escapeHtml(med.appearance) || '無外觀描述'}</div>
+                                        <div class="text-xs text-slate-500 font-medium leading-tight truncate" title="${utils.escapeHtml(med.appearance)}">${utils.escapeHtml(med.appearance) || '無外觀描述'}</div>
                                     </div>
                                 </div>
                                 `;
@@ -687,24 +701,24 @@
                             els.gridBody.innerHTML = ''; 
 
                             els.tableBody.innerHTML = medList.map((med, index) => {
-                                // 停藥建議高亮判定
-                                let stopMedClass = "table-input text-slate-600";
+                                // 停藥建議高亮判定 (現代化精緻標籤)
+                                let stopMedClass = "table-input font-medium text-slate-700";
                                 if (med.stopAdvice && /\d+|停/.test(med.stopAdvice)) {
-                                    stopMedClass = "table-input stop-med-alert rounded";
+                                    stopMedClass = "table-input stop-med-alert rounded-md";
                                 }
 
                                 return `
-                                <tr draggable="false" data-drag-armed="false" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-none rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative shadow-sm md:shadow-none hover:bg-slate-50/80 md:hover:shadow-md transition-all duration-200 list-item-row" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.05, 0.3)}s">
+                                <tr draggable="false" data-drag-armed="false" class="animate-fade-in-up group block md:table-row bg-white md:bg-transparent border border-slate-200 md:border-b md:border-x-0 md:border-t-0 rounded-2xl md:rounded-none mb-4 md:mb-0 p-3 md:p-0 relative md:hover:bg-blue-50/40 transition-colors duration-200 list-item-row" data-id="${med.id}" style="animation-delay: ${Math.min(index * 0.03, 0.2)}s">
                                     <td class="hidden md:table-cell py-2 px-2 text-center border-b border-slate-100 md:border-none">
-                                        <div class="flex items-center justify-center gap-1">
-                                            <i class="ph ph-dots-six-vertical text-slate-400 cursor-grab hover:text-primary-500 drag-handle"></i>
-                                            <input type="checkbox" class="row-checkbox rounded border-slate-300 text-primary-600 w-4 h-4 cursor-pointer" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                        <div class="flex items-center justify-center gap-1.5">
+                                            <i class="ph ph-dots-six-vertical text-slate-300 cursor-grab hover:text-blue-500 drag-handle text-lg"></i>
+                                            <input type="checkbox" class="row-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
                                         </div>
                                     </td>
-                                    <td class="block md:table-cell py-2 px-2 text-left md:text-center font-medium text-slate-500 border-b border-slate-100 md:border-none mb-2 md:mb-0">
+                                    <td class="block md:table-cell py-2 px-2 text-left md:text-center font-bold text-slate-400 border-b border-slate-100 md:border-none mb-2 md:mb-0">
                                         <div class="flex justify-between items-center md:block">
                                             <div class="flex items-center gap-2">
-                                                <input type="checkbox" class="md:hidden row-checkbox rounded border-slate-300 text-primary-600 w-4 h-4 cursor-pointer" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
+                                                <input type="checkbox" class="md:hidden row-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 cursor-pointer" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
                                                 <span><span class="md:hidden text-xs text-slate-400"># </span>${index + 1}</span>
                                             </div>
                                             <button class="delete-btn md:hidden text-slate-400 hover:text-red-500 p-2"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
@@ -712,64 +726,64 @@
                                     </td>
                                     
                                     <td class="col-image flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none text-center">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">外觀圖</span>
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">外觀圖</span>
                                         ${med.imageUrl ? 
-                                            `<a href="${utils.escapeHtml(med.imageUrl)}" target="_blank" class="p-1 rounded text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors mx-auto block" title="開啟圖片連結">
-                                                <i class="ph ph-image-square text-xl text-primary-500"></i>
+                                            `<a href="${utils.escapeHtml(med.imageUrl)}" target="_blank" class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-100 transition-colors mx-auto block w-fit" title="開啟圖片連結">
+                                                <i class="ph ph-image-square text-xl text-blue-500 drop-shadow-sm"></i>
                                             </a>` : 
-                                            `<button onclick="app.editImageUrl('${med.id}')" class="p-1 rounded text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors mx-auto block" title="設定圖片連結">
+                                            `<button onclick="app.editImageUrl('${med.id}')" class="p-1.5 rounded-lg text-slate-300 hover:text-blue-600 hover:bg-blue-50 transition-colors mx-auto block w-fit" title="設定圖片連結">
                                                 <i class="ph ph-image text-xl"></i>
                                             </button>`
                                         }
                                     </td>
                                     
                                     <td class="col-brand flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">商品名</span>
-                                        <input type="text" class="table-input font-medium md:font-normal" data-field="brandName" value="${utils.escapeHtml(med.brandName)}" placeholder="輸入商品名">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">商品名</span>
+                                        <input type="text" class="table-input font-bold md:font-semibold text-slate-800" data-field="brandName" value="${utils.escapeHtml(med.brandName)}" placeholder="輸入商品名">
                                     </td>
                                     
                                     <td class="col-chbrand flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">中文商品名</span>
-                                        <input type="text" class="table-input text-blue-700 bg-blue-50/30" data-field="chBrandName" value="${utils.escapeHtml(med.chBrandName)}" placeholder="自動帶入">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">中文商品名</span>
+                                        <input type="text" class="table-input font-medium text-blue-700 bg-blue-50/50 rounded-md border border-blue-100/50" data-field="chBrandName" value="${utils.escapeHtml(med.chBrandName)}" placeholder="自動帶入">
                                     </td>
                                     
                                     <td class="col-generic flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">學名/成分</span>
-                                        <input type="text" class="table-input text-slate-600" data-field="genericName" value="${utils.escapeHtml(med.genericName)}">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">學名/成分</span>
+                                        <input type="text" class="table-input font-medium text-slate-600" data-field="genericName" value="${utils.escapeHtml(med.genericName)}">
                                     </td>
                                     
                                     <td class="col-pharmclass flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">藥理分類</span>
-                                        <input type="text" class="table-input text-emerald-700 bg-emerald-50/30 text-xs" data-field="pharmClass" value="${utils.escapeHtml(med.pharmClass)}">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">藥理分類</span>
+                                        <input type="text" class="table-input font-medium text-teal-700 bg-teal-50/50 rounded-md border border-teal-100/50 text-xs" data-field="pharmClass" value="${utils.escapeHtml(med.pharmClass)}">
                                     </td>
                                     
                                     <td class="col-usage flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">用法用量</span>
-                                        <input type="text" class="table-input text-slate-600" data-field="usage" value="${utils.escapeHtml(med.usage)}">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">用法用量</span>
+                                        <input type="text" class="table-input font-medium text-slate-600" data-field="usage" value="${utils.escapeHtml(med.usage)}">
                                     </td>
                                     
                                     <td class="col-appearance flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">外觀描述</span>
-                                        <input type="text" class="table-input text-slate-600" data-field="appearance" value="${utils.escapeHtml(med.appearance)}">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">外觀描述</span>
+                                        <input type="text" class="table-input font-medium text-slate-600" data-field="appearance" value="${utils.escapeHtml(med.appearance)}">
                                     </td>
                                     
                                     <td class="col-stopmed flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">停藥建議</span>
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">停藥建議</span>
                                         <input type="text" class="${stopMedClass}" data-field="stopAdvice" value="${utils.escapeHtml(med.stopAdvice)}">
                                     </td>
                                     
                                     <td class="col-nhicode flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-slate-500">健保碼</span>
-                                        <input type="text" class="table-input text-slate-600 font-mono text-xs uppercase" data-field="nhiCode" value="${utils.escapeHtml(med.nhiCode)}">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">健保碼</span>
+                                        <input type="text" class="table-input font-semibold text-slate-500 font-mono text-[13px] uppercase tracking-wider" data-field="nhiCode" value="${utils.escapeHtml(med.nhiCode)}">
                                     </td>
                                     
                                     <td class="col-alternative flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
-                                        <span class="md:hidden w-[72px] shrink-0 text-xs text-amber-600">替代/備註</span>
-                                        <input type="text" class="table-input text-amber-600 bg-amber-50/50" data-field="alternative" value="${utils.escapeHtml(med.alternative)}">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-amber-500">替代/備註</span>
+                                        <input type="text" class="table-input font-medium text-amber-700 bg-amber-50/50 rounded-md border border-amber-100/50" data-field="alternative" value="${utils.escapeHtml(med.alternative)}">
                                     </td>
                                     
                                     <td class="hidden md:table-cell py-2 px-2 text-center">
-                                        <button class="delete-btn text-slate-400 hover:text-red-500 p-2"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
+                                        <button class="delete-btn text-slate-300 hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition-colors"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
                                     </td>
                                 </tr>
                                 `;
@@ -801,22 +815,22 @@
                     let html = '';
                     if (currentAppMode === 'identify') {
                         html = `
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked disabled class="rounded border-slate-300 text-slate-400 w-4 h-4 cursor-not-allowed"> 商品名 (必選)</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" onchange="app.toggleColumn('image', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 外觀圖</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('generic', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 學名/成分</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('usage', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 用法用量</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('appearance', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 外觀描述</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 健保碼</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" onchange="app.toggleColumn('alternative', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 替代品項/備註</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer"><input type="checkbox" checked disabled class="rounded border-slate-300 text-slate-400 w-4 h-4 cursor-not-allowed"> 商品名 (必選)</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" onchange="app.toggleColumn('image', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 外觀圖</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('generic', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 學名/成分</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('usage', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 用法用量</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('appearance', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 外觀描述</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 健保碼</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" onchange="app.toggleColumn('alternative', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 替代品項/備註</label>
                         `;
                     } else {
                         html = `
-                            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked disabled class="rounded border-slate-300 text-slate-400 w-4 h-4 cursor-not-allowed"> 商品名 (必選)</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('chbrand', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 中文商品名</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('generic', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 學名/成分</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('pharmclass', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 藥理分類</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('stopmed', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 停藥建議</label>
-                            <label class="flex items-center gap-2 cursor-pointer hover:text-primary-600"><input type="checkbox" checked onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-primary-600 w-4 h-4"> 健保碼</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer"><input type="checkbox" checked disabled class="rounded border-slate-300 text-slate-400 w-4 h-4 cursor-not-allowed"> 商品名 (必選)</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('chbrand', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 中文商品名</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('generic', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 學名/成分</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('pharmclass', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 藥理分類</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('stopmed', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 停藥建議</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 健保碼</label>
                         `;
                     }
                     els.colCheckboxes.innerHTML = html;
@@ -847,32 +861,32 @@
 
                     printTableHead.innerHTML = `
                         <tr>
-                            <th class="border border-gray-400 py-2 px-3 text-left w-12">序號</th>
-                            ${showCols.brand ? '<th class="border border-gray-400 py-2 px-3 text-left">商品名</th>' : ''}
-                            ${showCols.chbrand ? '<th class="border border-gray-400 py-2 px-3 text-left">中文商品名</th>' : ''}
-                            ${showCols.generic ? '<th class="border border-gray-400 py-2 px-3 text-left">學名 / 成分</th>' : ''}
-                            ${showCols.pharmclass ? '<th class="border border-gray-400 py-2 px-3 text-left">藥理分類</th>' : ''}
-                            ${showCols.usage ? '<th class="border border-gray-400 py-2 px-3 text-left">用法用量</th>' : ''}
-                            ${showCols.appearance ? '<th class="border border-gray-400 py-2 px-3 text-left">外觀描述</th>' : ''}
-                            ${showCols.stopmed ? '<th class="border border-gray-400 py-2 px-3 text-left">停藥建議</th>' : ''}
-                            ${showCols.nhicode ? '<th class="border border-gray-400 py-2 px-3 text-left">健保碼</th>' : ''}
-                            ${showCols.alternative ? '<th class="border border-gray-400 py-2 px-3 text-left">替代品項 / 備註</th>' : ''}
+                            <th class="border border-gray-400 py-2.5 px-3 text-left w-12 bg-gray-200/50">序號</th>
+                            ${showCols.brand ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">商品名</th>' : ''}
+                            ${showCols.chbrand ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">中文商品名</th>' : ''}
+                            ${showCols.generic ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">學名 / 成分</th>' : ''}
+                            ${showCols.pharmclass ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">藥理分類</th>' : ''}
+                            ${showCols.usage ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">用法用量</th>' : ''}
+                            ${showCols.appearance ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">外觀描述</th>' : ''}
+                            ${showCols.stopmed ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">停藥建議</th>' : ''}
+                            ${showCols.nhicode ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">健保碼</th>' : ''}
+                            ${showCols.alternative ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">替代品項 / 備註</th>' : ''}
                         </tr>
                     `;
 
                     if (medList.length === 0) {
                         const colCount = 1 + Object.values(showCols).filter(Boolean).length;
-                        printTableBody.innerHTML = `<tr><td colspan="${colCount}" class="border border-gray-400 py-4 text-center text-gray-500">無藥品紀錄</td></tr>`;
+                        printTableBody.innerHTML = `<tr><td colspan="${colCount}" class="border border-gray-400 py-6 text-center text-gray-500 font-medium">無藥品紀錄</td></tr>`;
                         return;
                     }
                     
                     printTableBody.innerHTML = medList.map((med, i) => `
                         <tr>
-                            <td class="border border-gray-400 py-2 px-3 text-center">${i + 1}</td>
-                            ${showCols.brand ? `<td class="border border-gray-400 py-2 px-3 font-medium">${utils.escapeHtml(med.brandName)}</td>` : ''}
-                            ${showCols.chbrand ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.chBrandName)}</td>` : ''}
-                            ${showCols.generic ? `<td class="border border-gray-400 py-2 px-3 text-gray-600">${utils.escapeHtml(med.genericName)}</td>` : ''}
-                            ${showCols.pharmclass ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.pharmClass)}</td>` : ''}
+                            <td class="border border-gray-400 py-2 px-3 text-center font-medium">${i + 1}</td>
+                            ${showCols.brand ? `<td class="border border-gray-400 py-2 px-3 font-bold">${utils.escapeHtml(med.brandName)}</td>` : ''}
+                            ${showCols.chbrand ? `<td class="border border-gray-400 py-2 px-3 font-medium">${utils.escapeHtml(med.chBrandName)}</td>` : ''}
+                            ${showCols.generic ? `<td class="border border-gray-400 py-2 px-3 text-gray-700">${utils.escapeHtml(med.genericName)}</td>` : ''}
+                            ${showCols.pharmclass ? `<td class="border border-gray-400 py-2 px-3 text-gray-700">${utils.escapeHtml(med.pharmClass)}</td>` : ''}
                             ${showCols.usage ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.usage)}</td>` : ''}
                             ${showCols.appearance ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.appearance)}</td>` : ''}
                             ${showCols.stopmed ? `<td class="border border-gray-400 py-2 px-3 font-bold text-red-600">${utils.escapeHtml(med.stopAdvice)}</td>` : ''}
@@ -885,7 +899,7 @@
                     const labelContainer = document.getElementById('label-container');
                     if(!labelContainer) return;
                     if (medList.length === 0) {
-                        labelContainer.innerHTML = '<div class="col-span-full text-center text-slate-500 py-10 font-medium">無藥品紀錄可產生標籤</div>';
+                        labelContainer.innerHTML = '<div class="col-span-full text-center text-slate-500 py-10 font-bold">無藥品紀錄可產生標籤</div>';
                         return;
                     }
                     labelContainer.innerHTML = medList.map((med) => {
@@ -897,7 +911,7 @@
                         else if (brandLength > 38) brandFontSize = 10;
                         else if (brandLength > 28) brandFontSize = 11;
                         return `
-                        <div class="label-box border-2 border-slate-800 rounded-lg p-2 bg-white flex flex-col gap-1 min-h-[75px] shadow-sm">
+                        <div class="label-box border-2 border-slate-900 rounded-lg p-2 bg-white flex flex-col gap-1 min-h-[75px] shadow-sm">
                             <div>
                                 <div class="text-[9px] font-bold text-slate-500 mb-0.5 border-b border-slate-200 pb-0.5">商品名</div>
                                 <div class="label-brand font-bold text-sm text-slate-900 leading-tight break-words" style="font-size:${brandFontSize}px !important;">${utils.escapeHtml(med.brandName) || ' '}</div>
@@ -920,12 +934,12 @@
                         if (medIndex > -1) {
                             medList[medIndex][e.target.dataset.field] = e.target.value;
                             
-                            // 即時反應停藥高亮色
+                            // 即時反應停藥高亮色 (動態切換 class 讓介面即時變色)
                             if(e.target.dataset.field === 'stopAdvice') {
                                 if(/\d+|停/.test(e.target.value)) {
-                                    e.target.className = "table-input stop-med-alert rounded";
+                                    e.target.className = "table-input stop-med-alert rounded-md";
                                 } else {
-                                    e.target.className = "table-input text-slate-600";
+                                    e.target.className = "table-input font-medium text-slate-700";
                                 }
                             }
                             
@@ -994,8 +1008,8 @@
                 },
                 setParseMode: (mode) => {
                     currentParseMode = mode;
-                    document.getElementById('mode-btn-cloud').className = mode === 'cloud' ? 'px-2.5 py-1 text-[11px] font-medium rounded shadow-sm bg-white text-primary-600 transition-all' : 'px-2.5 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 transition-all';
-                    document.getElementById('mode-btn-ud').className = mode === 'ud' ? 'px-2.5 py-1 text-[11px] font-medium rounded shadow-sm bg-white text-primary-600 transition-all' : 'px-2.5 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 transition-all';
+                    document.getElementById('mode-btn-cloud').className = mode === 'cloud' ? 'px-3 py-1 text-[11px] font-bold rounded shadow-sm bg-white text-blue-600 transition-all' : 'px-3 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transition-all';
+                    document.getElementById('mode-btn-ud').className = mode === 'ud' ? 'px-3 py-1 text-[11px] font-bold rounded shadow-sm bg-white text-blue-600 transition-all' : 'px-3 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transition-all';
                     els.rawText.placeholder = mode === 'cloud' ? "貼上雲端藥歷內容..." : "貼上UD處方...";
                 },
                 
@@ -1007,27 +1021,32 @@
                     const keepBtn = document.getElementById('keep-stopmed-btn');
                     const printCols = document.querySelectorAll('#print-col-toggles input[type="checkbox"]');
                     const clinicalAlert = document.getElementById('preop-clinical-alert');
+                    const printMainTitle = document.getElementById('print-main-title');
                     
                     if (mode === 'identify') {
-                        btnIden.className = 'px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm bg-white text-primary-600 transition-all flex items-center gap-1';
-                        btnPreop.className = 'px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all flex items-center gap-1';
+                        // 更新切換按鈕字串，針對深藍色背景優化
+                        btnIden.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-blue-700 transition-all flex items-center gap-1.5';
+                        btnPreop.className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5';
                         document.body.className = "text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance show-col-nhicode";
                         document.getElementById('main-list-title').textContent = "2. 藥物清單 (自備藥辨識)";
                         if(keepBtn) keepBtn.classList.add('hidden');
                         if(clinicalAlert) clinicalAlert.classList.add('hidden');
+                        if(printMainTitle) printMainTitle.textContent = '病患藥物清單 - 自備藥辨識';
                         
                         // 自備藥模式：切換列印預設欄位
                         printCols.forEach(cb => {
                             cb.checked = ['brand', 'generic', 'usage', 'appearance', 'nhicode'].includes(cb.value);
                         });
                     } else {
-                        btnPreop.className = 'px-3 py-1.5 text-xs font-semibold rounded-md shadow-sm bg-white text-pink-600 transition-all flex items-center gap-1 ring-1 ring-pink-200';
-                        btnIden.className = 'px-3 py-1.5 text-xs font-semibold rounded-md text-slate-500 hover:text-slate-700 transition-all flex items-center gap-1';
+                        // 更新切換按鈕字串，針對深藍色背景優化
+                        btnPreop.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-pink-600 transition-all flex items-center gap-1.5 ring-2 ring-pink-200/50';
+                        btnIden.className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5';
                         // 術前評估模式顯示特製欄位
                         document.body.className = "text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-chbrand show-col-generic show-col-pharmclass show-col-stopmed show-col-nhicode";
                         document.getElementById('main-list-title').textContent = "2. 藥物清單 (術前評估建議)";
                         if(keepBtn) keepBtn.classList.remove('hidden');
                         if(clinicalAlert) clinicalAlert.classList.remove('hidden');
+                        if(printMainTitle) printMainTitle.textContent = '病患藥物清單 - 手術前停藥建議';
                         
                         // 術前評估模式：切換列印預設欄位 (序號預設固定會有)
                         printCols.forEach(cb => {
@@ -1320,12 +1339,12 @@
                     
                     if(isImageMode) {
                         btnText.textContent = '清單模式';
-                        btnIcon.className = 'ph ph-list-bullets text-sm';
+                        btnIcon.className = 'ph ph-list-bullets text-base';
                         if(colBtn) colBtn.classList.add('hidden');
                         if(addBtn) addBtn.classList.add('hidden');
                     } else {
                         btnText.textContent = '圖片模式';
-                        btnIcon.className = 'ph ph-image text-sm';
+                        btnIcon.className = 'ph ph-image text-base';
                         if(colBtn) colBtn.classList.remove('hidden');
                         if(addBtn) addBtn.classList.remove('hidden');
                     }
