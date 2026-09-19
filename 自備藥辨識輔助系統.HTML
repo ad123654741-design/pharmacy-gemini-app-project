@@ -161,8 +161,8 @@
 <body class="text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance show-col-nhicode">
 
     <div id="app-ui" class="flex flex-col h-full w-full bg-slate-50">
-        <!-- 頂部精簡導覽列 (採用純淨醫療藍色系，降低視覺干擾) -->
-        <header class="bg-blue-700 px-4 md:px-6 py-3 flex justify-between items-center shrink-0 z-20 shadow-md border-none overflow-x-auto">
+        <!-- 頂部精簡導覽列 (改為深邃黑灰色，極大化降低視覺疲勞) -->
+        <header class="bg-slate-900 px-4 md:px-6 py-3 flex justify-between items-center shrink-0 z-20 shadow-md border-none overflow-x-auto">
             <div class="flex items-center gap-4 shrink-0">
                 <div class="flex items-center gap-2.5">
                     <div class="bg-white/20 backdrop-blur-md text-white p-1.5 rounded-lg shrink-0 shadow-inner border border-white/20"><i class="ph ph-pills text-xl"></i></div>
@@ -171,12 +171,12 @@
                 
                 <!-- 核心模式切換按鈕 (Glassmorphism 風格) -->
                 <div class="flex bg-black/20 p-1.5 rounded-xl border border-white/10 shrink-0 ml-1 backdrop-blur-sm shadow-inner">
-                    <button id="app-mode-btn-identify" onclick="app.setAppMode('identify')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-blue-700 transition-all flex items-center gap-1.5"><i class="ph ph-pill text-sm"></i> 自備藥辨識</button>
+                    <button id="app-mode-btn-identify" onclick="app.setAppMode('identify')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-slate-800 transition-all flex items-center gap-1.5"><i class="ph ph-pill text-sm"></i> 自備藥辨識</button>
                     <button id="app-mode-btn-preop" onclick="app.setAppMode('preop')" class="px-3.5 py-1.5 text-xs font-medium rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5"><i class="ph ph-heartbeat text-sm"></i> 術前評估</button>
                 </div>
                 
                 <!-- 製作者資訊版權宣告 -->
-                <p class="text-[11px] text-blue-200 hidden lg:block ml-2 border-l border-blue-400/40 pl-4 font-medium tracking-wide">製作者 : 其仁藥師 2026 版權所有&copy;</p>
+                <p class="text-[11px] text-slate-300 hidden lg:block ml-2 border-l border-slate-600 pl-4 font-medium tracking-wide">製作者 : 其仁藥師 2026 版權所有&copy;</p>
             </div>
             
             <!-- 統一化右側按鈕樣式，採用白框半透明設計，清晰且具備設計感 -->
@@ -184,7 +184,7 @@
                 <a href="https://mcp.fda.gov.tw/" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm"><i class="ph ph-link text-base"></i> 仿單查詢</a>
                 <a href="https://drugtw.com/figure" target="_blank" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm"><i class="ph ph-link text-base"></i> 藥台灣</a>
                 
-                <button onclick="app.openConfirmModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-pink-200 hover:border-pink-300/50"><i class="ph ph-trash text-base"></i> 清空</button>
+                <button onclick="app.openConfirmModal()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-700 bg-red-100 hover:bg-red-200 border border-red-200 rounded-lg transition-all shadow-sm"><i class="ph ph-trash text-base"></i> 清空</button>
                 <button onclick="app.copyTextContent()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-indigo-200 hover:border-indigo-300/50"><i class="ph ph-copy text-base"></i> 複製</button>
                 <button onclick="app.exportToCSV()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-emerald-200 hover:border-emerald-300/50"><i class="ph ph-download-simple text-base"></i> CSV</button>
                 <button onclick="app.openPrintLabelView()" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-all shadow-sm hover:text-amber-200 hover:border-amber-300/50"><i class="ph ph-tag text-base"></i> 標籤</button>
@@ -272,7 +272,7 @@
                 </div>
                 
                 <!-- 術前評估臨床提醒 (預設隱藏, 精緻警示卡片設計) -->
-                <div id="preop-clinical-alert" class="hidden bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200 p-3.5 md:px-6 relative overflow-hidden">
+                <div id="preop-clinical-alert" class="hidden shrink-0 bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200 p-3.5 md:px-6 relative overflow-hidden">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
                     <div class="max-w-7xl mx-auto flex gap-4 items-start">
                         <!-- 去背並放大的警示圖示 -->
@@ -1024,8 +1024,8 @@
                     const printMainTitle = document.getElementById('print-main-title');
                     
                     if (mode === 'identify') {
-                        // 更新切換按鈕字串，針對深藍色背景優化
-                        btnIden.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-blue-700 transition-all flex items-center gap-1.5';
+                        // 更新切換按鈕字串，針對深色背景優化
+                        btnIden.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-slate-800 transition-all flex items-center gap-1.5';
                         btnPreop.className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5';
                         document.body.className = "text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance show-col-nhicode";
                         document.getElementById('main-list-title').textContent = "2. 藥物清單 (自備藥辨識)";
