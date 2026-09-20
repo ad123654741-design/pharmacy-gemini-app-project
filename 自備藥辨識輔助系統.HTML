@@ -197,8 +197,8 @@
         <main class="flex-1 flex flex-col overflow-hidden bg-slate-50/50 relative">
             
             <!-- 上方：醫囑清理工具 (卡片式懸浮設計) -->
-            <section class="w-full shrink-0 bg-white border-b border-slate-200 p-3 flex flex-col gap-2 z-10 shadow-sm relative">
-                <div class="flex items-center justify-between max-w-7xl mx-auto w-full gap-4">
+            <section class="w-full shrink-0 bg-white border-b border-slate-200 p-3 md:px-5 flex flex-col gap-2 z-10 shadow-sm relative">
+                <div class="flex items-center justify-between w-full gap-4">
                     <div class="flex items-center gap-2 shrink-0">
                         <!-- 手術出血風險選擇區塊 (從下方清單區移動至此處) -->
                         <div id="surgical-risk-toolbar" class="hidden items-center gap-2 mr-2 border-r border-slate-200 pr-4">
@@ -285,9 +285,9 @@
                 </div>
                 
                 <!-- 術前評估臨床提醒 (預設隱藏, 精緻警示卡片設計) -->
-                <div id="preop-clinical-alert" class="hidden shrink-0 bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200 p-3.5 md:px-6 relative overflow-hidden">
+                <div id="preop-clinical-alert" class="hidden shrink-0 bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200 p-3.5 md:px-5 relative overflow-hidden">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
-                    <div class="max-w-7xl mx-auto flex gap-4 items-start">
+                    <div class="w-full flex gap-4 items-start">
                         <!-- 去背並放大1.5倍的警示圖示，微調 margin-top 對齊文字 -->
                         <div class="shrink-0 mt-1"><i class="ph ph-warning text-amber-500 text-[42px] drop-shadow-sm"></i></div>
                         <div class="text-xs text-amber-900/90 space-y-1.5 leading-relaxed font-medium">
@@ -455,9 +455,9 @@
     <div id="toast-container" class="fixed bottom-6 right-1/2 translate-x-1/2 md:translate-x-0 md:right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
 
     <script>
-        // ==========================================製作by其仁藥師
+        // ==========================================製作者 : 其仁藥師 2026 版權所有
         // ★ 資料庫綁定區：Google Sheet 發佈網址 ★
-        // ==========================================54yji45k3xup6fu6bp6ul4g
+        // ==========================================54yji35k3xup6fu6bp6ul4g
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEkPpe4mSBnairSmqQNRYj_4JqEdaD5rWqzgVvH3Ar6raBfbT6lzGN_jwbP3ak4sqWAf6kI7alhhCw/pub?gid=1080497094&single=true&output=csv"; 
         const PREOP_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEkPpe4mSBnairSmqQNRYj_4JqEdaD5rWqzgVvH3Ar6raBfbT6lzGN_jwbP3ak4sqWAf6kI7alhhCw/pub?gid=1227051250&single=true&output=csv"; 
         
@@ -1238,7 +1238,7 @@
                             const ings = med.genericName.split(/;|；|,|，|\+/).map(s => s.trim().toLowerCase()).filter(Boolean);
                             let classes = new Set();
                             
-                            // 停藥天數比對邏輯 製作by其仁藥師
+                            // 停藥天數比對邏輯
                             let maxDays = -1;
                             let textAdvices = new Set();
                             let resumeAdvices = new Set();
