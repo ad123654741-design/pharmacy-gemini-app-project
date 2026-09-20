@@ -37,7 +37,7 @@
 
         body { font-family: 'Inter', 'Noto Sans TC', sans-serif; background-color: theme('colors.background'); overscroll-behavior-y: none; }
 
-        /* 動態欄位隱藏設定 (整合新舊所有欄位) */
+        /* 動態欄位隱藏設定 (整合新舊所有欄位，新增 col-resume) */
         body:not(.show-col-image) .col-image,
         body:not(.show-col-generic) .col-generic,
         body:not(.show-col-usage) .col-usage,
@@ -46,7 +46,8 @@
         body:not(.show-col-alternative) .col-alternative,
         body:not(.show-col-chbrand) .col-chbrand,
         body:not(.show-col-pharmclass) .col-pharmclass,
-        body:not(.show-col-stopmed) .col-stopmed {
+        body:not(.show-col-stopmed) .col-stopmed,
+        body:not(.show-col-resume) .col-resume {
             display: none !important;
         }
         
@@ -199,6 +200,18 @@
             <section class="w-full shrink-0 bg-white border-b border-slate-200 p-3 flex flex-col gap-2 z-10 shadow-sm relative">
                 <div class="flex items-center justify-between max-w-7xl mx-auto w-full gap-4">
                     <div class="flex items-center gap-2 shrink-0">
+                        <!-- 手術出血風險選擇區塊 (從下方清單區移動至此處) -->
+                        <div id="surgical-risk-toolbar" class="hidden items-center gap-2 mr-2 border-r border-slate-200 pr-4">
+                            <div class="flex items-center gap-1">
+                                <i class="ph ph-drop text-rose-500 text-sm"></i>
+                                <span class="text-xs font-bold text-slate-600 tracking-wide">出血風險</span>
+                            </div>
+                            <div class="flex bg-slate-100 p-0.5 rounded-md border border-slate-200/60 shadow-inner">
+                                <button id="risk-btn-high" onclick="app.setSurgicalRisk('high')" class="px-3 py-1 text-[11px] font-bold rounded shadow-sm bg-white text-rose-600 transition-all border border-slate-200/50">高風險</button>
+                                <button id="risk-btn-low" onclick="app.setSurgicalRisk('low')" class="px-3 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transition-all border border-transparent">中低</button>
+                            </div>
+                        </div>
+
                         <div class="p-1.5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg text-blue-600 shadow-inner border border-blue-100/50"><i class="ph ph-magic-wand text-lg"></i></div>
                         <h2 class="font-bold text-slate-700 text-sm tracking-wide">1. 醫囑清理工具</h2>
                         <div class="flex bg-slate-100 p-1 rounded-lg ml-3 border border-slate-200/60 shadow-inner">
@@ -222,7 +235,7 @@
                     <div class="flex items-center gap-3">
                         <div class="p-1.5 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg text-teal-600 shadow-inner border border-teal-100/50 hidden sm:block"><i class="ph ph-table text-lg"></i></div>
                         <h2 id="main-list-title" class="font-bold text-slate-700 tracking-wide">2. 藥物清單</h2>
-                        <div class="flex items-center gap-2.5 ml-3 border-l border-slate-200 pl-4">
+                        <div class="flex items-center gap-2.5 ml-3 border-l border-slate-200 pl-4 flex-wrap">
                             <button id="sort-brand-btn" onclick="app.sortByBrand()" class="flex items-center gap-1.5 text-xs font-medium text-slate-600 hover:text-blue-700 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors shadow-sm">
                                 <i class="ph ph-sort-ascending text-sm"></i><span>商品名排序</span>
                             </button>
@@ -275,8 +288,8 @@
                 <div id="preop-clinical-alert" class="hidden shrink-0 bg-gradient-to-r from-amber-50/80 to-orange-50/80 border-b border-amber-200 p-3.5 md:px-6 relative overflow-hidden">
                     <div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-400"></div>
                     <div class="max-w-7xl mx-auto flex gap-4 items-start">
-                        <!-- 去背並放大的警示圖示 -->
-                        <div class="shrink-0 mt-0.5"><i class="ph ph-warning text-amber-500 text-[28px] drop-shadow-sm"></i></div>
+                        <!-- 去背並放大1.5倍的警示圖示，微調 margin-top 對齊文字 -->
+                        <div class="shrink-0 mt-1"><i class="ph ph-warning text-amber-500 text-[42px] drop-shadow-sm"></i></div>
                         <div class="text-xs text-amber-900/90 space-y-1.5 leading-relaxed font-medium">
                             <p>1. 停藥建議僅供參考，請務必權衡病人與侵入性診療之<strong class="text-amber-900">出血風險、停藥產生血栓風險、腎功能、服藥順從性</strong>。整體出血風險輕微者可考慮不停藥。</p>
                             <p>2. 在給予停藥建議前，建議與原處方醫師和執行手術醫師討論及評估出血風險、栓塞風險，務必以個別化方式評估為原則。另外也需考慮病人有無服用保健食品。</p>
@@ -305,6 +318,7 @@
                                 
                                 <!-- 新增術前評估專用欄位 -->
                                 <th class="col-stopmed py-3 px-3 w-[14%]">停藥建議</th>
+                                <th class="col-resume py-3 px-3 w-[14%]">復藥時間/說明</th>
                                 
                                 <th class="col-nhicode py-3 px-3 w-24">健保碼</th>
                                 <th class="col-alternative py-3 px-3 w-1/5">替代品項 / 備註</th>
@@ -384,6 +398,7 @@
                     <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="usage" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 用法用量</label>
                     <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="appearance" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 外觀描述</label>
                     <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="stopmed" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 停藥建議</label>
+                    <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" value="resume" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 復藥時間/說明</label>
                     <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked value="nhicode" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 健保碼</label>
                     <label class="flex items-center gap-1.5 cursor-pointer hover:text-blue-600"><input type="checkbox" value="alternative" onchange="app.updatePrintView()" class="accent-blue-600 w-4 h-4"> 替代品項/備註</label>
                 </div>
@@ -454,6 +469,7 @@
             let currentParseMode = 'cloud';
             let isImageMode = false;
             let currentAppMode = 'identify'; // 'identify' = 自備藥, 'preop' = 術前評估
+            let currentSurgicalRisk = 'high'; // 'high' = 高風險, 'low' = 中低風險
             
             const imageCache = new Map(); 
             
@@ -588,7 +604,7 @@
                                 const fallbackMatch = str.match(/(.*?)(\d+(?:\.\d+)?)\s*(QD|BID&HS|BID|TID|QID|Q\d+H|PRN|HS|AC|PC|QW)$/i);
                                 if(fallbackMatch) { brandName = fallbackMatch[1].trim(); usage = `${fallbackMatch[2]} ${fallbackMatch[3].toUpperCase()}`.trim(); }
                             }
-                            if (usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode: '', imageUrl: '', chBrandName: '', pharmClass: '', stopAdvice: '' });
+                            if (usage) results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode: '', imageUrl: '', chBrandName: '', pharmClass: '', stopAdvice: '', resumeAdvice: '' });
                         });
                     } else {
                         const cloudLines = text.split('\n').reduce((lines, line) => {
@@ -642,7 +658,7 @@
                             
                             if (!usage) return;
 
-                            results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode, imageUrl: '', chBrandName: '', pharmClass: '', stopAdvice: '' });
+                            results.push({ id: utils.generateId(), brandName, genericName, usage, appearance: '', alternative: '', nhiCode, imageUrl: '', chBrandName: '', pharmClass: '', stopAdvice: '', resumeAdvice: '' });
                         });
                     }
                     return results;
@@ -772,6 +788,11 @@
                                         <input type="text" class="${stopMedClass}" data-field="stopAdvice" value="${utils.escapeHtml(med.stopAdvice)}">
                                     </td>
                                     
+                                    <td class="col-resume flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
+                                        <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">復藥說明</span>
+                                        <input type="text" class="table-input font-medium text-slate-600 bg-slate-50/50 rounded-md border border-slate-100/50" data-field="resumeAdvice" value="${utils.escapeHtml(med.resumeAdvice)}">
+                                    </td>
+                                    
                                     <td class="col-nhicode flex md:table-cell items-center py-1 md:py-2 px-1 border-b border-slate-50 md:border-none">
                                         <span class="md:hidden w-[72px] shrink-0 text-xs font-bold text-slate-400">健保碼</span>
                                         <input type="text" class="table-input font-semibold text-slate-500 font-mono text-[13px] uppercase tracking-wider" data-field="nhiCode" value="${utils.escapeHtml(med.nhiCode)}">
@@ -830,7 +851,8 @@
                             <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('generic', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 學名/成分</label>
                             <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('pharmclass', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 藥理分類</label>
                             <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('stopmed', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 停藥建議</label>
-                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 健保碼</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" checked onchange="app.toggleColumn('resume', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 復藥時間/說明</label>
+                            <label class="flex items-center gap-2.5 cursor-pointer hover:text-blue-600"><input type="checkbox" onchange="app.toggleColumn('nhicode', this.checked)" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-4 h-4 transition-colors"> 健保碼</label>
                         `;
                     }
                     els.colCheckboxes.innerHTML = html;
@@ -855,6 +877,7 @@
                         usage: toggles.find(t => t.value === 'usage')?.checked ?? true,
                         appearance: toggles.find(t => t.value === 'appearance')?.checked ?? true,
                         stopmed: toggles.find(t => t.value === 'stopmed')?.checked ?? false,
+                        resume: toggles.find(t => t.value === 'resume')?.checked ?? false,
                         nhicode: toggles.find(t => t.value === 'nhicode')?.checked ?? true,
                         alternative: toggles.find(t => t.value === 'alternative')?.checked ?? false
                     };
@@ -869,6 +892,7 @@
                             ${showCols.usage ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">用法用量</th>' : ''}
                             ${showCols.appearance ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">外觀描述</th>' : ''}
                             ${showCols.stopmed ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">停藥建議</th>' : ''}
+                            ${showCols.resume ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">復藥時間/說明</th>' : ''}
                             ${showCols.nhicode ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">健保碼</th>' : ''}
                             ${showCols.alternative ? '<th class="border border-gray-400 py-2.5 px-3 text-left bg-gray-200/50">替代品項 / 備註</th>' : ''}
                         </tr>
@@ -890,6 +914,7 @@
                             ${showCols.usage ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.usage)}</td>` : ''}
                             ${showCols.appearance ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.appearance)}</td>` : ''}
                             ${showCols.stopmed ? `<td class="border border-gray-400 py-2 px-3 font-bold text-red-600">${utils.escapeHtml(med.stopAdvice)}</td>` : ''}
+                            ${showCols.resume ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.resumeAdvice)}</td>` : ''}
                             ${showCols.nhicode ? `<td class="border border-gray-400 py-2 px-3 text-gray-600 uppercase font-mono">${utils.escapeHtml(med.nhiCode)}</td>` : ''}
                             ${showCols.alternative ? `<td class="border border-gray-400 py-2 px-3">${utils.escapeHtml(med.alternative)}</td>` : ''}
                         </tr>
@@ -1019,6 +1044,7 @@
                     const btnIden = document.getElementById('app-mode-btn-identify');
                     const btnPreop = document.getElementById('app-mode-btn-preop');
                     const keepBtn = document.getElementById('keep-stopmed-btn');
+                    const riskToolbar = document.getElementById('surgical-risk-toolbar');
                     const printCols = document.querySelectorAll('#print-col-toggles input[type="checkbox"]');
                     const clinicalAlert = document.getElementById('preop-clinical-alert');
                     const printMainTitle = document.getElementById('print-main-title');
@@ -1030,6 +1056,7 @@
                         document.body.className = "text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-generic show-col-usage show-col-appearance show-col-nhicode";
                         document.getElementById('main-list-title').textContent = "2. 藥物清單 (自備藥辨識)";
                         if(keepBtn) keepBtn.classList.add('hidden');
+                        if(riskToolbar) { riskToolbar.classList.add('hidden'); riskToolbar.classList.remove('flex'); }
                         if(clinicalAlert) clinicalAlert.classList.add('hidden');
                         if(printMainTitle) printMainTitle.textContent = '病患藥物清單 - 自備藥辨識';
                         
@@ -1041,14 +1068,15 @@
                         // 更新切換按鈕字串，針對深藍色背景優化
                         btnPreop.className = 'px-3.5 py-1.5 text-xs font-bold rounded-lg shadow-sm bg-white text-pink-600 transition-all flex items-center gap-1.5 ring-2 ring-pink-200/50';
                         btnIden.className = 'px-3.5 py-1.5 text-xs font-medium rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-all flex items-center gap-1.5';
-                        // 術前評估模式顯示特製欄位
-                        document.body.className = "text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-chbrand show-col-generic show-col-pharmclass show-col-stopmed show-col-nhicode";
+                        // 術前評估模式顯示特製欄位，預設隱藏健保碼，加入 resume
+                        document.body.className = "text-slate-800 h-[100dvh] flex flex-col md:overflow-hidden show-col-chbrand show-col-generic show-col-pharmclass show-col-stopmed show-col-resume";
                         document.getElementById('main-list-title').textContent = "2. 藥物清單 (術前評估建議)";
                         if(keepBtn) keepBtn.classList.remove('hidden');
+                        if(riskToolbar) { riskToolbar.classList.remove('hidden'); riskToolbar.classList.add('flex'); }
                         if(clinicalAlert) clinicalAlert.classList.remove('hidden');
                         if(printMainTitle) printMainTitle.textContent = '病患藥物清單 - 手術前停藥建議';
                         
-                        // 術前評估模式：切換列印預設欄位 (序號預設固定會有)
+                        // 術前評估模式：切換列印預設欄位 (預設不勾選 resume)
                         printCols.forEach(cb => {
                             cb.checked = ['brand', 'chbrand', 'generic', 'pharmclass', 'stopmed'].includes(cb.value);
                         });
@@ -1059,6 +1087,25 @@
                     }
                     ui.renderColSettings();
                     ui.renderTable();
+                },
+
+                setSurgicalRisk: async (risk) => {
+                    currentSurgicalRisk = risk;
+                    const btnHigh = document.getElementById('risk-btn-high');
+                    const btnLow = document.getElementById('risk-btn-low');
+                    
+                    if (risk === 'high') {
+                        btnHigh.className = 'px-3 py-1 text-[11px] font-bold rounded shadow-sm bg-white text-rose-600 transition-all border border-slate-200/50';
+                        btnLow.className = 'px-3 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transition-all border border-transparent';
+                    } else {
+                        btnLow.className = 'px-3 py-1 text-[11px] font-bold rounded shadow-sm bg-white text-rose-600 transition-all border border-slate-200/50';
+                        btnHigh.className = 'px-3 py-1 text-[11px] font-medium rounded text-slate-500 hover:text-slate-700 hover:bg-slate-200/50 transition-all border border-transparent';
+                    }
+                    
+                    // 風險改變時，自動觸發重新比對以更新停藥天數
+                    if(medList.length > 0 && currentAppMode === 'preop') {
+                        await api.matchPreopData(medList);
+                    }
                 },
 
                 parseAndAddText: async () => {
@@ -1093,50 +1140,63 @@
                     const toMatch = targetList.filter(m => m.nhiCode && m.nhiCode.trim() !== '');
                     if(toMatch.length === 0) return; 
                     
-                    utils.showToast('正在與雲端資料庫比對外觀資料...', 'info');
+                    utils.showToast('正在與雲端資料庫比對外觀與中文名...', 'info');
                     const dbData = await db.fetchData(GOOGLE_SHEET_CSV_URL);
                     if(!dbData) return;
                     
                     let matchCount = 0;
                     toMatch.forEach(med => {
                         const code = med.nhiCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                        
+                        // 找到對應的健保碼
                         const record = dbData.find(row => {
                             const rowCode = (row.A || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                            if (rowCode !== code) return false;
-                            const confidence = (row.AD || '').trim();
-                            return confidence === '高' || confidence === '中';
+                            return rowCode === code;
                         });
                         
                         if(record) {
                             let updated = false;
-                            const imgUrl = (record.AB || '').trim();
-                            if(imgUrl && med.imageUrl !== imgUrl) {
-                                med.imageUrl = imgUrl; updated = true;
-                            }
-                            const color = (record.V || '').trim();
-                            const score = (record.X || '').trim();
-                            const mark1 = (record.Z || '').trim();
-                            const mark2 = (record.AA || '').trim();
                             
-                            let descParts = [];
-                            if(color) descParts.push(color);
-                            if(score) descParts.push(score);
-                            if(mark1) descParts.push(mark1);
-                            if(mark2) descParts.push(mark2);
-                            
-                            const newDesc = descParts.join('、');
-                            if(newDesc && med.appearance !== newDesc) {
-                                med.appearance = newDesc; updated = true;
+                            // 1. 中文品名帶入 (只要健保碼有中就帶入)
+                            const chBrand = (record.F || '').trim();
+                            if(chBrand && med.chBrandName !== chBrand) {
+                                med.chBrandName = chBrand; 
+                                updated = true;
                             }
+                            
+                            // 2. 外觀圖與描述 (需要信心等級為高或中)
+                            const confidence = (record.AD || '').trim();
+                            if (confidence === '高' || confidence === '中') {
+                                const imgUrl = (record.AB || '').trim();
+                                if(imgUrl && med.imageUrl !== imgUrl) {
+                                    med.imageUrl = imgUrl; updated = true;
+                                }
+                                const color = (record.V || '').trim();
+                                const score = (record.X || '').trim();
+                                const mark1 = (record.Z || '').trim();
+                                const mark2 = (record.AA || '').trim();
+                                
+                                let descParts = [];
+                                if(color) descParts.push(color);
+                                if(score) descParts.push(score);
+                                if(mark1) descParts.push(mark1);
+                                if(mark2) descParts.push(mark2);
+                                
+                                const newDesc = descParts.join('、');
+                                if(newDesc && med.appearance !== newDesc) {
+                                    med.appearance = newDesc; updated = true;
+                                }
+                            }
+                            
                             if(updated) matchCount++;
                         }
                     });
                     
                     if(matchCount > 0) {
                         ui.renderTable(); storage.save();
-                        utils.showToast(`比對完成！成功更新 ${matchCount} 筆藥品外觀`);
+                        utils.showToast(`比對完成！成功更新 ${matchCount} 筆藥品資料`);
                     } else {
-                        utils.showToast('比對完成，無符合的高/中信心等級項目', 'info');
+                        utils.showToast('比對完成，無符合的更新項目', 'info');
                     }
                 },
 
@@ -1145,37 +1205,43 @@
                     const toMatch = targetList.filter(m => m.nhiCode || m.genericName);
                     if(toMatch.length === 0) return;
                     
-                    utils.showToast('正在比對術前評估建議與中文名稱...', 'info');
+                    utils.showToast('正在比對術前評估建議與中文品名...', 'info');
                     
-                    // 平行下載兩個資料庫以加速
-                    const [dbData, preopData] = await Promise.all([
-                        db.fetchData(GOOGLE_SHEET_CSV_URL),
-                        db.fetchData(PREOP_SHEET_CSV_URL)
+                    // 1. 同時抓取兩個資料表
+                    const [preopData, dbData] = await Promise.all([
+                        db.fetchData(PREOP_SHEET_CSV_URL),
+                        db.fetchData(GOOGLE_SHEET_CSV_URL)
                     ]);
                     
                     let updatedCount = 0;
                     toMatch.forEach(med => {
                         let updated = false;
                         
-                        // 1. 用健保碼去 DRUG_DATABASE 撈「中文商品名 (F欄)」
+                        // A. 透過健保碼從 DRUG_DATABASE (dbData) 帶入中文商品名
                         if (dbData && med.nhiCode) {
                             const code = med.nhiCode.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-                            const record = dbData.find(r => (r.A || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase() === code);
-                            if (record && record.F && med.chBrandName !== record.F) {
-                                med.chBrandName = record.F; 
-                                updated = true;
+                            const record = dbData.find(row => {
+                                const rowCode = (row.A || '').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+                                return rowCode === code;
+                            });
+                            if (record) {
+                                const chBrand = (record.F || '').trim();
+                                if (chBrand && med.chBrandName !== chBrand) {
+                                    med.chBrandName = chBrand;
+                                    updated = true;
+                                }
                             }
                         }
-
-                        // 2. 用成分去 術前評估表 撈「藥理分類 (B欄)」與「停藥建議 (C欄)」
+                        
+                        // B. 透過成分從 術前評估表 (preopData) 撈「藥理分類 (B欄)」與「停藥建議 (C/D欄)」與「復藥時間 (E欄)」
                         if (preopData && med.genericName) {
-                            // 將複方成分拆解
                             const ings = med.genericName.split(/;|；|,|，|\+/).map(s => s.trim().toLowerCase()).filter(Boolean);
                             let classes = new Set();
                             
-                            // 停藥天數比對邏輯 (處理數值最大值與純文字情況)
+                            // 停藥天數比對邏輯
                             let maxDays = -1;
                             let textAdvices = new Set();
+                            let resumeAdvices = new Set();
 
                             ings.forEach(ing => {
                                 const pRow = preopData.find(r => {
@@ -1183,40 +1249,54 @@
                                     return dbIng && (dbIng.includes(ing) || ing.includes(dbIng));
                                 });
                                 if (pRow) {
-                                    if(pRow.B) classes.add(pRow.B.trim());
-                                    if(pRow.C) {
-                                        const cVal = pRow.C.trim();
-                                        // 判斷是否為純數字
+                                    if (pRow.B && String(pRow.B).trim() !== '') classes.add(String(pRow.B).trim());
+                                    
+                                    const stopVal = currentSurgicalRisk === 'high' ? pRow.C : pRow.D;
+                                    if (stopVal && String(stopVal).trim() !== '') {
+                                        const cVal = String(stopVal).trim();
                                         if (/^\d+$/.test(cVal)) {
                                             maxDays = Math.max(maxDays, parseInt(cVal, 10));
                                         } else {
-                                            textAdvices.add(cVal); // 非數字則存入文字集合 (例如: 依腎功能調整)
+                                            textAdvices.add(cVal);
                                         }
+                                    }
+                                    
+                                    // E欄: 復藥時間/說明 - 強制字串轉換與濾空防呆
+                                    if (pRow.E && String(pRow.E).trim() !== '') {
+                                        resumeAdvices.add(String(pRow.E).trim());
                                     }
                                 }
                             });
 
-                            if (classes.size > 0) {
-                                const cStr = Array.from(classes).join(' / ');
-                                if(med.pharmClass !== cStr) { med.pharmClass = cStr; updated = true; }
-                            }
-                            
-                            // 組合最終停藥建議
-                            let finalAdvice = "";
-                            if (maxDays >= 0) {
-                                if (maxDays === 0) finalAdvice = "手術當日停用";
-                                else finalAdvice = `手術前${maxDays}天停用`;
-                            }
-                            // 假如複方中混和了數值天數與純文字建議，則組合起來
-                            if (textAdvices.size > 0) {
-                                const textStr = Array.from(textAdvices).join(' / ');
-                                if (finalAdvice) finalAdvice = finalAdvice + "；" + textStr;
-                                else finalAdvice = textStr;
-                            }
+                            // 只要有比對到資料庫，就進行更新覆寫
+                            if (classes.size > 0 || maxDays >= 0 || textAdvices.size > 0 || resumeAdvices.size > 0) {
+                                if (classes.size > 0) {
+                                    const cStr = Array.from(classes).join(' / ');
+                                    if(med.pharmClass !== cStr) { med.pharmClass = cStr; updated = true; }
+                                }
+                                
+                                let finalAdvice = "";
+                                if (maxDays >= 0) {
+                                    if (maxDays === 0) finalAdvice = "手術當日停用";
+                                    else finalAdvice = `手術前${maxDays}天停用`;
+                                }
+                                if (textAdvices.size > 0) {
+                                    const textStr = Array.from(textAdvices).join('；');
+                                    if (finalAdvice) finalAdvice = finalAdvice + "；" + textStr;
+                                    else finalAdvice = textStr;
+                                }
 
-                            if (finalAdvice && med.stopAdvice !== finalAdvice) {
-                                med.stopAdvice = finalAdvice; 
-                                updated = true; 
+                                if ((med.stopAdvice || '') !== finalAdvice) {
+                                    med.stopAdvice = finalAdvice; 
+                                    updated = true; 
+                                }
+                                
+                                // 組合最終復藥說明 (過濾 undefined/null，以；連接)
+                                let finalResumeAdvice = Array.from(resumeAdvices).filter(Boolean).join('；');
+                                if ((med.resumeAdvice || '') !== finalResumeAdvice) {
+                                    med.resumeAdvice = finalResumeAdvice;
+                                    updated = true;
+                                }
                             }
                         }
                         if(updated) updatedCount++;
@@ -1224,14 +1304,14 @@
                     
                     if(updatedCount > 0) {
                         ui.renderTable(); storage.save();
-                        utils.showToast(`更新了 ${updatedCount} 筆術前建議資料`);
+                        utils.showToast(`更新了 ${updatedCount} 筆術前建議與中文品名資料`);
                     } else {
                         utils.showToast('比對完成，無新資料更新', 'info');
                     }
                 },
 
                 addNewRow: () => {
-                    medList.push({ id: utils.generateId(), brandName: '', genericName: '', usage: '', appearance: '', alternative: '', nhiCode: '', imageUrl: '', chBrandName: '', pharmClass: '', stopAdvice: '' });
+                    medList.push({ id: utils.generateId(), brandName: '', genericName: '', usage: '', appearance: '', alternative: '', nhiCode: '', imageUrl: '', chBrandName: '', pharmClass: '', stopAdvice: '', resumeAdvice: '' });
                     ui.renderTable(); storage.save();
                     setTimeout(() => {
                         const newRow = document.querySelector('[data-id]:last-child');
@@ -1440,11 +1520,11 @@
                 },
                 exportToCSV: () => {
                     if (medList.length === 0) { utils.showToast('沒有資料可匯出', 'info'); return; }
-                    let csvContent = "\uFEFF序號,商品名,中文商品名,學名/成分,藥理分類,用法用量,外觀描述,停藥建議,健保碼,替代品項/備註\n";
+                    let csvContent = "\uFEFF序號,商品名,中文商品名,學名/成分,藥理分類,用法用量,外觀描述,停藥建議,復藥時間/說明,健保碼,替代品項/備註\n";
                     medList.forEach((med, i) => {
                         const row = [ 
                             i + 1, med.brandName, med.chBrandName, med.genericName, med.pharmClass, 
-                            med.usage, med.appearance, med.stopAdvice, med.nhiCode, med.alternative 
+                            med.usage, med.appearance, med.stopAdvice, med.resumeAdvice, med.nhiCode, med.alternative 
                         ].map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(",");
                         csvContent += row + "\n";
                     });
