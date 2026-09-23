@@ -291,9 +291,9 @@
                         <!-- 去背並放大1.5倍的警示圖示，微調 margin-top 對齊文字 -->
                         <div class="shrink-0 mt-1"><i class="ph ph-warning text-amber-500 text-[42px] drop-shadow-sm"></i></div>
                         <div class="text-xs text-amber-900/90 space-y-1.5 leading-relaxed font-medium">
-                            <p>1. 停藥建議僅供參考，需先考量病人適應症和侵入性治療之出血風險、停藥栓塞風險、腎功能、服藥順從性。 出血風險輕微者可考慮不停藥，另需留意病人有無服用保健品、OTC。在給予停藥建議前，建議與原處方醫師和執行手術醫師討論及評估出血風險、栓塞風險，<strong class="text-amber-900">務必以個別化方式評估為原則</strong>。</p>
-                            <p>2. 以下心血管用藥原因，建議先照會原處方醫師：<strong class="text-amber-900">心肌梗塞後12個月內、冠狀動脈植入支架後6個月內、中風後3個月內、深部靜脈栓塞後1個月內、頭頸部動脈支架</strong>，高心血管或高栓塞風險病人，若執行極低出血風險手術，Aspirin與DOAC術前可考慮不需停藥，若INR於治療範圍，建議術前繼續使用Warfarin。</p>
-                            <p>3. ACEI/ARB : 心衰竭或難以控制的高血壓，為避免病情惡化，繼續使用是合理的，建議評估病人臨床情形，目前尚無關於Sacubitril/Valsartan在手術前使用之潛在效益或風險的相關資料，建議術前審慎評估使用時機與風險。心衰竭患者可依據體液狀態評估是否停用Diuretics。</p>
+                            <p>1. 停藥建議僅供參考，請務必權衡病人與侵入性診療之<strong class="text-amber-900">出血風險、停藥產生血栓風險、腎功能、服藥順從性</strong>。整體出血風險輕微者可考慮不停藥。</p>
+                            <p>2. 在給予停藥建議前，建議與原處方醫師和執行手術醫師討論及評估出血風險、栓塞風險，務必以個別化方式評估為原則。另外也需考慮病人有無服用保健食品。</p>
+                            <p>3. 下列用藥原因，請先照會原處方醫師：<strong class="text-amber-900">心肌梗塞後12個月內、冠狀動脈植入支架後6個月內、中風後3個月內、深部靜脈栓塞後1個月內、頭頸部動脈支架</strong>。</p>
                         </div>
                     </div>
                 </div>
@@ -455,9 +455,9 @@
     <div id="toast-container" class="fixed bottom-6 right-1/2 translate-x-1/2 md:translate-x-0 md:right-6 flex flex-col gap-3 z-50 pointer-events-none"></div>
 
     <script>
-        // ==========================================製作者 : 其仁藥師 2026 版權所有
+        // ==========================================製作者其仁藥師
         // ★ 資料庫綁定區：Google Sheet 發佈網址 ★
-        // ==========================================54yji35k3xup6fu6bp6ul4g
+        // ==========================================xup6fu6bp6ul4g54yji4
         const GOOGLE_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEkPpe4mSBnairSmqQNRYj_4JqEdaD5rWqzgVvH3Ar6raBfbT6lzGN_jwbP3ak4sqWAf6kI7alhhCw/pub?gid=1080497094&single=true&output=csv"; 
         const PREOP_SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEkPpe4mSBnairSmqQNRYj_4JqEdaD5rWqzgVvH3Ar6raBfbT6lzGN_jwbP3ak4sqWAf6kI7alhhCw/pub?gid=1227051250&single=true&output=csv"; 
         
@@ -685,14 +685,35 @@
                             els.tableBody.innerHTML = ''; 
 
                             els.gridBody.innerHTML = medList.map((med, index) => {
-                                let imageHtml = `<i class="ph ph-image text-4xl text-slate-300"></i>`;
+                                let imageContent = '';
                                 if (med.imageUrl) {
                                     const safeUrl = utils.escapeHtml(med.imageUrl);
+                                    let imgTag = '';
                                     if (imageCache.has(safeUrl)) {
-                                        imageHtml = `<img src="${imageCache.get(safeUrl)}" class="w-full h-full object-cover loaded img-lazy" loading="lazy">`;
+                                        imgTag = `<img src="${imageCache.get(safeUrl)}" class="w-full h-full object-cover loaded img-lazy" loading="lazy">`;
                                     } else {
-                                        imageHtml = `<img data-original-src="${safeUrl}" class="lazy-image w-full h-full object-cover img-lazy opacity-0 transition-opacity" loading="lazy">`;
+                                        imgTag = `<img data-original-src="${safeUrl}" class="lazy-image w-full h-full object-cover img-lazy opacity-0 transition-opacity" loading="lazy">`;
                                     }
+                                    
+                                    // 有圖片時：點擊圖片本身會另開原圖分頁，並在右上角新增編輯按鈕
+                                    imageContent = `
+                                    <div class="relative w-full h-full group">
+                                        <a href="${safeUrl}" target="_blank" class="block w-full h-full" title="在新分頁查看原畫質大圖">
+                                            ${imgTag}
+                                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[1px]">
+                                                <i class="ph ph-magnifying-glass-plus text-white text-3xl drop-shadow-md"></i>
+                                            </div>
+                                        </a>
+                                        <button onclick="app.editImageUrl('${med.id}')" class="absolute top-1.5 right-1.5 p-1.5 bg-white/90 hover:bg-white text-slate-500 hover:text-blue-600 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity border border-slate-200" title="編輯圖片網址">
+                                            <i class="ph ph-pencil-simple text-sm"></i>
+                                        </button>
+                                    </div>`;
+                                } else {
+                                    // 無圖片時：點擊整個方塊依然觸發編輯
+                                    imageContent = `
+                                    <div class="w-full h-full flex items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors" onclick="app.editImageUrl('${med.id}')" title="點擊設定圖片">
+                                        <i class="ph ph-image text-4xl text-slate-300"></i>
+                                    </div>`;
                                 }
 
                                 return `
@@ -701,8 +722,8 @@
                                         <input type="checkbox" class="row-checkbox rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer w-4 h-4" value="${med.id}" onchange="app.updateBatchDeleteBtn()">
                                         <button class="delete-btn text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg p-1.5 transition-colors -mt-1 -mr-1" title="刪除此列"><i class="ph ph-trash text-lg pointer-events-none"></i></button>
                                     </div>
-                                    <div class="w-full aspect-square bg-slate-50/80 rounded-xl flex items-center justify-center border border-slate-100 overflow-hidden mb-3 cursor-pointer hover:opacity-80 transition-opacity" onclick="app.editImageUrl('${med.id}')" title="點擊設定圖片">
-                                        ${imageHtml}
+                                    <div class="w-full aspect-square bg-slate-50/80 rounded-xl flex items-center justify-center border border-slate-100 overflow-hidden mb-3">
+                                        ${imageContent}
                                     </div>
                                     <div class="mt-auto">
                                         <div class="font-bold text-slate-800 text-sm leading-tight truncate mb-1" title="${utils.escapeHtml(med.brandName)}">${utils.escapeHtml(med.brandName) || '未命名商品'}</div>
@@ -812,20 +833,48 @@
                         }
                     }
 
+                    // 執行 lazy-image 的載入與快取 (升級版：使用圖片代理壓縮 + IntersectionObserver 真正的延遲載入)
+                    const imageObserver = new IntersectionObserver((entries, observer) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const imgEl = entry.target;
+                                const url = imgEl.dataset.originalSrc;
+                                if (!url) return;
+                                
+                                // 關鍵技術：使用開源圖片代理伺服器 (wsrv.nl) 強制壓縮圖片寬度至200px並轉為低畫質webp，大幅縮小體積
+                                const isDataUrl = url.startsWith('data:');
+                                const fastUrl = isDataUrl ? url : `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=200&q=50&output=webp`;
+                                
+                                const img = new Image();
+                                img.onload = () => {
+                                    imageCache.set(url, fastUrl); // 存入壓縮後的網址，下次瞬間載入
+                                    imgEl.src = fastUrl;
+                                    imgEl.classList.add('loaded');
+                                    imgEl.classList.remove('opacity-0', 'lazy-image');
+                                };
+                                img.onerror = () => {
+                                    // 若代理壓縮失敗(例如某些內部防火牆阻擋)，則退回嘗試載入原圖
+                                    imgEl.src = url; 
+                                    imgEl.onload = () => {
+                                        imageCache.set(url, url);
+                                        imgEl.classList.add('loaded');
+                                        imgEl.classList.remove('opacity-0', 'lazy-image');
+                                    };
+                                    imgEl.onerror = () => {
+                                        imgEl.parentElement.innerHTML = '<i class="ph ph-image-broken text-4xl text-slate-300" title="圖片載入失敗"></i>';
+                                    }
+                                };
+                                // 開始請求載入
+                                img.src = fastUrl;
+                                
+                                // 載入完成或處理後，停止觀察該元素，節省效能
+                                observer.unobserve(imgEl);
+                            }
+                        });
+                    }, { rootMargin: '200px 0px', threshold: 0.01 }); // 預先提早 200px 開始載入
+
                     document.querySelectorAll('.lazy-image').forEach(imgEl => {
-                        const url = imgEl.dataset.originalSrc;
-                        if (!url) return;
-                        const img = new Image();
-                        img.onload = () => {
-                            imageCache.set(url, url);
-                            imgEl.src = url;
-                            imgEl.classList.add('loaded');
-                            imgEl.classList.remove('opacity-0', 'lazy-image');
-                        };
-                        img.onerror = () => {
-                            imgEl.parentElement.innerHTML = '<i class="ph ph-image-broken text-4xl text-slate-300" title="圖片載入失敗"></i>';
-                        };
-                        img.src = url;
+                        imageObserver.observe(imgEl); // 將所有未載入的圖片加入監視
                     });
 
                     ui.updateMetrics();
