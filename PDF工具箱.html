@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>全能 PDF 工具箱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --safe-area-pb: env(safe-area-inset-bottom, 0px);
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f8fafc; /* 更柔和的背景色 */
+            /* 鎖定全畫面，禁止 body 捲動，交由內部容器捲動 */
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden; 
+            overscroll-behavior: none;
+        }
+
+        /* 自訂美化捲軸 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* 內容區塊淡入轉場 */
+        .tab-content {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-content.active {
+            display: flex; /* 改用 flex 以適應滿版排版 */
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 拖曳區塊微互動 */
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+            background-image: linear-gradient(to bottom right, rgba(255,255,255,0.5), rgba(248,250,252,0.8));
+        }
+        .drop-zone:hover {
+            border-color: #60a5fa;
+            background-color: #eff6ff;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
+        }
+        .drop-zone.dragover {
+            border-color: #3b82f6;
+            background-color: #dbeafe;
+            transform: scale(1.02);
+            box-shadow: 0 15px 30px -5px rgba(59, 130, 246, 0.2);
+        }
+
+        /* 按鈕微互動 */
+        .btn-interactive {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-interactive:active:not(:disabled) {
+            transform: scale(0.96);
+        }
+        
+        /* 檔案列表項目動畫 */
+        .file-item {
+            transition: all 0.2s ease;
+        }
+        .file-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        /* 導覽列 Active 狀態共用樣式 (Desktop & Mobile) */
+        .tab-btn {
+            transition: all 0.3s ease;
+        }
+        /* 桌面版 Active */
+        .desktop-nav .tab-btn.active-tab {
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-right: 4px solid #2563eb;
+            font-weight: 600;
+        }
+        /* 手機版 Active */
+        .mobile-nav .tab-btn.active-tab {
+            color: #2563eb;
+        }
+        .mobile-nav .tab-btn.active-tab i {
+            transform: translateY(-4px);
+            color: #2563eb;
+        }
+        .mobile-nav .tab-btn i {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 隱藏手機版導覽列捲軸 */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+    
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+</head>
+<body class="text-gray-800 antialiased flex flex-col md:flex-row">
+
+    <!-- Mobile Top Header (只在手機顯示) -->
+    <header class="md:hidden bg-blue-600 text-white shadow-md z-20 flex-shrink-0">
+        <div class="px-5 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center tracking-wide">
+                <i class="fas fa-file-pdf mr-2 text-2xl"></i>
+                全能 PDF 工具箱
+            </h1>
+        </div>
+    </header>
+
+    <!-- Desktop Sidebar (桌面版左側導覽) -->
+    <aside class="hidden md:flex flex-col w-72 bg-white shadow-[4px_0_24px_rgba(0,0,0,0.03)] z-20 flex-shrink-0">
+        <div class="bg-blue-600 text-white p-8">
+            <h1 class="text-2xl font-bold flex items-center tracking-wide leading-tight">
+                <i class="fas fa-file-pdf mr-3 text-3xl"></i>
+                全能 PDF<br>工具箱
+            </h1>
+            <p class="text-blue-100 mt-3 text-sm font-medium opacity-90">完全在瀏覽器端運行，安全又快速</p>
+        </div>
+        
+        <nav class="flex-1 py-6 desktop-nav flex flex-col gap-1">
+            <button class="tab-btn active-tab w-full flex items-center px-8 py-4 text-left text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none" data-target="merge">
+                <i class="fas fa-layer-group w-6 text-center mr-3 text-lg"></i>
+                <span class="font-medium text-base">合併 PDF</span>
+            </button>
+            <button class="tab-btn w-full flex items-center px-8 py-4 text-left text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none" data-target="split">
+                <i class="fas fa-cut w-6 text-center mr-3 text-lg"></i>
+                <span class="font-medium text-base">分割 PDF</span>
+            </button>
+            <button class="tab-btn w-full flex items-center px-8 py-4 text-left text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none" data-target="to-image">
+                <i class="fas fa-images w-6 text-center mr-3 text-lg"></i>
+                <span class="font-medium text-base">PDF 轉圖片</span>
+            </button>
+            <button class="tab-btn w-full flex items-center px-8 py-4 text-left text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none" data-target="img-to-pdf">
+                <i class="fas fa-file-image w-6 text-center mr-3 text-lg"></i>
+                <span class="font-medium text-base">圖片轉 PDF</span>
+            </button>
+            <button class="tab-btn w-full flex items-center px-8 py-4 text-left text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none" data-target="watermark">
+                <i class="fas fa-stamp w-6 text-center mr-3 text-lg"></i>
+                <span class="font-medium text-base">加入浮水印</span>
+            </button>
+            <button class="tab-btn w-full flex items-center px-8 py-4 text-left text-gray-500 hover:bg-gray-50 hover:text-gray-800 focus:outline-none" data-target="rotate">
+                <i class="fas fa-sync-alt w-6 text-center mr-3 text-lg"></i>
+                <span class="font-medium text-base">旋轉 PDF</span>
+            </button>
+        </nav>
+
+        <footer class="p-6 text-center border-t border-gray-100">
+            <p class="text-xs text-gray-400">© 2026 全能 PDF 工具箱.<br>所有處理皆在您的瀏覽器端完成，確保隱私安全。</p>
+        </footer>
+    </aside>
+
+    <!-- Main Workspace (右側主要工作區) -->
+    <!-- 手機版預留底部導覽空間 pb-20 -->
+    <main class="flex-1 flex flex-col relative overflow-hidden pb-[70px] md:pb-0 bg-gray-50/50">
+        
+        <!-- 工作區內容 -->
+        <div class="flex-1 p-4 md:p-8 overflow-y-auto w-full h-full">
+            
+            <div id="merge" class="tab-content active flex-col h-full">
+                <div class="mb-6 flex-shrink-0">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">合併多個 PDF 檔案</h2>
+                    <p class="text-gray-500 mt-2 text-sm md:text-base">請選擇或拖曳多個 PDF 檔案到下方區域。您可以拖曳列表中的檔案來調整合併順序。</p>
+                </div>
+                
+                <!-- 運用 Flexbox 彈性劃分 DropZone 與 列表區塊 -->
+                <div class="flex-1 flex flex-col lg:flex-row gap-6 min-h-0">
+                    
+                    <!-- 左側/上方：上傳區 -->
+                    <div class="lg:w-5/12 flex flex-col min-h-[250px] lg:min-h-0 flex-shrink-0">
+                        <div class="drop-zone flex-1 rounded-2xl flex flex-col items-center justify-center p-8 cursor-pointer shadow-sm" id="merge-drop-zone" onclick="document.getElementById('merge-file-input').click()">
+                            <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-blue-500"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-700 mb-2">點擊選擇檔案</h3>
+                            <p class="text-gray-500 text-center mb-1">或將檔案拖曳至此處</p>
+                            <span class="inline-block px-3 py-1 bg-gray-200 text-gray-600 rounded-full text-xs font-medium mt-4">支援多選檔案</span>
+                            <input type="file" id="merge-file-input" class="hidden" multiple accept="application/pdf">
+                        </div>
+                    </div>
+
+                    <!-- 右側/下方：檔案列表與操作區 -->
+                    <div class="lg:w-7/12 flex flex-col bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden flex-shrink-0 lg:flex-shrink h-[400px] lg:h-auto">
+                        <!-- 捲動列表區 -->
+                        <div class="flex-1 p-4 overflow-y-auto bg-gray-50/30">
+                            <ul id="merge-file-list" class="space-y-3 min-h-[100px] pb-2">
+                                <!-- 檔案列表將顯示在這裡 -->
+                                <div id="merge-empty-state" class="flex flex-col items-center justify-center h-full text-gray-400 py-10">
+                                    <i class="fas fa-file-pdf text-4xl mb-3 opacity-30"></i>
+                                    <p class="text-sm">尚未加入任何檔案</p>
+                                </div>
+                            </ul>
+                        </div>
+                        
+                        <!-- 底部控制列 -->
+                        <div class="p-5 border-t border-gray-100 bg-white">
+                            <div id="merge-status" class="mb-3 text-sm text-center font-medium hidden"></div>
+                            <div class="flex items-center justify-between">
+                                <button id="clear-merge-btn" class="btn-interactive px-4 py-2 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors hidden">
+                                    <i class="fas fa-trash-alt mr-1"></i> 清除全部
+                                </button>
+                                <button id="merge-btn" class="btn-interactive px-8 py-3.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-[0_4px_14px_0_rgb(59,130,246,0.39)] transition-all font-semibold ml-auto flex items-center disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
+                                    <i class="fas fa-object-group mr-2 text-lg"></i> 開始合併
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="split" class="tab-content flex-col h-full max-w-5xl mx-auto w-full">
+                <div class="mb-6 flex-shrink-0 text-center lg:text-left">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">分割 PDF 檔案</h2>
+                    <p class="text-gray-500 mt-2 text-sm md:text-base">上傳一個 PDF 檔案，我們將其每一頁拆分成獨立的 PDF 檔案並打包下載。</p>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <div class="w-full max-w-2xl">
+                        <!-- 分割拖曳區 -->
+                        <div class="drop-zone rounded-3xl flex flex-col items-center justify-center p-12 cursor-pointer shadow-sm mb-6 bg-white" id="split-drop-zone" onclick="document.getElementById('split-file-input').click()">
+                            <div class="w-24 h-24 bg-green-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner transform rotate-3">
+                                <i class="fas fa-file-upload text-5xl text-green-500 -rotate-3"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-700 mb-2">點擊選擇一個 PDF</h3>
+                            <p class="text-gray-500 text-center">或拖曳至此處</p>
+                            <input type="file" id="split-file-input" class="hidden" accept="application/pdf">
+                        </div>
+
+                        <!-- 檔案資訊與按鈕 -->
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300">
+                            <div id="split-file-info" class="p-5 bg-gray-50/50 border-b hidden flex justify-between items-center">
+                                <div class="flex items-center min-w-0 flex-1">
+                                    <i class="fas fa-file-pdf text-green-500 text-xl mr-3 flex-shrink-0"></i>
+                                    <span class="font-semibold text-gray-700 truncate pr-4" id="split-filename"></span>
+                                </div>
+                                <button id="remove-split-file" class="btn-interactive w-10 h-10 flex items-center justify-center rounded-full bg-white text-red-500 hover:bg-red-50 shadow-sm flex-shrink-0">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+
+                            <div class="p-5 flex flex-col items-end bg-white">
+                                <div id="split-status" class="mb-4 text-sm w-full text-center font-medium hidden"></div>
+                                <button id="split-btn" class="btn-interactive w-full sm:w-auto px-8 py-3.5 bg-green-600 text-white rounded-xl hover:bg-green-700 shadow-[0_4px_14px_0_rgb(22,163,74,0.39)] transition-all font-semibold flex justify-center items-center disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
+                                    <i class="fas fa-cut mr-2 text-lg"></i> 開始分割
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="to-image" class="tab-content flex-col h-full max-w-5xl mx-auto w-full">
+                <div class="mb-6 flex-shrink-0 text-center lg:text-left">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">PDF 轉換為圖片</h2>
+                    <p class="text-gray-500 mt-2 text-sm md:text-base">將 PDF 的每一頁轉換為高品質的 JPEG 圖片檔案。</p>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <div class="w-full max-w-2xl">
+                        <!-- 轉圖片拖曳區 -->
+                        <div class="drop-zone rounded-3xl flex flex-col items-center justify-center p-12 cursor-pointer shadow-sm mb-6 bg-white" id="img-drop-zone" onclick="document.getElementById('img-file-input').click()">
+                            <div class="w-24 h-24 bg-purple-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner transform -rotate-3">
+                                <i class="fas fa-image text-5xl text-purple-500 rotate-3"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-700 mb-2">點擊選擇一個 PDF</h3>
+                            <p class="text-gray-500 text-center">或拖曳至此處</p>
+                            <input type="file" id="img-file-input" class="hidden" accept="application/pdf">
+                        </div>
+
+                        <!-- 檔案資訊與按鈕 -->
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300">
+                            <div id="img-file-info" class="p-5 bg-gray-50/50 border-b hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div class="flex items-center min-w-0 w-full sm:w-auto flex-1">
+                                    <i class="fas fa-file-pdf text-purple-500 text-xl mr-3 flex-shrink-0"></i>
+                                    <span class="font-semibold text-gray-700 truncate pr-2" id="img-filename"></span>
+                                </div>
+                                <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                                    <div class="bg-white border rounded-lg px-3 py-1.5 shadow-sm flex items-center">
+                                        <label class="text-xs font-medium text-gray-500 mr-2 uppercase tracking-wider">畫質</label>
+                                        <select id="img-scale" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none cursor-pointer">
+                                            <option value="1">普通 (1x)</option>
+                                            <option value="2" selected>高 (2x)</option>
+                                            <option value="3">極高 (3x)</option>
+                                        </select>
+                                    </div>
+                                    <button id="remove-img-file" class="btn-interactive w-10 h-10 flex items-center justify-center rounded-full bg-white text-red-500 hover:bg-red-50 shadow-sm flex-shrink-0">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="p-5 flex flex-col items-end bg-white">
+                                <div id="img-status" class="mb-4 text-sm w-full text-center font-medium hidden"></div>
+                                <button id="to-image-btn" class="btn-interactive w-full sm:w-auto px-8 py-3.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 shadow-[0_4px_14px_0_rgb(147,51,234,0.39)] transition-all font-semibold flex justify-center items-center disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
+                                    <i class="fas fa-file-image mr-2 text-lg"></i> 開始轉換
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="img-to-pdf" class="tab-content flex-col h-full max-w-5xl mx-auto w-full">
+                <div class="mb-6 flex-shrink-0 text-center lg:text-left">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">圖片轉換為 PDF</h2>
+                    <p class="text-gray-500 mt-2 text-sm md:text-base">選擇多張圖片 (JPG/PNG)，將它們打包合併成一份 PDF 檔案。</p>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <div class="w-full max-w-2xl">
+                        <div class="drop-zone rounded-3xl flex flex-col items-center justify-center p-12 cursor-pointer shadow-sm mb-6 bg-white" id="i2p-drop-zone" onclick="document.getElementById('i2p-file-input').click()">
+                            <div class="w-24 h-24 bg-yellow-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner transform rotate-3">
+                                <i class="fas fa-file-pdf text-5xl text-yellow-500 -rotate-3"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-700 mb-2">點擊選擇多張圖片</h3>
+                            <p class="text-gray-500 text-center">支援 JPG, PNG 格式</p>
+                            <input type="file" id="i2p-file-input" class="hidden" accept="image/jpeg, image/png" multiple>
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300">
+                            <div id="i2p-file-info" class="p-5 bg-gray-50/50 border-b hidden flex justify-between items-center">
+                                <div class="flex items-center min-w-0 flex-1">
+                                    <i class="fas fa-images text-yellow-500 text-xl mr-3 flex-shrink-0"></i>
+                                    <span class="font-semibold text-gray-700 truncate pr-4" id="i2p-filename">已選擇 0 張圖片</span>
+                                </div>
+                                <button id="remove-i2p-file" class="btn-interactive w-10 h-10 flex items-center justify-center rounded-full bg-white text-red-500 hover:bg-red-50 shadow-sm flex-shrink-0">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="p-5 flex flex-col items-end bg-white">
+                                <div id="i2p-status" class="mb-4 text-sm w-full text-center font-medium hidden"></div>
+                                <button id="img-to-pdf-btn" class="btn-interactive w-full sm:w-auto px-8 py-3.5 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 shadow-[0_4px_14px_0_rgb(234,179,8,0.39)] transition-all font-semibold flex justify-center items-center disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
+                                    <i class="fas fa-plus-circle mr-2 text-lg"></i> 建立 PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="watermark" class="tab-content flex-col h-full max-w-5xl mx-auto w-full">
+                <div class="mb-6 flex-shrink-0 text-center lg:text-left">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">為 PDF 加入浮水印</h2>
+                    <p class="text-gray-500 mt-2 text-sm md:text-base">在 PDF 的每一頁壓印半透明的文字浮水印，支援中英文。</p>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <div class="w-full max-w-2xl">
+                        <div class="drop-zone rounded-3xl flex flex-col items-center justify-center p-12 cursor-pointer shadow-sm mb-6 bg-white" id="wm-drop-zone" onclick="document.getElementById('wm-file-input').click()">
+                            <div class="w-24 h-24 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner transform -rotate-3">
+                                <i class="fas fa-stamp text-5xl text-indigo-500 rotate-3"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-700 mb-2">點擊選擇一個 PDF</h3>
+                            <input type="file" id="wm-file-input" class="hidden" accept="application/pdf">
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300">
+                            <div id="wm-file-info" class="p-5 bg-gray-50/50 border-b hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div class="flex items-center min-w-0 w-full sm:w-auto flex-1">
+                                    <i class="fas fa-file-pdf text-indigo-500 text-xl mr-3 flex-shrink-0"></i>
+                                    <span class="font-semibold text-gray-700 truncate pr-2" id="wm-filename"></span>
+                                </div>
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                                    <input type="text" id="wm-text" placeholder="輸入浮水印文字..." value="機密文件" class="px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 w-full sm:w-40">
+                                    <button id="remove-wm-file" class="btn-interactive w-10 h-10 flex items-center justify-center rounded-full bg-white text-red-500 hover:bg-red-50 shadow-sm flex-shrink-0">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5 flex flex-col items-end bg-white">
+                                <div id="wm-status" class="mb-4 text-sm w-full text-center font-medium hidden"></div>
+                                <button id="watermark-btn" class="btn-interactive w-full sm:w-auto px-8 py-3.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-[0_4px_14px_0_rgb(79,70,229,0.39)] transition-all font-semibold flex justify-center items-center disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
+                                    <i class="fas fa-check mr-2 text-lg"></i> 加入浮水印
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="rotate" class="tab-content flex-col h-full max-w-5xl mx-auto w-full">
+                <div class="mb-6 flex-shrink-0 text-center lg:text-left">
+                    <h2 class="text-2xl font-bold text-gray-800 tracking-tight">旋轉 PDF</h2>
+                    <p class="text-gray-500 mt-2 text-sm md:text-base">一鍵旋轉 PDF 檔案中的所有頁面並儲存。</p>
+                </div>
+                
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <div class="w-full max-w-2xl">
+                        <div class="drop-zone rounded-3xl flex flex-col items-center justify-center p-12 cursor-pointer shadow-sm mb-6 bg-white" id="rot-drop-zone" onclick="document.getElementById('rot-file-input').click()">
+                            <div class="w-24 h-24 bg-orange-50 rounded-2xl flex items-center justify-center mb-6 shadow-inner transform rotate-6">
+                                <i class="fas fa-redo text-5xl text-orange-500 -rotate-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-700 mb-2">點擊選擇一個 PDF</h3>
+                            <input type="file" id="rot-file-input" class="hidden" accept="application/pdf">
+                        </div>
+
+                        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden transform transition-all duration-300">
+                            <div id="rot-file-info" class="p-5 bg-gray-50/50 border-b hidden flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div class="flex items-center min-w-0 w-full sm:w-auto flex-1">
+                                    <i class="fas fa-file-pdf text-orange-500 text-xl mr-3 flex-shrink-0"></i>
+                                    <span class="font-semibold text-gray-700 truncate pr-2" id="rot-filename"></span>
+                                </div>
+                                <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                                    <div class="bg-white border rounded-lg px-3 py-1.5 shadow-sm flex items-center">
+                                        <select id="rot-degree" class="bg-transparent text-sm font-semibold text-gray-700 focus:outline-none cursor-pointer">
+                                            <option value="90">向右轉 90°</option>
+                                            <option value="270">向左轉 90°</option>
+                                            <option value="180">旋轉 180°</option>
+                                        </select>
+                                    </div>
+                                    <button id="remove-rot-file" class="btn-interactive w-10 h-10 flex items-center justify-center rounded-full bg-white text-red-500 hover:bg-red-50 shadow-sm flex-shrink-0">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-5 flex flex-col items-end bg-white">
+                                <div id="rot-status" class="mb-4 text-sm w-full text-center font-medium hidden"></div>
+                                <button id="rotate-btn" class="btn-interactive w-full sm:w-auto px-8 py-3.5 bg-orange-500 text-white rounded-xl hover:bg-orange-600 shadow-[0_4px_14px_0_rgb(249,115,22,0.39)] transition-all font-semibold flex justify-center items-center disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed">
+                                    <i class="fas fa-sync-alt mr-2 text-lg"></i> 套用旋轉
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 mobile-nav shadow-[0_-10px_20px_rgba(0,0,0,0.03)]" style="padding-bottom: var(--safe-area-pb);">
+        <div class="flex overflow-x-auto items-center h-[70px] hide-scrollbar px-2 gap-1">
+            <button class="tab-btn active-tab min-w-[65px] flex-1 flex flex-col items-center justify-center h-full text-gray-400 hover:text-blue-600 transition-colors focus:outline-none" data-target="merge">
+                <i class="fas fa-layer-group text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">合併</span>
+            </button>
+            <button class="tab-btn min-w-[65px] flex-1 flex flex-col items-center justify-center h-full text-gray-400 hover:text-green-600 transition-colors focus:outline-none" data-target="split">
+                <i class="fas fa-cut text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">分割</span>
+            </button>
+            <button class="tab-btn min-w-[65px] flex-1 flex flex-col items-center justify-center h-full text-gray-400 hover:text-purple-600 transition-colors focus:outline-none" data-target="to-image">
+                <i class="fas fa-images text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">轉圖片</span>
+            </button>
+            <button class="tab-btn min-w-[65px] flex-1 flex flex-col items-center justify-center h-full text-gray-400 hover:text-yellow-600 transition-colors focus:outline-none" data-target="img-to-pdf">
+                <i class="fas fa-file-image text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">轉 PDF</span>
+            </button>
+            <button class="tab-btn min-w-[65px] flex-1 flex flex-col items-center justify-center h-full text-gray-400 hover:text-indigo-600 transition-colors focus:outline-none" data-target="watermark">
+                <i class="fas fa-stamp text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">浮水印</span>
+            </button>
+            <button class="tab-btn min-w-[65px] flex-1 flex flex-col items-center justify-center h-full text-gray-400 hover:text-orange-600 transition-colors focus:outline-none" data-target="rotate">
+                <i class="fas fa-sync-alt text-xl mb-1"></i>
+                <span class="text-[10px] font-medium">旋轉</span>
+            </button>
+        </div>
+    </nav>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <script>
+        // --- 頁籤切換邏輯 (支援 Desktop & Mobile 雙模式) ---
+        const allTabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        allTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-target');
+
+                // 更新所有按鈕狀態
+                allTabBtns.forEach(b => {
+                    if (b.getAttribute('data-target') === targetId) {
+                        b.classList.add('active-tab');
+                        b.classList.remove('text-gray-500', 'text-gray-400');
+                    } else {
+                        b.classList.remove('active-tab');
+                        // 恢復預設顏色
+                        if(b.closest('.desktop-nav')) b.classList.add('text-gray-500');
+                        if(b.closest('.mobile-nav')) b.classList.add('text-gray-400');
+                    }
+                });
+
+                // 更新內容顯示
+                tabContents.forEach(c => c.classList.remove('active'));
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+
+        // 通用拖曳事件處理函數
+        function setupDropZone(dropZoneId, inputId, handleFilesCallback) {
+            const dropZone = document.getElementById(dropZoneId);
+            const fileInput = document.getElementById(inputId);
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => dropZone.classList.remove('dragover'), false);
+            });
+
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFilesCallback(files);
+            }, false);
+
+            fileInput.addEventListener('change', function() {
+                handleFilesCallback(this.files);
+                this.value = '';
+            });
+        }
+
+        // 格式化檔案大小
+        function formatBytes(bytes, decimals = 2) {
+            if (!+bytes) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        }
+
+        // 顯示狀態訊息 (優化版)
+        function showStatus(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            el.innerHTML = '';
+            
+            // 加入狀態圖示
+            let iconHtml = '';
+            let colorClass = 'text-blue-600';
+            let bgClass = 'bg-blue-50';
+            
+            if (type === 'error') {
+                iconHtml = '<i class="fas fa-exclamation-circle mr-2"></i>';
+                colorClass = 'text-red-600';
+                bgClass = 'bg-red-50';
+            } else if (type === 'success') {
+                iconHtml = '<i class="fas fa-check-circle mr-2"></i>';
+                colorClass = 'text-green-600';
+                bgClass = 'bg-green-50';
+            } else if (message.includes('處理中') || message.includes('正在')) {
+                iconHtml = '<i class="fas fa-circle-notch fa-spin mr-2"></i>';
+            } else {
+                iconHtml = '<i class="fas fa-info-circle mr-2"></i>';
+            }
+
+            el.innerHTML = `<div class="inline-flex items-center px-4 py-2 rounded-lg ${bgClass} ${colorClass}">${iconHtml} ${message}</div>`;
+            el.classList.remove('hidden');
+        }
+
+        // 下載產生的檔案
+        function downloadFile(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 安全載入 PDF (保留原功能)
+        async function safeLoadPDF(arrayBuffer, filename) {
+            const { PDFDocument } = PDFLib;
+            try {
+                return await PDFDocument.load(arrayBuffer);
+            } catch (error) {
+                if (error.message.toLowerCase().includes('encrypted') || error.name === 'EncryptedPDFError') {
+                    try {
+                        const pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+                        pdf.getPageCount(); 
+                        return pdf;
+                    } catch (innerError) {
+                        throw new Error(`檔案「${filename}」受高強度加密保護，無法處理。請先解除保護。`);
+                    }
+                }
+                if (error.message.includes('Expected instance of') && error.message.includes('undefined')) {
+                    throw new Error(`檔案「${filename}」結構異常或已損毀，無法讀取。建議您先用瀏覽器開啟該檔案並「列印為 PDF」後再試一次。`);
+                }
+                throw new Error(`讀取檔案「${filename}」時發生錯誤: ${error.message}`);
+            }
+        }
+
+        // --- STREAMING_CHUNK:合併 PDF 邏輯 ---
+        let mergeFilesList = [];
+        const mergeListEl = document.getElementById('merge-file-list');
+        const mergeEmptyState = document.getElementById('merge-empty-state');
+        const clearMergeBtn = document.getElementById('clear-merge-btn');
+        const mergeBtn = document.getElementById('merge-btn');
+
+        function updateMergeListUI() {
+            mergeListEl.innerHTML = '';
+            
+            const hasFiles = mergeFilesList.length > 0;
+            if(!hasFiles) {
+                mergeListEl.appendChild(mergeEmptyState);
+            } else {
+                mergeFilesList.forEach((file, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'file-item flex items-center justify-between p-4 bg-white border border-gray-100 rounded-xl shadow-sm cursor-move group';
+                    li.draggable = true;
+                    li.dataset.index = index;
+                    
+                    li.innerHTML = `
+                        <div class="flex items-center overflow-hidden mr-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center mr-3 cursor-grab text-gray-400 group-hover:text-blue-500 flex-shrink-0 transition-colors">
+                                <i class="fas fa-grip-vertical"></i>
+                            </div>
+                            <i class="fas fa-file-pdf text-red-500 mr-3 text-lg flex-shrink-0"></i>
+                            <div class="flex flex-col min-w-0">
+                                <span class="truncate font-semibold text-sm text-gray-700" title="${file.name}">${file.name}</span>
+                                <span class="text-xs text-gray-400">${formatBytes(file.size)}</span>
+                            </div>
+                        </div>
+                        <button class="btn-interactive w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 focus:outline-none flex-shrink-0" onclick="removeMergeFile(${index})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+
+                    // 拖曳排序
+                    li.addEventListener('dragstart', handleDragStart);
+                    li.addEventListener('dragover', handleDragOver);
+                    li.addEventListener('drop', handleDrop);
+                    li.addEventListener('dragend', handleDragEnd);
+
+                    // 觸控支援 (基礎防呆，精準排序在手機上通常建議另外做按鈕，但這裡保留原生 HTML5 拖曳)
+                    li.addEventListener('touchstart', (e) => {
+                        if(e.target.closest('.cursor-grab')){ 
+                           // Handle touch drag if needed 
+                        }
+                    }, {passive: true});
+
+                    mergeListEl.appendChild(li);
+                });
+            }
+
+            clearMergeBtn.classList.toggle('hidden', !hasFiles);
+            mergeBtn.disabled = mergeFilesList.length < 2;
+            if(mergeFilesList.length < 2 && hasFiles) {
+                showStatus('merge-status', '請至少加入兩個 PDF 檔案以進行合併', 'info');
+            } else if (!hasFiles) {
+                 document.getElementById('merge-status').classList.add('hidden');
+            } else {
+                 document.getElementById('merge-status').classList.add('hidden');
+            }
+        }
+
+        setupDropZone('merge-drop-zone', 'merge-file-input', (files) => {
+            const newFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+            if (newFiles.length !== files.length) {
+                alert('部分檔案不是 PDF 格式，已被忽略。');
+            }
+            mergeFilesList = [...mergeFilesList, ...newFiles];
+            updateMergeListUI();
+        });
+
+        window.removeMergeFile = (index) => {
+            mergeFilesList.splice(index, 1);
+            updateMergeListUI();
+        };
+
+        clearMergeBtn.addEventListener('click', () => {
+            mergeFilesList = [];
+            updateMergeListUI();
+            document.getElementById('merge-status').classList.add('hidden');
+        });
+
+        // 拖曳排序邏輯 (原生)
+        let dragSrcEl = null;
+        function handleDragStart(e) {
+            dragSrcEl = this;
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+            this.classList.add('opacity-50', 'bg-gray-50');
+        }
+        function handleDragOver(e) {
+            if (e.preventDefault) { e.preventDefault(); }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+        function handleDrop(e) {
+            if (e.stopPropagation) { e.stopPropagation(); }
+            if (dragSrcEl != this) {
+                const fromIndex = parseInt(dragSrcEl.dataset.index);
+                const toIndex = parseInt(this.dataset.index);
+                const movedFile = mergeFilesList.splice(fromIndex, 1)[0];
+                mergeFilesList.splice(toIndex, 0, movedFile);
+                updateMergeListUI();
+            }
+            return false;
+        }
+        function handleDragEnd(e) {
+            this.classList.remove('opacity-50', 'bg-gray-50');
+        }
+
+        mergeBtn.addEventListener('click', async () => {
+            if (mergeFilesList.length < 2) return;
+            
+            showStatus('merge-status', '正在處理中，請稍候...', 'info');
+            mergeBtn.disabled = true;
+            mergeBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-lg"></i> 處理中...';
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const mergedPdf = await PDFDocument.create();
+
+                for (let i = 0; i < mergeFilesList.length; i++) {
+                    const file = mergeFilesList[i];
+                    showStatus('merge-status', `正在合併: ${file.name} (${i+1}/${mergeFilesList.length})`, 'info');
+                    const arrayBuffer = await file.arrayBuffer();
+                    
+                    const pdf = await safeLoadPDF(arrayBuffer, file.name);
+                    const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+                    copiedPages.forEach((page) => mergedPdf.addPage(page));
+                }
+
+                showStatus('merge-status', '合併完成！正在準備下載...', 'info');
+                const mergedPdfFile = await mergedPdf.save();
+                const blob = new Blob([mergedPdfFile], { type: 'application/pdf' });
+                downloadFile(blob, 'merged-document.pdf');
+                showStatus('merge-status', '成功下載合併後的 PDF！', 'success');
+                
+            } catch (error) {
+                console.error(error);
+                showStatus('merge-status', error.message || '合併過程中發生錯誤，請確保上傳的 PDF 檔案未加密損毀。', 'error');
+            } finally {
+                mergeBtn.disabled = false;
+                mergeBtn.innerHTML = '<i class="fas fa-object-group mr-2 text-lg"></i> 開始合併';
+            }
+        });
+
+
+        // --- STREAMING_CHUNK:分割 PDF 邏輯 ---
+        let splitFile = null;
+        const splitBtn = document.getElementById('split-btn');
+        const splitFileInfo = document.getElementById('split-file-info');
+        const splitFilename = document.getElementById('split-filename');
+        const removeSplitFileBtn = document.getElementById('remove-split-file');
+
+        function updateSplitUI() {
+            if (splitFile) {
+                splitFilename.textContent = `${splitFile.name} (${formatBytes(splitFile.size)})`;
+                splitFileInfo.classList.remove('hidden');
+                splitBtn.disabled = false;
+                document.getElementById('split-drop-zone').classList.add('hidden'); // 隱藏拖曳區，保持畫面簡潔
+            } else {
+                splitFileInfo.classList.add('hidden');
+                splitBtn.disabled = true;
+                document.getElementById('split-status').classList.add('hidden');
+                document.getElementById('split-drop-zone').classList.remove('hidden');
+            }
+        }
+
+        setupDropZone('split-drop-zone', 'split-file-input', (files) => {
+            const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+            if (pdfFiles.length > 0) {
+                splitFile = pdfFiles[0]; 
+                updateSplitUI();
+            } else {
+                alert('請上傳 PDF 格式的檔案。');
+            }
+        });
+
+        removeSplitFileBtn.addEventListener('click', () => {
+            splitFile = null;
+            updateSplitUI();
+        });
+
+        splitBtn.addEventListener('click', async () => {
+            if (!splitFile) return;
+
+            showStatus('split-status', '正在讀取 PDF，請稍候...', 'info');
+            splitBtn.disabled = true;
+            splitBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-lg"></i> 處理中...';
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const arrayBuffer = await splitFile.arrayBuffer();
+                
+                const pdf = await safeLoadPDF(arrayBuffer, splitFile.name);
+                const numPages = pdf.getPageCount();
+
+                if (numPages <= 1) {
+                    showStatus('split-status', '此 PDF 只有一頁，無需分割。', 'error');
+                    splitBtn.disabled = false;
+                    splitBtn.innerHTML = '<i class="fas fa-cut mr-2 text-lg"></i> 開始分割';
+                    return;
+                }
+
+                showStatus('split-status', `總共 ${numPages} 頁，正在準備打包 ZIP...`, 'info');
+                
+                const zip = new JSZip();
+                const baseName = splitFile.name.replace(/\.[^/.]+$/, ""); 
+
+                for (let i = 0; i < numPages; i++) {
+                    showStatus('split-status', `正在處理第 ${i+1}/${numPages} 頁...`, 'info');
+                    const newPdf = await PDFDocument.create();
+                    const [copiedPage] = await newPdf.copyPages(pdf, [i]);
+                    newPdf.addPage(copiedPage);
+                    const pdfBytes = await newPdf.save();
+                    
+                    const pageNumStr = (i + 1).toString().padStart(Math.max(2, numPages.toString().length), '0');
+                    zip.file(`${baseName}_page-${pageNumStr}.pdf`, pdfBytes);
+                }
+
+                showStatus('split-status', '正在產生 ZIP 壓縮檔...', 'info');
+                const zipContent = await zip.generateAsync({ type: "blob" });
+                downloadFile(zipContent, `${baseName}_split.zip`);
+                showStatus('split-status', '分割完成並已下載 ZIP 檔！', 'success');
+
+            } catch (error) {
+                console.error(error);
+                showStatus('split-status', error.message || '分割過程中發生錯誤。', 'error');
+            } finally {
+                splitBtn.disabled = false;
+                splitBtn.innerHTML = '<i class="fas fa-cut mr-2 text-lg"></i> 開始分割';
+            }
+        });
+
+
+        // --- STREAMING_CHUNK:PDF 轉圖片邏輯 ---
+        let imgFile = null;
+        const toImageBtn = document.getElementById('to-image-btn');
+        const imgFileInfo = document.getElementById('img-file-info');
+        const imgFilename = document.getElementById('img-filename');
+        const removeImgFileBtn = document.getElementById('remove-img-file');
+        const imgScaleSelect = document.getElementById('img-scale');
+
+        function updateImgUI() {
+            if (imgFile) {
+                imgFilename.textContent = `${imgFile.name} (${formatBytes(imgFile.size)})`;
+                imgFileInfo.classList.remove('hidden');
+                toImageBtn.disabled = false;
+                document.getElementById('img-drop-zone').classList.add('hidden');
+            } else {
+                imgFileInfo.classList.add('hidden');
+                toImageBtn.disabled = true;
+                document.getElementById('img-status').classList.add('hidden');
+                document.getElementById('img-drop-zone').classList.remove('hidden');
+            }
+        }
+
+        setupDropZone('img-drop-zone', 'img-file-input', (files) => {
+            const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+            if (pdfFiles.length > 0) {
+                imgFile = pdfFiles[0];
+                updateImgUI();
+            } else {
+                alert('請上傳 PDF 格式的檔案。');
+            }
+        });
+
+        removeImgFileBtn.addEventListener('click', () => {
+            imgFile = null;
+            updateImgUI();
+        });
+
+        toImageBtn.addEventListener('click', async () => {
+            if (!imgFile) return;
+
+            showStatus('img-status', '正在載入 PDF 引擎，請稍候...', 'info');
+            toImageBtn.disabled = true;
+            toImageBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-lg"></i> 處理中...';
+
+            try {
+                const arrayBuffer = await imgFile.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                const numPages = pdf.numPages;
+                const scale = parseFloat(imgScaleSelect.value);
+                const zip = new JSZip();
+                const baseName = imgFile.name.replace(/\.[^/.]+$/, "");
+
+                for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                    showStatus('img-status', `正在轉換第 ${pageNum}/${numPages} 頁為圖片...`, 'info');
+                    
+                    const page = await pdf.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: scale });
+                    
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+                    
+                    await page.render(renderContext).promise;
+
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+                    
+                    const pageNumStr = pageNum.toString().padStart(Math.max(2, numPages.toString().length), '0');
+                    zip.file(`${baseName}_page-${pageNumStr}.jpg`, blob);
+                }
+
+                showStatus('img-status', '正在產生 ZIP 壓縮檔...', 'info');
+                const zipContent = await zip.generateAsync({ type: "blob" });
+                downloadFile(zipContent, `${baseName}_images.zip`);
+                showStatus('img-status', '轉換完成並已下載圖片 ZIP 檔！', 'success');
+
+            } catch (error) {
+                console.error(error);
+                showStatus('img-status', '轉換圖片時發生錯誤。', 'error');
+            } finally {
+                toImageBtn.disabled = false;
+                toImageBtn.innerHTML = '<i class="fas fa-file-image mr-2 text-lg"></i> 開始轉換';
+            }
+        });
+
+        // --- STREAMING_CHUNK:圖片轉 PDF 邏輯 ---
+        let i2pFiles = [];
+        const i2pBtn = document.getElementById('img-to-pdf-btn');
+        const i2pFileInfo = document.getElementById('i2p-file-info');
+        const i2pFilename = document.getElementById('i2p-filename');
+
+        function updateI2PUI() {
+            if (i2pFiles.length > 0) {
+                i2pFilename.textContent = `已準備 ${i2pFiles.length} 張圖片`;
+                i2pFileInfo.classList.remove('hidden');
+                i2pBtn.disabled = false;
+                document.getElementById('i2p-drop-zone').classList.add('hidden');
+            } else {
+                i2pFileInfo.classList.add('hidden');
+                i2pBtn.disabled = true;
+                document.getElementById('i2p-status').classList.add('hidden');
+                document.getElementById('i2p-drop-zone').classList.remove('hidden');
+            }
+        }
+
+        setupDropZone('i2p-drop-zone', 'i2p-file-input', (files) => {
+            const validFiles = Array.from(files).filter(file => file.type === 'image/jpeg' || file.type === 'image/png');
+            if (validFiles.length > 0) {
+                i2pFiles = validFiles;
+                updateI2PUI();
+            } else {
+                alert('請上傳 JPG 或 PNG 格式的圖片。');
+            }
+        });
+
+        document.getElementById('remove-i2p-file').addEventListener('click', () => {
+            i2pFiles = [];
+            updateI2PUI();
+        });
+
+        i2pBtn.addEventListener('click', async () => {
+            if (i2pFiles.length === 0) return;
+            showStatus('i2p-status', '正在打包圖片為 PDF...', 'info');
+            i2pBtn.disabled = true;
+            i2pBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-lg"></i> 處理中...';
+
+            try {
+                const { PDFDocument } = PDFLib;
+                const pdfDoc = await PDFDocument.create();
+
+                for (let i = 0; i < i2pFiles.length; i++) {
+                    showStatus('i2p-status', `處理第 ${i+1}/${i2pFiles.length} 張圖片...`, 'info');
+                    const file = i2pFiles[i];
+                    const imgBytes = await file.arrayBuffer();
+                    let pdfImage;
+                    
+                    if (file.type === 'image/jpeg') pdfImage = await pdfDoc.embedJpg(imgBytes);
+                    else pdfImage = await pdfDoc.embedPng(imgBytes);
+
+                    const page = pdfDoc.addPage([pdfImage.width, pdfImage.height]);
+                    page.drawImage(pdfImage, { x: 0, y: 0, width: pdfImage.width, height: pdfImage.height });
+                }
+
+                const pdfBytes = await pdfDoc.save();
+                downloadFile(new Blob([pdfBytes], { type: 'application/pdf' }), 'images_converted.pdf');
+                showStatus('i2p-status', 'PDF 建立完成！', 'success');
+            } catch (error) {
+                console.error(error);
+                showStatus('i2p-status', '轉換過程中發生錯誤。', 'error');
+            } finally {
+                i2pBtn.disabled = false;
+                i2pBtn.innerHTML = '<i class="fas fa-plus-circle mr-2 text-lg"></i> 建立 PDF';
+            }
+        });
+
+        // --- STREAMING_CHUNK:加入浮水印邏輯 ---
+        let wmFile = null;
+        const wmBtn = document.getElementById('watermark-btn');
+        const wmFileInfo = document.getElementById('wm-file-info');
+        const wmFilename = document.getElementById('wm-filename');
+
+        function updateWmUI() {
+            if (wmFile) {
+                wmFilename.textContent = `${wmFile.name}`;
+                wmFileInfo.classList.remove('hidden');
+                wmBtn.disabled = false;
+                document.getElementById('wm-drop-zone').classList.add('hidden');
+            } else {
+                wmFileInfo.classList.add('hidden');
+                wmBtn.disabled = true;
+                document.getElementById('wm-status').classList.add('hidden');
+                document.getElementById('wm-drop-zone').classList.remove('hidden');
+            }
+        }
+
+        setupDropZone('wm-drop-zone', 'wm-file-input', (files) => {
+            const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+            if (pdfFiles.length > 0) { wmFile = pdfFiles[0]; updateWmUI(); }
+        });
+
+        document.getElementById('remove-wm-file').addEventListener('click', () => { wmFile = null; updateWmUI(); });
+
+        wmBtn.addEventListener('click', async () => {
+            if (!wmFile) return;
+            const text = document.getElementById('wm-text').value.trim() || '機密文件';
+            showStatus('wm-status', '正在產生浮水印...', 'info');
+            wmBtn.disabled = true;
+            wmBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-lg"></i> 處理中...';
+
+            try {
+                // 使用 Canvas 繪製中文字並轉為圖片 (解決字體支援問題)
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.font = 'bold 80px sans-serif';
+                const metrics = ctx.measureText(text);
+                const size = Math.max(metrics.width, 100) * 1.5;
+                
+                canvas.width = size; canvas.height = size;
+                ctx.translate(size/2, size/2);
+                ctx.rotate(-Math.PI / 6); // 旋轉 -30 度
+                ctx.font = 'bold 80px sans-serif';
+                ctx.fillStyle = 'rgba(150, 150, 150, 0.35)'; // 半透明灰色
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(text, 0, 0);
+
+                const imgBlob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+                const imgBuffer = await imgBlob.arrayBuffer();
+
+                const { PDFDocument } = PDFLib;
+                const pdfDoc = await safeLoadPDF(await wmFile.arrayBuffer(), wmFile.name);
+                const wmImage = await pdfDoc.embedPng(imgBuffer);
+                const pages = pdfDoc.getPages();
+
+                pages.forEach(page => {
+                    const { width, height } = page.getSize();
+                    page.drawImage(wmImage, {
+                        x: (width / 2) - (size / 2),
+                        y: (height / 2) - (size / 2),
+                        width: size, height: size
+                    });
+                });
+
+                const pdfBytes = await pdfDoc.save();
+                downloadFile(new Blob([pdfBytes], { type: 'application/pdf' }), `watermarked_${wmFile.name}`);
+                showStatus('wm-status', '浮水印加入完成！', 'success');
+            } catch (error) {
+                console.error(error);
+                showStatus('wm-status', error.message || '發生錯誤。', 'error');
+            } finally {
+                wmBtn.disabled = false;
+                wmBtn.innerHTML = '<i class="fas fa-check mr-2 text-lg"></i> 加入浮水印';
+            }
+        });
+
+        // --- STREAMING_CHUNK:旋轉 PDF 邏輯 ---
+        let rotFile = null;
+        const rotBtn = document.getElementById('rotate-btn');
+        const rotFileInfo = document.getElementById('rot-file-info');
+        const rotFilename = document.getElementById('rot-filename');
+
+        function updateRotUI() {
+            if (rotFile) {
+                rotFilename.textContent = `${rotFile.name}`;
+                rotFileInfo.classList.remove('hidden');
+                rotBtn.disabled = false;
+                document.getElementById('rot-drop-zone').classList.add('hidden');
+            } else {
+                rotFileInfo.classList.add('hidden');
+                rotBtn.disabled = true;
+                document.getElementById('rot-status').classList.add('hidden');
+                document.getElementById('rot-drop-zone').classList.remove('hidden');
+            }
+        }
+
+        setupDropZone('rot-drop-zone', 'rot-file-input', (files) => {
+            const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+            if (pdfFiles.length > 0) { rotFile = pdfFiles[0]; updateRotUI(); }
+        });
+
+        document.getElementById('remove-rot-file').addEventListener('click', () => { rotFile = null; updateRotUI(); });
+
+        rotBtn.addEventListener('click', async () => {
+            if (!rotFile) return;
+            const degree = parseInt(document.getElementById('rot-degree').value);
+            showStatus('rot-status', '正在旋轉頁面...', 'info');
+            rotBtn.disabled = true;
+            rotBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2 text-lg"></i> 處理中...';
+
+            try {
+                const { PDFDocument, degrees } = PDFLib;
+                const pdfDoc = await safeLoadPDF(await rotFile.arrayBuffer(), rotFile.name);
+                const pages = pdfDoc.getPages();
+
+                pages.forEach(page => {
+                    const currentRotation = page.getRotation().angle;
+                    page.setRotation(degrees(currentRotation + degree));
+                });
+
+                const pdfBytes = await pdfDoc.save();
+                downloadFile(new Blob([pdfBytes], { type: 'application/pdf' }), `rotated_${rotFile.name}`);
+                showStatus('rot-status', '旋轉並儲存完成！', 'success');
+            } catch (error) {
+                console.error(error);
+                showStatus('rot-status', error.message || '發生錯誤。', 'error');
+            } finally {
+                rotBtn.disabled = false;
+                rotBtn.innerHTML = '<i class="fas fa-sync-alt mr-2 text-lg"></i> 套用旋轉';
+            }
+        });
+
+        // 初始化
+        updateMergeListUI();
+        updateSplitUI();
+        updateImgUI();
+        updateI2PUI();
+        updateWmUI();
+        updateRotUI();
+    </script>
+</body>
+</html>
