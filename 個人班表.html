@@ -1409,8 +1409,8 @@ function normalizeAndMigrateData(raw){
     baseSettings.compLeave = toMins(raw.settings.compLeave);
   }
   const curY = today.getFullYear();
-  if(!Object.prototype.hasOwnProperty.call(baseSettings.annualLeaveByYear, curY)){
-    baseSettings.annualLeaveByYear[curY] = Number(raw?.settings?.annualLeave) || 120;
+  if((!raw?.settings?.annualLeaveByYear || !Object.prototype.hasOwnProperty.call(raw.settings.annualLeaveByYear, curY)) && raw?.settings && Object.prototype.hasOwnProperty.call(raw.settings, "annualLeave")){
+    baseSettings.annualLeaveByYear[curY] = Number(raw.settings.annualLeave) || 0;
   }
 
   const shifts = [];
@@ -2143,11 +2143,14 @@ function renderDayDetail(){
 
 function renderBalancePanel(){
   const b = getBalance(viewedYear());
+  const yearOt = getYearOvertimePayTotal(b.year);
+  const yearTotalOtMins = yearOt.totalPayMins + yearOt.totalCompMins;
   const pct = Math.min(100, (b.leaveRemain / Math.max(1, b.annualTotal)) * 100);
   document.getElementById("balancePanel").innerHTML = `
     <div class="balance-row"><span>${b.year} 年特休剩餘</span><span class="balance-value num">${formatHours(b.leaveRemain)} / ${formatHours(b.annualTotal)} h</span></div>
     <div class="balance-row"><span>保留假剩餘</span><span class="balance-value num">${formatHours(b.reservedRemain)} h</span></div>
     <div class="balance-row"><span>加班補休餘額</span><span class="balance-value num">${formatDurationMinutes(b.compRemainMins)}</span></div>
+    <div class="balance-row" title="含申請加班費 ${formatDurationMinutes(yearOt.totalPayMins)}、轉補休 ${formatDurationMinutes(yearOt.totalCompMins)}"><span>${b.year} 年加班總時數</span><span class="balance-value num">${formatDurationMinutes(yearTotalOtMins)}</span></div>
     <div class="progress"><i style="width:${pct}%"></i></div>
     <div class="small" style="margin-top:8px">
       本年特休已用 ${formatHours(b.usedLeave)}h · 保留假已用 ${formatHours(b.usedReserved)}h<br>
@@ -3067,6 +3070,9 @@ function importData(file){
         throw new Error("格式不符");
       }
       state = normalizeAndMigrateData(incoming);
+      if(state.settings.preferredViewMode === "period" || state.settings.preferredViewMode === "month"){
+        viewMode = state.settings.preferredViewMode;
+      }
       saveState();
       renderAll();
       toast("資料匯入成功");
