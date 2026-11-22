@@ -1,0 +1,3635 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<meta name="description" content="班表行事曆｜手機優先的輪班排班、獨立請假／加班紀錄與每月加班費計算工具">
+<title>班表行事曆</title>
+<style>
+/* =========================================================
+   01. DESIGN TOKENS & BASE (Mobile-First)
+   ========================================================= */
+:root{
+  --bg:#f4f6fb;
+  --surface:#ffffff;
+  --surface-2:#f8fafc;
+  --line:#e5e7eb;
+  --line-soft:#eef1f6;
+  --text:#151d30;
+  --muted:#667085;
+  --primary:#4f46e5;
+  --primary-dark:#4338ca;
+  --primary-soft:#eef2ff;
+  --shift-bg:#eef2ff;
+  --shift-fg:#3730a3;
+  --night-bg:#ede9fe;
+  --night-fg:#6d28d9;
+  --rest-bg:#ecfdf3;
+  --rest-fg:#15803d;
+  --statutory-bg:#f1f5f9;
+  --statutory-fg:#475569;
+  --holiday-bg:#eff6ff;
+  --holiday-fg:#0369a1;
+  --leave-bg:#fff7ed;
+  --leave-fg:#c2410c;
+  --comp-bg:#ecfeff;
+  --comp-fg:#0e7490;
+  --ot-bg:#fef2f2;
+  --ot-fg:#b91c1c;
+  --success:#16a34a;
+  --success-bg:#ecfdf3;
+  --warning:#d97706;
+  --warning-bg:#fff7ed;
+  --danger:#dc2626;
+  --danger-bg:#fef2f2;
+  --info:#0284c7;
+  --info-bg:#eff6ff;
+  --radius:16px;
+  --radius-sm:11px;
+  --shadow:0 8px 28px rgba(15,23,42,.07);
+  --shadow-sm:0 2px 10px rgba(15,23,42,.04);
+  --header-h:58px;
+  --bottom-nav-h:64px;
+  --font:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;
+  min-height:100%;
+  max-width:100%;
+  overflow-x:clip;
+  font-family:var(--font);
+  color:var(--text);
+  background:var(--bg);
+  -webkit-font-smoothing:antialiased;
+}
+body{
+  padding-bottom:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 12px);
+}
+body.modal-open{
+  overflow:hidden;
+  overscroll-behavior:none;
+}
+button,input,select{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible,select:focus-visible{
+  outline:3px solid rgba(79,70,229,.22);
+  outline-offset:2px;
+}
+.num{font-variant-numeric:tabular-nums}
+
+/* =========================================================
+   02. HEADER / TOPBAR
+   ========================================================= */
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:30;
+  height:var(--header-h);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:0 10px;
+  background:rgba(255,255,255,.94);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(12px);
+}
+.brand{display:flex;align-items:center;gap:8px;min-width:0;font-weight:800;flex:0 0 auto}
+.logo{
+  width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,#6366f1,#4338ca);
+  display:grid;place-items:center;color:#fff;
+  box-shadow:0 4px 12px rgba(79,70,229,.25);
+  flex:none;
+}
+.brand-text{display:none;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
+
+.nav-cluster{
+  display:flex;align-items:center;gap:2px;
+  padding:2px;background:#f8fafc;border:1px solid var(--line);border-radius:11px;
+}
+.nav-btn{
+  border:0;background:transparent;color:#475467;
+  width:34px;height:34px;border-radius:8px;
+  font-size:18px;font-weight:700;display:grid;place-items:center;
+}
+.nav-btn:active,.nav-btn:hover{background:var(--primary-soft);color:var(--primary)}
+.month-trigger{
+  border:0;background:transparent;color:var(--text);
+  font-size:15px;font-weight:800;padding:4px 8px;border-radius:8px;
+  white-space:nowrap;display:flex;align-items:center;gap:4px;
+}
+.month-trigger:hover{background:#f1f5f9}
+.month-trigger .caret{font-size:10px;color:var(--muted)}
+.today-pill{
+  border:1px solid #c7d2fe;background:var(--primary-soft);color:var(--primary-dark);
+  border-radius:999px;padding:6px 10px;font-size:12px;font-weight:800;white-space:nowrap;
+}
+.today-pill:active{transform:scale(.97)}
+
+.view-switch{
+  margin-left:auto;
+  display:flex;align-items:center;gap:2px;
+  padding:2px;background:#f1f5f9;border:1px solid var(--line);border-radius:10px;
+}
+.view-mode-btn{
+  border:0;background:transparent;color:var(--muted);
+  border-radius:7px;padding:6px 9px;font-size:11px;font-weight:800;white-space:nowrap;
+}
+.view-mode-btn.active{background:#fff;color:var(--primary);box-shadow:var(--shadow-sm)}
+
+.top-actions{display:none}
+.icon-btn,.ghost-btn,.primary-btn,.danger-btn,.soft-btn{
+  border:0;background:transparent;border-radius:10px;
+  min-height:40px;padding:0 12px;color:var(--text);
+  font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+}
+.ghost-btn{border:1px solid var(--line);background:#fff}
+.ghost-btn:hover{background:#f8fafc}
+.soft-btn{background:var(--primary-soft);color:var(--primary-dark)}
+.soft-btn:hover{filter:brightness(.97)}
+.primary-btn{
+  background:var(--primary);color:#fff;
+  box-shadow:0 4px 14px rgba(79,70,229,.22);
+}
+.primary-btn:hover{filter:brightness(.96)}
+.danger-btn{background:var(--danger-bg);color:var(--danger);border:1px solid #fecaca}
+.icon-btn{min-height:36px;width:36px;padding:0;border-radius:9px}
+.icon-btn:hover{background:#f1f5f9}
+
+/* =========================================================
+   03. WORKSPACE & MAIN LAYOUT (Mobile-First)
+   ========================================================= */
+.workspace{
+  display:flex;flex-direction:column;gap:10px;
+  padding:8px;max-width:1440px;width:100%;margin:0 auto;
+}
+.sidebar{display:none}
+.main{display:flex;flex-direction:column;gap:10px;min-width:0}
+
+/* Batch mode floating bar (zero layout shift) */
+.batch-bar{
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 10px);
+  z-index:45;
+  display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  padding:10px 14px;border-radius:16px;
+  background:#eef2ff;border:1.5px solid #818cf8;color:var(--primary-dark);
+  font-size:12px;font-weight:800;
+  box-shadow:0 12px 32px rgba(49,46,129,.22);
+}
+.batch-bar.show{display:flex}
+.batch-bar-actions{display:flex;gap:6px;align-items:center;margin-left:auto}
+.batch-bar .primary-btn,.batch-bar .ghost-btn{min-height:36px;padding:0 12px;font-size:12px}
+
+/* Calendar card */
+.calendar-card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;
+}
+.calendar-legend-strip{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:7px 12px;border-bottom:1px solid var(--line-soft);
+  background:#fcfcfd;font-size:11px;color:var(--muted);
+}
+.legend-dot{display:inline-flex;align-items:center;gap:4px;font-weight:700}
+.legend-dot i{width:8px;height:8px;border-radius:3px;display:inline-block}
+.legend-hint{margin-left:auto;font-size:10px;color:#94a3b8}
+
+/* 7-column Month Grid */
+.calendar-grid{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(0,1fr));
+}
+.weekday{
+  height:30px;display:grid;place-items:center;
+  border-bottom:1px solid var(--line);
+  font-size:11px;font-weight:800;color:#94a3b8;background:#fcfcfd;
+}
+.weekday.sun{color:#e11d48}
+.weekday.sat{color:#0284c7}
+.day-cell{
+  min-width:0;min-height:74px;
+  border-right:1px solid var(--line-soft);
+  border-bottom:1px solid var(--line-soft);
+  padding:4px 3px 5px;
+  position:relative;cursor:pointer;background:#fff;
+  display:flex;flex-direction:column;gap:2px;
+  user-select:none;-webkit-user-select:none;
+  transition:background .1s ease;
+}
+.day-cell:nth-child(7n){border-right:0}
+.day-cell.other-month{background:#fafafa;color:#b8c0cc}
+.day-cell.other-month .chip{opacity:.68}
+.day-cell.selected-day{
+  background:#f5f7ff;
+  box-shadow:inset 0 0 0 2px var(--primary);
+  z-index:1;
+}
+.day-cell.range-selected{
+  background:#e0e7ff;
+  box-shadow:inset 0 0 0 2px #6366f1;
+  z-index:1;
+}
+.day-top{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:11px;font-weight:800;line-height:1;min-height:20px;padding:0 1px;
+}
+.day-num{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:50%}
+.day-num.month-tag{border-radius:999px;padding:0 5px;background:#eef2ff;color:var(--primary-dark);font-size:10px}
+.day-cell.is-today .day-num{
+  background:var(--primary);color:#fff;font-weight:900;
+  box-shadow:0 2px 6px rgba(79,70,229,.35);
+}
+.day-cell.is-sun:not(.other-month):not(.is-today) .day-num{color:#e11d48}
+.day-cell.is-sat:not(.other-month):not(.is-today) .day-num{color:#0284c7}
+.batch-check{
+  display:none;width:14px;height:14px;border-radius:50%;
+  border:1.5px solid #cbd5e1;font-size:9px;place-items:center;
+}
+body.batch-mode .batch-check{display:grid}
+.day-cell.range-selected .batch-check{background:var(--primary);border-color:var(--primary);color:#fff}
+
+/* Independent layer chips in calendar cells */
+.cell-layers{display:flex;flex-direction:column;gap:2px;min-width:0}
+.chip{
+  border-radius:5px;padding:2px 3px;
+  font-size:9.5px;line-height:1.15;font-weight:800;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  text-align:center;
+}
+.chip-shift-work{background:var(--shift-bg);color:var(--shift-fg)}
+.chip-shift-night{background:var(--night-bg);color:var(--night-fg)}
+.chip-shift-rest{background:var(--rest-bg);color:var(--rest-fg)}
+.chip-shift-statutory{background:var(--statutory-bg);color:var(--statutory-fg)}
+.chip-shift-holiday{background:var(--holiday-bg);color:var(--holiday-fg)}
+.chip-shift-off{background:#f1f5f9;color:#64748b}
+.chip-leave{background:var(--leave-bg);color:var(--leave-fg);border:1px solid #fed7aa}
+.chip-leave-comp{background:var(--comp-bg);color:var(--comp-fg);border:1px solid #a5f3fc}
+.chip-ot{background:var(--ot-bg);color:var(--ot-fg);border:1px solid #fecaca}
+.chip-ot-comp{background:#fdf2f8;color:#9d174d;border:1px solid #fbcfe8}
+
+/* Monthly List / Agenda View */
+.list-view{display:none;padding:8px;gap:7px}
+.list-view.active{display:grid}
+.calendar-grid.hidden{display:none}
+.list-filter-bar{
+  display:none;align-items:center;justify-content:space-between;gap:8px;
+  padding:8px 12px;border-bottom:1px solid var(--line-soft);background:#fcfcfd;
+}
+.list-filter-bar.active{display:flex}
+.period-bar{
+  display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  padding:7px 12px;border-bottom:1px solid var(--line-soft);
+  background:#f8faff;color:var(--primary-dark);font-size:12px;font-weight:750;
+}
+.period-bar.active{display:flex}
+.period-start-picker{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#fff;border:1px solid #c7d2fe;border-radius:9px;
+  padding:3px 8px;font-size:11px;font-weight:800;color:var(--primary-dark);
+}
+.period-start-picker input{
+  border:0;background:transparent;color:var(--text);font-size:12px;font-weight:750;
+  padding:0;min-height:24px;width:112px;
+}
+.agenda-card{
+  display:grid;grid-template-columns:54px 1fr;gap:10px;align-items:start;
+  padding:10px;border-radius:12px;border:1px solid var(--line);background:#fff;
+  cursor:pointer;
+}
+.agenda-card.is-today{border-color:var(--primary);background:#f8faff}
+.agenda-card.selected-day{box-shadow:0 0 0 2px rgba(79,70,229,.25)}
+.agenda-date-box{
+  text-align:center;padding:4px 0;border-right:1px solid var(--line-soft);padding-right:8px;
+}
+.agenda-date-box b{display:block;font-size:18px;line-height:1.1}
+.agenda-date-box span{font-size:11px;color:var(--muted);font-weight:700}
+.agenda-card.is-today .agenda-date-box b{color:var(--primary)}
+.agenda-badges{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.agenda-badges .chip{font-size:11px;padding:4px 8px;border-radius:7px}
+
+/* =========================================================
+   04. SELECTED DAY DETAIL PANEL (Independent Slots!)
+   ========================================================= */
+.day-detail-card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:12px;
+}
+.day-detail-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding-bottom:10px;border-bottom:1px solid var(--line-soft);
+}
+.day-detail-title{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:15px;font-weight:850}
+.today-tag{
+  font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px;
+  background:var(--primary-soft);color:var(--primary-dark);
+}
+.day-step-btns{display:flex;gap:4px}
+.day-step-btns button{
+  border:1px solid var(--line);background:#fff;border-radius:8px;
+  width:32px;height:32px;font-weight:800;color:#475467;
+}
+.day-slots{display:grid;gap:9px;margin-top:10px}
+.day-slot{
+  border:1px solid var(--line-soft);background:var(--surface-2);
+  border-radius:12px;padding:10px;
+}
+.day-slot-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;
+}
+.day-slot-label{font-size:12px;font-weight:850;color:#475467;display:flex;align-items:center;gap:5px}
+.slot-action-btn{
+  border:1px solid #c7d2fe;background:#fff;color:var(--primary-dark);
+  border-radius:8px;padding:5px 10px;font-size:11px;font-weight:800;min-height:30px;
+}
+.slot-action-btn:active{transform:scale(.97)}
+.slot-items{display:grid;gap:6px}
+.slot-empty{font-size:12px;color:#94a3b8}
+.slot-item{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;
+}
+.slot-item-main{min-width:0;flex:1}
+.slot-item-title{font-size:13px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.slot-item-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+.slot-item-actions{display:flex;gap:4px;flex:none}
+.mini-btn{
+  border:1px solid var(--line);background:#fff;color:#475467;
+  border-radius:7px;padding:4px 8px;font-size:11px;font-weight:750;min-height:28px;
+}
+.mini-btn.danger{color:var(--danger);border-color:#fecaca;background:#fff}
+
+/* =========================================================
+   05. INSIGHTS / DASHBOARD CARDS
+   ========================================================= */
+.insights{display:grid;grid-template-columns:1fr;gap:10px}
+.card{
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:14px;
+}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.card h3{margin:0;font-size:14px;font-weight:850}
+.hero-pay{
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px;
+  background:linear-gradient(135deg,#eef2ff,#f8faff);
+  border:1px solid #c7d2fe;border-radius:13px;padding:12px;margin-bottom:10px;
+}
+.hero-pay .label{font-size:11px;font-weight:800;color:#4338ca}
+.hero-pay .amount{font-size:24px;font-weight:900;color:#312e81;letter-spacing:-.02em}
+.balance-row{
+  display:flex;justify-content:space-between;align-items:center;gap:8px;
+  padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:12px;
+}
+.balance-row:last-child{border-bottom:0}
+.balance-value{font-weight:850}
+.progress{height:7px;background:#edf0f4;border-radius:999px;overflow:hidden;margin-top:8px}
+.progress i{display:block;height:100%;background:var(--primary);border-radius:999px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.metric{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:12px;padding:10px}
+.metric .label{font-size:11px;color:var(--muted);font-weight:750}
+.metric .value{font-size:18px;font-weight:850;margin-top:3px}
+.status{
+  display:flex;align-items:flex-start;gap:8px;padding:10px;
+  border-radius:11px;font-size:12px;line-height:1.45;margin-top:8px;
+}
+.status.ok{background:var(--success-bg);color:#166534}
+.status.warn{background:var(--warning-bg);color:#9a3412}
+.status.bad{background:var(--danger-bg);color:#991b1b}
+.status.info{background:var(--info-bg);color:#075985}
+.status-icon{font-weight:900;flex:none}
+.small{font-size:11px;color:var(--muted);line-height:1.5}
+.divider{height:1px;background:var(--line-soft);margin:10px 0}
+
+/* =========================================================
+   06. MOBILE BOTTOM NAV
+   ========================================================= */
+.mobile-bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:grid;grid-template-columns:repeat(5,1fr);
+  height:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.96);
+  backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  box-shadow:0 -6px 24px rgba(15,23,42,.08);
+}
+.mobile-bottom-nav button{
+  border:0;background:transparent;color:var(--muted);
+  border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;font-weight:800;min-width:0;padding:2px;
+}
+.mobile-bottom-nav button .ico{font-size:18px;line-height:20px}
+.mobile-bottom-nav button small{font-size:10px;white-space:nowrap}
+.mobile-bottom-nav button.active{background:var(--primary-soft);color:var(--primary-dark)}
+
+/* =========================================================
+   07. MODALS & BOTTOM SHEETS
+   ========================================================= */
+.modal-backdrop{
+  position:fixed;inset:0;z-index:70;
+  background:rgba(15,23,42,.45);
+  display:none;align-items:flex-end;justify-content:center;
+  padding:0;overscroll-behavior:contain;
+}
+.modal-backdrop.show{display:flex}
+.modal{
+  width:min(580px,100%);
+  max-height:90dvh;
+  background:#fff;
+  border-radius:22px 22px 0 0;
+  box-shadow:0 -12px 44px rgba(15,23,42,.24);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:14px 16px 10px;border-bottom:1px solid var(--line-soft);
+  flex:none;background:#fff;
+}
+.modal-head h2{margin:0;font-size:17px;font-weight:850}
+.modal-body{
+  padding:14px 16px;overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;
+}
+.modal-foot{
+  display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;
+  padding:10px 16px calc(12px + env(safe-area-inset-bottom));
+  border-top:1px solid var(--line-soft);background:#fff;flex:none;
+}
+
+.form-grid{display:grid;grid-template-columns:1fr;gap:12px}
+.form-grid.two{grid-template-columns:1fr 1fr}
+.field{display:grid;gap:5px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:800;color:#475467}
+.field input,.field select{
+  width:100%;min-height:44px;border:1px solid #d0d5dd;border-radius:11px;
+  padding:0 11px;background:#fff;color:var(--text);
+  font-size:16px; /* Prevents iOS Safari auto-zoom */
+}
+
+/* Segmented tabs & quick chips */
+.tabs{
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr;
+  background:#f1f5f9;border-radius:12px;padding:3px;gap:3px;
+}
+.tab{
+  border:0;background:transparent;padding:9px 6px;border-radius:9px;
+  font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap;
+}
+.tab.active{background:#fff;color:var(--primary-dark);box-shadow:var(--shadow-sm)}
+.tab-panel{display:none;margin-top:12px}
+.tab-panel.active{display:grid;gap:12px}
+
+.chip-picker{display:flex;flex-wrap:wrap;gap:6px}
+.pick-chip{
+  border:1px solid var(--line);background:#fff;color:var(--text);
+  border-radius:9px;padding:7px 11px;font-size:12px;font-weight:800;min-height:36px;
+}
+.pick-chip.active{background:var(--primary-soft);border-color:#818cf8;color:var(--primary-dark)}
+
+.help{
+  font-size:12px;color:var(--muted);background:#f8fafc;
+  border:1px solid var(--line-soft);padding:10px 12px;border-radius:11px;line-height:1.55;
+}
+.audit-list{display:grid;gap:8px}
+.audit-item{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:10px 11px;border-radius:12px;background:#f8fafc;border:1px solid var(--line-soft);
+  font-size:12px;line-height:1.45;
+}
+.audit-item b{display:block;font-size:13px}
+
+.action-sheet-grid{display:grid;gap:8px}
+.action-sheet-btn{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  width:100%;padding:13px 14px;border-radius:13px;
+  border:1px solid var(--line);background:#fff;text-align:left;
+}
+.action-sheet-btn:active{background:#f8fafc}
+.action-sheet-btn strong{display:block;font-size:15px}
+.action-sheet-btn span{font-size:12px;color:var(--muted)}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 14px);
+  transform:translate(-50%,16px);opacity:0;pointer-events:none;
+  background:#111827;color:#fff;padding:10px 16px;border-radius:999px;
+  font-size:12px;font-weight:750;z-index:90;transition:.2s ease;white-space:nowrap;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:480px){
+  .topbar{padding:0 6px;gap:4px}
+  .logo{width:28px;height:28px;border-radius:8px}
+  .nav-btn{width:25px;height:30px;font-size:15px}
+  .month-trigger{font-size:12.5px;padding:3px 4px;gap:2px}
+  .today-pill{padding:4px 7px;font-size:10.5px}
+  .view-mode-btn{padding:4px 5px;font-size:10px}
+}
+
+/* =========================================================
+   08. DESKTOP ENHANCEMENTS (>= 960px)
+   ========================================================= */
+@media(min-width:720px){
+  .brand-text{display:block}
+  .modal-backdrop{align-items:center;padding:16px}
+  .modal{border-radius:20px;max-height:min(780px,90vh);box-shadow:0 24px 64px rgba(15,23,42,.22)}
+  .modal-foot{padding:12px 18px}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .day-cell{min-height:96px;padding:6px}
+  .chip{font-size:11px;padding:3px 6px}
+}
+@media(min-width:980px){
+  body{padding-bottom:16px}
+  .topbar{padding:0 20px;gap:12px;height:64px}
+  .top-actions{display:flex;align-items:center;gap:8px;margin-left:8px}
+  .mobile-bottom-nav{display:none}
+  .batch-bar{left:50%;right:auto;transform:translateX(-50%);bottom:22px;width:min(560px,calc(100vw - 40px))}
+  .toast{bottom:22px}
+  .workspace{
+    display:grid;
+    grid-template-columns:210px minmax(0,1fr) 310px;
+    gap:14px;padding:16px;align-items:start;
+  }
+  .sidebar{
+    display:flex;flex-direction:column;gap:6px;
+    background:#fff;border:1px solid var(--line);
+    border-radius:var(--radius);padding:14px;box-shadow:var(--shadow-sm);
+    position:sticky;top:80px;
+  }
+  .sidebar .section-title{
+    font-size:11px;font-weight:850;letter-spacing:.04em;color:#94a3b8;margin:8px 6px 4px;
+  }
+  .sidebar .side-btn{
+    width:100%;justify-content:flex-start;min-height:38px;
+    padding:0 10px;font-size:13px;border:0;background:transparent;
+    border-radius:10px;color:var(--text);display:flex;align-items:center;gap:8px;font-weight:700;
+  }
+  .sidebar .side-btn:hover{background:#f1f5f9}
+  .sidebar .side-btn.active{background:var(--primary-soft);color:var(--primary-dark)}
+  .insights{position:sticky;top:80px}
+  .day-cell{min-height:106px}
+  .day-cell:hover{background:#fafbff}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- =====================================================
+       TOP BAR
+       ===================================================== -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="17" rx="3" stroke="currentColor" stroke-width="2"/>
+          <path d="M8 2v4M16 2v4M3 9h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8 13h3M8 17h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="brand-text">班表行事曆</span>
+    </div>
+
+    <div class="nav-cluster">
+      <button type="button" class="nav-btn" id="prevMonthBtn" aria-label="上一個月">‹</button>
+      <button type="button" class="month-trigger" id="monthPickerBtn" aria-label="選擇月份">
+        <span id="monthTitleText">2026年11月</span><span class="caret">▾</span>
+      </button>
+      <button type="button" class="nav-btn" id="nextMonthBtn" aria-label="下一個月">›</button>
+    </div>
+
+    <button type="button" class="today-pill" id="todayBtn">今天</button>
+
+    <div class="view-switch" role="group" aria-label="檢視模式">
+      <button type="button" class="view-mode-btn active" id="monthViewBtn">月曆</button>
+      <button type="button" class="view-mode-btn" id="periodViewBtn">四週</button>
+      <button type="button" class="view-mode-btn" id="listViewBtn">清單</button>
+    </div>
+
+    <div class="top-actions">
+      <button type="button" class="ghost-btn" id="desktopBatchBtn">▤ 批次排班</button>
+      <button type="button" class="ghost-btn" id="desktopQueryBtn">⌕ 查詢紀錄</button>
+      <button type="button" class="ghost-btn" id="desktopSettingsBtn">⚙ 設定</button>
+      <button type="button" class="primary-btn" id="desktopAddBtn">＋ 記一筆</button>
+    </div>
+  </header>
+
+  <!-- =====================================================
+       WORKSPACE (Sidebar + Main Calendar/Day + Insights)
+       ===================================================== -->
+  <div class="workspace">
+    <!-- Desktop Sidebar -->
+    <aside class="sidebar">
+      <div class="section-title">快速排班與紀錄</div>
+      <button type="button" class="side-btn" id="sideShiftBtn">🗓️ 設定當日班別</button>
+      <button type="button" class="side-btn" id="sideLeaveBtn">🏖️ 新增請假紀錄</button>
+      <button type="button" class="side-btn" id="sideOvertimeBtn">⏱️ 新增加班紀錄</button>
+      <button type="button" class="side-btn" id="sideBatchBtn">▤ 批次多日排班</button>
+      <div class="help" style="margin-top:4px;font-size:11px">電腦版可直接在月曆拖曳多日，或使用「批次多日排班」點選日期。</div>
+
+      <div class="section-title">查詢與結算</div>
+      <button type="button" class="side-btn" data-open-query="overtime">💰 查詢加班費／加班</button>
+      <button type="button" class="side-btn" data-open-query="leave">🏖️ 查詢特休／保留假</button>
+      <button type="button" class="side-btn" data-open-query="comp">🔄 查詢補休使用</button>
+      <button type="button" class="side-btn" data-open-query="settlement">✓ 查詢補休結清</button>
+      <button type="button" class="side-btn" id="sideCompSettleBtn">⇩ 結清特定年度補休</button>
+
+      <div class="section-title">設定與資料</div>
+      <button type="button" class="side-btn" id="sideSalaryBtn">💵 每月薪資設定</button>
+      <button type="button" class="side-btn" id="sideExportBtn">⇩ 匯出 JSON 備份</button>
+      <button type="button" class="side-btn" id="sideImportBtn">⇧ 匯入 JSON 備份</button>
+      <button type="button" class="side-btn" id="sideResetBtn" style="color:var(--danger)">↺ 清除所有資料</button>
+      <input type="file" id="importFile" accept=".json,application/json" hidden>
+    </aside>
+
+    <!-- Main: Calendar + Selected Day Detail -->
+    <main class="main">
+      <div class="batch-bar" id="batchBar">
+        <span id="batchCountText">已選取 0 天（點擊日期複選）</span>
+        <div class="batch-bar-actions">
+          <button type="button" class="ghost-btn" id="batchCancelBtn">取消</button>
+          <button type="button" class="primary-btn" id="batchApplyBtn">套用班別</button>
+        </div>
+      </div>
+
+      <section class="calendar-card">
+        <div class="calendar-legend-strip">
+          <span class="legend-dot"><i style="background:#4f46e5"></i>班別</span>
+          <span class="legend-dot"><i style="background:#ea580c"></i>特休/保留假</span>
+          <span class="legend-dot"><i style="background:#0e7490"></i>補休</span>
+          <span class="legend-dot"><i style="background:#dc2626"></i>加班</span>
+          <span class="legend-hint">獨立顯示互不覆蓋</span>
+        </div>
+
+        <div class="period-bar" id="periodBar">
+          <span id="periodRangeText">四週：2026/11/16 ～ 12/13</span>
+          <label class="period-start-picker" for="quickPeriodStart">
+            <span>起始日</span>
+            <input id="quickPeriodStart" type="date" aria-label="四週起始日">
+          </label>
+        </div>
+
+        <div class="list-filter-bar" id="listFilterBar">
+          <span class="small"><b>本月清單</b> · 預設聚焦於今日</span>
+          <div class="chip-picker">
+            <button type="button" class="pick-chip active" id="listShowAllBtn">全部日期</button>
+            <button type="button" class="pick-chip" id="listShowActiveBtn">僅有紀錄</button>
+          </div>
+        </div>
+
+        <div class="calendar-grid" id="calendarGrid"></div>
+        <div class="list-view" id="listView"></div>
+      </section>
+
+      <!-- Selected Day Independent Detail Card -->
+      <section class="day-detail-card" id="dayDetailCard" aria-live="polite"></section>
+    </main>
+
+    <!-- Insights: 1.休假餘額 2.加班費總額(取代四週變形工時檢核) 3.本月工時統計 -->
+    <aside class="insights">
+      <section class="card">
+        <div class="card-head">
+          <h3>本年度休假餘額</h3>
+          <button type="button" class="mini-btn" id="quickLeaveSettingsBtn">調整額度</button>
+        </div>
+        <div id="balancePanel"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h3>加班費總額</h3>
+          <button type="button" class="mini-btn" id="quickSalarySettingsBtn">設定月薪</button>
+        </div>
+        <div id="overtimePayPanel"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h3>本月工時與出勤統計</h3>
+        </div>
+        <div id="monthlyStatsPanel"></div>
+      </section>
+    </aside>
+  </div>
+</div>
+
+<!-- =========================================================
+     MOBILE BOTTOM NAVIGATION
+     ========================================================= -->
+<nav class="mobile-bottom-nav" aria-label="手機功能列">
+  <button type="button" id="mbNavCalendar" class="active"><span class="ico">▦</span><small>月曆</small></button>
+  <button type="button" id="mbNavAdd"><span class="ico">＋</span><small>記一筆</small></button>
+  <button type="button" id="mbNavBatch"><span class="ico">▤</span><small>批次排班</small></button>
+  <button type="button" id="mbNavQuery"><span class="ico">⌕</span><small>查詢</small></button>
+  <button type="button" id="mbNavSettings"><span class="ico">⚙</span><small>設定</small></button>
+</nav>
+
+<!-- =========================================================
+     MODAL 1: QUICK ACTION SHEET (記一筆)
+     ========================================================= -->
+<div class="modal-backdrop" id="actionSheetModal" role="dialog" aria-modal="true" aria-labelledby="actionSheetTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="actionSheetTitle">當日新增紀錄</h2>
+      <button type="button" class="icon-btn" data-close="actionSheetModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="action-sheet-grid">
+        <button type="button" class="action-sheet-btn" id="actSetShift">
+          <div><strong>🗓️ 設定／修改班別</strong><span>排班（如 84中、A班、休息日、國定假日）</span></div>
+          <span>›</span>
+        </button>
+        <button type="button" class="action-sheet-btn" id="actAddLeave">
+          <div><strong>🏖️ 新增請假紀錄</strong><span>獨立紀錄特休、保留假、補休時數，不覆蓋原班別</span></div>
+          <span>›</span>
+        </button>
+        <button type="button" class="action-sheet-btn" id="actAddOvertime">
+          <div><strong>⏱️ 新增加班紀錄</strong><span>紀錄加班時數，選擇申請加班費或轉入補休</span></div>
+          <span>›</span>
+        </button>
+        <button type="button" class="action-sheet-btn" id="actStartBatch">
+          <div><strong>▤ 多日批次排班</strong><span>一次點選多個日期套用相同班別</span></div>
+          <span>›</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL 2: SHIFT EDITOR (單日/批次班別設定)
+     ========================================================= -->
+<div class="modal-backdrop" id="shiftModal" role="dialog" aria-modal="true" aria-labelledby="shiftModalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="shiftModalTitle">設定班別</h2>
+      <button type="button" class="icon-btn" data-close="shiftModal">✕</button>
+    </div>
+    <form id="shiftForm" class="modal-body">
+      <div class="help" id="shiftBulkInfo" style="display:none;margin-bottom:10px"></div>
+      <div class="form-grid">
+        <div class="field" id="shiftDateWrap">
+          <label for="shiftDate">日期</label>
+          <input id="shiftDate" type="date" required>
+        </div>
+        <div class="field">
+          <label for="shiftType">班別／出勤狀態</label>
+          <select id="shiftType" required></select>
+        </div>
+        <div class="field full">
+          <label>常用班別快選</label>
+          <div class="chip-picker" id="quickShiftChips"></div>
+        </div>
+        <div class="field">
+          <label for="shiftStart">開始時間</label>
+          <input id="shiftStart" type="time">
+        </div>
+        <div class="field">
+          <label for="shiftEnd">結束時間</label>
+          <input id="shiftEnd" type="time">
+        </div>
+        <div class="field">
+          <label for="shiftHours">班別工時（小時）</label>
+          <input id="shiftHours" type="number" min="0" max="24" step="0.5" value="8">
+        </div>
+        <div class="field">
+          <label for="shiftNote">備註</label>
+          <input id="shiftNote" type="text" maxlength="80" placeholder="例如：臨時調班">
+        </div>
+      </div>
+      <div class="help" style="margin-top:12px">設定班別只會更新該日「班別」，已紀錄的請假與加班都會獨立保留，不會被覆蓋。</div>
+    </form>
+    <div class="modal-foot">
+      <button type="button" class="danger-btn" id="clearShiftBtn" style="margin-right:auto;display:none">移除班別</button>
+      <button type="button" class="ghost-btn" data-close="shiftModal">取消</button>
+      <button type="submit" form="shiftForm" class="primary-btn">儲存班別</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL 3: LEAVE EDITOR (獨立請假紀錄)
+     ========================================================= -->
+<div class="modal-backdrop" id="leaveModal" role="dialog" aria-modal="true" aria-labelledby="leaveModalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="leaveModalTitle">新增請假紀錄</h2>
+      <button type="button" class="icon-btn" data-close="leaveModal">✕</button>
+    </div>
+    <form id="leaveForm" class="modal-body">
+      <div class="form-grid">
+        <div class="field">
+          <label for="leaveDate">請假日期</label>
+          <input id="leaveDate" type="date" required>
+        </div>
+        <div class="field">
+          <label for="leaveType">假別</label>
+          <select id="leaveType" required>
+            <option value="leave">特休（扣特休額度）</option>
+            <option value="reservedLeave">保留假（扣保留假額度）</option>
+            <option value="comp">補休（扣補休餘額，精確至分）</option>
+            <option value="other">其他假別（病／事／公假，不扣上述額度）</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>快速填入時數</label>
+          <div class="chip-picker" id="leaveQuickChips">
+            <button type="button" class="pick-chip" data-leave-mins="60">1小時</button>
+            <button type="button" class="pick-chip" data-leave-mins="120">2小時</button>
+            <button type="button" class="pick-chip" data-leave-mins="240">4小時</button>
+            <button type="button" class="pick-chip" data-leave-mins="full">全天（依班別）</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="leaveDuration">請假時數（時:分 或 小時）</label>
+          <input id="leaveDuration" type="text" inputmode="decimal" placeholder="例如 2 或 1:30" required>
+        </div>
+        <div class="field">
+          <label for="leaveNote">備註</label>
+          <input id="leaveNote" type="text" maxlength="80" placeholder="例如：上午請特休">
+        </div>
+        <div class="field">
+          <label for="leaveStart">請假起時（選填）</label>
+          <input id="leaveStart" type="time">
+        </div>
+        <div class="field">
+          <label for="leaveEnd">請假迄時（選填）</label>
+          <input id="leaveEnd" type="time">
+        </div>
+      </div>
+      <div class="status info" id="leaveBalancePreview" style="margin-top:12px"></div>
+    </form>
+    <div class="modal-foot">
+      <button type="button" class="danger-btn" id="deleteLeaveBtn" style="margin-right:auto;display:none">刪除</button>
+      <button type="button" class="ghost-btn" data-close="leaveModal">取消</button>
+      <button type="submit" form="leaveForm" class="primary-btn">儲存請假</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL 4: OVERTIME EDITOR (獨立加班紀錄 + 加班費預覽)
+     ========================================================= -->
+<div class="modal-backdrop" id="overtimeModal" role="dialog" aria-modal="true" aria-labelledby="overtimeModalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="overtimeModalTitle">新增加班紀錄</h2>
+      <button type="button" class="icon-btn" data-close="overtimeModal">✕</button>
+    </div>
+    <form id="overtimeForm" class="modal-body">
+      <div class="form-grid">
+        <div class="field">
+          <label for="otDate">加班日期</label>
+          <input id="otDate" type="date" required>
+        </div>
+        <div class="field">
+          <label for="otMode">處理方式</label>
+          <select id="otMode" required>
+            <option value="pay">申請加班費（依當月月薪計算）</option>
+            <option value="comp">轉入補休（1:1 累積補休時數）</option>
+          </select>
+        </div>
+        <div class="field full">
+          <label>快速填入時數</label>
+          <div class="chip-picker" id="otQuickChips">
+            <button type="button" class="pick-chip" data-ot-mins="30">0:30</button>
+            <button type="button" class="pick-chip" data-ot-mins="60">1:00</button>
+            <button type="button" class="pick-chip" data-ot-mins="90">1:30</button>
+            <button type="button" class="pick-chip" data-ot-mins="120">2:00</button>
+            <button type="button" class="pick-chip" data-ot-mins="180">3:00</button>
+            <button type="button" class="pick-chip" data-ot-mins="240">4:00</button>
+            <button type="button" class="pick-chip" data-ot-mins="480">8:00</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="otDuration">加班時數（時:分）</label>
+          <input id="otDuration" type="text" inputmode="decimal" placeholder="例如 2:00 或 1.5" required>
+        </div>
+        <div class="field">
+          <label for="otDayType">加班日別／加成類型</label>
+          <select id="otDayType" required>
+            <option value="workday">平日延長工時（前2h×4/3、第3h起×5/3）</option>
+            <option value="rest">休息日加班（4/3、5/3、9h起×8/3）</option>
+            <option value="holiday">國定假日出勤（8h內加給×1、逾8h加成）</option>
+            <option value="regular">例假日出勤（8h內加給×1、逾8h加成）</option>
+            <option value="manual1to1">人工匯入時數（1:1 不加成）</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="otStart">加班起時（選填）</label>
+          <input id="otStart" type="time">
+        </div>
+        <div class="field">
+          <label for="otEnd">加班迄時（選填）</label>
+          <input id="otEnd" type="time">
+        </div>
+        <div class="field full">
+          <label for="otNote">備註</label>
+          <input id="otNote" type="text" maxlength="80" placeholder="例如：調劑盤點延後下班">
+        </div>
+      </div>
+      <div class="status info" id="otPayPreview" style="margin-top:12px"></div>
+    </form>
+    <div class="modal-foot">
+      <button type="button" class="danger-btn" id="deleteOtBtn" style="margin-right:auto;display:none">刪除</button>
+      <button type="button" class="ghost-btn" data-close="overtimeModal">取消</button>
+      <button type="submit" form="overtimeForm" class="primary-btn">儲存加班</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL 5: UNIFIED QUERY CENTER (查詢加班/特休/補休/結清)
+     ========================================================= -->
+<div class="modal-backdrop" id="queryModal" role="dialog" aria-modal="true" aria-labelledby="queryModalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="queryModalTitle">紀錄查詢中心</h2>
+      <button type="button" class="icon-btn" data-close="queryModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="tabs" id="queryTabs">
+        <button type="button" class="tab active" data-qtab="overtime">加班紀錄</button>
+        <button type="button" class="tab" data-qtab="leave">特休/保留</button>
+        <button type="button" class="tab" data-qtab="comp">補休使用</button>
+        <button type="button" class="tab" data-qtab="settlement">補休結清</button>
+      </div>
+
+      <div class="chip-picker" style="margin-top:10px" id="queryQuickRange">
+        <button type="button" class="pick-chip" data-qrange="month">檢視本月</button>
+        <button type="button" class="pick-chip" data-qrange="year">今年全部</button>
+        <button type="button" class="pick-chip active" data-qrange="all">不限日期</button>
+      </div>
+
+      <div class="form-grid two" style="margin-top:10px">
+        <div class="field"><label for="queryFrom">起始日期</label><input id="queryFrom" type="date"></div>
+        <div class="field"><label for="queryTo">結束日期</label><input id="queryTo" type="date"></div>
+        <div class="field full"><label for="querySearch">關鍵字</label><input id="querySearch" type="search" placeholder="搜尋日期、假別或備註"></div>
+      </div>
+
+      <div id="querySummary" class="status info" style="margin-top:10px"></div>
+      <div id="queryList" class="audit-list" style="margin-top:10px"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="ghost-btn" data-close="queryModal">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL 6: UNIFIED SETTINGS (薪資、休假、班別與備份)
+     ========================================================= -->
+<div class="modal-backdrop" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="settingsModalTitle">系統與薪資設定</h2>
+      <button type="button" class="icon-btn" data-close="settingsModal">✕</button>
+    </div>
+    <form id="settingsForm" class="modal-body">
+      <div class="tabs" id="settingsTabs">
+        <button type="button" class="tab active" data-stab="salary">💰 月薪與加班</button>
+        <button type="button" class="tab" data-stab="leave">🏖️ 休假與結算</button>
+        <button type="button" class="tab" data-stab="data">🏷️ 班別與備份</button>
+      </div>
+
+      <!-- TAB 1: Monthly Salary & Overtime Rules -->
+      <div class="tab-panel active" id="stab-salary">
+        <div class="help">加班費基準每月可能不同，系統會依「月份」分別儲存月薪並按法定倍率加成計算。</div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="setSalaryMonth">設定月份</label>
+            <input id="setSalaryMonth" type="month">
+          </div>
+          <div class="field">
+            <label for="setSalaryAmount">該月薪資基準（元）</label>
+            <input id="setSalaryAmount" type="number" min="0" step="100" placeholder="例如 48000">
+          </div>
+        </div>
+        <div class="chip-picker">
+          <button type="button" class="pick-chip" id="copyPrevSalaryBtn">沿用上月薪資</button>
+          <button type="button" class="pick-chip" id="fillYearSalaryBtn">套用至該年後續月份</button>
+        </div>
+        <div class="status info" id="salaryRatePreview" style="margin-top:0"></div>
+
+        <div class="field" id="manualImportPayWrap">
+          <label for="setManualPayDuration">2026 本月人工匯入領費時數（時:分，採 1:1 計算）</label>
+          <input id="setManualPayDuration" type="text" inputmode="decimal" placeholder="例如 0:00（明年起無人工匯入）">
+        </div>
+
+        <div class="form-grid two">
+          <div class="field">
+            <label for="setRateMode">加班加成係數</label>
+            <select id="setRateMode">
+              <option value="fraction">勞基法分數（4/3、5/3、8/3）</option>
+              <option value="decimal">常見人資小數（1.34、1.67、2.67）</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="setNormalHours">每日基準正常工時</label>
+            <input id="setNormalHours" type="number" min="1" max="12" step="0.5" value="8">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>已設定月薪一覽（點擊切換月份）</label>
+          <div class="chip-picker" id="configuredSalaryChips"></div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Leave Balances & Year-End Settlement -->
+      <div class="tab-panel" id="stab-leave">
+        <div class="form-grid two">
+          <div class="field">
+            <label for="setLeaveYear">設定特休年度</label>
+            <input id="setLeaveYear" type="number" min="2020" max="2100" step="1">
+          </div>
+          <div class="field">
+            <label for="setAnnualLeave">該年度特休總額度（小時）</label>
+            <input id="setAnnualLeave" type="number" min="0" step="0.5">
+          </div>
+          <div class="field">
+            <label for="setReservedLeave">保留假總額度（小時）</label>
+            <input id="setReservedLeave" type="number" min="0" step="0.5">
+          </div>
+          <div class="field" id="manualImportCompWrap">
+            <label for="setCompLeave">2026 人工匯入補休（時:分，1:1）</label>
+            <input id="setCompLeave" type="text" inputmode="decimal" placeholder="例如 22:20">
+          </div>
+        </div>
+        <div class="help" id="manualImportCompNote">說明：2026 年「人工匯入補休／加班時數」皆採 1:1 計算；2027 年起全面採每日紀錄，不再有人工匯入資料。</div>
+        <div class="status info" id="settingsBalanceSummary" style="margin-top:0"></div>
+
+        <div class="divider" style="margin:2px 0"></div>
+        <div class="field">
+          <label>年度結算操作</label>
+          <div class="form-grid two">
+            <button type="button" class="ghost-btn" id="settlePrevYearBtn">特休轉入保留假</button>
+            <button type="button" class="ghost-btn" id="openSettleCompBtn">結清特定年度補休</button>
+          </div>
+          <div class="small" id="settlementSummary" style="margin-top:6px"></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Custom Shifts & Backup -->
+      <div class="tab-panel" id="stab-data">
+        <div class="field">
+          <label>新增自訂班別</label>
+          <div class="form-grid two">
+            <input id="newShiftLabel" type="text" maxlength="10" placeholder="班別簡稱（如 95A）">
+            <input id="newShiftHours" type="number" min="0" max="24" step="0.5" placeholder="工時（如 8）" value="8">
+            <input id="newShiftStart" type="time" value="08:00">
+            <input id="newShiftEnd" type="time" value="16:00">
+          </div>
+          <button type="button" class="soft-btn" id="addCustomShiftBtn" style="margin-top:4px">＋ 加入自訂班別</button>
+        </div>
+        <div class="field" id="customShiftListWrap">
+          <label>目前自訂班別</label>
+          <div class="chip-picker" id="customShiftList"></div>
+        </div>
+        <div class="divider" style="margin:2px 0"></div>
+        <div class="field">
+          <label for="setPeriodStart">四週顯示起始日（切換「四週」檢視時的起算基準）</label>
+          <input id="setPeriodStart" type="date">
+        </div>
+        <div class="divider" style="margin:2px 0"></div>
+        <div class="field">
+          <label>資料備份與還原</label>
+          <div class="form-grid two">
+            <button type="button" class="ghost-btn" id="settingsExportBtn">⇩ 匯出 JSON 備份</button>
+            <button type="button" class="ghost-btn" id="settingsImportBtn">⇧ 匯入 JSON 備份</button>
+          </div>
+          <button type="button" class="danger-btn" id="settingsResetBtn" style="margin-top:6px">↺ 清除所有資料</button>
+        </div>
+      </div>
+    </form>
+    <div class="modal-foot">
+      <button type="button" class="ghost-btn" data-close="settingsModal">取消</button>
+      <button type="submit" form="settingsForm" class="primary-btn">儲存設定</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL 7: COMP SETTLEMENT (結清特定年度補休)
+     ========================================================= -->
+<div class="modal-backdrop" id="compSettlementModal" role="dialog" aria-modal="true" aria-labelledby="compSettlementTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="compSettlementTitle">結清特定年度補休</h2>
+      <button type="button" class="icon-btn" data-close="compSettlementModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid two">
+        <div class="field">
+          <label for="compSettlementYear">結清年度</label>
+          <input id="compSettlementYear" type="number" min="2020" max="2100" step="1">
+        </div>
+        <div class="field">
+          <label>該年度可結清補休</label>
+          <div id="compSettlementAmount" class="status info" style="margin:0;min-height:44px;align-items:center"></div>
+        </div>
+      </div>
+      <div id="compSettlementStatus" class="help" style="margin-top:12px"></div>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="danger-btn" id="undoCompSettlementBtn" style="margin-right:auto;display:none">撤銷該年度結清</button>
+      <button type="button" class="ghost-btn" data-close="compSettlementModal">取消</button>
+      <button type="button" class="primary-btn" id="confirmCompSettlementBtn">結清並歸零</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL 8: MONTH/YEAR PICKER (快速跳月)
+     ========================================================= -->
+<div class="modal-backdrop" id="monthPickerModal" role="dialog" aria-modal="true" aria-labelledby="monthPickerTitle">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="monthPickerTitle">快速切換月份</h2>
+      <button type="button" class="icon-btn" data-close="monthPickerModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <button type="button" class="ghost-btn" id="mpPrevYear">‹ 上一年</button>
+        <strong id="mpYearLabel" style="font-size:18px">2026 年</strong>
+        <button type="button" class="ghost-btn" id="mpNextYear">下一年 ›</button>
+      </div>
+      <div class="form-grid" style="grid-template-columns:repeat(3,1fr);gap:8px" id="mpMonthGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   01. APP CONFIG & CONSTANTS
+   ========================================================= */
+const APP = {
+  storageKey: "shift-calendar-v1",
+  backupPreV3Key: "shift-calendar-v2-pre-upgrade-backup",
+  version: 3,
+  // 基礎班別設定（已修正 95公 / 95空 鍵值衝突）
+  shiftTypes: {
+    day84m:  { label: "84中",   short: "84中",   category: "work",      hours: 8,   start: "08:00", end: "16:00" },
+    day84f:  { label: "84發",   short: "84發",   category: "work",      hours: 8,   start: "08:00", end: "16:00" },
+    day84d:  { label: "84門",   short: "84門",   category: "work",      hours: 8,   start: "08:00", end: "16:00" },
+    day84ud: { label: "84UD",   short: "84UD",   category: "work",      hours: 8,   start: "08:00", end: "16:00" },
+    day95z:  { label: "95針",   short: "95針",   category: "work",      hours: 8,   start: "09:00", end: "17:00" },
+    day95g:  { label: "95公",   short: "95公",   category: "work",      hours: 8,   start: "09:00", end: "17:00" },
+    day84g:  { label: "84公",   short: "84公",   category: "work",      hours: 8,   start: "08:00", end: "16:00" },
+    day95k:  { label: "95空",   short: "95空",   category: "work",      hours: 8,   start: "09:00", end: "17:00" },
+    chinese: { label: "中藥",   short: "中藥",   category: "work",      hours: 8,   start: "11:00", end: "19:00" },
+    shiftA:  { label: "A班",    short: "A班",    category: "work",      hours: 8,   start: "14:00", end: "22:00" },
+    shiftE:  { label: "E班",    short: "E班",    category: "work",      hours: 8,   start: "16:00", end: "00:00" },
+    night:   { label: "大夜",   short: "大夜",   category: "night",     hours: 8,   start: "00:00", end: "08:00" },
+    day85:   { label: "85班",   short: "85班",   category: "work",      hours: 9.5, start: "08:00", end: "17:30" },
+    rest:    { label: "休息日", short: "休息日", category: "rest",      hours: 0,   start: "",      end: "" },
+    regular: { label: "例假日", short: "例假日", category: "statutory", hours: 0,   start: "",      end: "" },
+    holiday: { label: "國定假日", short: "國定", category: "holiday",   hours: 0,   start: "",      end: "" },
+    off:     { label: "空班",   short: "空班",   category: "off",       hours: 0,   start: "",      end: "" }
+  },
+  quickShifts: ["day84m", "day84f", "day84d", "shiftA", "night", "rest", "regular", "holiday"],
+  leaveLabels: {
+    leave: "特休",
+    reservedLeave: "保留假",
+    comp: "補休",
+    other: "其他假別"
+  },
+  otDayLabels: {
+    workday: "平日加班",
+    rest: "休息日加班",
+    holiday: "國定假日加班",
+    regular: "例假日加班",
+    manual1to1: "人工匯入(1:1)"
+  },
+  weekdays: ["日", "一", "二", "三", "四", "五", "六"]
+};
+
+/* =========================================================
+   02. DATE & FORMATTING UTILITIES (Local Time Safe!)
+   ========================================================= */
+const pad = n => String(n).padStart(2, "0");
+function isoDate(y, m, d){ return `${y}-${pad(m + 1)}-${pad(d)}`; }
+function parseDate(s){ const [y, m, d] = String(s).split("-").map(Number); return new Date(y, m - 1, d); }
+function dateKey(d){ return isoDate(d.getFullYear(), d.getMonth(), d.getDate()); }
+function monthKey(d){ return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-01`; }
+function ymKey(d){ return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; }
+function addDays(d, n){ const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function addMonths(d, n){ return new Date(d.getFullYear(), d.getMonth() + n, 1); }
+function isToday(k){ return k === dateKey(new Date()); }
+function shiftMonthYm(ym, delta){
+  const [y, m] = ym.split("-").map(Number);
+  return ymKey(new Date(y, m - 1 + delta, 1));
+}
+function diffDays(a, b){
+  return Math.round((parseDate(b) - parseDate(a)) / 86400000);
+}
+function mondayOf(d){
+  const x = new Date(d);
+  x.setDate(x.getDate() - ((x.getDay() + 6) % 7));
+  return x;
+}
+function basePeriodStart(){
+  if(state.settings.periodStart) return parseDate(state.settings.periodStart);
+  return mondayOf(new Date());
+}
+function periodRangeForDate(date = state.selectedDate){
+  const base = basePeriodStart();
+  const offset = diffDays(dateKey(base), date);
+  const actualStart = addDays(base, Math.floor(offset / 28) * 28);
+  const actualEnd = addDays(actualStart, 27);
+  const visualStart = mondayOf(actualStart);
+  const endDow = actualEnd.getDay();
+  const visualEnd = addDays(actualEnd, endDow === 0 ? 0 : 7 - endDow);
+  return { actualStart, actualEnd, visualStart, visualEnd };
+}
+
+function escapeHtml(s){
+  return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function formatHours(n){
+  const v = Number(n) || 0;
+  return Number.isInteger(v) ? String(v) : Number(v.toFixed(2)).toString();
+}
+
+function formatDurationMinutes(minutes){
+  const m = Math.max(0, Math.round(Number(minutes) || 0));
+  const h = Math.floor(m / 60), min = m % 60;
+  if(h > 0 && min > 0) return `${h}小時${min}分`;
+  if(h > 0) return `${h}小時`;
+  return `${min}分`;
+}
+
+function formatShortDuration(minutes){
+  const m = Math.max(0, Math.round(Number(minutes) || 0));
+  const h = Math.floor(m / 60), min = m % 60;
+  return min === 0 ? `${h}h` : `${h}:${pad(min)}`;
+}
+
+function minutesToDuration(minutes){
+  const m = Math.max(0, Math.round(Number(minutes) || 0));
+  return `${Math.floor(m / 60)}:${pad(m % 60)}`;
+}
+
+function durationToMinutes(value){
+  const raw = String(value ?? "").trim();
+  if(!raw) return 0;
+  if(/^\d+(\.\d+)?$/.test(raw)){
+    const hours = Number(raw);
+    if(!Number.isFinite(hours) || hours < 0) throw new Error("時數不可為負數");
+    return Math.round(hours * 60);
+  }
+  const match = raw.match(/^(\d+)\s*[:：]\s*(\d{1,2})$/);
+  if(!match) throw new Error("格式請輸入 H:MM（例如 2:20）或小時數字（例如 1.5）");
+  const h = Number(match[1]), m = Number(match[2]);
+  if(m > 59) throw new Error("分鐘必須介於 0～59");
+  return h * 60 + m;
+}
+
+function calcClockMinutes(start, end){
+  if(!start || !end) return 0;
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  if([sh, sm, eh, em].some(Number.isNaN)) return 0;
+  let mins = (eh * 60 + em) - (sh * 60 + sm);
+  if(mins < 0) mins += 1440;
+  return mins;
+}
+
+function formatMoney(n){
+  return "$" + Math.round(Number(n) || 0).toLocaleString("zh-TW");
+}
+
+function getAllShiftTypes(){
+  return { ...APP.shiftTypes, ...(state.settings.customShiftTypes || {}) };
+}
+
+function getShiftMeta(typeKey){
+  const all = getAllShiftTypes();
+  return all[typeKey] || APP.shiftTypes.off;
+}
+
+function shiftChipClass(category){
+  const map = {
+    work: "chip-shift-work",
+    night: "chip-shift-night",
+    rest: "chip-shift-rest",
+    statutory: "chip-shift-statutory",
+    holiday: "chip-shift-holiday",
+    off: "chip-shift-off"
+  };
+  return map[category] || "chip-shift-off";
+}
+
+function newId(){
+  return (typeof crypto !== "undefined" && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : `id-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/* =========================================================
+   03. STATE & SEAMLESS MIGRATION (v1/v2 -> v3)
+   ========================================================= */
+function createDefaultState(){
+  const now = new Date();
+  const y = now.getFullYear();
+  return {
+    version: APP.version,
+    viewDate: monthKey(now),
+    selectedDate: dateKey(now),
+    settings: {
+      annualLeaveByYear: { [y]: 120 },
+      reservedLeave: 0,
+      reservedLeaveByYear: {},
+      compLeave: 0, // 2026 人工匯入補休（分鐘，1:1）
+      manualImportedOvertimePayByMonth: {}, // 2026 人工匯入領費時數（分鐘，1:1）
+      compSettlementByYear: {},
+      salaryByMonth: {},
+      overtimeRateMode: "fraction",
+      normalHours: 8,
+      periodStart: "",
+      preferredViewMode: "month",
+      customShiftTypes: {}
+    },
+    shifts: [],
+    leaves: [],
+    overtimes: []
+  };
+}
+
+function inferOtDayTypeFromShift(shiftType){
+  if(shiftType === "rest") return "rest";
+  if(shiftType === "holiday") return "holiday";
+  if(shiftType === "regular") return "regular";
+  return "workday";
+}
+
+function normalizeAndMigrateData(raw){
+  const def = createDefaultState();
+  const today = new Date();
+  const baseSettings = {
+    ...def.settings,
+    ...(raw?.settings || {}),
+    annualLeaveByYear: { ...def.settings.annualLeaveByYear, ...(raw?.settings?.annualLeaveByYear || {}) },
+    reservedLeaveByYear: { ...(raw?.settings?.reservedLeaveByYear || {}) },
+    manualImportedOvertimePayByMonth: { ...(raw?.settings?.manualImportedOvertimePayByMonth || {}) },
+    compSettlementByYear: { ...(raw?.settings?.compSettlementByYear || {}) },
+    salaryByMonth: { ...(raw?.settings?.salaryByMonth || {}) },
+    customShiftTypes: { ...(raw?.settings?.customShiftTypes || {}) }
+  };
+
+  // 若已經是 v3 格式，直接正規化並固定開啟於當日（需求 4）
+  if(raw?.version === 3 && Array.isArray(raw.shifts) && Array.isArray(raw.leaves) && Array.isArray(raw.overtimes)){
+    return {
+      version: 3,
+      viewDate: monthKey(today),
+      selectedDate: dateKey(today),
+      settings: baseSettings,
+      shifts: raw.shifts.map(s => ({ ...s })),
+      leaves: raw.leaves.map(l => ({ ...l, minutes: Math.max(0, Math.round(Number(l.minutes) || 0)) })),
+      overtimes: raw.overtimes.map(o => ({ ...o, minutes: Math.max(0, Math.round(Number(o.minutes) || 0)) }))
+    };
+  }
+
+  // 舊版 v1/v2 遷移：先檢查是否仍以小時儲存 overtime/compLeave
+  const needsHourToMin = raw?.durationMinutesVersion !== 1;
+  const toMins = v => {
+    const n = Number(v);
+    return Number.isFinite(n) ? (needsHourToMin ? Math.round(n * 60) : Math.round(n)) : 0;
+  };
+  if(raw?.settings && Object.prototype.hasOwnProperty.call(raw.settings, "compLeave")){
+    baseSettings.compLeave = toMins(raw.settings.compLeave);
+  }
+  const curY = today.getFullYear();
+  if(!Object.prototype.hasOwnProperty.call(baseSettings.annualLeaveByYear, curY)){
+    baseSettings.annualLeaveByYear[curY] = Number(raw?.settings?.annualLeave) || 120;
+  }
+
+  const shifts = [];
+  const leaves = [];
+  const overtimes = [];
+  const legacyEvents = Array.isArray(raw?.events) ? raw.events : [];
+
+  legacyEvents.forEach(ev => {
+    if(!ev || !ev.date) return;
+    let type = ev.type === "day" ? "day84m" : ev.type;
+    if(type === "day95g" && ev.label === "95空") type = "day95k";
+    const otMinutes = toMins(ev.overtime);
+    const leaveTypes = ["leave", "reservedLeave", "comp"];
+
+    if(leaveTypes.includes(type)){
+      const rawLeave = Number(ev.leave) || 0;
+      let leaveMins = 0;
+      if(type === "comp"){
+        leaveMins = rawLeave > 0 ? Math.round(rawLeave) : (calcClockMinutes(ev.start, ev.end) || Math.round((Number(ev.hours) || 8) * 60));
+      }else{
+        leaveMins = rawLeave > 0 ? Math.round(rawLeave * 60) : (calcClockMinutes(ev.start, ev.end) || Math.round((Number(ev.hours) || 8) * 60));
+      }
+      leaves.push({
+        id: ev.id || newId(),
+        date: ev.date,
+        type,
+        label: APP.leaveLabels[type] || "請假",
+        start: ev.start || "",
+        end: ev.end || "",
+        minutes: leaveMins,
+        note: ev.note || ""
+      });
+    }else if(type === "overtime"){
+      if(otMinutes > 0){
+        overtimes.push({
+          id: ev.id || newId(),
+          date: ev.date,
+          minutes: otMinutes,
+          start: ev.start || "",
+          end: ev.end || "",
+          mode: "comp",
+          dayType: "workday",
+          note: ev.note || ""
+        });
+      }
+    }else{
+      const meta = APP.shiftTypes[type] || APP.shiftTypes.off;
+      shifts.push({
+        id: ev.id || newId(),
+        date: ev.date,
+        type: APP.shiftTypes[type] ? type : "off",
+        label: ev.label || meta.short,
+        start: ev.start || meta.start || "",
+        end: ev.end || meta.end || "",
+        hours: Number(ev.hours ?? meta.hours) || 0,
+        note: ev.note || ""
+      });
+    }
+
+    if(type !== "overtime" && otMinutes > 0){
+      overtimes.push({
+        id: newId(),
+        date: ev.date,
+        minutes: otMinutes,
+        start: "",
+        end: "",
+        mode: "comp", // 舊版「加班／補休新增」對應為轉補休，避免餘額突變
+        dayType: inferOtDayTypeFromShift(type),
+        note: ev.note ? `${ev.note}（舊紀錄轉入）` : ""
+      });
+    }
+  });
+
+  return {
+    version: 3,
+    viewDate: monthKey(today), // 需求 4：開啟固定在當日版面
+    selectedDate: dateKey(today),
+    settings: baseSettings,
+    shifts,
+    leaves,
+    overtimes
+  };
+}
+
+function loadState(){
+  try{
+    const rawStr = localStorage.getItem(APP.storageKey);
+    if(!rawStr) return createDefaultState();
+    const parsed = JSON.parse(rawStr);
+    const migrated = normalizeAndMigrateData(parsed);
+    if(parsed?.version !== 3){
+      try{
+        if(!localStorage.getItem(APP.backupPreV3Key)){
+          localStorage.setItem(APP.backupPreV3Key, rawStr);
+        }
+      }catch(_){}
+      localStorage.setItem(APP.storageKey, JSON.stringify(migrated));
+    }
+    return migrated;
+  }catch(err){
+    console.warn("讀取儲存資料失敗，改用預設值", err);
+    return createDefaultState();
+  }
+}
+
+function saveState(){
+  localStorage.setItem(APP.storageKey, JSON.stringify(state));
+}
+
+/* =========================================================
+   04. APP RUNTIME VARIABLES
+   ========================================================= */
+let state = loadState();
+let viewMode = "month"; // "month" | "list"
+let listShowOnlyActive = false;
+let batchMode = false;
+let batchSelection = new Set();
+let dragSelecting = false;
+let didDragRange = false;
+let dragBaseSelection = new Set();
+let dragAnchorDate = null;
+let suppressNextDayTap = false;
+
+let editingShiftDate = null;
+let editingLeaveId = null;
+let editingOtId = null;
+let activeQueryTab = "overtime";
+let activeSettingsTab = "salary";
+let settingsDraftSalary = {};
+let settingsDraftManualPay = {};
+let settingsDraftAnnualLeave = {};
+let currentLeaveDraftYear = new Date().getFullYear();
+let monthPickerYear = new Date().getFullYear();
+let lastUsedOtMode = "pay";
+
+/* =========================================================
+   05. DATA ACCESSORS & CALCULATION ENGINES
+   ========================================================= */
+function shiftFor(date){ return state.shifts.find(s => s.date === date) || null; }
+function leavesFor(date){ return state.leaves.filter(l => l.date === date); }
+function overtimesFor(date){ return state.overtimes.filter(o => o.date === date); }
+
+function viewedDateObj(){ return parseDate(state.viewDate); }
+function viewedYear(){ return viewedDateObj().getFullYear(); }
+function viewedYm(){ return state.viewDate.slice(0, 7); }
+
+function getMonthlySalary(ym){
+  const v = Number(state.settings.salaryByMonth?.[ym]);
+  return Number.isFinite(v) && v > 0 ? v : 0;
+}
+
+function getHourlyRate(salary){
+  const normalHours = Number(state.settings.normalHours) || 8;
+  return salary > 0 ? salary / (30 * normalHours) : 0;
+}
+
+function calcOvertimePay(otEntry, overrideSalary = null){
+  const ym = otEntry.date.slice(0, 7);
+  const salary = overrideSalary !== null ? overrideSalary : getMonthlySalary(ym);
+  if(salary <= 0){
+    return { valid: false, pay: 0, rawPay: 0, hourly: 0, formula: `尚未設定 ${ym} 月薪` };
+  }
+  const hourly = getHourlyRate(salary);
+  const hours = (Number(otEntry.minutes) || 0) / 60;
+  if(hours <= 0){
+    return { valid: true, pay: 0, rawPay: 0, hourly, formula: "0 小時" };
+  }
+  const decimal = state.settings.overtimeRateMode === "decimal";
+  const m1 = decimal ? 1.34 : 4 / 3;
+  const m2 = decimal ? 1.67 : 5 / 3;
+  const m3 = decimal ? 2.67 : 8 / 3;
+  const m1Txt = decimal ? "1.34" : "4/3";
+  const m2Txt = decimal ? "1.67" : "5/3";
+  const m3Txt = decimal ? "2.67" : "8/3";
+
+  let rawPay = 0;
+  const parts = [];
+  const dayType = otEntry.dayType || "workday";
+
+  if(dayType === "manual1to1"){
+    rawPay = hours * hourly;
+    parts.push(`${formatHours(hours)}h×1.0`);
+  }else if(dayType === "rest"){
+    const h1 = Math.min(2, hours);
+    const h2 = Math.min(6, Math.max(0, hours - 2));
+    const h3 = Math.max(0, hours - 8);
+    rawPay = h1 * hourly * m1 + h2 * hourly * m2 + h3 * hourly * m3;
+    if(h1 > 0) parts.push(`${formatHours(h1)}h×${m1Txt}`);
+    if(h2 > 0) parts.push(`${formatHours(h2)}h×${m2Txt}`);
+    if(h3 > 0) parts.push(`${formatHours(h3)}h×${m3Txt}`);
+  }else if(dayType === "holiday" || dayType === "regular"){
+    const h1 = Math.min(8, hours);
+    const h2 = Math.min(2, Math.max(0, hours - 8));
+    const h3 = Math.max(0, hours - 10);
+    rawPay = h1 * hourly * 1 + h2 * hourly * m1 + h3 * hourly * m2;
+    if(h1 > 0) parts.push(`${formatHours(h1)}h×1.0`);
+    if(h2 > 0) parts.push(`${formatHours(h2)}h×${m1Txt}`);
+    if(h3 > 0) parts.push(`${formatHours(h3)}h×${m2Txt}`);
+  }else{
+    // 平日延長工時
+    const h1 = Math.min(2, hours);
+    const h2 = Math.max(0, hours - 2);
+    rawPay = h1 * hourly * m1 + h2 * hourly * m2;
+    if(h1 > 0) parts.push(`${formatHours(h1)}h×${m1Txt}`);
+    if(h2 > 0) parts.push(`${formatHours(h2)}h×${m2Txt}`);
+  }
+
+  return {
+    valid: true,
+    pay: Math.round(rawPay),
+    rawPay,
+    hourly,
+    formula: `時薪 $${hourly.toFixed(1)} × (${parts.join(" + ")})`
+  };
+}
+
+function getMonthOvertimeStats(ym){
+  const salary = getMonthlySalary(ym);
+  const hourly = getHourlyRate(salary);
+  const list = state.overtimes.filter(o => o.date.startsWith(ym));
+
+  let payMinutes = 0;
+  let compMinutes = 0;
+  let dailyPayTotal = 0;
+  let missingSalary = false;
+
+  list.forEach(o => {
+    if(o.mode === "comp"){
+      compMinutes += o.minutes;
+    }else{
+      payMinutes += o.minutes;
+      const calc = calcOvertimePay(o);
+      if(!calc.valid) missingSalary = true;
+      dailyPayTotal += calc.pay;
+    }
+  });
+
+  // 2026 人工匯入領費時數：採 1:1 計算（2027 起為 0）
+  const yearNum = Number(ym.slice(0, 4));
+  const manualPayMinutes = yearNum <= 2026
+    ? Math.max(0, Math.round(Number(state.settings.manualImportedOvertimePayByMonth?.[ym]) || 0))
+    : 0;
+  const manualPayAmount = salary > 0 ? Math.round((manualPayMinutes / 60) * hourly) : 0;
+  if(manualPayMinutes > 0 && salary <= 0) missingSalary = true;
+
+  return {
+    ym,
+    salary,
+    hourly,
+    count: list.length,
+    payMinutes,
+    compMinutes,
+    manualPayMinutes,
+    dailyPayTotal,
+    manualPayAmount,
+    totalPay: dailyPayTotal + manualPayAmount,
+    missingSalary
+  };
+}
+
+function getYearOvertimePayTotal(year){
+  const prefix = `${year}-`;
+  const months = new Set();
+  state.overtimes.forEach(o => { if(o.date.startsWith(prefix)) months.add(o.date.slice(0, 7)); });
+  Object.keys(state.settings.manualImportedOvertimePayByMonth || {}).forEach(ym => {
+    if(ym.startsWith(prefix)) months.add(ym);
+  });
+  let total = 0;
+  let totalPayMins = 0;
+  let totalCompMins = 0;
+  months.forEach(ym => {
+    const st = getMonthOvertimeStats(ym);
+    total += st.totalPay;
+    totalPayMins += st.payMinutes + st.manualPayMinutes;
+    totalCompMins += st.compMinutes;
+  });
+  return { total, totalPayMins, totalCompMins };
+}
+
+function annualEntitlement(year){
+  const map = state.settings.annualLeaveByYear || {};
+  if(Object.prototype.hasOwnProperty.call(map, year)) return Number(map[year]) || 0;
+  return 0;
+}
+
+function getLeaveUsageByYear(year){
+  let annualMins = 0;
+  let reservedMins = 0;
+  let compMins = 0;
+  state.leaves.forEach(l => {
+    if(parseDate(l.date).getFullYear() !== year) return;
+    if(l.type === "leave") annualMins += l.minutes;
+    else if(l.type === "reservedLeave") reservedMins += l.minutes;
+    else if(l.type === "comp") compMins += l.minutes;
+  });
+  return {
+    annualHours: annualMins / 60,
+    reservedHours: reservedMins / 60,
+    compMins
+  };
+}
+
+function getBalance(year = viewedYear()){
+  const annualTotal = annualEntitlement(year);
+  const yearUsage = getLeaveUsageByYear(year);
+  const leaveRemain = Math.max(0, annualTotal - yearUsage.annualHours);
+
+  const totalReservedPool = Number(state.settings.reservedLeave) || 0;
+  const totalReservedUsedHours = state.leaves.reduce(
+    (sum, l) => l.type === "reservedLeave" ? sum + l.minutes / 60 : sum, 0
+  );
+  const reservedRemain = Math.max(0, totalReservedPool - totalReservedUsedHours);
+
+  // 補休計算：2026人工匯入(1:1) + 本工具轉補休紀錄 - 已使用補休 - 已結清補休
+  const manualCompMins = Math.max(0, Math.round(Number(state.settings.compLeave) || 0));
+  const generatedCompMins = state.overtimes.reduce(
+    (sum, o) => o.mode === "comp" ? sum + o.minutes : sum, 0
+  );
+  const usedCompMins = state.leaves.reduce(
+    (sum, l) => l.type === "comp" ? sum + l.minutes : sum, 0
+  );
+  const settledCompMins = Object.values(state.settings.compSettlementByYear || {}).reduce(
+    (sum, v) => sum + (Number(v) || 0), 0
+  );
+  const compRemainMins = Math.max(0, manualCompMins + generatedCompMins - usedCompMins - settledCompMins);
+
+  return {
+    year,
+    annualTotal,
+    usedLeave: yearUsage.annualHours,
+    leaveRemain,
+    reservedTotal: totalReservedPool,
+    usedReserved: totalReservedUsedHours,
+    reservedRemain,
+    manualCompMins,
+    generatedCompMins,
+    usedCompMins,
+    settledCompMins,
+    compRemainMins
+  };
+}
+
+function getYearEndSettlement(year){
+  const usage = getLeaveUsageByYear(year);
+  const entitlement = annualEntitlement(year);
+  return {
+    year,
+    entitlement,
+    usedAnnual: usage.annualHours,
+    remainingAnnual: Math.max(0, entitlement - usage.annualHours)
+  };
+}
+
+function getYearCompSettlement(year){
+  const y = Number(year);
+  // 2026 年度包含期初人工匯入補休（1:1）；2027 年起無人工匯入
+  const manualBase = y === 2026 ? Math.max(0, Math.round(Number(state.settings.compLeave) || 0)) : 0;
+  let generated = 0;
+  let used = 0;
+  state.overtimes.forEach(o => {
+    if(parseDate(o.date).getFullYear() === y && o.mode === "comp") generated += o.minutes;
+  });
+  state.leaves.forEach(l => {
+    if(parseDate(l.date).getFullYear() === y && l.type === "comp") used += l.minutes;
+  });
+  const already = Number(state.settings.compSettlementByYear?.[String(y)] || 0);
+  return {
+    year: y,
+    manualBase,
+    generated,
+    used,
+    remaining: Math.max(0, manualBase + generated - used),
+    settled: already
+  };
+}
+
+function getMonthAttendanceStats(ym){
+  let shiftHours = 0;
+  let leaveMins = 0;
+  let workDays = 0;
+  let restDays = 0;
+  let holidayDays = 0;
+
+  state.shifts.forEach(s => {
+    if(!s.date.startsWith(ym)) return;
+    const meta = getShiftMeta(s.type);
+    const hrs = Number(s.hours) || 0;
+    shiftHours += hrs;
+    if(meta.category === "holiday") holidayDays++;
+    else if(meta.category === "rest" || meta.category === "statutory" || meta.category === "off") restDays++;
+    else if(hrs > 0) workDays++;
+  });
+
+  state.leaves.forEach(l => {
+    if(l.date.startsWith(ym)) leaveMins += l.minutes;
+  });
+
+  const otStats = getMonthOvertimeStats(ym);
+  const totalOtMins = otStats.payMinutes + otStats.compMinutes + otStats.manualPayMinutes;
+  const leaveHours = leaveMins / 60;
+  const actualWorkHours = Math.max(0, shiftHours - leaveHours);
+
+  return {
+    shiftHours,
+    leaveHours,
+    actualWorkHours,
+    totalOtMins,
+    workDays,
+    restDays,
+    holidayDays
+  };
+}
+
+/* =========================================================
+   06. RENDERING ENGINE
+   ========================================================= */
+function renderAll(){
+  renderHeader();
+  renderCalendarOrList();
+  renderDayDetail();
+  renderBalancePanel();
+  renderOvertimePayPanel();
+  renderMonthlyStatsPanel();
+  renderBatchBar();
+}
+
+function renderHeader(){
+  const d = viewedDateObj();
+  if(viewMode === "period"){
+    const { actualStart, actualEnd } = periodRangeForDate(state.selectedDate);
+    const sameYear = actualStart.getFullYear() === actualEnd.getFullYear();
+    const sTxt = `${actualStart.getMonth() + 1}/${actualStart.getDate()}`;
+    const eTxt = `${sameYear ? "" : `${actualEnd.getFullYear()}/`}${actualEnd.getMonth() + 1}/${actualEnd.getDate()}`;
+    document.getElementById("monthTitleText").textContent = `${sTxt}～${eTxt}`;
+  }else{
+    document.getElementById("monthTitleText").textContent = `${d.getFullYear()}年${d.getMonth() + 1}月`;
+  }
+  document.getElementById("monthViewBtn").classList.toggle("active", viewMode === "month");
+  document.getElementById("periodViewBtn").classList.toggle("active", viewMode === "period");
+  document.getElementById("listViewBtn").classList.toggle("active", viewMode === "list");
+}
+
+function renderBatchBar(){
+  document.body.classList.toggle("batch-mode", batchMode);
+  document.getElementById("batchBar").classList.toggle("show", batchMode);
+  document.getElementById("mbNavBatch").classList.toggle("active", batchMode);
+  document.getElementById("desktopBatchBtn").classList.toggle("soft-btn", batchMode);
+  document.getElementById("batchCountText").textContent = `已選取 ${batchSelection.size} 天（點擊日期可複選，或拖曳連續日期）`;
+  document.getElementById("batchApplyBtn").disabled = batchSelection.size === 0;
+}
+
+function buildDayLayerChips(date){
+  const s = shiftFor(date);
+  const ls = leavesFor(date);
+  const os = overtimesFor(date);
+  const parts = [];
+
+  if(s){
+    const meta = getShiftMeta(s.type);
+    const cls = shiftChipClass(meta.category);
+    parts.push(`<div class="chip ${cls}" title="班別：${escapeHtml(s.label)}">${escapeHtml(s.label)}</div>`);
+  }
+
+  // 獨立顯示請假層：依假別分開或彙整顯示，互不與班別衝突
+  if(ls.length > 0){
+    const grouped = {};
+    ls.forEach(l => { grouped[l.type] = (grouped[l.type] || 0) + l.minutes; });
+    Object.entries(grouped).forEach(([type, mins]) => {
+      const cls = type === "comp" ? "chip-leave-comp" : "chip-leave";
+      const shortName = type === "reservedLeave" ? "保留" : (APP.leaveLabels[type] || "請假");
+      parts.push(`<div class="chip ${cls}" title="${shortName} ${formatDurationMinutes(mins)}">${shortName} ${formatShortDuration(mins)}</div>`);
+    });
+  }
+
+  // 獨立顯示加班層
+  if(os.length > 0){
+    let payMins = 0, compMins = 0;
+    os.forEach(o => { if(o.mode === "comp") compMins += o.minutes; else payMins += o.minutes; });
+    if(payMins > 0){
+      parts.push(`<div class="chip chip-ot" title="加班費 ${formatDurationMinutes(payMins)}">加 ${formatShortDuration(payMins)}</div>`);
+    }
+    if(compMins > 0){
+      parts.push(`<div class="chip chip-ot-comp" title="加班轉補休 ${formatDurationMinutes(compMins)}">補+${formatShortDuration(compMins)}</div>`);
+    }
+  }
+
+  return parts.join("");
+}
+
+function renderCalendarOrList(){
+  const grid = document.getElementById("calendarGrid");
+  const listEl = document.getElementById("listView");
+  const filterBar = document.getElementById("listFilterBar");
+  const periodBar = document.getElementById("periodBar");
+
+  const d = viewedDateObj();
+  const y = d.getFullYear();
+  const m = d.getMonth();
+
+  if(viewMode === "list"){
+    grid.classList.add("hidden");
+    listEl.classList.add("active");
+    filterBar.classList.add("active");
+    periodBar.classList.remove("active");
+    document.getElementById("listShowAllBtn").classList.toggle("active", !listShowOnlyActive);
+    document.getElementById("listShowActiveBtn").classList.toggle("active", listShowOnlyActive);
+
+    const daysInM = new Date(y, m + 1, 0).getDate();
+    const cards = [];
+    for(let day = 1; day <= daysInM; day++){
+      const k = isoDate(y, m, day);
+      const dt = new Date(y, m, day);
+      const s = shiftFor(k);
+      const ls = leavesFor(k);
+      const os = overtimesFor(k);
+      if(listShowOnlyActive && !s && ls.length === 0 && os.length === 0) continue;
+
+      const chipsHtml = buildDayLayerChips(k);
+      const noteBits = [s?.note, ...ls.map(l => l.note), ...os.map(o => o.note)].filter(Boolean);
+      const classes = [
+        "agenda-card",
+        isToday(k) ? "is-today" : "",
+        state.selectedDate === k ? "selected-day" : "",
+        batchSelection.has(k) ? "range-selected" : ""
+      ].filter(Boolean).join(" ");
+
+      cards.push(`
+        <div class="${classes}" data-date="${k}">
+          <div class="agenda-date-box">
+            <b>${day}</b>
+            <span>週${APP.weekdays[dt.getDay()]}${isToday(k) ? " · 今" : ""}</span>
+          </div>
+          <div>
+            <div class="agenda-badges">
+              ${chipsHtml || `<span class="small">無排班與紀錄 · 點擊編輯</span>`}
+            </div>
+            ${noteBits.length ? `<div class="small" style="margin-top:4px">${escapeHtml(noteBits.join(" / "))}</div>` : ""}
+          </div>
+        </div>
+      `);
+    }
+    listEl.innerHTML = cards.length ? cards.join("") : `<div class="help">本月尚無任何班表、請假或加班紀錄。</div>`;
+    return;
+  }
+
+  grid.classList.remove("hidden");
+  listEl.classList.remove("active");
+  filterBar.classList.remove("active");
+
+  let start, totalCells, headHtml, isOutsideFn, showMonthTagFn;
+
+  if(viewMode === "period"){
+    const { actualStart, actualEnd, visualStart, visualEnd } = periodRangeForDate(state.selectedDate);
+    periodBar.classList.add("active");
+    const sameYear = actualStart.getFullYear() === actualEnd.getFullYear();
+    const sLabel = `${actualStart.getFullYear()}/${actualStart.getMonth() + 1}/${actualStart.getDate()}`;
+    const eLabel = `${sameYear ? "" : `${actualEnd.getFullYear()}/`}${actualEnd.getMonth() + 1}/${actualEnd.getDate()}`;
+    document.getElementById("periodRangeText").textContent = `四週：${sLabel} ～ ${eLabel}（28天）`;
+    document.getElementById("quickPeriodStart").value = dateKey(basePeriodStart());
+
+    const periodWeekdays = ["一", "二", "三", "四", "五", "六", "日"];
+    headHtml = periodWeekdays.map((w, idx) =>
+      `<div class="weekday ${idx === 6 ? "sun" : idx === 5 ? "sat" : ""}">${w}</div>`
+    ).join("");
+    start = visualStart;
+    totalCells = diffDays(dateKey(visualStart), dateKey(visualEnd)) + 1;
+    const actualStartKey = dateKey(actualStart);
+    const actualEndKey = dateKey(actualEnd);
+    isOutsideFn = (day, k) => k < actualStartKey || k > actualEndKey;
+    showMonthTagFn = (day, k) => !isToday(k) && (day.getDate() === 1 || k === actualStartKey);
+  }else{
+    periodBar.classList.remove("active");
+    const first = new Date(y, m, 1);
+    start = addDays(first, -first.getDay());
+    totalCells = 42;
+    headHtml = APP.weekdays.map((w, idx) =>
+      `<div class="weekday ${idx === 0 ? "sun" : idx === 6 ? "sat" : ""}">${w}</div>`
+    ).join("");
+    isOutsideFn = day => day.getMonth() !== m;
+    showMonthTagFn = () => false;
+  }
+
+  const cells = [];
+  for(let i = 0; i < totalCells; i++){
+    const day = addDays(start, i);
+    const k = dateKey(day);
+    const other = isOutsideFn(day, k);
+    const dow = day.getDay();
+    const classes = [
+      "day-cell",
+      other ? "other-month" : "",
+      isToday(k) ? "is-today" : "",
+      dow === 0 ? "is-sun" : "",
+      dow === 6 ? "is-sat" : "",
+      state.selectedDate === k ? "selected-day" : "",
+      batchSelection.has(k) ? "range-selected" : ""
+    ].filter(Boolean).join(" ");
+
+    const layersHtml = buildDayLayerChips(k);
+    const monthBadge = showMonthTagFn(day, k);
+    const dayLabel = monthBadge ? `${day.getMonth() + 1}/${day.getDate()}` : `${day.getDate()}`;
+    cells.push(`
+      <div class="${classes}" data-date="${k}" aria-label="${k}">
+        <div class="day-top">
+          <span class="day-num ${monthBadge ? "month-tag" : ""}">${dayLabel}</span>
+          <span class="batch-check">${batchSelection.has(k) ? "✓" : ""}</span>
+        </div>
+        <div class="cell-layers">${layersHtml}</div>
+      </div>
+    `);
+  }
+  grid.innerHTML = headHtml + cells.join("");
+}
+
+function renderDayDetail(){
+  const card = document.getElementById("dayDetailCard");
+  const k = state.selectedDate;
+  const dt = parseDate(k);
+  const wd = APP.weekdays[dt.getDay()];
+  const s = shiftFor(k);
+  const ls = leavesFor(k);
+  const os = overtimesFor(k);
+
+  let shiftSlotHtml = `<div class="slot-empty">尚未設定本日班別</div>`;
+  if(s){
+    const meta = getShiftMeta(s.type);
+    const timeTxt = s.start && s.end ? `${escapeHtml(s.start)}～${escapeHtml(s.end)}` : "無設定起迄時段";
+    shiftSlotHtml = `
+      <div class="slot-item">
+        <div class="slot-item-main">
+          <div class="slot-item-title">
+            <span class="chip ${shiftChipClass(meta.category)}" style="font-size:11px;padding:3px 8px">${escapeHtml(s.label)}</span>
+            <span class="num">${formatHours(s.hours)} 小時</span>
+          </div>
+          <div class="slot-item-sub">${timeTxt}${s.note ? ` · ${escapeHtml(s.note)}` : ""}</div>
+        </div>
+        <div class="slot-item-actions">
+          <button type="button" class="mini-btn" id="detailEditShiftBtn">修改</button>
+          <button type="button" class="mini-btn danger" id="detailDelShiftBtn">移除</button>
+        </div>
+      </div>
+    `;
+  }
+
+  const leaveItemsHtml = ls.length ? ls.map(l => {
+    const label = APP.leaveLabels[l.type] || "請假";
+    const cls = l.type === "comp" ? "chip-leave-comp" : "chip-leave";
+    const timeTxt = l.start && l.end ? `${escapeHtml(l.start)}～${escapeHtml(l.end)}` : "";
+    return `
+      <div class="slot-item">
+        <div class="slot-item-main">
+          <div class="slot-item-title">
+            <span class="chip ${cls}" style="font-size:11px;padding:3px 8px">${label}</span>
+            <span class="num">${formatDurationMinutes(l.minutes)}</span>
+          </div>
+          ${(timeTxt || l.note) ? `<div class="slot-item-sub">${[timeTxt, l.note ? escapeHtml(l.note) : ""].filter(Boolean).join(" · ")}</div>` : ""}
+        </div>
+        <div class="slot-item-actions">
+          <button type="button" class="mini-btn" data-edit-leave="${l.id}">編輯</button>
+          <button type="button" class="mini-btn danger" data-del-leave="${l.id}">刪除</button>
+        </div>
+      </div>
+    `;
+  }).join("") : `<div class="slot-empty">本日無請假紀錄（與班別獨立顯示）</div>`;
+
+  const otItemsHtml = os.length ? os.map(o => {
+    const isComp = o.mode === "comp";
+    const calc = isComp ? null : calcOvertimePay(o);
+    const modeTag = isComp
+      ? `<span class="chip chip-ot-comp" style="font-size:11px;padding:3px 8px">轉補休 1:1</span>`
+      : `<span class="chip chip-ot" style="font-size:11px;padding:3px 8px">加班費 ${calc.valid ? formatMoney(calc.pay) : "待設月薪"}</span>`;
+    const timeTxt = o.start && o.end ? `${escapeHtml(o.start)}～${escapeHtml(o.end)}` : "";
+    const formulaTxt = !isComp ? calc.formula : "";
+    return `
+      <div class="slot-item">
+        <div class="slot-item-main">
+          <div class="slot-item-title">
+            ${modeTag}
+            <span class="num">${formatDurationMinutes(o.minutes)}</span>
+            <span class="small">(${APP.otDayLabels[o.dayType] || "平日加班"})</span>
+          </div>
+          <div class="slot-item-sub">${[timeTxt, formulaTxt, o.note ? escapeHtml(o.note) : ""].filter(Boolean).join(" · ")}</div>
+        </div>
+        <div class="slot-item-actions">
+          <button type="button" class="mini-btn" data-edit-ot="${o.id}">編輯</button>
+          <button type="button" class="mini-btn danger" data-del-ot="${o.id}">刪除</button>
+        </div>
+      </div>
+    `;
+  }).join("") : `<div class="slot-empty">本日無加班紀錄（與班別獨立顯示）</div>`;
+
+  card.innerHTML = `
+    <div class="day-detail-head">
+      <div class="day-detail-title">
+        <span>${dt.getFullYear()}年${dt.getMonth() + 1}月${dt.getDate()}日 (週${wd})</span>
+        ${isToday(k) ? `<span class="today-tag">今天</span>` : ""}
+      </div>
+      <div class="day-step-btns">
+        <button type="button" id="prevDayBtn" aria-label="前一天">‹</button>
+        <button type="button" id="nextDayBtn" aria-label="後一天">›</button>
+      </div>
+    </div>
+    <div class="day-slots">
+      <div class="day-slot">
+        <div class="day-slot-head">
+          <span class="day-slot-label">🗓️ 班別排班</span>
+          <button type="button" class="slot-action-btn" id="slotSetShiftBtn">${s ? "更換班別" : "＋ 設定班別"}</button>
+        </div>
+        <div class="slot-items">${shiftSlotHtml}</div>
+      </div>
+
+      <div class="day-slot">
+        <div class="day-slot-head">
+          <span class="day-slot-label">🏖️ 請假時數（獨立）</span>
+          <button type="button" class="slot-action-btn" id="slotAddLeaveBtn">＋ 記請假</button>
+        </div>
+        <div class="slot-items">${leaveItemsHtml}</div>
+      </div>
+
+      <div class="day-slot">
+        <div class="day-slot-head">
+          <span class="day-slot-label">⏱️ 加班紀錄（獨立）</span>
+          <button type="button" class="slot-action-btn" id="slotAddOtBtn">＋ 記加班</button>
+        </div>
+        <div class="slot-items">${otItemsHtml}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderBalancePanel(){
+  const b = getBalance(viewedYear());
+  const pct = Math.min(100, (b.leaveRemain / Math.max(1, b.annualTotal)) * 100);
+  document.getElementById("balancePanel").innerHTML = `
+    <div class="balance-row"><span>${b.year} 年特休剩餘</span><span class="balance-value num">${formatHours(b.leaveRemain)} / ${formatHours(b.annualTotal)} h</span></div>
+    <div class="balance-row"><span>保留假剩餘</span><span class="balance-value num">${formatHours(b.reservedRemain)} h</span></div>
+    <div class="balance-row"><span>加班補休餘額</span><span class="balance-value num">${formatDurationMinutes(b.compRemainMins)}</span></div>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    <div class="small" style="margin-top:8px">
+      本年特休已用 ${formatHours(b.usedLeave)}h · 保留假已用 ${formatHours(b.usedReserved)}h<br>
+      補休來源：本工具新增 ${formatDurationMinutes(b.generatedCompMins)}${b.manualCompMins > 0 ? ` ＋ 2026人工匯入(1:1) ${formatDurationMinutes(b.manualCompMins)}` : ""}
+    </div>
+  `;
+}
+
+function renderOvertimePayPanel(){
+  const ym = viewedYm();
+  const y = viewedYear();
+  const st = getMonthOvertimeStats(ym);
+  const yearSt = getYearOvertimePayTotal(y);
+  const [yr, mo] = ym.split("-");
+
+  let salaryNotice = "";
+  if(st.salary <= 0){
+    salaryNotice = `
+      <div class="status warn">
+        <span class="status-icon">!</span>
+        <div>
+          尚未設定 <b>${yr}年${Number(mo)}月</b> 月薪基準，無法換算加班費。
+          <div style="margin-top:6px"><button type="button" class="mini-btn" id="inlineSetSalaryBtn">立即設定本月薪資</button></div>
+        </div>
+      </div>`;
+  }else{
+    salaryNotice = `
+      <div class="small" style="margin-bottom:6px">
+        本月薪資基準：<b class="num">${formatMoney(st.salary)}</b>（平日時薪 <b class="num">$${st.hourly.toFixed(1)}/hr</b>）
+      </div>`;
+  }
+
+  document.getElementById("overtimePayPanel").innerHTML = `
+    <div class="hero-pay">
+      <div>
+        <div class="label">${yr}年${Number(mo)}月 加班費總額</div>
+        <div class="small" style="margin-top:2px">依當月月薪基準加成計算</div>
+      </div>
+      <div class="amount num">${formatMoney(st.totalPay)}</div>
+    </div>
+    ${salaryNotice}
+    <div class="balance-row"><span>當月加班領費時數（加成）</span><span class="balance-value num">${formatDurationMinutes(st.payMinutes)} · ${formatMoney(st.dailyPayTotal)}</span></div>
+    ${(Number(yr) <= 2026 || st.manualPayMinutes > 0) ? `<div class="balance-row"><span>2026 人工匯入（1:1 計算）</span><span class="balance-value num">${formatDurationMinutes(st.manualPayMinutes)} · ${formatMoney(st.manualPayAmount)}</span></div>` : ""}
+    <div class="balance-row"><span>當月加班轉補休（未折現）</span><span class="balance-value num">${formatDurationMinutes(st.compMinutes)}</span></div>
+    <div class="balance-row"><span>${y} 年度累計加班費</span><span class="balance-value num">${formatMoney(yearSt.total)}</span></div>
+    <div style="margin-top:10px;display:flex;gap:8px">
+      <button type="button" class="soft-btn" style="flex:1;min-height:36px;font-size:12px" id="panelViewMonthOtBtn">查看本月加班明細</button>
+    </div>
+  `;
+}
+
+function renderMonthlyStatsPanel(){
+  const ym = viewedYm();
+  const s = getMonthAttendanceStats(ym);
+  document.getElementById("monthlyStatsPanel").innerHTML = `
+    <div class="metric-grid">
+      <div class="metric">
+        <div class="label">實際出勤工時</div>
+        <div class="value num">${formatHours(s.actualWorkHours)} h</div>
+      </div>
+      <div class="metric">
+        <div class="label">本月總加班時數</div>
+        <div class="value num">${formatDurationMinutes(s.totalOtMins)}</div>
+      </div>
+      <div class="metric">
+        <div class="label">排班總工時</div>
+        <div class="value num">${formatHours(s.shiftHours)} h</div>
+      </div>
+      <div class="metric">
+        <div class="label">本月請假總時數</div>
+        <div class="value num">${formatHours(s.leaveHours)} h</div>
+      </div>
+    </div>
+    <div class="small" style="margin-top:8px">
+      本月已排天數：上班 <b>${s.workDays}</b> 天 · 休／例／空班 <b>${s.restDays}</b> 天 · 國定假日 <b>${s.holidayDays}</b> 天
+    </div>
+  `;
+}
+
+function scrollTodayIntoView(){
+  if(viewMode === "list"){
+    const todayCard = document.querySelector("#listView .agenda-card.is-today");
+    todayCard?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+}
+
+/* =========================================================
+   07. MODALS HELPERS
+   ========================================================= */
+function openModal(id){
+  document.getElementById(id).classList.add("show");
+  document.body.classList.add("modal-open");
+}
+function closeModal(id){
+  document.getElementById(id).classList.remove("show");
+  if(!document.querySelector(".modal-backdrop.show")){
+    document.body.classList.remove("modal-open");
+  }
+}
+
+/* =========================================================
+   08. SHIFT MODAL (單日 + 批次多日)
+   ========================================================= */
+function populateShiftSelects(){
+  const all = getAllShiftTypes();
+  document.getElementById("shiftType").innerHTML = Object.entries(all)
+    .map(([k, v]) => `<option value="${k}">${escapeHtml(v.label)}${v.hours > 0 ? ` (${v.hours}h)` : ""}</option>`)
+    .join("");
+
+  document.getElementById("quickShiftChips").innerHTML = APP.quickShifts
+    .filter(k => all[k])
+    .map(k => `<button type="button" class="pick-chip" data-quick-shift="${k}">${escapeHtml(all[k].short)}</button>`)
+    .join("");
+}
+
+function applyShiftPresetToForm(typeKey){
+  const meta = getShiftMeta(typeKey);
+  document.getElementById("shiftType").value = typeKey;
+  document.getElementById("shiftStart").value = meta.start || "";
+  document.getElementById("shiftEnd").value = meta.end || "";
+  document.getElementById("shiftHours").value = typeof meta.hours === "number" ? meta.hours : 0;
+  document.querySelectorAll("#quickShiftChips .pick-chip").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.quickShift === typeKey);
+  });
+}
+
+function openShiftModal(date = state.selectedDate, isBulk = false){
+  populateShiftSelects();
+  editingShiftDate = isBulk ? null : date;
+  const bulkInfo = document.getElementById("shiftBulkInfo");
+  const dateWrap = document.getElementById("shiftDateWrap");
+  const dateInput = document.getElementById("shiftDate");
+  const clearBtn = document.getElementById("clearShiftBtn");
+
+  dateInput.required = !isBulk;
+  dateInput.disabled = isBulk;
+
+  if(isBulk){
+    const sorted = [...batchSelection].sort();
+    document.getElementById("shiftModalTitle").textContent = `批次套用班別（${sorted.length} 天）`;
+    bulkInfo.style.display = "block";
+    bulkInfo.innerHTML = `已選取 <b>${sorted.length}</b> 天：${escapeHtml(sorted[0])} ～ ${escapeHtml(sorted[sorted.length - 1])}`;
+    dateWrap.style.display = "none";
+    dateInput.value = "";
+    clearBtn.style.display = "inline-flex";
+    clearBtn.textContent = "清除所選日期班別";
+    applyShiftPresetToForm("day84m");
+    document.getElementById("shiftNote").value = "";
+  }else{
+    const existing = shiftFor(date);
+    document.getElementById("shiftModalTitle").textContent = existing ? "修改當日班別" : "設定當日班別";
+    bulkInfo.style.display = "none";
+    dateWrap.style.display = "grid";
+    dateInput.value = date;
+    clearBtn.style.display = existing ? "inline-flex" : "none";
+    clearBtn.textContent = "移除班別";
+    const typeKey = existing?.type || "day84m";
+    applyShiftPresetToForm(typeKey);
+    if(existing){
+      document.getElementById("shiftStart").value = existing.start || "";
+      document.getElementById("shiftEnd").value = existing.end || "";
+      document.getElementById("shiftHours").value = existing.hours ?? 0;
+      document.getElementById("shiftNote").value = existing.note || "";
+    }else{
+      document.getElementById("shiftNote").value = "";
+    }
+  }
+  openModal("shiftModal");
+}
+
+function saveShiftFromModal(){
+  const type = document.getElementById("shiftType").value;
+  const meta = getShiftMeta(type);
+  const start = document.getElementById("shiftStart").value;
+  const end = document.getElementById("shiftEnd").value;
+  const hours = Math.max(0, Number(document.getElementById("shiftHours").value) || 0);
+  const note = document.getElementById("shiftNote").value.trim();
+
+  if(editingShiftDate === null){
+    const targets = [...batchSelection].sort();
+    if(!targets.length) return;
+    targets.forEach(d => {
+      const idx = state.shifts.findIndex(s => s.date === d);
+      const obj = { id: idx >= 0 ? state.shifts[idx].id : newId(), date: d, type, label: meta.short, start, end, hours, note };
+      if(idx >= 0) state.shifts[idx] = obj;
+      else state.shifts.push(obj);
+    });
+    state.selectedDate = targets[targets.length - 1];
+    batchMode = false;
+    batchSelection.clear();
+    saveState();
+    closeModal("shiftModal");
+    renderAll();
+    toast(`已批次套用 ${targets.length} 天班別`);
+  }else{
+    const date = document.getElementById("shiftDate").value;
+    if(!date) return;
+    const idx = state.shifts.findIndex(s => s.date === date);
+    const obj = { id: idx >= 0 ? state.shifts[idx].id : newId(), date, type, label: meta.short, start, end, hours, note };
+    if(idx >= 0) state.shifts[idx] = obj;
+    else state.shifts.push(obj);
+    state.selectedDate = date;
+    state.viewDate = monthKey(parseDate(date));
+    saveState();
+    closeModal("shiftModal");
+    renderAll();
+    toast("班別已儲存");
+  }
+}
+
+function clearShiftFromModal(){
+  if(editingShiftDate === null){
+    const targets = new Set(batchSelection);
+    state.shifts = state.shifts.filter(s => !targets.has(s.date));
+    batchMode = false;
+    batchSelection.clear();
+    saveState();
+    closeModal("shiftModal");
+    renderAll();
+    toast("已移除所選日期的班別");
+  }else{
+    const date = document.getElementById("shiftDate").value || editingShiftDate;
+    state.shifts = state.shifts.filter(s => s.date !== date);
+    saveState();
+    closeModal("shiftModal");
+    renderAll();
+    toast("已移除本日班別");
+  }
+}
+
+/* =========================================================
+   09. LEAVE MODAL (獨立請假 CRUD)
+   ========================================================= */
+function updateLeaveBalancePreview(){
+  const date = document.getElementById("leaveDate").value || state.selectedDate;
+  const type = document.getElementById("leaveType").value;
+  const yr = parseDate(date).getFullYear();
+  const bal = getBalance(yr);
+  const el = document.getElementById("leaveBalancePreview");
+
+  let mins = 0;
+  try{ mins = durationToMinutes(document.getElementById("leaveDuration").value); }catch(_){}
+  const oldMins = editingLeaveId
+    ? (state.leaves.find(l => l.id === editingLeaveId && l.type === type)?.minutes || 0)
+    : 0;
+
+  if(type === "leave"){
+    const after = Math.max(0, bal.leaveRemain + oldMins / 60 - mins / 60);
+    el.className = "status info";
+    el.innerHTML = `<span class="status-icon">i</span><span>${yr} 年特休目前剩餘 <b>${formatHours(bal.leaveRemain)} 小時</b>；儲存後剩餘 <b>${formatHours(after)} 小時</b>。</span>`;
+  }else if(type === "reservedLeave"){
+    const after = Math.max(0, bal.reservedRemain + oldMins / 60 - mins / 60);
+    el.className = "status info";
+    el.innerHTML = `<span class="status-icon">i</span><span>保留假目前剩餘 <b>${formatHours(bal.reservedRemain)} 小時</b>；儲存後剩餘 <b>${formatHours(after)} 小時</b>。</span>`;
+  }else if(type === "comp"){
+    const after = Math.max(0, bal.compRemainMins + oldMins - mins);
+    el.className = "status info";
+    el.innerHTML = `<span class="status-icon">i</span><span>補休目前餘額 <b>${formatDurationMinutes(bal.compRemainMins)}</b>；儲存後剩餘 <b>${formatDurationMinutes(after)}</b>。</span>`;
+  }else{
+    el.className = "status info";
+    el.innerHTML = `<span class="status-icon">i</span><span>其他假別僅做紀錄與出勤工時統計，不會扣除特休／保留假／補休餘額。</span>`;
+  }
+}
+
+function openLeaveModal(date = state.selectedDate, leaveId = null){
+  editingLeaveId = leaveId;
+  const existing = leaveId ? state.leaves.find(l => l.id === leaveId) : null;
+  document.getElementById("leaveModalTitle").textContent = existing ? "編輯請假紀錄" : "新增請假紀錄";
+  document.getElementById("deleteLeaveBtn").style.display = existing ? "inline-flex" : "none";
+
+  document.getElementById("leaveDate").value = existing?.date || date;
+  document.getElementById("leaveType").value = existing?.type || "leave";
+  document.getElementById("leaveStart").value = existing?.start || "";
+  document.getElementById("leaveEnd").value = existing?.end || "";
+  const defaultMins = existing ? existing.minutes : 120;
+  document.getElementById("leaveDuration").value = existing?.type === "comp"
+    ? minutesToDuration(defaultMins)
+    : formatHours(defaultMins / 60);
+  document.getElementById("leaveNote").value = existing?.note || "";
+  updateLeaveBalancePreview();
+  openModal("leaveModal");
+}
+
+function saveLeaveFromModal(){
+  const date = document.getElementById("leaveDate").value;
+  const type = document.getElementById("leaveType").value;
+  let mins = 0;
+  try{
+    mins = durationToMinutes(document.getElementById("leaveDuration").value);
+  }catch(err){
+    alert(err.message);
+    return;
+  }
+  if(mins <= 0){
+    alert("請假時數必須大於 0");
+    return;
+  }
+  const obj = {
+    id: editingLeaveId || newId(),
+    date,
+    type,
+    label: APP.leaveLabels[type] || "請假",
+    start: document.getElementById("leaveStart").value,
+    end: document.getElementById("leaveEnd").value,
+    minutes: mins,
+    note: document.getElementById("leaveNote").value.trim()
+  };
+  if(editingLeaveId){
+    const idx = state.leaves.findIndex(l => l.id === editingLeaveId);
+    if(idx >= 0) state.leaves[idx] = obj;
+  }else{
+    state.leaves.push(obj);
+  }
+  state.selectedDate = date;
+  state.viewDate = monthKey(parseDate(date));
+  saveState();
+  closeModal("leaveModal");
+  renderAll();
+  toast("請假紀錄已儲存");
+}
+
+function deleteLeaveFromModal(){
+  if(!editingLeaveId) return;
+  state.leaves = state.leaves.filter(l => l.id !== editingLeaveId);
+  saveState();
+  closeModal("leaveModal");
+  renderAll();
+  toast("請假紀錄已刪除");
+}
+
+/* =========================================================
+   10. OVERTIME MODAL (獨立加班 CRUD + 薪資計算預覽)
+   ========================================================= */
+function updateOtPreview(){
+  const date = document.getElementById("otDate").value || state.selectedDate;
+  const dayTypeEl = document.getElementById("otDayType");
+  const manualOpt = dayTypeEl.querySelector('option[value="manual1to1"]');
+  const yearNum = Number(String(date).slice(0, 4)) || new Date().getFullYear();
+  if(manualOpt){
+    const allowManual = yearNum <= 2026 || (editingOtId && dayTypeEl.value === "manual1to1");
+    manualOpt.hidden = !allowManual;
+    manualOpt.disabled = !allowManual;
+    if(!allowManual && dayTypeEl.value === "manual1to1"){
+      dayTypeEl.value = "workday";
+    }
+  }
+  const mode = document.getElementById("otMode").value;
+  const dayType = dayTypeEl.value;
+  const el = document.getElementById("otPayPreview");
+
+  let mins = 0;
+  try{ mins = durationToMinutes(document.getElementById("otDuration").value); }catch(_){}
+
+  if(mode === "comp"){
+    el.className = "status info";
+    el.innerHTML = `<span class="status-icon">→</span><span>轉入補休：<b>＋${formatDurationMinutes(mins)}</b>（1:1 計入補休餘額，不會列入本月領現加班費）。</span>`;
+    return;
+  }
+
+  const calc = calcOvertimePay({ date, minutes: mins, mode, dayType });
+  if(!calc.valid){
+    el.className = "status warn";
+    el.innerHTML = `<span class="status-icon">!</span><span>${escapeHtml(calc.formula)}。儲存後可隨時至「設定 → 月薪與加班」補填該月薪資，系統會自動重算金額。</span>`;
+  }else{
+    el.className = "status ok";
+    el.innerHTML = `<span class="status-icon">$</span><span>預估加班費：<b class="num">${formatMoney(calc.pay)}</b><br><span class="small">${escapeHtml(calc.formula)}</span></span>`;
+  }
+}
+
+function openOvertimeModal(date = state.selectedDate, otId = null){
+  editingOtId = otId;
+  const existing = otId ? state.overtimes.find(o => o.id === otId) : null;
+  document.getElementById("overtimeModalTitle").textContent = existing ? "編輯加班紀錄" : "新增加班紀錄";
+  document.getElementById("deleteOtBtn").style.display = existing ? "inline-flex" : "none";
+
+  const targetDate = existing?.date || date;
+  const dayShift = shiftFor(targetDate);
+  const autoDayType = dayShift ? inferOtDayTypeFromShift(dayShift.type) : "workday";
+
+  document.getElementById("otDate").value = targetDate;
+  document.getElementById("otMode").value = existing?.mode || lastUsedOtMode;
+  document.getElementById("otDayType").value = existing?.dayType || autoDayType;
+  document.getElementById("otDuration").value = existing ? minutesToDuration(existing.minutes) : "1:00";
+  document.getElementById("otStart").value = existing?.start || "";
+  document.getElementById("otEnd").value = existing?.end || "";
+  document.getElementById("otNote").value = existing?.note || "";
+  updateOtPreview();
+  openModal("overtimeModal");
+}
+
+function saveOvertimeFromModal(){
+  const date = document.getElementById("otDate").value;
+  const mode = document.getElementById("otMode").value;
+  const dayType = document.getElementById("otDayType").value;
+  let mins = 0;
+  try{
+    mins = durationToMinutes(document.getElementById("otDuration").value);
+  }catch(err){
+    alert(err.message);
+    return;
+  }
+  if(mins <= 0){
+    alert("加班時數必須大於 0");
+    return;
+  }
+  lastUsedOtMode = mode;
+  const obj = {
+    id: editingOtId || newId(),
+    date,
+    minutes: mins,
+    start: document.getElementById("otStart").value,
+    end: document.getElementById("otEnd").value,
+    mode,
+    dayType,
+    note: document.getElementById("otNote").value.trim()
+  };
+  if(editingOtId){
+    const idx = state.overtimes.findIndex(o => o.id === editingOtId);
+    if(idx >= 0) state.overtimes[idx] = obj;
+  }else{
+    state.overtimes.push(obj);
+  }
+  state.selectedDate = date;
+  state.viewDate = monthKey(parseDate(date));
+  saveState();
+  closeModal("overtimeModal");
+  renderAll();
+  toast("加班紀錄已儲存");
+}
+
+function deleteOvertimeFromModal(){
+  if(!editingOtId) return;
+  state.overtimes = state.overtimes.filter(o => o.id !== editingOtId);
+  saveState();
+  closeModal("overtimeModal");
+  renderAll();
+  toast("加班紀錄已刪除");
+}
+
+/* =========================================================
+   11. UNIFIED QUERY CENTER
+   ========================================================= */
+function openQueryModal(tab = "overtime", presetRange = "all"){
+  activeQueryTab = tab;
+  setQueryQuickRange(presetRange, false);
+  document.getElementById("querySearch").value = "";
+  renderQueryModal();
+  openModal("queryModal");
+}
+
+function setQueryQuickRange(rangeType, rerender = true){
+  document.querySelectorAll("#queryQuickRange .pick-chip").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.qrange === rangeType);
+  });
+  const fromEl = document.getElementById("queryFrom");
+  const toEl = document.getElementById("queryTo");
+  if(rangeType === "month"){
+    const d = viewedDateObj();
+    const y = d.getFullYear(), m = d.getMonth();
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    fromEl.value = isoDate(y, m, 1);
+    toEl.value = isoDate(y, m, lastDay);
+  }else if(rangeType === "year"){
+    const y = viewedYear();
+    fromEl.value = `${y}-01-01`;
+    toEl.value = `${y}-12-31`;
+  }else{
+    fromEl.value = "";
+    toEl.value = "";
+  }
+  if(rerender) renderQueryModal();
+}
+
+function renderQueryModal(){
+  document.querySelectorAll("#queryTabs .tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.qtab === activeQueryTab);
+  });
+
+  const from = document.getElementById("queryFrom").value;
+  const to = document.getElementById("queryTo").value;
+  const q = document.getElementById("querySearch").value.trim().toLowerCase();
+  const summaryEl = document.getElementById("querySummary");
+  const listEl = document.getElementById("queryList");
+
+  if(activeQueryTab === "overtime"){
+    const records = state.overtimes.filter(o => {
+      if(from && o.date < from) return false;
+      if(to && o.date > to) return false;
+      if(q){
+        const hay = `${o.date} ${APP.otDayLabels[o.dayType] || ""} ${o.mode === "comp" ? "補休" : "加班費"} ${o.note || ""}`.toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    }).sort((a, b) => b.date.localeCompare(a.date));
+
+    let payMins = 0, compMins = 0, payTotal = 0;
+    records.forEach(o => {
+      if(o.mode === "comp") compMins += o.minutes;
+      else{
+        payMins += o.minutes;
+        payTotal += calcOvertimePay(o).pay;
+      }
+    });
+
+    // 若篩選範圍包含 2026 年的月份且有人工匯入領費時數，一併提示
+    let manualPayMins = 0, manualPayAmt = 0;
+    Object.entries(state.settings.manualImportedOvertimePayByMonth || {}).forEach(([ym, mins]) => {
+      if(Number(ym.slice(0, 4)) > 2026 || Number(mins) <= 0) return;
+      const monthEnd = `${ym}-31`;
+      const monthStart = `${ym}-01`;
+      if(from && monthEnd < from) return;
+      if(to && monthStart > to) return;
+      if(q && !`${ym} 人工匯入`.includes(q)) return;
+      const sal = getMonthlySalary(ym);
+      manualPayMins += Number(mins);
+      if(sal > 0) manualPayAmt += Math.round((Number(mins) / 60) * getHourlyRate(sal));
+    });
+
+    summaryEl.className = "status info";
+    summaryEl.innerHTML = `<span class="status-icon">$</span><span>共 <b>${records.length}</b> 筆加班紀錄：領加班費 <b class="num">${formatDurationMinutes(payMins)}（${formatMoney(payTotal)}）</b> · 轉補休 <b class="num">${formatDurationMinutes(compMins)}</b>${manualPayMins > 0 ? `<br>另含 2026 人工匯入(1:1)：<b>${formatDurationMinutes(manualPayMins)}（${formatMoney(manualPayAmt)}）</b>` : ""}</span>`;
+
+    listEl.innerHTML = records.length ? records.map(o => {
+      const calc = o.mode === "comp" ? null : calcOvertimePay(o);
+      const badge = o.mode === "comp"
+        ? `轉補休 ${formatDurationMinutes(o.minutes)}`
+        : `加班費 ${calc.valid ? formatMoney(calc.pay) : "未設月薪"}`;
+      const dayShift = shiftFor(o.date);
+      return `
+        <div class="audit-item">
+          <span style="font-weight:900;color:${o.mode === "comp" ? "#9d174d" : "#b91c1c"}">${o.mode === "comp" ? "補" : "$"}</span>
+          <div style="flex:1;min-width:0">
+            <b>${escapeHtml(o.date)} · ${escapeHtml(badge)}</b>
+            <div>${escapeHtml(APP.otDayLabels[o.dayType] || "平日加班")} · 時數 <b>${formatDurationMinutes(o.minutes)}</b>${dayShift ? ` · 當日班別：${escapeHtml(dayShift.label)}` : ""}</div>
+            ${calc && calc.valid ? `<div class="small">${escapeHtml(calc.formula)}</div>` : ""}
+            ${o.note ? `<div class="small">${escapeHtml(o.note)}</div>` : ""}
+          </div>
+          <button type="button" class="mini-btn" data-q-edit-ot="${o.id}">編輯</button>
+        </div>
+      `;
+    }).join("") : `<div class="help">沒有符合條件的加班紀錄。</div>`;
+    return;
+  }
+
+  if(activeQueryTab === "leave"){
+    const records = state.leaves.filter(l => {
+      if(l.type !== "leave" && l.type !== "reservedLeave") return false;
+      if(from && l.date < from) return false;
+      if(to && l.date > to) return false;
+      if(q){
+        const hay = `${l.date} ${APP.leaveLabels[l.type]} ${l.note || ""}`.toLowerCase();
+        if(!hay.includes(q)) return false;
+      }
+      return true;
+    }).sort((a, b) => b.date.localeCompare(a.date));
+
+    const annualMins = records.filter(l => l.type === "leave").reduce((s, l) => s + l.minutes, 0);
+    const reservedMins = records.filter(l => l.type === "reservedLeave").reduce((s, l) => s + l.minutes, 0);
+    summaryEl.className = "status info";
+    summaryEl.innerHTML = `<span class="status-icon">✓</span><span>共 <b>${records.length}</b> 筆：特休合計 <b>${formatHours(annualMins / 60)} 小時</b> · 保留假合計 <b>${formatHours(reservedMins / 60)} 小時</b></span>`;
+
+    listEl.innerHTML = records.length ? records.map(l => {
+      const dayShift = shiftFor(l.date);
+      return `
+        <div class="audit-item">
+          <span style="font-weight:900;color:#c2410c">休</span>
+          <div style="flex:1;min-width:0">
+            <b>${escapeHtml(l.date)} · ${APP.leaveLabels[l.type]} ${formatDurationMinutes(l.minutes)}</b>
+            <div class="small">${l.start && l.end ? `${escapeHtml(l.start)}～${escapeHtml(l.end)} · ` : ""}${dayShift ? `原班別：${escapeHtml(dayShift.label)}` : "無設定班別"}${l.note ? ` · ${escapeHtml(l.note)}` : ""}</div>
+          </div>
+          <button type="button" class="mini-btn" data-q-edit-leave="${l.id}">編輯</button>
+        </div>
+      `;
+    }).join("") : `<div class="help">沒有符合條件的特休／保留假紀錄。</div>`;
+    return;
+  }
+
+  if(activeQueryTab === "comp"){
+    const records = state.leaves.filter(l => {
+      if(l.type !== "comp") return false;
+      if(from && l.date < from) return false;
+      if(to && l.date > to) return false;
+      if(q && !`${l.date} 補休 ${l.note || ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    }).sort((a, b) => b.date.localeCompare(a.date));
+
+    const totalMins = records.reduce((s, l) => s + l.minutes, 0);
+    summaryEl.className = "status info";
+    summaryEl.innerHTML = `<span class="status-icon">✓</span><span>共 <b>${records.length}</b> 筆使用補休，合計 <b>${formatDurationMinutes(totalMins)}</b></span>`;
+
+    listEl.innerHTML = records.length ? records.map(l => {
+      const dayShift = shiftFor(l.date);
+      return `
+        <div class="audit-item">
+          <span style="font-weight:900;color:#0e7490">補</span>
+          <div style="flex:1;min-width:0">
+            <b>${escapeHtml(l.date)} · 使用補休 ${formatDurationMinutes(l.minutes)}</b>
+            <div class="small">${l.start && l.end ? `${escapeHtml(l.start)}～${escapeHtml(l.end)} · ` : ""}${dayShift ? `原班別：${escapeHtml(dayShift.label)}` : ""}${l.note ? ` · ${escapeHtml(l.note)}` : ""}</div>
+          </div>
+          <button type="button" class="mini-btn" data-q-edit-leave="${l.id}">編輯</button>
+        </div>
+      `;
+    }).join("") : `<div class="help">沒有符合條件的補休使用紀錄。</div>`;
+    return;
+  }
+
+  // settlement tab
+  const fromY = from ? Number(from.slice(0, 4)) : 0;
+  const toY = to ? Number(to.slice(0, 4)) : 9999;
+  const recs = Object.entries(state.settings.compSettlementByYear || {})
+    .map(([yr, mins]) => ({ year: Number(yr), minutes: Number(mins) || 0 }))
+    .filter(r => r.minutes > 0 && r.year >= fromY && r.year <= toY && (!q || `${r.year} 結清補休`.includes(q)))
+    .sort((a, b) => b.year - a.year);
+  const totalMins = recs.reduce((s, r) => s + r.minutes, 0);
+  summaryEl.className = "status info";
+  summaryEl.innerHTML = `<span class="status-icon">✓</span><span>共 <b>${recs.length}</b> 筆結清紀錄，合計結清 <b>${formatDurationMinutes(totalMins)}</b></span>`;
+  listEl.innerHTML = recs.length ? recs.map(r => `
+    <div class="audit-item">
+      <span style="font-weight:900;color:#16a34a">✓</span>
+      <div style="flex:1;min-width:0">
+        <b>${r.year} 年 · 補休年度結清</b>
+        <div>結清時數：<b>${formatDurationMinutes(r.minutes)}</b></div>
+        <div class="small">結清後該年度累積補休已歸零</div>
+      </div>
+    </div>
+  `).join("") : `<div class="help">目前沒有補休年度結清紀錄。</div>`;
+}
+
+/* =========================================================
+   12. UNIFIED SETTINGS MODAL (薪資、休假、班別與備份)
+   ========================================================= */
+function switchSettingsTab(tab){
+  activeSettingsTab = tab;
+  document.querySelectorAll("#settingsTabs .tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.stab === tab);
+  });
+  document.querySelectorAll("#settingsModal .tab-panel").forEach(p => {
+    p.classList.toggle("active", p.id === `stab-${tab}`);
+  });
+}
+
+function updateSalaryPreview(){
+  const ym = document.getElementById("setSalaryMonth").value || viewedYm();
+  const salary = Math.max(0, Number(document.getElementById("setSalaryAmount").value) || 0);
+  const normalHours = Math.max(1, Number(document.getElementById("setNormalHours").value) || 8);
+  const decimal = document.getElementById("setRateMode").value === "decimal";
+  const m1 = decimal ? 1.34 : 4 / 3;
+  const m2 = decimal ? 1.67 : 5 / 3;
+  const hourly = salary > 0 ? salary / (30 * normalHours) : 0;
+
+  const yearNum = Number(ym.slice(0, 4));
+  const manualWrap = document.getElementById("manualImportPayWrap");
+  manualWrap.style.display = yearNum <= 2026 ? "grid" : "none";
+
+  const preview = document.getElementById("salaryRatePreview");
+  if(salary <= 0){
+    preview.className = "status warn";
+    preview.innerHTML = `<span class="status-icon">i</span><span>請輸入 <b>${ym}</b> 的月薪基準，即可自動換算時薪與加班倍率。</span>`;
+  }else{
+    preview.className = "status ok";
+    preview.innerHTML = `<span class="status-icon">$</span><span><b>${ym}</b> 平日每小時工資額：<b class="num">$${hourly.toFixed(1)}</b>（月薪 ÷ ${30 * normalHours}）<br><span class="small">前2小時：$${(hourly * m1).toFixed(1)}/hr · 第3小時起：$${(hourly * m2).toFixed(1)}/hr</span></span>`;
+  }
+}
+
+function renderConfiguredSalaryChips(){
+  const container = document.getElementById("configuredSalaryChips");
+  const activeYm = document.getElementById("setSalaryMonth").value;
+  const entries = Object.entries(settingsDraftSalary)
+    .filter(([, v]) => Number(v) > 0)
+    .sort(([a], [b]) => a.localeCompare(b));
+  if(!entries.length){
+    container.innerHTML = `<span class="small">尚未儲存任何月份薪資</span>`;
+    return;
+  }
+  container.innerHTML = entries.map(([ym, v]) => `
+    <button type="button" class="pick-chip ${ym === activeYm ? "active" : ""}" data-jump-salary-ym="${ym}">${ym}: ${formatMoney(v)}</button>
+  `).join("");
+}
+
+function loadMonthIntoSalaryDraftFields(ym){
+  document.getElementById("setSalaryMonth").value = ym;
+  const val = settingsDraftSalary[ym];
+  document.getElementById("setSalaryAmount").value = val > 0 ? val : "";
+  const manMins = Number(settingsDraftManualPay[ym]) || 0;
+  document.getElementById("setManualPayDuration").value = manMins > 0 ? minutesToDuration(manMins) : "0:00";
+  updateSalaryPreview();
+  renderConfiguredSalaryChips();
+}
+
+function commitCurrentMonthToDraft(){
+  const ym = document.getElementById("setSalaryMonth").value;
+  if(!ym) return;
+  const sal = Number(document.getElementById("setSalaryAmount").value) || 0;
+  if(sal > 0) settingsDraftSalary[ym] = sal;
+  else delete settingsDraftSalary[ym];
+
+  const yearNum = Number(ym.slice(0, 4));
+  if(yearNum <= 2026){
+    try{
+      const mins = durationToMinutes(document.getElementById("setManualPayDuration").value);
+      if(mins > 0) settingsDraftManualPay[ym] = mins;
+      else delete settingsDraftManualPay[ym];
+    }catch(_){}
+  }
+}
+
+function refreshSettingsLeavePreview(){
+  const y = Number(document.getElementById("setLeaveYear").value) || viewedYear();
+  const annual = Number(document.getElementById("setAnnualLeave").value) || 0;
+  const reserved = Number(document.getElementById("setReservedLeave").value) || 0;
+  const usage = getLeaveUsageByYear(y);
+  const totalReservedUsed = state.leaves.reduce((s, l) => l.type === "reservedLeave" ? s + l.minutes / 60 : s, 0);
+  const bal = getBalance(y);
+
+  document.getElementById("settingsBalanceSummary").innerHTML =
+    `<span class="status-icon">✓</span><span>${y} 年特休剩餘 <b>${formatHours(Math.max(0, annual - usage.annualHours))}h</b> · 保留假剩餘 <b>${formatHours(Math.max(0, reserved - totalReservedUsed))}h</b> · 目前補休 <b>${formatDurationMinutes(bal.compRemainMins)}</b></span>`;
+
+  const prevYear = y - 1;
+  const prevEnd = getYearEndSettlement(prevYear);
+  const alreadyTransferred = Number(state.settings.reservedLeaveByYear?.[String(prevYear)] || 0);
+  document.getElementById("settlementSummary").textContent =
+    `${prevYear} 年剩餘特休 ${formatHours(prevEnd.remainingAnnual)} 小時（已轉入保留假 ${formatHours(alreadyTransferred)} 小時）。`;
+
+  const showManualComp = y <= 2026 || (Number(state.settings.compLeave) || 0) > 0;
+  document.getElementById("manualImportCompWrap").style.display = showManualComp ? "grid" : "none";
+  document.getElementById("manualImportCompNote").textContent = y >= 2027
+    ? "2027 年起已無人工匯入資料，所有補休與加班全面依每日紀錄計算。"
+    : "說明：2026 年「人工匯入補休／加班時數」皆採 1:1 計算；2027 年起全面採每日紀錄，不再有人工匯入資料。";
+}
+
+function renderCustomShiftList(){
+  const custom = state.settings.customShiftTypes || {};
+  const keys = Object.keys(custom);
+  const el = document.getElementById("customShiftList");
+  if(!keys.length){
+    el.innerHTML = `<span class="small">尚無自訂班別</span>`;
+    return;
+  }
+  el.innerHTML = keys.map(k => `
+    <span class="pick-chip" style="display:inline-flex;align-items:center;gap:6px">
+      ${escapeHtml(custom[k].label)} (${custom[k].hours}h)
+      <button type="button" style="border:0;background:transparent;color:#dc2626;font-weight:900;padding:0 2px" data-del-custom-shift="${k}" aria-label="刪除自訂班別">✕</button>
+    </span>
+  `).join("");
+}
+
+function openSettingsModal(tab = "salary"){
+  settingsDraftSalary = { ...(state.settings.salaryByMonth || {}) };
+  settingsDraftManualPay = { ...(state.settings.manualImportedOvertimePayByMonth || {}) };
+  settingsDraftAnnualLeave = { ...(state.settings.annualLeaveByYear || {}) };
+
+  document.getElementById("setRateMode").value = state.settings.overtimeRateMode || "fraction";
+  document.getElementById("setNormalHours").value = state.settings.normalHours || 8;
+  currentDraftYm = viewedYm();
+  loadMonthIntoSalaryDraftFields(currentDraftYm);
+
+  const y = viewedYear();
+  currentLeaveDraftYear = y;
+  document.getElementById("setLeaveYear").value = y;
+  document.getElementById("setAnnualLeave").value = Object.prototype.hasOwnProperty.call(settingsDraftAnnualLeave, y)
+    ? settingsDraftAnnualLeave[y]
+    : annualEntitlement(y);
+  document.getElementById("setReservedLeave").value = Number(state.settings.reservedLeave) || 0;
+  document.getElementById("setCompLeave").value = minutesToDuration(state.settings.compLeave || 0);
+  refreshSettingsLeavePreview();
+  renderCustomShiftList();
+  document.getElementById("setPeriodStart").value = state.settings.periodStart || dateKey(basePeriodStart());
+  switchSettingsTab(tab);
+  openModal("settingsModal");
+}
+
+function saveSettingsFromModal(){
+  commitCurrentMonthToDraft();
+
+  let compLeaveMins = 0;
+  try{
+    compLeaveMins = durationToMinutes(document.getElementById("setCompLeave").value);
+  }catch(err){
+    alert("人工匯入補休格式錯誤：" + err.message);
+    switchSettingsTab("leave");
+    return;
+  }
+
+  const ym = document.getElementById("setSalaryMonth").value;
+  if(ym && Number(ym.slice(0, 4)) <= 2026){
+    try{
+      const mins = durationToMinutes(document.getElementById("setManualPayDuration").value);
+      if(mins > 0) settingsDraftManualPay[ym] = mins;
+      else delete settingsDraftManualPay[ym];
+    }catch(err){
+      alert("人工匯入領費時數格式錯誤：" + err.message);
+      switchSettingsTab("salary");
+      return;
+    }
+  }
+
+  const leaveYear = Number(document.getElementById("setLeaveYear").value) || viewedYear();
+  const annualVal = Math.max(0, Number(document.getElementById("setAnnualLeave").value) || 0);
+  settingsDraftAnnualLeave[leaveYear] = annualVal;
+  const reservedVal = Math.max(0, Number(document.getElementById("setReservedLeave").value) || 0);
+
+  state.settings = {
+    ...state.settings,
+    salaryByMonth: { ...settingsDraftSalary },
+    manualImportedOvertimePayByMonth: { ...settingsDraftManualPay },
+    overtimeRateMode: document.getElementById("setRateMode").value,
+    normalHours: Math.max(1, Number(document.getElementById("setNormalHours").value) || 8),
+    annualLeaveByYear: { ...settingsDraftAnnualLeave },
+    reservedLeave: reservedVal,
+    compLeave: compLeaveMins,
+    periodStart: document.getElementById("setPeriodStart").value || ""
+  };
+
+  saveState();
+  closeModal("settingsModal");
+  renderAll();
+  toast("設定已儲存並更新計算");
+}
+
+/* =========================================================
+   13. YEAR-END & COMP SETTLEMENT
+   ========================================================= */
+function openCompSettlementModal(year = viewedYear() - 1){
+  document.getElementById("compSettlementYear").value = year;
+  renderCompSettlementPreview();
+  openModal("compSettlementModal");
+}
+
+function renderCompSettlementPreview(){
+  const year = Number(document.getElementById("compSettlementYear").value) || (viewedYear() - 1);
+  const st = getYearCompSettlement(year);
+  const amtEl = document.getElementById("compSettlementAmount");
+  const undoBtn = document.getElementById("undoCompSettlementBtn");
+  if(st.settled > 0){
+    amtEl.className = "status ok";
+    amtEl.innerHTML = `<span class="status-icon">✓</span><span>${year} 年已結清 <b>${formatDurationMinutes(st.settled)}</b></span>`;
+    if(undoBtn) undoBtn.style.display = "inline-flex";
+  }else{
+    amtEl.className = "status info";
+    amtEl.innerHTML = `<span class="status-icon">→</span><span>可結清 <b>${formatDurationMinutes(st.remaining)}</b></span>`;
+    if(undoBtn) undoBtn.style.display = "none";
+  }
+  document.getElementById("compSettlementStatus").textContent =
+    `${year} 年${st.manualBase > 0 ? `期初人工匯入(1:1) ${formatDurationMinutes(st.manualBase)} ＋ ` : ""}轉補休 ${formatDurationMinutes(st.generated)}，已使用 ${formatDurationMinutes(st.used)}；結清後該年度補休餘額歸零。`;
+  document.getElementById("confirmCompSettlementBtn").disabled = st.settled > 0 || st.remaining <= 0;
+}
+
+function undoCompSettlement(){
+  const year = Number(document.getElementById("compSettlementYear").value);
+  if(!Number.isInteger(year)) return;
+  if(!state.settings.compSettlementByYear?.[String(year)]) return;
+  if(!confirm(`確定要撤銷 ${year} 年的補休結清紀錄嗎？`)) return;
+  delete state.settings.compSettlementByYear[String(year)];
+  saveState();
+  renderCompSettlementPreview();
+  renderAll();
+  toast(`已撤銷 ${year} 年補休結清紀錄`);
+}
+
+function confirmCompSettlement(){
+  const year = Number(document.getElementById("compSettlementYear").value);
+  if(!Number.isInteger(year) || year < 2020 || year > 2100){
+    alert("請輸入有效年度。");
+    return;
+  }
+  const st = getYearCompSettlement(year);
+  if(st.settled > 0 || st.remaining <= 0) return;
+  if(!confirm(`確定結清 ${year} 年剩餘 ${formatDurationMinutes(st.remaining)} 補休嗎？`)) return;
+  state.settings.compSettlementByYear = {
+    ...(state.settings.compSettlementByYear || {}),
+    [String(year)]: st.remaining
+  };
+  saveState();
+  closeModal("compSettlementModal");
+  renderAll();
+  toast(`已結清 ${year} 年補休 ${formatDurationMinutes(st.remaining)}`);
+}
+
+/* =========================================================
+   14. MONTH PICKER MODAL
+   ========================================================= */
+function openMonthPicker(){
+  monthPickerYear = viewedYear();
+  renderMonthPicker();
+  openModal("monthPickerModal");
+}
+function renderMonthPicker(){
+  document.getElementById("mpYearLabel").textContent = `${monthPickerYear} 年`;
+  const curYm = viewedYm();
+  const todayYm = ymKey(new Date());
+  document.getElementById("mpMonthGrid").innerHTML = Array.from({ length: 12 }, (_, idx) => {
+    const ym = `${monthPickerYear}-${pad(idx + 1)}`;
+    const active = ym === curYm ? "primary-btn" : (ym === todayYm ? "soft-btn" : "ghost-btn");
+    return `<button type="button" class="${active}" style="min-height:44px" data-pick-ym="${ym}">${idx + 1} 月</button>`;
+  }).join("");
+}
+
+/* =========================================================
+   15. BACKUP EXPORT / IMPORT / RESET
+   ========================================================= */
+function exportData(){
+  const blob = new Blob([JSON.stringify({ app: "Shift Calendar", version: APP.version, data: state }, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `shift-calendar-${dateKey(new Date())}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  toast("已匯出 JSON 備份");
+}
+
+function importData(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const parsed = JSON.parse(reader.result);
+      const incoming = parsed.data || parsed;
+      if(!incoming || !incoming.settings || (!Array.isArray(incoming.events) && !Array.isArray(incoming.shifts))){
+        throw new Error("格式不符");
+      }
+      state = normalizeAndMigrateData(incoming);
+      saveState();
+      renderAll();
+      toast("資料匯入成功");
+    }catch(err){
+      alert("匯入失敗：JSON 備份格式不正確。");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAllData(){
+  if(!confirm("確定要刪除全部班表、請假、加班與薪資設定嗎？此動作無法復原。")) return;
+  state = createDefaultState();
+  viewMode = "month";
+  saveState();
+  renderAll();
+  toast("已清除所有資料");
+}
+
+/* =========================================================
+   16. BATCH MODE & CALENDAR INTERACTION
+   ========================================================= */
+function toggleBatchMode(forceState = null){
+  batchMode = forceState !== null ? forceState : !batchMode;
+  if(!batchMode) batchSelection.clear();
+  renderAll();
+}
+
+function datesBetween(a, b){
+  const d1 = parseDate(a), d2 = parseDate(b);
+  const from = d1 <= d2 ? d1 : d2;
+  const to = d1 <= d2 ? d2 : d1;
+  const out = [];
+  for(let d = new Date(from); d <= to; d = addDays(d, 1)){
+    out.push(dateKey(d));
+  }
+  return out;
+}
+
+function updateCalendarBatchClasses(){
+  document.querySelectorAll("#calendarGrid .day-cell[data-date], #listView .agenda-card[data-date]").forEach(el => {
+    const sel = batchSelection.has(el.dataset.date);
+    el.classList.toggle("range-selected", sel);
+    const chk = el.querySelector(".batch-check");
+    if(chk) chk.textContent = sel ? "✓" : "";
+  });
+  document.getElementById("batchCountText").textContent = `已選取 ${batchSelection.size} 天（點擊日期可複選，或拖曳連續日期）`;
+  document.getElementById("batchApplyBtn").disabled = batchSelection.size === 0;
+}
+
+/* =========================================================
+   17. EVENT LISTENERS
+   ========================================================= */
+// Top bar navigation
+document.getElementById("prevMonthBtn").onclick = () => {
+  if(viewMode === "period"){
+    const target = addDays(parseDate(state.selectedDate), -28);
+    state.selectedDate = dateKey(target);
+    state.viewDate = monthKey(target);
+  }else{
+    state.viewDate = monthKey(addMonths(viewedDateObj(), -1));
+  }
+  renderAll();
+};
+document.getElementById("nextMonthBtn").onclick = () => {
+  if(viewMode === "period"){
+    const target = addDays(parseDate(state.selectedDate), 28);
+    state.selectedDate = dateKey(target);
+    state.viewDate = monthKey(target);
+  }else{
+    state.viewDate = monthKey(addMonths(viewedDateObj(), 1));
+  }
+  renderAll();
+};
+document.getElementById("todayBtn").onclick = () => {
+  const now = new Date();
+  state.viewDate = monthKey(now);
+  state.selectedDate = dateKey(now);
+  renderAll();
+  scrollTodayIntoView();
+  toast("已回到今天");
+};
+document.getElementById("monthPickerBtn").onclick = openMonthPicker;
+document.getElementById("mpPrevYear").onclick = () => { monthPickerYear--; renderMonthPicker(); };
+document.getElementById("mpNextYear").onclick = () => { monthPickerYear++; renderMonthPicker(); };
+document.getElementById("mpMonthGrid").onclick = e => {
+  const btn = e.target.closest("[data-pick-ym]");
+  if(!btn) return;
+  const ym = btn.dataset.pickYm;
+  state.viewDate = `${ym}-01`;
+  state.selectedDate = ym === ymKey(new Date()) ? dateKey(new Date()) : `${ym}-01`;
+  closeModal("monthPickerModal");
+  renderAll();
+};
+
+document.getElementById("monthViewBtn").onclick = () => {
+  viewMode = "month";
+  state.settings.preferredViewMode = "month";
+  saveState();
+  renderAll();
+};
+document.getElementById("periodViewBtn").onclick = () => {
+  viewMode = "period";
+  state.settings.preferredViewMode = "period";
+  saveState();
+  renderAll();
+};
+document.getElementById("listViewBtn").onclick = () => {
+  viewMode = "list";
+  renderAll();
+  scrollTodayIntoView();
+};
+document.getElementById("quickPeriodStart").onchange = e => {
+  state.settings.periodStart = e.target.value || "";
+  saveState();
+  renderAll();
+  toast("已更新四週起始日");
+};
+document.getElementById("listShowAllBtn").onclick = () => { listShowOnlyActive = false; renderCalendarOrList(); };
+document.getElementById("listShowActiveBtn").onclick = () => { listShowOnlyActive = true; renderCalendarOrList(); };
+
+// Desktop buttons & sidebar
+document.getElementById("desktopAddBtn").onclick = () => openModal("actionSheetModal");
+document.getElementById("desktopBatchBtn").onclick = () => toggleBatchMode();
+document.getElementById("desktopQueryBtn").onclick = () => openQueryModal("overtime", "month");
+document.getElementById("desktopSettingsBtn").onclick = () => openSettingsModal("salary");
+
+document.getElementById("sideShiftBtn").onclick = () => openShiftModal(state.selectedDate, false);
+document.getElementById("sideLeaveBtn").onclick = () => openLeaveModal(state.selectedDate);
+document.getElementById("sideOvertimeBtn").onclick = () => openOvertimeModal(state.selectedDate);
+document.getElementById("sideBatchBtn").onclick = () => toggleBatchMode();
+document.getElementById("sideCompSettleBtn").onclick = () => openCompSettlementModal(viewedYear() - 1);
+document.getElementById("sideSalaryBtn").onclick = () => openSettingsModal("salary");
+document.getElementById("sideExportBtn").onclick = exportData;
+document.getElementById("sideImportBtn").onclick = () => document.getElementById("importFile").click();
+document.getElementById("sideResetBtn").onclick = resetAllData;
+document.querySelectorAll("[data-open-query]").forEach(btn => {
+  btn.onclick = () => openQueryModal(btn.dataset.openQuery, "all");
+});
+
+// Mobile bottom nav
+document.getElementById("mbNavCalendar").onclick = () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+document.getElementById("mbNavAdd").onclick = () => openModal("actionSheetModal");
+document.getElementById("mbNavBatch").onclick = () => toggleBatchMode();
+document.getElementById("mbNavQuery").onclick = () => openQueryModal("overtime", "month");
+document.getElementById("mbNavSettings").onclick = () => openSettingsModal("salary");
+
+// Batch bar buttons
+document.getElementById("batchCancelBtn").onclick = () => toggleBatchMode(false);
+document.getElementById("batchApplyBtn").onclick = () => {
+  if(batchSelection.size > 0) openShiftModal(null, true);
+};
+
+// Action sheet choices
+document.getElementById("actSetShift").onclick = () => { closeModal("actionSheetModal"); openShiftModal(state.selectedDate, false); };
+document.getElementById("actAddLeave").onclick = () => { closeModal("actionSheetModal"); openLeaveModal(state.selectedDate); };
+document.getElementById("actAddOvertime").onclick = () => { closeModal("actionSheetModal"); openOvertimeModal(state.selectedDate); };
+document.getElementById("actStartBatch").onclick = () => { closeModal("actionSheetModal"); toggleBatchMode(true); toast("請點選要排班的多個日期"); };
+
+// Insights quick triggers
+document.getElementById("quickLeaveSettingsBtn").onclick = () => openSettingsModal("leave");
+document.getElementById("quickSalarySettingsBtn").onclick = () => openSettingsModal("salary");
+document.getElementById("overtimePayPanel").addEventListener("click", e => {
+  if(e.target.closest("#inlineSetSalaryBtn")) openSettingsModal("salary");
+  if(e.target.closest("#panelViewMonthOtBtn")) openQueryModal("overtime", "month");
+});
+
+// Calendar & List clicks + Desktop drag-select
+const calGrid = document.getElementById("calendarGrid");
+calGrid.addEventListener("pointerdown", e => {
+  if(e.pointerType !== "mouse" || e.button !== 0) return;
+  const cell = e.target.closest(".day-cell[data-date]");
+  if(!cell) return;
+  dragSelecting = true;
+  didDragRange = false;
+  dragAnchorDate = cell.dataset.date;
+  dragBaseSelection = batchMode ? new Set(batchSelection) : new Set();
+});
+calGrid.addEventListener("pointermove", e => {
+  if(!dragSelecting) return;
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const cell = el?.closest(".day-cell[data-date]");
+  if(cell && cell.dataset.date !== dragAnchorDate){
+    didDragRange = true;
+    if(!batchMode){
+      batchMode = true;
+      renderBatchBar();
+    }
+    const rangeDates = datesBetween(dragAnchorDate, cell.dataset.date);
+    batchSelection = new Set([...dragBaseSelection, ...rangeDates]);
+    updateCalendarBatchClasses();
+  }
+});
+window.addEventListener("pointerup", () => {
+  if(!dragSelecting) return;
+  dragSelecting = false;
+  if(didDragRange && batchMode && batchSelection.size > 1){
+    didDragRange = false;
+    suppressNextDayTap = true;
+    setTimeout(() => { suppressNextDayTap = false; }, 0);
+    openShiftModal(null, true);
+  }
+  didDragRange = false;
+});
+
+function handleDateTap(date){
+  if(suppressNextDayTap){ suppressNextDayTap = false; return; }
+  if(batchMode){
+    if(batchSelection.has(date)) batchSelection.delete(date);
+    else batchSelection.add(date);
+    updateCalendarBatchClasses();
+    return;
+  }
+  state.selectedDate = date;
+  const clickedYm = date.slice(0, 7);
+  if(clickedYm !== viewedYm()){
+    state.viewDate = `${clickedYm}-01`;
+    renderAll();
+  }else{
+    renderCalendarOrList();
+    renderDayDetail();
+  }
+  if(window.innerWidth < 720){
+    document.getElementById("dayDetailCard").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+}
+
+calGrid.addEventListener("click", e => {
+  const cell = e.target.closest(".day-cell[data-date]");
+  if(cell) handleDateTap(cell.dataset.date);
+});
+document.getElementById("listView").addEventListener("click", e => {
+  const card = e.target.closest(".agenda-card[data-date]");
+  if(card) handleDateTap(card.dataset.date);
+});
+
+// Day Detail Panel events (delegated)
+document.getElementById("dayDetailCard").addEventListener("click", e => {
+  const t = e.target;
+  if(t.closest("#prevDayBtn")){
+    const prev = addDays(parseDate(state.selectedDate), -1);
+    state.selectedDate = dateKey(prev);
+    state.viewDate = monthKey(prev);
+    renderAll();
+    return;
+  }
+  if(t.closest("#nextDayBtn")){
+    const next = addDays(parseDate(state.selectedDate), 1);
+    state.selectedDate = dateKey(next);
+    state.viewDate = monthKey(next);
+    renderAll();
+    return;
+  }
+  if(t.closest("#slotSetShiftBtn") || t.closest("#detailEditShiftBtn")){
+    openShiftModal(state.selectedDate, false);
+    return;
+  }
+  if(t.closest("#detailDelShiftBtn")){
+    state.shifts = state.shifts.filter(s => s.date !== state.selectedDate);
+    saveState(); renderAll(); toast("已移除本日班別");
+    return;
+  }
+  if(t.closest("#slotAddLeaveBtn")){
+    openLeaveModal(state.selectedDate);
+    return;
+  }
+  if(t.closest("#slotAddOtBtn")){
+    openOvertimeModal(state.selectedDate);
+    return;
+  }
+  const editLeave = t.closest("[data-edit-leave]");
+  if(editLeave){ openLeaveModal(state.selectedDate, editLeave.dataset.editLeave); return; }
+  const delLeave = t.closest("[data-del-leave]");
+  if(delLeave){
+    state.leaves = state.leaves.filter(l => l.id !== delLeave.dataset.delLeave);
+    saveState(); renderAll(); toast("已刪除請假紀錄");
+    return;
+  }
+  const editOt = t.closest("[data-edit-ot]");
+  if(editOt){ openOvertimeModal(state.selectedDate, editOt.dataset.editOt); return; }
+  const delOt = t.closest("[data-del-ot]");
+  if(delOt){
+    state.overtimes = state.overtimes.filter(o => o.id !== delOt.dataset.delOt);
+    saveState(); renderAll(); toast("已刪除加班紀錄");
+  }
+});
+
+// Shift modal events
+document.getElementById("shiftType").onchange = e => applyShiftPresetToForm(e.target.value);
+document.getElementById("quickShiftChips").onclick = e => {
+  const btn = e.target.closest("[data-quick-shift]");
+  if(btn) applyShiftPresetToForm(btn.dataset.quickShift);
+};
+document.getElementById("shiftForm").onsubmit = e => { e.preventDefault(); saveShiftFromModal(); };
+document.getElementById("clearShiftBtn").onclick = clearShiftFromModal;
+
+// Leave modal events
+document.getElementById("leaveQuickChips").onclick = e => {
+  const btn = e.target.closest("[data-leave-mins]");
+  if(!btn) return;
+  const val = btn.dataset.leaveMins;
+  let mins = 0;
+  if(val === "full"){
+    const s = shiftFor(document.getElementById("leaveDate").value || state.selectedDate);
+    mins = s && s.hours > 0 ? Math.round(s.hours * 60) : (Number(state.settings.normalHours) || 8) * 60;
+  }else{
+    mins = Number(val);
+  }
+  const type = document.getElementById("leaveType").value;
+  document.getElementById("leaveDuration").value = type === "comp" ? minutesToDuration(mins) : formatHours(mins / 60);
+  updateLeaveBalancePreview();
+};
+["leaveDate", "leaveType", "leaveDuration"].forEach(id => {
+  document.getElementById(id).addEventListener("input", updateLeaveBalancePreview);
+  document.getElementById(id).addEventListener("change", updateLeaveBalancePreview);
+});
+function syncLeaveFromClock(){
+  const mins = calcClockMinutes(document.getElementById("leaveStart").value, document.getElementById("leaveEnd").value);
+  if(mins > 0){
+    const type = document.getElementById("leaveType").value;
+    document.getElementById("leaveDuration").value = type === "comp" ? minutesToDuration(mins) : formatHours(mins / 60);
+    updateLeaveBalancePreview();
+  }
+}
+document.getElementById("leaveStart").onchange = syncLeaveFromClock;
+document.getElementById("leaveEnd").onchange = syncLeaveFromClock;
+document.getElementById("leaveForm").onsubmit = e => { e.preventDefault(); saveLeaveFromModal(); };
+document.getElementById("deleteLeaveBtn").onclick = deleteLeaveFromModal;
+
+// Overtime modal events
+document.getElementById("otQuickChips").onclick = e => {
+  const btn = e.target.closest("[data-ot-mins]");
+  if(!btn) return;
+  document.getElementById("otDuration").value = minutesToDuration(Number(btn.dataset.otMins));
+  updateOtPreview();
+};
+["otDate", "otMode", "otDayType", "otDuration"].forEach(id => {
+  document.getElementById(id).addEventListener("input", updateOtPreview);
+  document.getElementById(id).addEventListener("change", updateOtPreview);
+});
+function syncOtFromClock(){
+  const mins = calcClockMinutes(document.getElementById("otStart").value, document.getElementById("otEnd").value);
+  if(mins > 0){
+    document.getElementById("otDuration").value = minutesToDuration(mins);
+    updateOtPreview();
+  }
+}
+document.getElementById("otStart").onchange = syncOtFromClock;
+document.getElementById("otEnd").onchange = syncOtFromClock;
+document.getElementById("overtimeForm").onsubmit = e => { e.preventDefault(); saveOvertimeFromModal(); };
+document.getElementById("deleteOtBtn").onclick = deleteOvertimeFromModal;
+
+// Query modal events
+document.getElementById("queryTabs").onclick = e => {
+  const btn = e.target.closest("[data-qtab]");
+  if(!btn) return;
+  activeQueryTab = btn.dataset.qtab;
+  renderQueryModal();
+};
+document.getElementById("queryQuickRange").onclick = e => {
+  const btn = e.target.closest("[data-qrange]");
+  if(btn) setQueryQuickRange(btn.dataset.qrange, true);
+};
+["queryFrom", "queryTo", "querySearch"].forEach(id => {
+  document.getElementById(id).addEventListener("input", renderQueryModal);
+  document.getElementById(id).addEventListener("change", renderQueryModal);
+});
+document.getElementById("queryList").onclick = e => {
+  const otBtn = e.target.closest("[data-q-edit-ot]");
+  if(otBtn){ closeModal("queryModal"); openOvertimeModal(state.selectedDate, otBtn.dataset.qEditOt); return; }
+  const lvBtn = e.target.closest("[data-q-edit-leave]");
+  if(lvBtn){ closeModal("queryModal"); openLeaveModal(state.selectedDate, lvBtn.dataset.qEditLeave); }
+};
+
+// Settings modal events
+document.getElementById("settingsTabs").onclick = e => {
+  const btn = e.target.closest("[data-stab]");
+  if(btn) switchSettingsTab(btn.dataset.stab);
+};
+let currentDraftYm = viewedYm();
+document.getElementById("setSalaryMonth").addEventListener("focus", e => { currentDraftYm = e.target.value; });
+document.getElementById("setSalaryMonth").addEventListener("change", e => {
+  const newYm = e.target.value;
+  if(currentDraftYm && currentDraftYm !== newYm){
+    const prevSal = Number(document.getElementById("setSalaryAmount").value) || 0;
+    if(prevSal > 0) settingsDraftSalary[currentDraftYm] = prevSal;
+    else delete settingsDraftSalary[currentDraftYm];
+    if(Number(currentDraftYm.slice(0, 4)) <= 2026){
+      try{
+        const mins = durationToMinutes(document.getElementById("setManualPayDuration").value);
+        if(mins > 0) settingsDraftManualPay[currentDraftYm] = mins;
+        else delete settingsDraftManualPay[currentDraftYm];
+      }catch(_){}
+    }
+  }
+  currentDraftYm = newYm;
+  loadMonthIntoSalaryDraftFields(newYm);
+});
+["setSalaryAmount", "setManualPayDuration", "setRateMode", "setNormalHours"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => {
+    commitCurrentMonthToDraft();
+    updateSalaryPreview();
+    renderConfiguredSalaryChips();
+  });
+  document.getElementById(id).addEventListener("change", () => {
+    commitCurrentMonthToDraft();
+    updateSalaryPreview();
+    renderConfiguredSalaryChips();
+  });
+});
+document.getElementById("configuredSalaryChips").onclick = e => {
+  const btn = e.target.closest("[data-jump-salary-ym]");
+  if(!btn) return;
+  commitCurrentMonthToDraft();
+  currentDraftYm = btn.dataset.jumpSalaryYm;
+  loadMonthIntoSalaryDraftFields(currentDraftYm);
+};
+document.getElementById("copyPrevSalaryBtn").onclick = () => {
+  const ym = document.getElementById("setSalaryMonth").value;
+  const prevYm = shiftMonthYm(ym, -1);
+  const prevSal = settingsDraftSalary[prevYm] || getMonthlySalary(prevYm);
+  if(!prevSal){
+    toast(`${prevYm} 尚未設定月薪`);
+    return;
+  }
+  document.getElementById("setSalaryAmount").value = prevSal;
+  commitCurrentMonthToDraft();
+  updateSalaryPreview();
+  renderConfiguredSalaryChips();
+  toast(`已套用 ${prevYm} 月薪 ${formatMoney(prevSal)}`);
+};
+document.getElementById("fillYearSalaryBtn").onclick = () => {
+  const ym = document.getElementById("setSalaryMonth").value;
+  const sal = Number(document.getElementById("setSalaryAmount").value) || 0;
+  if(sal <= 0){ toast("請先輸入本月月薪金額"); return; }
+  const [yr, mo] = ym.split("-").map(Number);
+  for(let m = mo; m <= 12; m++){
+    settingsDraftSalary[`${yr}-${pad(m)}`] = sal;
+  }
+  renderConfiguredSalaryChips();
+  toast(`已將 ${formatMoney(sal)} 套用至 ${yr}年 ${mo}～12月`);
+};
+
+document.getElementById("setLeaveYear").addEventListener("focus", e => {
+  const y = Number(e.target.value);
+  if(y) currentLeaveDraftYear = y;
+});
+document.getElementById("setLeaveYear").addEventListener("change", e => {
+  const newY = Number(e.target.value) || viewedYear();
+  if(currentLeaveDraftYear && currentLeaveDraftYear !== newY){
+    settingsDraftAnnualLeave[currentLeaveDraftYear] = Math.max(0, Number(document.getElementById("setAnnualLeave").value) || 0);
+  }
+  currentLeaveDraftYear = newY;
+  document.getElementById("setAnnualLeave").value = Object.prototype.hasOwnProperty.call(settingsDraftAnnualLeave, newY)
+    ? settingsDraftAnnualLeave[newY]
+    : annualEntitlement(newY);
+  refreshSettingsLeavePreview();
+});
+document.getElementById("setAnnualLeave").addEventListener("input", () => {
+  const y = Number(document.getElementById("setLeaveYear").value) || viewedYear();
+  settingsDraftAnnualLeave[y] = Math.max(0, Number(document.getElementById("setAnnualLeave").value) || 0);
+  refreshSettingsLeavePreview();
+});
+["setReservedLeave", "setCompLeave"].forEach(id => {
+  document.getElementById(id).addEventListener("input", refreshSettingsLeavePreview);
+});
+
+document.getElementById("settlePrevYearBtn").onclick = () => {
+  const y = (Number(document.getElementById("setLeaveYear").value) || viewedYear()) - 1;
+  const prevEnd = getYearEndSettlement(y);
+  const already = Number(state.settings.reservedLeaveByYear?.[String(y)] || 0);
+  if(already > 0){ alert(`${y} 年已結算轉入 ${formatHours(already)} 小時，不重複轉入。`); return; }
+  if(prevEnd.remainingAnnual <= 0){ alert(`${y} 年沒有剩餘特休可轉入保留假。`); return; }
+  if(!confirm(`確定將 ${y} 年剩餘 ${formatHours(prevEnd.remainingAnnual)} 小時特休轉入保留假嗎？`)) return;
+  state.settings.reservedLeave = (Number(state.settings.reservedLeave) || 0) + prevEnd.remainingAnnual;
+  state.settings.reservedLeaveByYear = { ...(state.settings.reservedLeaveByYear || {}), [String(y)]: prevEnd.remainingAnnual };
+  saveState();
+  document.getElementById("setReservedLeave").value = state.settings.reservedLeave;
+  refreshSettingsLeavePreview();
+  renderAll();
+  toast(`已轉入 ${formatHours(prevEnd.remainingAnnual)} 小時至保留假`);
+};
+document.getElementById("openSettleCompBtn").onclick = () => {
+  const y = (Number(document.getElementById("setLeaveYear").value) || viewedYear()) - 1;
+  closeModal("settingsModal");
+  openCompSettlementModal(y);
+};
+
+document.getElementById("addCustomShiftBtn").onclick = () => {
+  const label = document.getElementById("newShiftLabel").value.trim();
+  const hours = Math.max(0, Number(document.getElementById("newShiftHours").value) || 0);
+  const start = document.getElementById("newShiftStart").value;
+  const end = document.getElementById("newShiftEnd").value;
+  if(!label){ toast("請輸入班別簡稱"); return; }
+  const key = `custom_${Date.now()}`;
+  state.settings.customShiftTypes = {
+    ...(state.settings.customShiftTypes || {}),
+    [key]: { label, short: label, category: hours > 0 ? "work" : "off", hours, start, end }
+  };
+  saveState();
+  document.getElementById("newShiftLabel").value = "";
+  renderCustomShiftList();
+  toast(`已新增自訂班別「${label}」`);
+};
+document.getElementById("customShiftList").onclick = e => {
+  const del = e.target.closest("[data-del-custom-shift]");
+  if(!del) return;
+  const key = del.dataset.delCustomShift;
+  if(state.settings.customShiftTypes?.[key]){
+    delete state.settings.customShiftTypes[key];
+    saveState();
+    renderCustomShiftList();
+    toast("已刪除自訂班別");
+  }
+};
+
+document.getElementById("settingsExportBtn").onclick = exportData;
+document.getElementById("settingsImportBtn").onclick = () => document.getElementById("importFile").click();
+document.getElementById("settingsResetBtn").onclick = () => { closeModal("settingsModal"); resetAllData(); };
+document.getElementById("importFile").onchange = e => {
+  if(e.target.files[0]) importData(e.target.files[0]);
+  e.target.value = "";
+};
+document.getElementById("settingsForm").onsubmit = e => { e.preventDefault(); saveSettingsFromModal(); };
+
+// Comp settlement events
+document.getElementById("compSettlementYear").addEventListener("input", renderCompSettlementPreview);
+document.getElementById("confirmCompSettlementBtn").onclick = confirmCompSettlement;
+document.getElementById("undoCompSettlementBtn").onclick = undoCompSettlement;
+
+// Global modal close handlers
+document.addEventListener("click", e => {
+  const closeBtn = e.target.closest("[data-close]");
+  if(closeBtn){ closeModal(closeBtn.dataset.close); return; }
+  if(e.target.classList.contains("modal-backdrop")){
+    closeModal(e.target.id);
+  }
+});
+
+/* =========================================================
+   18. TOAST NOTIFICATION
+   ========================================================= */
+let toastTimer;
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 2000);
+}
+
+/* =========================================================
+   19. INITIALIZE (固定開啟於當日版面)
+   ========================================================= */
+(function init(){
+  const today = new Date();
+  viewMode = state.settings.preferredViewMode === "period" ? "period" : "month";
+  state.viewDate = monthKey(today);
+  state.selectedDate = dateKey(today);
+  renderAll();
+})();
+</script>
+</body>
+</html>
