@@ -1404,7 +1404,7 @@ details.sub-panel[open] > summary::after {
     <div class="drug-nav-inner" id="drug-tabs">
       <button type="button" class="drug-tab active" data-drug="vancomycin">
         <span class="drug-tab-name">Vancomycin</span>
-        <span class="drug-tab-desc">AUC₂₄/MIC &amp; 谷濃度監測</span>
+        <span class="drug-tab-desc">AUC₂₄/MIC &amp; 波谷濃度監測</span>
       </button>
       <button type="button" class="drug-tab" data-drug="valproic">
         <span class="drug-tab-name">Valproic Acid</span>
@@ -1430,7 +1430,7 @@ details.sub-panel[open] > summary::after {
     <div class="top-control-bar">
       <div class="drug-headline">
         <h2 id="active-drug-title">Vancomycin</h2>
-        <span id="active-drug-subtitle" class="drug-subtitle-tag">Glycopeptide 抗生素｜AUC₂₄/MIC 與谷濃度監測</span>
+        <span id="active-drug-subtitle" class="drug-subtitle-tag">Glycopeptide 抗生素｜AUC₂₄/MIC 與波谷濃度監測</span>
         <button type="button" id="btn-open-guide-inline" class="btn btn-sm">? 查看操作說明與注意事項</button>
       </div>
       <div class="mode-switcher" role="tablist" aria-label="計算模式切換">
@@ -2005,7 +2005,7 @@ details.sub-panel[open] > summary::after {
     if (targetMode === 'trough15_20') {
       return {
         mode: 'trough15_20',
-        label: '嚴重感染谷濃度 15–20 µg/mL',
+        label: '嚴重感染波谷濃度 15–20 µg/mL',
         low: 15,
         high: 20,
         toxic: 20,
@@ -2017,7 +2017,7 @@ details.sub-panel[open] > summary::after {
     if (targetMode === 'trough10_15') {
       return {
         mode: 'trough10_15',
-        label: '一般感染谷濃度 10–15 µg/mL',
+        label: '一般感染波谷濃度 10–15 µg/mL',
         low: 10,
         high: 15,
         toxic: 20,
@@ -2135,14 +2135,14 @@ details.sub-panel[open] > summary::after {
         return {
           level: 'ok',
           title: '達標區間（AUC₂₄/MIC ' + Common.fmt(m.aucMic, 0) + '）',
-          detail: '預測 24 小時曲線下面積與 MIC 比值落於 400–600 治療窗內，且谷濃度 ≤ 20 µg/mL，腎毒性風險可控。'
+          detail: '預測 24 小時曲線下面積與 MIC 比值落於 400–600 治療窗內，且波谷濃度 ≤ 20 µg/mL，腎毒性風險可控。'
         };
       }
       if (m.aucMic > 600 || m.cTrough > 20) {
         return {
           level: 'danger',
           title: '暴露過高 / 腎毒性警示（AUC₂₄/MIC ' + Common.fmt(m.aucMic, 0) + '）',
-          detail: '預測 AUC₂₄/MIC > 600 或谷濃度 > 20 µg/mL，急性腎損傷（AKI）風險顯著上升，建議降低劑量或延長給藥間隔。'
+          detail: '預測 AUC₂₄/MIC > 600 或波谷濃度 > 20 µg/mL，急性腎損傷（AKI）風險顯著上升，建議降低劑量或延長給藥間隔。'
         };
       }
       return {
@@ -2155,20 +2155,20 @@ details.sub-panel[open] > summary::after {
     if (m.cTrough >= targetCfg.low && m.cTrough <= targetCfg.high) {
       return {
         level: 'ok',
-        title: '達目標谷濃度（Cmin,ss ' + Common.fmt(m.cTrough, 1) + ' µg/mL）',
-        detail: '預測穩態谷濃度落於目標區間 ' + targetCfg.low + '–' + targetCfg.high + ' µg/mL（AUC₂₄/MIC ' + Common.fmt(m.aucMic, 0) + '）。'
+        title: '達目標波谷濃度（Cmin,ss ' + Common.fmt(m.cTrough, 1) + ' µg/mL）',
+        detail: '預測穩態波谷濃度落於目標區間 ' + targetCfg.low + '–' + targetCfg.high + ' µg/mL（AUC₂₄/MIC ' + Common.fmt(m.aucMic, 0) + '）。'
       };
     }
     if (m.cTrough > targetCfg.high) {
       return {
         level: 'danger',
-        title: '谷濃度偏高（Cmin,ss ' + Common.fmt(m.cTrough, 1) + ' µg/mL）',
+        title: '波谷濃度偏高（Cmin,ss ' + Common.fmt(m.cTrough, 1) + ' µg/mL）',
         detail: '高於目標上限 ' + targetCfg.high + ' µg/mL，需評估腎毒性風險並調降劑量或延長給藥間隔。'
       };
     }
     return {
       level: 'warn',
-      title: '谷濃度偏低（Cmin,ss ' + Common.fmt(m.cTrough, 1) + ' µg/mL）',
+      title: '波谷濃度偏低（Cmin,ss ' + Common.fmt(m.cTrough, 1) + ' µg/mL）',
       detail: '低於目標下限 ' + targetCfg.low + ' µg/mL，抗感染療效可能不足，建議調整維持劑量。'
     };
   }
@@ -2288,7 +2288,7 @@ details.sub-panel[open] > summary::after {
         var t2 = Common.clamp(Number(state.tTroughObs) || (curTau - 0.5), t1 + 0.5, curTau);
 
         if (c1 <= c2 || t2 <= t1) {
-          warnings.push({ level: 'danger', text: '雙點法輸入錯誤：波峰濃度須高於波谷濃度且採血時間 t₂ > t₁，已暫退回族群動力學估算。' });
+          warnings.push({ level: 'danger', text: '雙點法輸入錯誤：波峰濃度須高於波波谷濃度且採血時間 t₂ > t₁，已暫退回族群動力學估算。' });
         } else {
           var ke2 = Math.log(c1 / c2) / (t2 - t1);
           var cPeakEnd = c1 * Math.exp(ke2 * (t1 - curTInf));
@@ -2419,7 +2419,7 @@ details.sub-panel[open] > summary::after {
         highlightLevel: curMetrics.aucMic >= 400 && curMetrics.aucMic <= 600 ? 'ok' : (curMetrics.aucMic > 600 ? 'danger' : 'warn')
       },
       {
-        label: '穩態谷濃度 Cmin,ss',
+        label: '穩態波谷濃度 Cmin,ss',
         value: Common.fmt(curMetrics.cTrough, 1) + ' µg/mL',
         sub: '建議上限 ≤ 20 µg/mL',
         highlightLevel: curMetrics.cTrough > 20 ? 'danger' : (curMetrics.cTrough >= 10 ? 'ok' : 'warn')
@@ -2445,14 +2445,14 @@ details.sub-panel[open] > summary::after {
       : '依病患現行方案（' + curMetrics.doseMg + ' mg Q' + curMetrics.tau + 'H）與實測血中濃度反推個體化藥動學參數：CL = ' + Common.fmt(clFinal, 2) + ' L/h、Vd = ' + Common.fmt(vdFinal, 1) + ' L、t½ = ' + Common.fmt(tHalfFinal, 1) + ' h。現行方案推估 AUC₂₄/MIC = ' + Common.fmt(curMetrics.aucMic, 0) + '、Cmin,ss = ' + Common.fmt(curMetrics.cTrough, 1) + ' µg/mL。';
 
     var recText = (useLd && mode === 'empirical' ? '建議首劑給予 Loading Dose ' + ldDoseMg + ' mg IV 輸注 ' + ldTInf + ' 小時，並' : '建議') +
-      '採用 ' + recPrimary.doseMg + ' mg IV Q' + recPrimary.tau + 'H（輸注 ' + recPrimary.tInf + ' 小時），預期可達 AUC₂₄/MIC = ' + Common.fmt(recPrimary.aucMic, 0) + '、穩態谷濃度 Cmin,ss = ' + Common.fmt(recPrimary.cTrough, 1) + ' µg/mL。若併用 piperacillin-tazobactam 或其他腎毒性藥物，請密切追蹤 SCr 與尿量。';
+      '採用 ' + recPrimary.doseMg + ' mg IV Q' + recPrimary.tau + 'H（輸注 ' + recPrimary.tInf + ' 小時），預期可達 AUC₂₄/MIC = ' + Common.fmt(recPrimary.aucMic, 0) + '、穩態波谷濃度 Cmin,ss = ' + Common.fmt(recPrimary.cTrough, 1) + ' µg/mL。若併用 piperacillin-tazobactam 或其他腎毒性藥物，請密切追蹤 SCr 與尿量。';
 
-    var followUpText = '建議於達穩態（第 4 劑給藥前，或調整劑量後約 ' + Math.max(24, Math.round(4 * tHalfFinal / 12) * 12) + ' 小時）下劑給藥前 30 分鐘抽血追蹤谷濃度（Cmin），必要時加測輸注後 1–2 小時峰濃度以計算精準 AUC₂₄/MIC。';
+    var followUpText = '建議於達穩態（第 4 劑給藥前，或調整劑量後約 ' + Math.max(24, Math.round(4 * tHalfFinal / 12) * 12) + ' 小時）下劑給藥前 30 分鐘抽血追蹤波谷濃度（Cmin），必要時加測輸注後 1–2 小時峰濃度以計算精準 AUC₂₄/MIC。';
 
     return {
       drugKey: 'vancomycin',
       drugName: 'Vancomycin',
-      drugSubtitle: 'Glycopeptide 抗生素｜AUC₂₄/MIC 與谷濃度監測',
+      drugSubtitle: 'Glycopeptide 抗生素｜AUC₂₄/MIC 與波谷濃度監測',
       mode: mode,
       unit: 'µg/mL',
       targetRange: targetCfg,
@@ -2670,7 +2670,7 @@ details.sub-panel[open] > summary::after {
       tHalfFinal = Math.LN2 / keFinal;
 
       if (sol.atBound) {
-        warnings.push({ level: 'danger', text: '實測濃度推算清除率超出常見範圍（0.05–6.0 L/h），請核對服藥順從性、劑型與抽血時間（是否為給藥前谷濃度）。' });
+        warnings.push({ level: 'danger', text: '實測濃度推算清除率超出常見範圍（0.05–6.0 L/h），請核對服藥順從性、劑型與抽血時間（是否為給藥前波谷濃度）。' });
       }
       if (cObs > 75) {
         warnings.push({ level: 'warn', text: '總血中濃度 > 75 µg/mL 時，白蛋白結合趨於飽和（非線性蛋白結合），游離態比例將上升，線性等比例增減劑量可能導致游離濃度變化大於預期。' });
@@ -2716,7 +2716,7 @@ details.sub-panel[open] > summary::after {
       status = {
         level: 'ok',
         title: '落於目標治療區間（Cmin,ss ' + Common.fmt(curMetrics.cTrough, 1) + ' µg/mL）',
-        detail: '預測谷濃度與平均穩態濃度（Css,avg ' + Common.fmt(curMetrics.cAvg, 1) + ' µg/mL）均在 ' + targetCfg.low + '–' + targetCfg.high + ' µg/mL 範圍內。'
+        detail: '預測波谷濃度與平均穩態濃度（Css,avg ' + Common.fmt(curMetrics.cAvg, 1) + ' µg/mL）均在 ' + targetCfg.low + '–' + targetCfg.high + ' µg/mL 範圍內。'
       };
     } else if (curMetrics.cPeak > targetCfg.high || curMetrics.cAvg > targetCfg.high) {
       status = {
@@ -2727,8 +2727,8 @@ details.sub-panel[open] > summary::after {
     } else {
       status = {
         level: 'warn',
-        title: '谷濃度偏低（Cmin,ss ' + Common.fmt(curMetrics.cTrough, 1) + ' µg/mL）',
-        detail: '預測谷濃度低於目標下限 ' + targetCfg.low + ' µg/mL，若臨床症狀或癲癇控制不佳，可評估調升劑量（需同時確認 Albumin 水準）。'
+        title: '波谷濃度偏低（Cmin,ss ' + Common.fmt(curMetrics.cTrough, 1) + ' µg/mL）',
+        detail: '預測波谷濃度低於目標下限 ' + targetCfg.low + ' µg/mL，若臨床症狀或癲癇控制不佳，可評估調升劑量（需同時確認 Albumin 水準）。'
       };
     }
 
@@ -3045,7 +3045,7 @@ details.sub-panel[open] > summary::after {
     } else {
       status = {
         level: 'warn',
-        title: '谷濃度偏低（Cmin,ss ' + Common.fmt(curMetrics.cTrough, 1) + ' µg/mL）',
+        title: '波谷濃度偏低（Cmin,ss ' + Common.fmt(curMetrics.cTrough, 1) + ' µg/mL）',
         detail: '預測濃度低於 4 µg/mL，若仍處治療初期或剛完成自體誘導，建議結合臨床發作控制評估是否漸進式加量。'
       };
     }
@@ -3146,7 +3146,7 @@ details.sub-panel[open] > summary::after {
       consultDraft: {
         assessment: assessText,
         recommendation: recText,
-        followUp: '若處於治療前 4 週內，應於開始用藥或調劑後 2–3 週待自體誘導完全再覆驗晨間谷濃度；常規追蹤血鈉、CBC 及肝功能。'
+        followUp: '若處於治療前 4 週內，應於開始用藥或調劑後 2–3 週待自體誘導完全再覆驗晨間波谷濃度；常規追蹤血鈉、CBC 及肝功能。'
       },
       reportSummaryRows: [
         { label: '劑型與給藥方案', current: formCfg.key.toUpperCase() + ' ' + curMetrics.doseMg + ' mg Q' + curMetrics.tau + 'H', recommended: formCfg.key.toUpperCase() + ' ' + recPrimary.doseMg + ' mg Q' + recPrimary.tau + 'H' },
@@ -4026,7 +4026,7 @@ details.sub-panel[open] > summary::after {
       subtitle: 'Glycopeptide 抗生素｜AUC₂₄/MIC 導向給藥與腎毒性預防',
       workflow: [
         '【模式 1：初始劑量預測】輸入病患性別、年齡、體重、身高、SCr（高齡肌肉量低可於進階設定勾選 SCr < 1.0 進位）。選擇給藥劑量與間隔（或套用臨床常用預設鍵），若為敗血症、腦膜炎或重症感染，請展開「進階臨床參數」啟用 Loading Dose（25 mg/kg TBW，上限 3000 mg）。',
-        '【模式 2：已知濃度反推劑量】切換至「已知濃度反推建議劑量」，輸入現行劑量、間隔、輸注時間與實測谷濃度及採血時間（預設下劑前給藥前 0.5h 內）。若已有波峰＋波谷兩點濃度，可於進階設定切換「雙點 Sawchuk-Zaske 模式」同時校準個體 Vd 與 ke。',
+        '【模式 2：已知濃度反推劑量】切換至「已知濃度反推建議劑量」，輸入現行劑量、間隔、輸注時間與實測波谷濃度及採血時間（預設下劑前給藥前 0.5h 內）。若已有波峰＋波谷兩點濃度，可於進階設定切換「雙點 Sawchuk-Zaske 模式」同時校準個體 Vd 與 ke。',
         '確認右側推薦方案表（可點擊不同方案即時預覽濃度曲線），按「自動填入建議草稿」微調文字後，即可預覽並匯出單頁式 A4 照會單。'
       ],
       pkAssumptions: [
@@ -4036,8 +4036,8 @@ details.sub-panel[open] > summary::after {
         '模型：一室間歇性靜脈輸注（Intermittent IV Infusion）穩態與疊加原理。'
       ],
       samplingAndTarget: [
-        '目標治療指標：依 2020 IDSA/ASHP 共識，針對嚴重 MRSA 感染優先以 AUC₂₄/MIC = 400–600 為主（預設 MIC = 1 mg/L）；若採谷濃度監測，嚴重感染目標為 15–20 µg/mL、一般感染為 10–15 µg/mL。',
-        '建議抽血時機：一般於第 4 劑給藥前 30 分鐘抽谷濃度（Cmin）；若欲測峰濃度（Cmax），應於靜脈輸注結束後至少 1–2 小時抽血（切勿於輸注中或剛輸注完立即抽血，避免尚未分布完全造成高估）。',
+        '目標治療指標：依 2020 IDSA/ASHP 共識，針對嚴重 MRSA 感染優先以 AUC₂₄/MIC = 400–600 為主（預設 MIC = 1 mg/L）；若採波谷濃度監測，嚴重感染目標為 15–20 µg/mL、一般感染為 10–15 µg/mL。',
+        '建議抽血時機：一般於第 4 劑給藥前 30 分鐘抽波谷濃度（Cmin）；若欲測峰濃度（Cmax），應於靜脈輸注結束後至少 1–2 小時抽血（切勿於輸注中或剛輸注完立即抽血，避免尚未分布完全造成高估）。',
         '毒性警戒：Cmin,ss > 20 µg/mL 或 AUC₂₄/MIC > 600 時，急性腎損傷（AKI）發生率明顯攀升。'
       ],
       clinicalPearls: [
@@ -4079,7 +4079,7 @@ details.sub-panel[open] > summary::after {
       subtitle: '抗癲癇 / 三叉神經痛｜自體誘導 (Autoinduction) 與 CYP3A4 監測',
       workflow: [
         '【模式 1：初始劑量預測】務必在「自體誘導與代謝狀態」下拉選單中正確選擇病患用藥階段（初期治療 < 2–4 週 vs 已完成自體誘導之長期治療 ≥ 3–4 週）及是否併用誘導劑或抑制劑。',
-        '【模式 2：已知濃度反推劑量】輸入現行劑型（CR/XR 緩釋錠或 IR 錠劑）、劑量、給藥間隔及實測谷濃度，系統將反推個體 CL 並建議每 100 mg 為單位的微調方案。',
+        '【模式 2：已知濃度反推劑量】輸入現行劑型（CR/XR 緩釋錠或 IR 錠劑）、劑量、給藥間隔及實測波谷濃度，系統將反推個體 CL 並建議每 100 mg 為單位的微調方案。',
         '若為用藥初期（< 4 週），建議於照會單註明「3–4 週後須待自體誘導完全再追蹤穩態濃度」。'
       ],
       pkAssumptions: [
@@ -4746,8 +4746,8 @@ details.sub-panel[open] > summary::after {
             { label: '腎功能低下 1000mg Q24H', set: { doseMg: 1000, tau: 24, tInf: '' } }
           ]
         : [
-            { label: '谷濃度偏低 (1000 Q12H → 8.5)', set: { curDoseMg: 1000, curTau: 12, cObs: 8.5, tSample: 11.5 } },
-            { label: '谷濃度偏高 (1000 Q12H → 23.0)', set: { curDoseMg: 1000, curTau: 12, cObs: 23.0, tSample: 11.5 } },
+            { label: '波谷濃度偏低 (1000 Q12H → 8.5)', set: { curDoseMg: 1000, curTau: 12, cObs: 8.5, tSample: 11.5 } },
+            { label: '波谷濃度偏高 (1000 Q12H → 23.0)', set: { curDoseMg: 1000, curTau: 12, cObs: 23.0, tSample: 11.5 } },
             { label: '達標範例 (1000 Q12H → 14.2)', set: { curDoseMg: 1000, curTau: 12, cObs: 14.2, tSample: 11.5 } }
           ];
     }
@@ -4841,8 +4841,8 @@ details.sub-panel[open] > summary::after {
           '<div class="field full"><label for="d-targetMode">治療評估目標</label>' +
           '<select data-bind="targetMode" id="d-targetMode">' +
             optionHtml('auc', 'AUC₂₄/MIC 400–600（2020 IDSA 指引首選）', s.targetMode) +
-            optionHtml('trough15_20', '嚴重感染谷濃度 15–20 µg/mL', s.targetMode) +
-            optionHtml('trough10_15', '一般感染谷濃度 10–15 µg/mL', s.targetMode) +
+            optionHtml('trough15_20', '嚴重感染波谷濃度 15–20 µg/mL', s.targetMode) +
+            optionHtml('trough10_15', '一般感染波谷濃度 10–15 µg/mL', s.targetMode) +
           '</select></div></div>';
       } else {
         primHtml = '<div class="form-grid-2">' +
@@ -4858,7 +4858,7 @@ details.sub-panel[open] > summary::after {
               '<input type="number" data-bind="cObs" id="d-cObs" min="0.5" max="100" step="0.1" value="' + escAttr(s.cObs) + '"></div>' +
               '<div class="field"><label for="d-tSample">採血時間（自給藥起）<span class="field-unit">hr</span></label>' +
               '<input type="number" data-bind="tSample" id="d-tSample" min="0.5" max="72" step="0.5" value="' + escAttr(s.tSample) + '">' +
-              '<span class="field-hint">給藥前谷濃度請填約 τ − 0.5（如 Q12H 填 11.5）</span></div>'
+              '<span class="field-hint">給藥前波谷濃度請填約 τ − 0.5（如 Q12H 填 11.5）</span></div>'
             : '<div class="field"><label for="d-cPeakObs">實測波峰 C_peak <span class="field-unit">µg/mL</span></label>' +
               '<input type="number" data-bind="cPeakObs" id="d-cPeakObs" step="0.1" value="' + escAttr(s.cPeakObs) + '"></div>' +
               '<div class="field"><label for="d-tPeakObs">Peak 採血時間 <span class="field-unit">hr (輸注後)</span></label>' +
@@ -5184,7 +5184,7 @@ details.sub-panel[open] > summary::after {
   function renderIncompletePatientState() {
     var key = appState.activeDrug;
     var titles = {
-      vancomycin: ['Vancomycin', 'Glycopeptide 抗生素｜AUC₂₄/MIC 與谷濃度監測'],
+      vancomycin: ['Vancomycin', 'Glycopeptide 抗生素｜AUC₂₄/MIC 與波谷濃度監測'],
       valproic: ['Valproic Acid', '抗癲癇 / 情緒穩定劑｜總濃度、蛋白結合與交互作用監測'],
       carbamazepine: ['Carbamazepine', '抗癲癇 / 三叉神經痛 / 雙相情緒障礙｜自體誘導與交互作用監測'],
       lithium: ['Lithium', '雙相情緒障礙第一線用藥｜Li₂CO₃ 換算、12h 標準濃度與腎功能監測'],
@@ -5683,3 +5683,4 @@ details.sub-panel[open] > summary::after {
   </script>
 </body>
 </html>
+
