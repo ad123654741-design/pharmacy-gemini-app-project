@@ -2288,7 +2288,7 @@ details.sub-panel[open] > summary::after {
         var t2 = Common.clamp(Number(state.tTroughObs) || (curTau - 0.5), t1 + 0.5, curTau);
 
         if (c1 <= c2 || t2 <= t1) {
-          warnings.push({ level: 'danger', text: '雙點法輸入錯誤：波峰濃度須高於波波谷濃度且採血時間 t₂ > t₁，已暫退回族群動力學估算。' });
+          warnings.push({ level: 'danger', text: '雙點法輸入錯誤：波峰濃度須高於波谷濃度且採血時間 t₂ > t₁，已暫退回族群動力學估算。' });
         } else {
           var ke2 = Math.log(c1 / c2) / (t2 - t1);
           var cPeakEnd = c1 * Math.exp(ke2 * (t1 - curTInf));
@@ -2425,7 +2425,7 @@ details.sub-panel[open] > summary::after {
         highlightLevel: curMetrics.cTrough > 20 ? 'danger' : (curMetrics.cTrough >= 10 ? 'ok' : 'warn')
       },
       {
-        label: '穩態峰濃度 Cmax,ss',
+        label: '穩態波峰濃度 Cmax,ss',
         value: Common.fmt(curMetrics.cPeak, 1) + ' µg/mL',
         sub: '輸注時間 ' + curMetrics.tInf + ' 小時'
       },
@@ -2447,7 +2447,7 @@ details.sub-panel[open] > summary::after {
     var recText = (useLd && mode === 'empirical' ? '建議首劑給予 Loading Dose ' + ldDoseMg + ' mg IV 輸注 ' + ldTInf + ' 小時，並' : '建議') +
       '採用 ' + recPrimary.doseMg + ' mg IV Q' + recPrimary.tau + 'H（輸注 ' + recPrimary.tInf + ' 小時），預期可達 AUC₂₄/MIC = ' + Common.fmt(recPrimary.aucMic, 0) + '、穩態波谷濃度 Cmin,ss = ' + Common.fmt(recPrimary.cTrough, 1) + ' µg/mL。若併用 piperacillin-tazobactam 或其他腎毒性藥物，請密切追蹤 SCr 與尿量。';
 
-    var followUpText = '建議於達穩態（第 4 劑給藥前，或調整劑量後約 ' + Math.max(24, Math.round(4 * tHalfFinal / 12) * 12) + ' 小時）下劑給藥前 30 分鐘抽血追蹤波谷濃度（Cmin），必要時加測輸注後 1–2 小時峰濃度以計算精準 AUC₂₄/MIC。';
+    var followUpText = '建議於達穩態（第 4 劑給藥前，或調整劑量後約 ' + Math.max(24, Math.round(4 * tHalfFinal / 12) * 12) + ' 小時）下劑給藥前 30 分鐘抽血追蹤波谷濃度（Cmin），必要時加測輸注後 1–2 小時波峰濃度以計算精準 AUC₂₄/MIC。';
 
     return {
       drugKey: 'vancomycin',
@@ -2791,7 +2791,7 @@ details.sub-panel[open] > summary::after {
 
     var kpis = [
       { label: '穩態平均濃度 Css,avg', value: Common.fmt(curMetrics.cAvg, 1) + ' µg/mL', sub: targetCfg.label },
-      { label: '穩態谷 / 峰濃度', value: Common.fmt(curMetrics.cTrough, 1) + ' / ' + Common.fmt(curMetrics.cPeak, 1), sub: 'µg/mL (Cmin / Cmax)' },
+      { label: '穩態谷 / 波峰濃度', value: Common.fmt(curMetrics.cTrough, 1) + ' / ' + Common.fmt(curMetrics.cPeak, 1), sub: 'µg/mL (Cmin / Cmax)' },
       { label: mode === 'reverse' ? '個體化 CL / t½' : '預估 CL / t½', value: Common.fmt(clFinal, 2) + ' L/h', sub: 'Vd ' + Common.fmt(vd, 1) + ' L｜t½ ' + Common.fmt(tHalfFinal, 1) + ' h' },
       { label: '參考游離態預估', value: '~' + Common.fmt(freeCheck.cFreeEst, 1) + ' µg/mL', sub: 'Alb ' + Common.fmt(anthro.albumin, 1) + '｜推估 fu ≈ ' + Common.fmt(freeCheck.fu * 100, 0) + '%' }
     ];
@@ -3034,7 +3034,7 @@ details.sub-panel[open] > summary::after {
       status = {
         level: 'ok',
         title: '落於治療區間（Css,avg ' + Common.fmt(curMetrics.cAvg, 1) + ' µg/mL）',
-        detail: '預測穩態谷/峰濃度（' + Common.fmt(curMetrics.cTrough, 1) + '–' + Common.fmt(curMetrics.cPeak, 1) + ' µg/mL）均位於 4–12 µg/mL 治療窗內。'
+        detail: '預測穩態谷/波峰濃度（' + Common.fmt(curMetrics.cTrough, 1) + '–' + Common.fmt(curMetrics.cPeak, 1) + ' µg/mL）均位於 4–12 µg/mL 治療窗內。'
       };
     } else if (curMetrics.cPeak > 12.0 || curMetrics.cAvg > 12.0) {
       status = {
@@ -3092,7 +3092,7 @@ details.sub-panel[open] > summary::after {
 
     var kpis = [
       { label: '穩態平均濃度 Css,avg', value: Common.fmt(curMetrics.cAvg, 1) + ' µg/mL', sub: '目標治療窗 4–12 µg/mL' },
-      { label: '穩態谷 / 峰濃度', value: Common.fmt(curMetrics.cTrough, 1) + ' / ' + Common.fmt(curMetrics.cPeak, 1), sub: 'µg/mL (Cmin / Cmax)' },
+      { label: '穩態谷 / 波峰濃度', value: Common.fmt(curMetrics.cTrough, 1) + ' / ' + Common.fmt(curMetrics.cPeak, 1), sub: 'µg/mL (Cmin / Cmax)' },
       { label: mode === 'reverse' ? '個體化 CL' : '預估族群 CL', value: Common.fmt(clFinal, 2) + ' L/h', sub: stageCfg.label.split(' ')[0] },
       { label: '估算半衰期 t½ / Vd', value: Common.fmt(tHalfFinal, 1) + ' h', sub: 'Vd ' + Common.fmt(vd, 1) + ' L (' + vdPerKg + ' L/kg)' }
     ];
@@ -4037,7 +4037,7 @@ details.sub-panel[open] > summary::after {
       ],
       samplingAndTarget: [
         '目標治療指標：依 2020 IDSA/ASHP 共識，針對嚴重 MRSA 感染優先以 AUC₂₄/MIC = 400–600 為主（預設 MIC = 1 mg/L）；若採波谷濃度監測，嚴重感染目標為 15–20 µg/mL、一般感染為 10–15 µg/mL。',
-        '建議抽血時機：一般於第 4 劑給藥前 30 分鐘抽波谷濃度（Cmin）；若欲測峰濃度（Cmax），應於靜脈輸注結束後至少 1–2 小時抽血（切勿於輸注中或剛輸注完立即抽血，避免尚未分布完全造成高估）。',
+        '建議抽血時機：一般於第 4 劑給藥前 30 分鐘抽波谷濃度（Cmin）；若欲測波峰濃度（Cmax），應於靜脈輸注結束後至少 1–2 小時抽血（切勿於輸注中或剛輸注完立即抽血，避免尚未分布完全造成高估）。',
         '毒性警戒：Cmin,ss > 20 µg/mL 或 AUC₂₄/MIC > 600 時，急性腎損傷（AKI）發生率明顯攀升。'
       ],
       clinicalPearls: [
@@ -5683,4 +5683,5 @@ details.sub-panel[open] > summary::after {
   </script>
 </body>
 </html>
+
 
