@@ -1,0 +1,3068 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>3D 魔術方塊新手引導｜零代碼・雙公式輕鬆復原</title>
+  <meta name="description" content="專為零基礎初學者打造的 3D 互動魔術方塊教學網站。全程不使用英文公式代號，搭配立體動態箭頭、口訣節拍與雙公式基本解，一步步帶你完成六面復原。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-page: #f3f6fb;
+      --bg-surface: #ffffff;
+      --bg-subtle: #edf2f9;
+      --bg-accent-soft: #eef4ff;
+      --text-main: #152033;
+      --text-secondary: #4a5974;
+      --text-muted: #76859f;
+      --border-light: #dde5f2;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --primary-glow: rgba(37, 99, 235, 0.22);
+      --amber: #f59e0b;
+      --amber-soft: #fffbeb;
+      --amber-border: #fde68a;
+      --emerald: #10b981;
+      --emerald-soft: #ecfdf5;
+      --rose: #ef4444;
+      --rose-soft: #fef2f2;
+      --violet: #7c3aed;
+      --violet-soft: #f5f3ff;
+      --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 10px 28px rgba(15, 23, 42, 0.08);
+      --shadow-lg: 0 18px 42px rgba(15, 23, 42, 0.14);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #0b111e;
+      --bg-surface: #151e30;
+      --bg-subtle: #1d2940;
+      --bg-accent-soft: #1c2e52;
+      --text-main: #f1f5f9;
+      --text-secondary: #b6c3d8;
+      --text-muted: #7f90ad;
+      --border-light: #27354f;
+      --amber-soft: #2e2310;
+      --amber-border: #785513;
+      --emerald-soft: #0e2c24;
+      --rose-soft: #31151b;
+      --violet-soft: #241942;
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.35);
+      --shadow-lg: 0 18px 42px rgba(0, 0, 0, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, -apple-system, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.65;
+      transition: background 0.25s ease, color 0.25s ease;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 60;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-light);
+    }
+    [data-theme="dark"] .topbar {
+      background: rgba(21, 30, 48, 0.88);
+    }
+
+    .topbar-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-cube-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      padding: 4px;
+      background: #111827;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      flex-shrink: 0;
+    }
+    .brand-cube-icon span {
+      border-radius: 2px;
+    }
+
+    .brand-title {
+      font-size: 1.08rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .zero-code-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      letter-spacing: 0.03em;
+    }
+
+    .brand-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      border-radius: 999px;
+      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 0.83rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.18s ease;
+      font-family: inherit;
+    }
+    .btn-ghost:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+
+    /* Step Progress Strip */
+    .stepper-wrap {
+      max-width: 1400px;
+      margin: 14px auto 0;
+      padding: 0 20px;
+    }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(8, minmax(132px, 1fr));
+      gap: 8px;
+      overflow-x: auto;
+      padding: 2px 2px 6px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .stepper::-webkit-scrollbar {
+      display: none;
+    }
+
+    .step-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      position: relative;
+    }
+    .step-pill:hover {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .step-pill.active {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      border-color: transparent;
+      color: #ffffff;
+      box-shadow: 0 8px 20px var(--primary-glow);
+    }
+    .step-pill.completed:not(.active) {
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+    .step-pill-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      font-size: 0.72rem;
+      font-weight: 700;
+      opacity: 0.85;
+    }
+    .step-pill-name {
+      font-size: 0.88rem;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+    .step-pill-tag {
+      font-size: 0.71rem;
+      opacity: 0.8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    /* Main Workspace Layout */
+    .workspace {
+      max-width: 1400px;
+      margin: 14px auto 36px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: minmax(360px, 47%) minmax(380px, 53%);
+      gap: 22px;
+      align-items: start;
+    }
+
+    /* Left Sticky 3D Stage */
+    .stage-panel {
+      position: sticky;
+      top: 76px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .stage-card {
+      background: radial-gradient(circle at 50% 36%, #243049 0%, #121929 68%, #0b101b 100%);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Holding Orientation Banner inside 3D Stage */
+    .pose-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 16px;
+      background: rgba(15, 23, 42, 0.72);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+      color: #f8fafc;
+      font-size: 0.84rem;
+      z-index: 5;
+      flex-wrap: wrap;
+    }
+    .pose-banner.pose-alert {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.28), rgba(239, 68, 68, 0.24));
+      border-bottom-color: rgba(251, 191, 36, 0.4);
+    }
+    .pose-badge-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+    .color-dot {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      border: 1.5px solid rgba(0, 0, 0, 0.35);
+      vertical-align: -2px;
+    }
+
+    .canvas-container {
+      position: relative;
+      width: 100%;
+      height: 410px;
+      cursor: grab;
+      user-select: none;
+      touch-action: none;
+    }
+    .canvas-container:active {
+      cursor: grabbing;
+    }
+    #cubeCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Floating Move Action Callout over 3D Stage */
+    .live-move-toast {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.88);
+      border: 1.5px solid rgba(96, 165, 250, 0.65);
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+      opacity: 0;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      white-space: nowrap;
+      z-index: 6;
+    }
+    .live-move-toast.visible {
+      opacity: 1;
+    }
+
+    /* Mini Face Peek Grids */
+    .peek-dock {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 5;
+      pointer-events: auto;
+    }
+    .peek-box {
+      background: rgba(15, 23, 42, 0.76);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 5px 7px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+    .peek-box.highlight-peek {
+      border-color: #fbbf24;
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+    }
+    .peek-label {
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: #cbd5e1;
+      letter-spacing: 0.02em;
+    }
+    .peek-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 12px);
+      grid-template-rows: repeat(3, 12px);
+      gap: 2px;
+    }
+    .peek-cell {
+      border-radius: 2.5px;
+      border: 0.5px solid rgba(0, 0, 0, 0.35);
+    }
+
+    /* Stage Overlay Controls (Right Bottom) */
+    .stage-tools {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      z-index: 5;
+    }
+    .stage-tool-btn {
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #e2e8f0;
+      padding: 6px 11px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.16s ease;
+    }
+    .stage-tool-btn:hover {
+      background: rgba(37, 99, 235, 0.85);
+      border-color: #60a5fa;
+      color: #fff;
+    }
+    .stage-tool-btn.active {
+      background: rgba(245, 158, 11, 0.9);
+      border-color: #fde68a;
+      color: #111827;
+    }
+
+    .drag-hint {
+      font-size: 0.7rem;
+      color: rgba(203, 213, 225, 0.72);
+      padding-right: 4px;
+    }
+
+    /* Playback & Live Beat Explanation Bar under Canvas */
+    .player-bar {
+      background: rgba(15, 23, 42, 0.9);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .beat-caption {
+      font-size: 0.88rem;
+      color: #e2e8f0;
+      min-height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .beat-counter {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+      color: #93c5fd;
+      flex-shrink: 0;
+    }
+
+    .player-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .ctrl-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .ctrl-btn {
+      padding: 8px 13px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(30, 41, 59, 0.9);
+      color: #f8fafc;
+      font-size: 0.83rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ctrl-btn:hover:not(:disabled) {
+      background: #334155;
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+    .ctrl-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .ctrl-btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border-color: #60a5fa;
+      padding: 8px 18px;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+    }
+    .ctrl-btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+
+    .speed-select {
+      background: rgba(30, 41, 59, 0.9);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.78rem;
+      font-family: inherit;
+      cursor: pointer;
+    }
+
+    /* Right Guided Lesson Column */
+    .lesson-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-light);
+      box-shadow: var(--shadow-sm);
+      padding: 22px 24px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--primary);
+      background: var(--bg-accent-soft);
+      padding: 4px 11px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+    .step-title {
+      font-size: 1.42rem;
+      font-weight: 900;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+    .step-goal {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    /* Mode Switcher: Demo vs Practice */
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--bg-subtle);
+      padding: 4px;
+      border-radius: 12px;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .mode-tab {
+      padding: 9px 12px;
+      border-radius: 9px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.18s ease;
+    }
+    .mode-tab.active {
+      background: var(--bg-surface);
+      color: var(--primary);
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* Sub-case Selector Tabs */
+    .case-tabs-label {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 8px;
+    }
+    .case-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .case-tab {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.16s ease;
+    }
+    .case-tab:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .case-tab.active {
+      background: var(--bg-accent-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .case-tab.exception-tab.active {
+      background: var(--amber-soft);
+      border-color: var(--amber);
+      color: #b45309;
+    }
+    [data-theme="dark"] .case-tab.exception-tab.active {
+      color: #fbbf24;
+    }
+
+    /* Chant / Rhythm Karaoke Strip */
+    .chant-box {
+      background: var(--bg-subtle);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-light);
+    }
+    .chant-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .chant-title {
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chant-rhythm-tag {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--violet);
+      background: var(--violet-soft);
+      padding: 3px 10px;
+      border-radius: 999px;
+    }
+
+    .beats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .beat-sep {
+      width: 2px;
+      height: 36px;
+      background: var(--border-light);
+      margin: 0 3px;
+    }
+
+    .beat-chip {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 66px;
+      padding: 7px 9px;
+      border-radius: 11px;
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-light);
+      cursor: pointer;
+      transition: all 0.16s ease;
+      user-select: none;
+    }
+    .beat-chip:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .beat-chip.done-beat {
+      border-color: rgba(16, 185, 129, 0.55);
+      background: var(--emerald-soft);
+    }
+    .beat-chip.active-beat {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-color: #60a5fa;
+      color: #ffffff;
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 6px 16px var(--primary-glow);
+    }
+    .beat-word {
+      font-size: 1.05rem;
+      font-weight: 900;
+      line-height: 1.15;
+    }
+    .beat-desc {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-top: 2px;
+      white-space: nowrap;
+    }
+    .beat-chip.active-beat .beat-desc {
+      color: #dbeafe;
+    }
+
+    /* Organized Bullet Steps */
+    .guide-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .guide-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+    }
+    .guide-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.76rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .guide-text {
+      font-size: 0.92rem;
+      color: var(--text-main);
+    }
+    .guide-text strong {
+      color: var(--primary);
+      font-weight: 800;
+    }
+    [data-theme="dark"] .guide-text strong {
+      color: #60a5fa;
+    }
+
+    /* Callouts (Trap / Reassurance / Tip) */
+    .callout {
+      border-radius: 12px;
+      padding: 13px 15px;
+      font-size: 0.87rem;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-top: 8px;
+    }
+    .callout-warn {
+      background: var(--amber-soft);
+      border: 1px solid var(--amber-border);
+      color: #92400e;
+    }
+    [data-theme="dark"] .callout-warn {
+      color: #fde68a;
+    }
+    .callout-tip {
+      background: var(--emerald-soft);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #065f46;
+    }
+    [data-theme="dark"] .callout-tip {
+      color: #a7f3d0;
+    }
+
+    /* Interactive Practice Pad (Zero-Code Directional Controls!) */
+    .practice-pad {
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .practice-pad.visible {
+      display: flex;
+    }
+
+    .goal-banner {
+      padding: 12px 15px;
+      border-radius: 12px;
+      background: var(--bg-accent-soft);
+      border: 1.5px solid rgba(37, 99, 235, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .goal-banner.achieved {
+      background: var(--emerald-soft);
+      border-color: var(--emerald);
+    }
+    .goal-status-text {
+      font-size: 0.9rem;
+      font-weight: 800;
+    }
+
+    .pad-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .pad-group {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .pad-group-title {
+      font-size: 0.76rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .pad-btns {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .pad-btn {
+      flex: 1;
+      min-width: 78px;
+      padding: 8px 10px;
+      border-radius: 9px;
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.83rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.14s ease;
+      text-align: center;
+    }
+    .pad-btn:hover {
+      border-color: var(--primary);
+      background: var(--bg-accent-soft);
+      color: var(--primary);
+      transform: translateY(-1px);
+    }
+    .pad-btn:active {
+      transform: translateY(0);
+    }
+
+    .macro-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .macro-btn {
+      flex: 1;
+      min-width: 155px;
+      padding: 10px 12px;
+      border-radius: 11px;
+      border: 1.5px solid rgba(124, 58, 237, 0.35);
+      background: var(--violet-soft);
+      color: var(--violet);
+      font-size: 0.83rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.16s ease;
+    }
+    [data-theme="dark"] .macro-btn {
+      color: #c4b5fd;
+    }
+    .macro-btn:hover {
+      border-color: var(--violet);
+      transform: translateY(-1px);
+    }
+
+    /* Step Navigation Footer inside Card */
+    .step-nav-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .nav-step-btn {
+      padding: 10px 18px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.16s ease;
+    }
+    .nav-step-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+    .nav-step-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .nav-step-btn.next-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+    }
+    .nav-step-btn.next-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      color: #ffffff;
+    }
+    .nav-step-btn.next-primary:disabled {
+      background: var(--bg-subtle);
+      border-color: var(--border-light);
+      color: var(--text-muted);
+      opacity: 0.65;
+    }
+
+    /* Full Reorganized Cheat Sheet Section at Bottom */
+    .cheatsheet-section {
+      max-width: 1400px;
+      margin: 10px auto 56px;
+      padding: 0 20px;
+      scroll-margin-top: 84px;
+    }
+    .cheatsheet-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .cheatsheet-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    .sheet-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+    .sheet-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+    .sheet-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .sheet-step-tag {
+      font-size: 0.74rem;
+      font-weight: 800;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: var(--bg-accent-soft);
+      color: var(--primary);
+    }
+    .sheet-pose-tag {
+      font-size: 0.73rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+    .sheet-card h3 {
+      font-size: 1.03rem;
+      font-weight: 900;
+    }
+    .sheet-chant {
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      color: var(--violet);
+    }
+    [data-theme="dark"] .sheet-chant {
+      color: #c4b5fd;
+    }
+    .sheet-card p {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    footer {
+      text-align: center;
+      padding: 24px 20px 36px;
+      border-top: 1px solid var(--border-light);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    @media (max-width: 980px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+      .stage-panel {
+        position: relative;
+        top: 0;
+      }
+      .canvas-container {
+        height: 340px;
+      }
+    }
+    @media (max-width: 560px) {
+      .canvas-container {
+        height: 295px;
+      }
+      .pad-grid {
+        grid-template-columns: 1fr;
+      }
+      .card {
+        padding: 16px;
+      }
+      .peek-grid {
+        grid-template-columns: repeat(3, 10px);
+        grid-template-rows: repeat(3, 10px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sticky Topbar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-cube-icon" aria-hidden="true">
+          <span style="background:#ffd600"></span><span style="background:#ff2a4b"></span><span style="background:#00c853"></span>
+          <span style="background:#2979ff"></span><span style="background:#ffffff"></span><span style="background:#ff8f00"></span>
+          <span style="background:#00c853"></span><span style="background:#ffd600"></span><span style="background:#2979ff"></span>
+        </div>
+        <div>
+          <div class="brand-title">
+            3D 魔術方塊新手引導
+            <span class="zero-code-pill">零英文代號・雙公式基本解</span>
+          </div>
+          <div class="brand-sub">跟著立體箭頭與中文節拍口訣，第一次拿魔方也能完成六面復原</div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <a href="#cheatsheet" class="btn-ghost">📋 一頁速查表</a>
+        <a href="https://1hrbld.tw/3x3-dab/" target="_blank" rel="noopener noreferrer" class="btn-ghost">🎬 原始教學來源</a>
+        <button type="button" class="btn-ghost" id="themeToggleBtn" aria-label="切換深淺色模式">🌙 深色</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 8-Stage Progress Stepper -->
+  <nav class="stepper-wrap" aria-label="教學步驟進度">
+    <div class="stepper" id="stepperBar"></div>
+  </nav>
+
+  <!-- Main Interactive Split Workspace -->
+  <main class="workspace">
+    <!-- Left Column: Interactive 3D Rubik's Cube Stage -->
+    <section class="stage-panel" aria-label="3D 互動魔術方塊舞台">
+      <div class="stage-card">
+        <div class="pose-banner" id="poseBanner">
+          <div class="pose-badge-left" id="poseText"></div>
+          <span style="font-size:0.75rem;opacity:0.82;" id="poseSubHint">中心塊永遠固定不動</span>
+        </div>
+
+        <div class="canvas-container" id="canvasWrap">
+          <div class="live-move-toast" id="liveMoveToast">準備就緒</div>
+          <canvas id="cubeCanvas"></canvas>
+
+          <!-- Hidden Faces Live Mini Peek -->
+          <div class="peek-dock" aria-label="隱藏面即時預覽">
+            <div class="peek-box" id="peekLeftBox" title="左側即時預覽">
+              <span class="peek-label">左側</span>
+              <div class="peek-grid" id="peekLeft"></div>
+            </div>
+            <div class="peek-box" id="peekBottomBox" title="底面即時預覽">
+              <span class="peek-label">底面</span>
+              <div class="peek-grid" id="peekBottom"></div>
+            </div>
+            <div class="peek-box" id="peekBackBox" title="最後側（背面）即時預覽">
+              <span class="peek-label">最後側</span>
+              <div class="peek-grid" id="peekBack"></div>
+            </div>
+          </div>
+
+          <!-- Stage Camera & Spotlight Tools -->
+          <div class="stage-tools">
+            <span class="drag-hint">🖱️ 按住畫面可 360° 旋轉觀察</span>
+            <div style="display:flex;gap:6px;">
+              <button type="button" class="stage-tool-btn active" id="spotlightBtn" title="將本步驟不需觀察的方塊柔化，凸顯重點方塊">🔦 重點聚光燈：開</button>
+              <button type="button" class="stage-tool-btn" id="resetCamBtn">🎯 回標準視角</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step-by-Step Playback Bar -->
+        <div class="player-bar">
+          <div class="beat-caption">
+            <span id="liveBeatCaption">點擊「自動播放」或「下一步動作」，跟著立體箭頭一步步看懂轉法！</span>
+            <span class="beat-counter" id="beatCounterBadge">0 / 0</span>
+          </div>
+          <div class="player-controls">
+            <div class="ctrl-group">
+              <button type="button" class="ctrl-btn" id="resetCaseBtn" title="回到本步驟起始狀態">↺ 重置</button>
+              <button type="button" class="ctrl-btn" id="prevBeatBtn" title="退回上一個動作">⏮ 上一步</button>
+              <button type="button" class="ctrl-btn ctrl-btn-primary" id="playPauseBtn">▶ 自動播放</button>
+              <button type="button" class="ctrl-btn" id="nextBeatBtn" title="執行下一個分解動作">下一步 ⏭</button>
+            </div>
+            <div class="ctrl-group">
+              <label for="speedSelect" style="font-size:0.75rem;color:#94a3b8;">速度</label>
+              <select id="speedSelect" class="speed-select">
+                <option value="0.6">慢速 0.6x（新手推薦）</option>
+                <option value="1" selected>標準 1.0x</option>
+                <option value="1.6">流暢 1.6x</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: Reorganized Beginner-Friendly Guide & Practice Controls -->
+    <section class="lesson-panel">
+      <div class="card">
+        <div class="step-header">
+          <div>
+            <div class="step-badge" id="lessonBadge">STEP 1</div>
+            <h1 class="step-title" id="lessonTitle">載入中...</h1>
+            <p class="step-goal" id="lessonGoal"></p>
+          </div>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="mode-tabs" role="tablist">
+          <button type="button" class="mode-tab active" id="tabDemoMode" role="tab">🎬 分步動畫示範（看懂邏輯）</button>
+          <button type="button" class="mode-tab" id="tabPracticeMode" role="tab">✋ 我要自己轉轉看（互動練習）</button>
+        </div>
+
+        <!-- Sub-case Selector -->
+        <div id="caseTabsSection">
+          <div class="case-tabs-label">選擇你手上遇到的狀況（含例外排解）：</div>
+          <div class="case-tabs" id="caseTabs"></div>
+        </div>
+
+        <!-- Demo Mode Content -->
+        <div id="demoContentWrap">
+          <!-- Chant Karaoke Strip -->
+          <div class="chant-box" id="chantBox">
+            <div class="chant-header">
+              <div class="chant-title">🎵 動作分解節拍（點擊任一拍可直接跳轉觀看）</div>
+              <div class="chant-rhythm-tag" id="chantSummaryTag"></div>
+            </div>
+            <div class="beats-grid" id="beatsGrid"></div>
+          </div>
+
+          <!-- Clear Numbered Instructions -->
+          <div class="guide-steps" id="guideStepsList"></div>
+
+          <!-- Traps & Tips Callouts -->
+          <div id="calloutsArea"></div>
+        </div>
+
+        <!-- Practice Mode Content (Zero-Code Directional Pad) -->
+        <div class="practice-pad" id="practicePadWrap">
+          <div class="goal-banner" id="practiceGoalBanner">
+            <div>
+              <div class="goal-status-text" id="practiceStatusTitle">🎯 練習目標：試著用下方方向鍵完成本步驟！</div>
+              <div style="font-size:0.8rem;color:var(--text-secondary);" id="practiceStatusSub">將滑鼠移到按鈕上，3D 魔方會先預覽轉動箭頭喔！</div>
+            </div>
+            <button type="button" class="btn-ghost" id="practiceResetBtn">🔄 重新出題</button>
+          </div>
+
+          <div class="pad-grid">
+            <div class="pad-group">
+              <div class="pad-group-title"><span>⬆️ 頂層（最上面橫排）</span><span>口訣「左 / 右」</span></div>
+              <div class="pad-btns">
+                <button type="button" class="pad-btn" data-move="U">← 往左轉 90°</button>
+                <button type="button" class="pad-btn" data-move="Up">往右轉 90° →</button>
+              </div>
+            </div>
+            <div class="pad-group">
+              <div class="pad-group-title"><span>➡️ 右側（右邊直排）</span><span>右手「上 / 下」</span></div>
+              <div class="pad-btns">
+                <button type="button" class="pad-btn" data-move="R">↑ 往上推 90°</button>
+                <button type="button" class="pad-btn" data-move="Rp">↓ 往下拉 90°</button>
+              </div>
+            </div>
+            <div class="pad-group">
+              <div class="pad-group-title"><span>⬅️ 左側（左邊直排）</span><span>左手「上 / 下」或轉左面</span></div>
+              <div class="pad-btns">
+                <button type="button" class="pad-btn" data-move="Lp">↑ 往上推 90°</button>
+                <button type="button" class="pad-btn" data-move="L">↓ 往下拉 90°</button>
+              </div>
+            </div>
+            <div class="pad-group">
+              <div class="pad-group-title"><span>🟩 正面（面對你的這一面）</span><span>做十字常用</span></div>
+              <div class="pad-btns">
+                <button type="button" class="pad-btn" data-move="Fp">↺ 往左倒 90°</button>
+                <button type="button" class="pad-btn" data-move="F">↻ 往右倒 90°</button>
+                <button type="button" class="pad-btn" data-move="F2">轉 180°</button>
+              </div>
+            </div>
+            <div class="pad-group">
+              <div class="pad-group-title"><span>🟦 最後側（背面遠離你那層）</span><span>黃十字起手/收尾</span></div>
+              <div class="pad-btns">
+                <button type="button" class="pad-btn" data-move="B">← 左轉回 90°</button>
+                <button type="button" class="pad-btn" data-move="Bp">右轉 90° →</button>
+              </div>
+            </div>
+            <div class="pad-group">
+              <div class="pad-group-title"><span>🔄 整顆魔方換方向拿</span><span>不轉亂方塊，只換視角</span></div>
+              <div class="pad-btns">
+                <button type="button" class="pad-btn" data-move="rotY">整顆左轉換面</button>
+                <button type="button" class="pad-btn" data-move="rotYp">整顆右轉換面</button>
+                <button type="button" class="pad-btn" data-move="rotZp">翻成黃在左</button>
+                <button type="button" class="pad-btn" data-move="rotZ">翻回黃在上</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="case-tabs-label" style="margin-bottom:6px;">⚡ 一鍵體驗順手口訣組合（不用怕按錯，觀察方塊怎麼動）：</div>
+            <div class="macro-row">
+              <button type="button" class="macro-btn" id="macroTriggerBtn">🎵 做 1 次「右・下・左・上」</button>
+              <button type="button" class="macro-btn" id="macroRightL2Btn">↘️ 口訣右（右下×3，左上×2）</button>
+              <button type="button" class="macro-btn" id="macroLeftL2Btn">↙️ 口訣左（左下×3，右上×2）</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Previous / Next Step Navigation -->
+        <div class="step-nav-footer">
+          <button type="button" class="nav-step-btn" id="prevStepBtn">← 上一階段</button>
+          <span style="font-size:0.8rem;color:var(--text-muted);font-weight:700;" id="stepProgressLabel">第 1 / 8 階段</span>
+          <button type="button" class="nav-step-btn next-primary" id="nextStepBtn">下一階段 →</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Reorganized One-Page Summary Cheat Sheet -->
+  <section class="cheatsheet-section" id="cheatsheet">
+    <div class="cheatsheet-header">
+      <div>
+        <h2 style="font-size:1.35rem;font-weight:900;">📋 雙公式全流程整理速查卡（點擊卡片可直接跳至 3D 示範）</h2>
+        <p style="font-size:0.88rem;color:var(--text-secondary);">將原本零散的口訣筆記重新結構化整理：明確標出「怎麼拿」、「看哪裡」、「轉哪邊」與「防呆陷阱」。</p>
+      </div>
+    </div>
+    <div class="cheatsheet-grid" id="cheatsheetGrid"></div>
+  </section>
+
+  <footer>
+    解法參考來源：<a href="https://1hrbld.tw/3x3-dab/" target="_blank" rel="noopener noreferrer">一小時學盲解 — 魔術方塊 3x3 教學：雙公式基本解（超基礎魔方復原解法）</a>｜3D 零代碼互動引導版（單一 HTML 可直接部署於 GitHub Pages）
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      /* =========================================================================
+       * 1. COLOR PALETTE & ZERO-CODE DIRECTIONAL DEFINITIONS
+       * ========================================================================= */
+      const FACE_COLORS = {
+        Y: { hex: "#FFD600", dim: "#6E6018", name: "黃色" },
+        W: { hex: "#F8FAFC", dim: "#646B75", name: "白色" },
+        G: { hex: "#00C853", dim: "#145A34", name: "綠色" },
+        B: { hex: "#2979FF", dim: "#1B3E78", name: "藍色" },
+        R: { hex: "#FF2442", dim: "#6E1C2A", name: "紅色" },
+        O: { hex: "#FF8A00", dim: "#6E4314", name: "橘色" }
+      };
+
+      // Internal move keys (NEVER shown as WCA letters to the user!)
+      // Right-handed 3D coords: +x = 右側, -x = 左側, +y = 頂層, -y = 底層, +z = 正面, -z = 最後側(背面)
+      const MOVE_DEFS = {
+        U:     { ax: "y", layer: 1,  deg: -90, word: "左",     desc: "頂層 ← 往左 90°",   toast: "⬅️ 頂層往左轉 90°" },
+        Up:    { ax: "y", layer: 1,  deg: 90,  word: "右",     desc: "頂層 → 往右 90°",   toast: "➡️ 頂層往右轉 90°" },
+        U2:    { ax: "y", layer: 1,  deg: -180,word: "左轉兩下", desc: "頂層 ← 轉 180°",    toast: "⏪ 頂層往左轉 180°（兩下）" },
+        R:     { ax: "x", layer: 1,  deg: -90, word: "上",     desc: "右側 ↑ 往上 90°",   toast: "⬆️ 右側往上推 90°" },
+        Rp:    { ax: "x", layer: 1,  deg: 90,  word: "下",     desc: "右側 ↓ 往下 90°",   toast: "⬇️ 右側往下拉 90°" },
+        R2:    { ax: "x", layer: 1,  deg: 180, word: "右轉兩下", desc: "右側轉 180°",       toast: "↕️ 右側轉 180°（兩下）" },
+        L:     { ax: "x", layer: -1, deg: 90,  word: "下",     desc: "左側 ↓ 往下 90°",   toast: "⬇️ 左側往下轉 90°" },
+        Lp:    { ax: "x", layer: -1, deg: -90, word: "上",     desc: "左側 ↑ 往上 90°",   toast: "⬆️ 左側往上推 90°" },
+        L2:    { ax: "x", layer: -1, deg: 180, word: "左面轉兩下",desc: "左側轉 180°",      toast: "↕️ 左側轉 180°（兩下）" },
+        F:     { ax: "z", layer: 1,  deg: -90, word: "正面順轉", desc: "正面 ↻ 往右倒 90°", toast: "↻ 正面順時針往右轉 90°" },
+        Fp:    { ax: "z", layer: 1,  deg: 90,  word: "正面逆轉", desc: "正面 ↺ 往左倒 90°", toast: "↺ 正面逆時針往左轉 90°" },
+        F2:    { ax: "z", layer: 1,  deg: -180,word: "轉180°",  desc: "正面轉兩下到底",    toast: "⤵️ 正面轉 180°（翻到底部）" },
+        B:     { ax: "z", layer: -1, deg: 90,  word: "後側左回", desc: "最後側 ← 左轉回90°",toast: "⬅️ 最後側往左轉回 90°" },
+        Bp:    { ax: "z", layer: -1, deg: -90, word: "後側右轉", desc: "最後側 → 右轉 90°", toast: "➡️ 最後側往右轉 90°" },
+        B2:    { ax: "z", layer: -1, deg: 180, word: "後轉180°", desc: "最後側轉 180°",     toast: "🔄 最後側轉 180°" },
+        D:     { ax: "y", layer: -1, deg: 90,  word: "底往右",   desc: "底層 → 往右 90°",   toast: "➡️ 底層往右轉 90°" },
+        Dp:    { ax: "y", layer: -1, deg: -90, word: "底往左",   desc: "底層 ← 往左 90°",   toast: "⬅️ 底層往左轉 90°" },
+        D2:    { ax: "y", layer: -1, deg: 180, word: "底轉180°", desc: "底層轉 180°",       toast: "🔄 底層轉 180°" },
+        rotY:  { ax: "y", layer: 99, deg: -90, word: "換下一面", desc: "整顆向左轉看右面",  toast: "🔄 整顆魔方轉向下一側面" },
+        rotYp: { ax: "y", layer: 99, deg: 90,  word: "換上一面", desc: "整顆向右轉看左面",  toast: "🔄 整顆魔方轉向上一側面" },
+        rotZp: { ax: "z", layer: 99, deg: 90,  word: "黃面放左", desc: "整顆側翻讓黃面朝左",toast: "🔄 整顆側翻：黃色面放到左側" },
+        rotZ:  { ax: "z", layer: 99, deg: -90, word: "黃面放上", desc: "整顆翻回黃色朝上",  toast: "🔄 整顆翻正：黃色面回到頂部" }
+      };
+
+      const INVERSE_MOVE = {
+        U: "Up", Up: "U", U2: "U2",
+        R: "Rp", Rp: "R", R2: "R2",
+        L: "Lp", Lp: "L", L2: "L2",
+        F: "Fp", Fp: "F", F2: "F2",
+        B: "Bp", Bp: "B", B2: "B2",
+        D: "Dp", Dp: "D", D2: "D2",
+        rotY: "rotYp", rotYp: "rotY",
+        rotZ: "rotZp", rotZp: "rotZ"
+      };
+
+      /* =========================================================================
+       * 2. EXACT 27-CUBIE 3D RUBIK'S CUBE STATE ENGINE
+       * ========================================================================= */
+      function rotVec3(v, ax, deg) {
+        const rad = (deg * Math.PI) / 180;
+        const c = Math.cos(rad);
+        const s = Math.sin(rad);
+        const x = v[0], y = v[1], z = v[2];
+        if (ax === "x") return [x, c * y - s * z, s * y + c * z];
+        if (ax === "y") return [c * x + s * z, y, -s * x + c * z];
+        return [c * x - s * y, s * x + c * y, z];
+      }
+
+      function roundVec3(v) {
+        return [Math.round(v[0]), Math.round(v[1]), Math.round(v[2])];
+      }
+
+      function createSolvedCubies() {
+        const cubies = [];
+        for (let x = -1; x <= 1; x++) {
+          for (let y = -1; y <= 1; y++) {
+            for (let z = -1; z <= 1; z++) {
+              const stickers = [];
+              if (y === 1)  stickers.push({ n: [0, 1, 0],  c: "Y" });
+              if (y === -1) stickers.push({ n: [0, -1, 0], c: "W" });
+              if (z === 1)  stickers.push({ n: [0, 0, 1],  c: "G" });
+              if (z === -1) stickers.push({ n: [0, 0, -1], c: "B" });
+              if (x === 1)  stickers.push({ n: [1, 0, 0],  c: "R" });
+              if (x === -1) stickers.push({ n: [-1, 0, 0], c: "O" });
+              cubies.push({
+                p: [x, y, z],
+                home: [x, y, z],
+                stickers
+              });
+            }
+          }
+        }
+        return cubies;
+      }
+
+      function cloneCubies(src) {
+        return src.map(cb => ({
+          p: [cb.p[0], cb.p[1], cb.p[2]],
+          home: [cb.home[0], cb.home[1], cb.home[2]],
+          stickers: cb.stickers.map(st => ({ n: [st.n[0], st.n[1], st.n[2]], c: st.c }))
+        }));
+      }
+
+      function applyMoveInstant(cubies, moveKey) {
+        const m = MOVE_DEFS[moveKey];
+        if (!m) return;
+        const axisIdx = m.ax === "x" ? 0 : m.ax === "y" ? 1 : 2;
+        for (const cb of cubies) {
+          if (m.layer === 99 || cb.p[axisIdx] === m.layer) {
+            cb.p = roundVec3(rotVec3(cb.p, m.ax, m.deg));
+            for (const st of cb.stickers) {
+              st.n = roundVec3(rotVec3(st.n, m.ax, m.deg));
+            }
+          }
+        }
+      }
+
+      function applySeqInstant(cubies, seqStr) {
+        if (!seqStr) return;
+        const tokens = seqStr.trim().split(/\s+/).filter(Boolean);
+        for (const tk of tokens) applyMoveInstant(cubies, tk);
+      }
+
+      function getStickerAt(cubies, px, py, pz, nx, ny, nz) {
+        for (const cb of cubies) {
+          if (cb.p[0] === px && cb.p[1] === py && cb.p[2] === pz) {
+            for (const st of cb.stickers) {
+              if (st.n[0] === nx && st.n[1] === ny && st.n[2] === nz) return st.c;
+            }
+          }
+        }
+        return null;
+      }
+
+      /* =========================================================================
+       * 3. GOAL VERIFIERS FOR INTERACTIVE PRACTICE MODE
+       * ========================================================================= */
+      function checkDaisyGoal(cubies) {
+        if (getStickerAt(cubies, 0, 1, 0, 0, 1, 0) !== "Y") return false;
+        const edges = [[0, 1, 1], [1, 1, 0], [0, 1, -1], [-1, 1, 0]];
+        return edges.every(([x, y, z]) => getStickerAt(cubies, x, y, z, 0, 1, 0) === "W");
+      }
+
+      function checkBottomCrossGoal(cubies) {
+        if (getStickerAt(cubies, 0, -1, 0, 0, -1, 0) !== "W") return false;
+        const dirs = [[0, 0, 1], [1, 0, 0], [0, 0, -1], [-1, 0, 0]];
+        for (const [dx, dy, dz] of dirs) {
+          if (getStickerAt(cubies, dx, -1, dz, 0, -1, 0) !== "W") return false;
+          const ctr = getStickerAt(cubies, dx, 0, dz, dx, dy, dz);
+          if (getStickerAt(cubies, dx, -1, dz, dx, dy, dz) !== ctr) return false;
+        }
+        return true;
+      }
+
+      function checkFirstLayerGoal(cubies) {
+        if (!checkBottomCrossGoal(cubies)) return false;
+        for (const cb of cubies) {
+          if (cb.p[1] === -1) {
+            for (const st of cb.stickers) {
+              if (st.n[1] === -1) {
+                if (st.c !== "W") return false;
+              } else {
+                const ctr = getStickerAt(cubies, st.n[0], 0, st.n[2], st.n[0], 0, st.n[2]);
+                if (st.c !== ctr) return false;
+              }
+            }
+          }
+        }
+        return true;
+      }
+
+      function checkSecondLayerGoal(cubies) {
+        if (!checkFirstLayerGoal(cubies)) return false;
+        for (const cb of cubies) {
+          if (cb.p[1] === 0) {
+            for (const st of cb.stickers) {
+              const ctr = getStickerAt(cubies, st.n[0], 0, st.n[2], st.n[0], 0, st.n[2]);
+              if (st.c !== ctr) return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      function checkYellowCrossGoal(cubies) {
+        if (!checkSecondLayerGoal(cubies)) return false;
+        const edges = [[0, 1, 1], [1, 1, 0], [0, 1, -1], [-1, 1, 0]];
+        return edges.every(([x, y, z]) => getStickerAt(cubies, x, y, z, 0, 1, 0) === "Y");
+      }
+
+      function checkYellowFaceGoal(cubies) {
+        // Check whether Yellow face (either on Left -x or Top +y) has all 9 Yellow AND F2L intact!
+        const copy = cloneCubies(cubies);
+        if (getStickerAt(copy, -1, 0, 0, -1, 0, 0) === "Y") {
+          applyMoveInstant(copy, "rotZ"); // bring Left Yellow to Top to verify F2L + all 9 Yellow!
+        }
+        if (!checkSecondLayerGoal(copy)) return false;
+        for (let x = -1; x <= 1; x++) {
+          for (let z = -1; z <= 1; z++) {
+            if (getStickerAt(copy, x, 1, z, 0, 1, 0) !== "Y") return false;
+          }
+        }
+        return true;
+      }
+
+      function checkSideMiddleLinesGoal(cubies) {
+        if (!checkYellowFaceGoal(cubies)) return false;
+        const copy = cloneCubies(cubies);
+        if (getStickerAt(copy, -1, 0, 0, -1, 0, 0) === "Y") applyMoveInstant(copy, "rotZ");
+        const dirs = [[0, 0, 1], [1, 0, 0], [0, 0, -1], [-1, 0, 0]];
+        return dirs.every(([dx, , dz]) => {
+          const ctr = getStickerAt(copy, dx, 0, dz, dx, 0, dz);
+          return getStickerAt(copy, dx, 1, dz, dx, 0, dz) === ctr;
+        });
+      }
+
+      function checkFullSolvedGoal(cubies) {
+        const faces = [[0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1], [1, 0, 0], [-1, 0, 0]];
+        for (const [nx, ny, nz] of faces) {
+          const ctr = getStickerAt(cubies, nx, ny, nz, nx, ny, nz);
+          for (const cb of cubies) {
+            for (const st of cb.stickers) {
+              if (st.n[0] === nx && st.n[1] === ny && st.n[2] === nz) {
+                if (st.c !== ctr) return false;
+              }
+            }
+          }
+        }
+        return true;
+      }
+
+      /* =========================================================================
+       * 4. COMPLETE REORGANIZED 8-STAGE CURRICULUM (STEPS 0 TO 7)
+       *    100% Zero WCA Codes — Mathematically Verified Setups & Beats!
+       * ========================================================================= */
+      function expandBeats(items) {
+        // Each item: { m, word?, desc?, note, sepAfter? }
+        return items.map(it => {
+          const d = MOVE_DEFS[it.m];
+          return {
+            m: it.m,
+            word: it.word || d.word,
+            desc: it.desc || d.desc,
+            note: it.note || d.toast,
+            sepAfter: Boolean(it.sepAfter)
+          };
+        });
+      }
+
+      function makeTriggerBeats(times, reasonPrefix) {
+        const arr = [];
+        for (let i = 1; i <= times; i++) {
+          const tag = times > 1 ? `（第 ${i}/${times} 組）` : "";
+          arr.push(
+            { m: "Up", word: "右", desc: "頂層往右", note: `${reasonPrefix}${tag}① 頂層 → 往右轉 90°` },
+            { m: "Rp", word: "下", desc: "右側往下", note: `${reasonPrefix}${tag}② 右側 ↓ 往下拉 90°` },
+            { m: "U",  word: "左", desc: "頂層往左", note: `${reasonPrefix}${tag}③ 頂層 ← 往左轉 90°` },
+            { m: "R",  word: "上", desc: "右側往上", note: `${reasonPrefix}${tag}④ 右側 ↑ 往上推 90°`, sepAfter: i < times }
+          );
+        }
+        return arr;
+      }
+
+      const LESSONS = [
+        /* ---------------- STEP 0 ---------------- */
+        {
+          id: 0,
+          shortName: "準備與雙口訣",
+          shortTag: "認識中心與兩組節拍",
+          badge: "新手熱身・30 秒建立觀念",
+          title: "認識魔方結構 ＆ 練熟兩組核心口訣",
+          goal: "不用背任何英文代號！整顆魔術方塊只需要認識「中心塊固定」原則，並讓手指熟悉兩組超順口的節奏口訣。",
+          poseHtml: `<span class="color-dot" style="background:#FFD600"></span> 黃色中心朝上 ・ <span class="color-dot" style="background:#FFFFFF"></span> 白色中心朝下`,
+          poseAlert: false,
+          poseHint: "每一面正中央那格永遠不會換位置",
+          defaultCam: { yaw: 0.48, pitch: 0.43 },
+          peekHighlight: "",
+          goalFn: checkFullSolvedGoal,
+          sheetSummary: {
+            pose: "黃心朝上・白心朝下",
+            chant: "口訣①：右・下・左・上 ｜ 口訣②：右下×3，左上×2",
+            desc: "正中央那格決定該面顏色（黃白相對、綠藍相對、紅橘相對）。所有口訣中「左右」皆轉最上層、「上下」皆轉側邊直排。"
+          },
+          cases: [
+            {
+              tabName: "① 萬用四拍「右・下・左・上」",
+              rhythmTag: "核心公式一：右・下・左・上",
+              setup: "",
+              spotlight: cb => cb.p[0] === 1 || cb.p[1] === 1,
+              beats: expandBeats([
+                ...makeTriggerBeats(1, "萬用四拍練習：")
+              ]),
+              steps: [
+                "<strong>「右」與「左」永遠是撥最上面那一層（頂層）</strong>：右＝頂層往右、左＝頂層往左。",
+                "<strong>「下」與「上」永遠是轉右邊直排（右側）</strong>：下＝右側往下、上＝右側往上。",
+                "試著跟著動畫連做 <strong>6 次「右・下・左・上」</strong>，你會發現整顆魔術方塊會神奇地回到原本狀態！第三層幾乎全靠這四拍完成。"
+              ],
+              callouts: [
+                { type: "tip", text: "💡 記憶小撇步：唸口訣時心裡想著「頂右 → 右下 → 頂左 → 右上」，右手食指與大拇指一來一回非常順手！" }
+              ]
+            },
+            {
+              tabName: "② 三長兩短「右下×3，左上×2」",
+              rhythmTag: "核心公式二：口訣右（逆時針起手）",
+              setup: "Rp Up Rp Up R U R U R U",
+              spotlight: cb => (cb.p[0] === 1 && cb.p[2] === 1 && cb.p[1] === 0) || (cb.p[0] === 0 && cb.p[1] === 1 && cb.p[2] === 1),
+              beats: expandBeats([
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 1 組「右下」：頂層往右轉 90°" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "第 1 組「右下」：右側往下拉 90°", sepAfter: true },
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 2 組「右下」：頂層往右轉 90°" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "第 2 組「右下」：右側往下拉 90°", sepAfter: true },
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 3 組「右下」：頂層往右轉 90°" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "第 3 組「右下」：右側往下拉 90°", sepAfter: true },
+                { m: "U",  word: "左", desc: "頂層往左", note: "第 1 組「左上」：頂層往左轉 90°" },
+                { m: "R",  word: "上", desc: "右側往上", note: "第 1 組「左上」：右側往上推 90°", sepAfter: true },
+                { m: "U",  word: "左", desc: "頂層往左", note: "第 2 組「左上」：頂層往左轉 90°" },
+                { m: "R",  word: "上", desc: "右側往上", note: "第 2 組「左上」：右側往上推 90° — 邊塊完美滑進右側！" }
+              ]),
+              steps: [
+                "這組節奏叫做<strong>「三長兩短」</strong>：先連續做 <strong>3 次「右下」</strong>，再連續做 <strong>2 次「左上」</strong>。",
+                "跟第一組一樣：<strong>左右轉頂層、上下轉右側</strong>（如果是左手鏡像版「左下×3，右上×2」，上下就改轉左側）。",
+                "這組動作專門用來<strong>把第二層側邊塞進定位</strong>，以及<strong>第三層對齊四面中線</strong>！"
+              ],
+              callouts: [
+                { type: "tip", text: "✨ 恭喜！整套解法真的就只有這兩組核心口訣，現在按「下一階段」正式開始拼第一層吧！" }
+              ]
+            }
+          ]
+        },
+
+        /* ---------------- STEP 1 ---------------- */
+        {
+          id: 1,
+          shortName: "底部白十字",
+          shortTag: "黃色小花 → 轉 180° 下底",
+          badge: "第一層（前半）・建立地基",
+          title: "拼出黃色小花，轉 180° 完成「底部白色十字」",
+          goal: "先在黃色中心周圍集齊 4 瓣白色邊塊（黃色小花），對齊側面中心顏色後轉 180 度，讓底部出現對齊色心的白色十字。",
+          poseHtml: `<span class="color-dot" style="background:#FFD600"></span> 黃色中心朝上 ・ <span class="color-dot" style="background:#FFFFFF"></span> 白色中心朝下`,
+          poseAlert: false,
+          poseHint: "可隨時看左下角「底面」小視窗確認白十字進度",
+          defaultCam: { yaw: 0.48, pitch: 0.46 },
+          peekHighlight: "peekBottomBox",
+          goalFn: checkBottomCrossGoal,
+          sheetSummary: {
+            pose: "黃心朝上・白心朝下",
+            chant: "頂面湊四白瓣（小花）→ 側色對齊中心 → 正面轉 180° ×4",
+            desc: "先找黃中心湊出十字白花瓣；看每瓣白色的另一邊顏色，轉到跟下一格中心同色後，整面轉 180 度到底部。"
+          },
+          cases: [
+            {
+              tabName: "步驟 1-A：先湊出頂面「黃色小花」",
+              rhythmTag: "直覺找白邊 → 推上黃中心旁",
+              setup: "R U Rp U R U2 Rp F2 R2 B2 L2 Rp L F2",
+              spotlight: cb => cb.stickers.some(s => s.c === "W" && cb.home.filter(v => v === 0).length === 1) || (cb.p[0] === 0 && cb.p[1] === 1 && cb.p[2] === 0),
+              beats: expandBeats([
+                { m: "R",  word: "右往上", desc: "右側 ↑ 往上 90°", note: "右邊中層有一顆白色邊塊，直接往上推到黃色中心旁！" },
+                { m: "Lp", word: "左往上", desc: "左側 ↑ 往上 90°", note: "左邊中層也有一顆白色邊塊，直接往上推到黃色中心旁！" },
+                { m: "F2", word: "正轉180°", desc: "正面轉兩下上頂", note: "底下正前方有一顆白色邊塊，正面轉 180° 直接翻上頂面，4 瓣白色小花完成！" }
+              ]),
+              steps: [
+                "先把 <strong>黃色中心塊朝正上方</strong>（先不用管四角是什麼顏色，只看上下左右 4 個十字邊塊位置）。",
+                "在側邊或底層尋找帶有<strong>白色</strong>的邊塊，像範例一樣把它們推上來圍繞黃色中心，湊成<strong>「黃蕊白瓣小花」</strong>。",
+                "如果推上去的位置已經有白色花瓣了，先<strong>轉一下頂層把空位讓出來</strong>，再往上推就不會撞掉原本的花瓣！"
+              ],
+              callouts: [
+                { type: "tip", text: "💡 如果遇到白色剛好朝向自己正面（推上去白面沒朝上）：先把正面順轉 90° 移到側邊中層，轉頂層讓出空位，再把側邊往上推即可！" }
+              ]
+            },
+            {
+              tabName: "步驟 1-B：對齊中心色、轉 180° 下底變白十字",
+              rhythmTag: "側邊對同色中心 → 轉 180° × 4 瓣",
+              setup: "R U Rp U R U2 Rp F2 R2 B2 L2 Up",
+              spotlight: cb => cb.stickers.some(s => s.c === "W" && cb.stickers.length === 2) || cb.stickers.length === 1,
+              beats: expandBeats([
+                { m: "U",    word: "頂往左對色", desc: "頂層 ← 對齊綠心", note: "看正上方白瓣的另一邊是綠色，轉頂層讓它對齊正面的綠色中心！" },
+                { m: "F2",   word: "轉180°",    desc: "正面轉兩下到底", note: "對齊綠色後，正面轉 180 度（兩下），第一瓣白色沉入底部！", sepAfter: true },
+                { m: "rotY", word: "看下一面",   desc: "換看紅色正面",   note: "整顆轉到紅色面，上方白瓣側面剛好已對齊紅心！" },
+                { m: "F2",   word: "轉180°",    desc: "正面轉兩下到底", note: "正面轉 180 度，第二瓣白色沉入底部！", sepAfter: true },
+                { m: "rotY", word: "看下一面",   desc: "換看藍色正面",   note: "整顆轉到藍色面，上方白瓣側面已對齊藍心！" },
+                { m: "F2",   word: "轉180°",    desc: "正面轉兩下到底", note: "正面轉 180 度，第三瓣白色沉入底部！", sepAfter: true },
+                { m: "rotY", word: "看下一面",   desc: "換看橘色正面",   note: "整顆轉到橘色面，上方白瓣側面已對齊橘心！" },
+                { m: "F2",   word: "轉180°",    desc: "正面轉兩下到底", note: "正面轉 180 度，四瓣全部到底！看左下「底面預覽」：白色十字出現了！" }
+              ]),
+              steps: [
+                "觀察頂面其中一顆白色花瓣的<strong>「另一邊側面顏色」</strong>（例如白綠邊塊的綠色那一格）。",
+                "轉動最上層，讓這格顏色跟<strong>下一格（側面中心塊）變成相同顏色</strong>。",
+                "對齊後，把<strong>該側面整面轉 180 度（連轉兩下）</strong>送到最底部。四顆都做完，底部就出現完美的<strong>白色十字</strong>！"
+              ],
+              callouts: [
+                { type: "warn", text: "⚠️ 新手必查：轉下去前一定要先讓「花瓣側面色 ＝ 中心色」！這樣轉到底部後，四個側面的十字邊才會同時對齊中心。" }
+              ]
+            }
+          ]
+        },
+
+        /* ---------------- STEP 2 ---------------- */
+        {
+          id: 2,
+          shortName: "完成第一層",
+          shortTag: "白色四角對色入槽",
+          badge: "第一層（後半）・底層全白",
+          title: "上層找白色角塊，對齊中心色放入底層四角",
+          goal: "保持黃色朝上、白十字朝下；在最上層側邊找白色角塊，將它的「另一側顏色」對齊同色中心，再用 3 個動作送回底層。",
+          poseHtml: `<span class="color-dot" style="background:#FFD600"></span> 黃色中心朝上 ・ <span class="color-dot" style="background:#FFFFFF"></span> 白色十字朝下`,
+          poseAlert: false,
+          poseHint: "千萬別看白色對中心，要看角塊「側面另一色」對中心！",
+          defaultCam: { yaw: 0.5, pitch: 0.42 },
+          peekHighlight: "peekBottomBox",
+          goalFn: checkFirstLayerGoal,
+          sheetSummary: {
+            pose: "黃心朝上・白心朝下",
+            chant: "白朝右：右上・頂左・右下 ｜ 例外白朝上：右上・頂轉180°・右下",
+            desc: "找上層角的白色，將它的「另一邊側面色」轉到跟中心同色；若白在右上側面就做「右側往上90°→頂往左90°→右側往下90°」。"
+          },
+          cases: [
+            {
+              tabName: "狀況 A：白色在「右上角側面（朝右）」",
+              rhythmTag: "對齊正面色心 → 右上・頂左・右下",
+              setup: "R U Rp U R U2 Rp R Up Rp Up",
+              spotlight: cb => cb.p[1] === -1 || (cb.home[1] === -1 && cb.home[0] === 1 && cb.home[2] === 1) || cb.stickers.length === 1,
+              beats: expandBeats([
+                { m: "U",  word: "頂左對色", desc: "頂層 ← 對齊綠心", note: "這顆白紅綠角塊的另一邊是綠色，先轉頂層讓綠色對齊正面的綠色中心！", sepAfter: true },
+                { m: "R",  word: "往上90°",  desc: "右側 ↑ 往上 90°", note: "① 右側往上轉 90°（把右下角空位接上來）" },
+                { m: "U",  word: "往左90°",  desc: "頂層 ← 往左 90°", note: "② 頂層往左轉 90°（把白色角塊接進來）" },
+                { m: "Rp", word: "往下90°",  desc: "右側 ↓ 往下 90°", note: "③ 右側往下轉 90° — 白角歸位且側面顏色完全吻合！" }
+              ]),
+              steps: [
+                "在最上層四個角找帶有<strong>白色在側面</strong>的角塊，看這顆角塊<strong>旁邊另一格側面顏色</strong>（不看頂面那格）。",
+                "轉動頂層，讓這個側面顏色<strong>對應到相同顏色的中心塊</strong>（如範例綠色對綠色中心，此時白色在右上角朝右）。",
+                "做三步：<strong>右側往上 90° → 頂層往左 90° → 右側往下 90°</strong>，角塊就精準歸位到底部了！"
+              ],
+              callouts: [
+                { type: "tip", text: "💡 重複找上層剩下的白色角塊做一樣的動作，直到底部 9 格全部變成白色，且第一層四週側面整排同色！" }
+              ]
+            },
+            {
+              tabName: "狀況 B：白色在「左上角側面（朝左）」",
+              rhythmTag: "左右鏡像對稱 → 左上・頂右・左下",
+              setup: "R U Rp U R U2 Rp Lp U L U",
+              defaultCam: { yaw: -0.48, pitch: 0.42 },
+              spotlight: cb => cb.p[1] === -1 || (cb.home[1] === -1 && cb.home[0] === -1 && cb.home[2] === 1) || cb.stickers.length === 1,
+              beats: expandBeats([
+                { m: "Up", word: "頂右對色", desc: "頂層 → 對齊綠心", note: "先轉頂層，讓這顆白綠橘角塊的綠色對齊正面綠色中心（此時白色朝左）！", sepAfter: true },
+                { m: "Lp", word: "往上90°",  desc: "左側 ↑ 往上 90°", note: "① 左側往上轉 90°" },
+                { m: "Up", word: "往右90°",  desc: "頂層 → 往右 90°", note: "② 頂層往右轉 90°" },
+                { m: "L",  word: "往下90°",  desc: "左側 ↓ 往下 90°", note: "③ 左側往下轉 90° — 左下角白色完美歸位！" }
+              ]),
+              steps: [
+                "當對齊正面中心顏色後，發現白色在<strong>左上角朝左</strong>（狀況 A 的左右鏡像）：",
+                "直接改用左手對稱三步：<strong>左側往上 90° → 頂層往右 90° → 左側往下 90°</strong>，一樣輕鬆入槽！"
+              ],
+              callouts: []
+            },
+            {
+              tabName: "例外 1：白色「朝正上方」",
+              isException: true,
+              rhythmTag: "先翻到側面：右上・頂左180°・右下",
+              setup: "R U Rp U R U2 Rp R Up Rp U R U2 Rp",
+              spotlight: cb => cb.p[1] === -1 || (cb.home[1] === -1 && cb.home[0] === 1 && cb.home[2] === 1) || cb.stickers.length === 1,
+              beats: expandBeats([
+                { m: "R",  word: "往上90°",   desc: "右側 ↑ 往上 90°", note: "確認正下方（右下底角）不是白色後：① 右側往上 90°" },
+                { m: "U2", word: "往左180°",  desc: "頂層 ← 轉兩下",   note: "② 頂層往左轉 180°（連撥兩下，把朝上的白色翻開）" },
+                { m: "Rp", word: "往下90°",   desc: "右側 ↓ 往下 90°", note: "③ 右側往下 90° — 看！白色已經從頂面翻到側面了！", sepAfter: true },
+                { m: "Up", word: "頂右對色",  desc: "頂層 → 對齊綠心", note: "接著照剛剛狀況 A 的規則：轉頂層對齊綠色中心" },
+                { m: "R",  word: "往上90°",   desc: "右側 ↑ 往上 90°", note: "右側往上 90°" },
+                { m: "U",  word: "往左90°",   desc: "頂層 ← 往左 90°", note: "頂層往左 90°" },
+                { m: "Rp", word: "往下90°",   desc: "右側 ↓ 往下 90°", note: "右側往下 90° — 完成！" }
+              ]),
+              steps: [
+                "如果角塊的<strong>白色朝正上方</strong>，直接轉會進不去底面，我們要先把它「翻到側面」：",
+                "先把這顆朝上的白角轉到<strong>「正下方還沒拼好白色」的右上角位置</strong>。",
+                "執行：<strong>右側往上 90° → 頂層往左 180°（兩下） → 右側往下 90°</strong>，白色就會變到側面，接著照狀況 A 對色放入！"
+              ],
+              callouts: [
+                { type: "warn", text: "💡 補充例外：如果上層找不到白色，但底層有一顆白角「卡在錯的位置或翻歪了」，把它放在右下角做一次「右上→頂左→右下」就能救回頂層！" }
+              ]
+            }
+          ]
+        },
+
+        /* ---------------- STEP 3 ---------------- */
+        {
+          id: 3,
+          shortName: "完成第二層",
+          shortTag: "頂點對色・三長兩短",
+          badge: "第二層・中層四邊歸位",
+          title: "頂面十字點對齊正面色心，套用「三長兩短」口訣",
+          goal: "在頂層十字找「不含黃色」的邊塊，用它「頂面那一格顏色」對齊正前方中心塊，再看它正面那格顏色決定用口訣右或口訣左。",
+          poseHtml: `<span class="color-dot" style="background:#FFD600"></span> 黃色中心朝上 ・ <span class="color-dot" style="background:#FFFFFF"></span> 白色底面朝下`,
+          poseAlert: false,
+          poseHint: "關鍵：拿「頂面十字點顏色」對齊「正前方中心顏色」！",
+          defaultCam: { yaw: 0.48, pitch: 0.44 },
+          peekHighlight: "",
+          goalFn: checkSecondLayerGoal,
+          sheetSummary: {
+            pose: "黃心朝上・白心朝下",
+            chant: "口訣右：右下×3，左上×2 ｜ 口訣左：左下×3，右上×2",
+            desc: "找不含黃色的頂層邊塊，以「頂面十字點顏色」對齊正下方側面中心；看正面格顏色往右塞用口訣右（上下轉右側），往左塞用口訣左（上下轉左側）。"
+          },
+          cases: [
+            {
+              tabName: "口訣右（逆時針）：塞入右邊槽位",
+              rhythmTag: "右下・右下・右下，左上・左上（上下皆轉右側）",
+              setup: "R U Rp U R U2 Rp Rp Up Rp Up R U R U R U",
+              spotlight: cb => cb.p[1] <= 0 || (cb.p[0] === 0 && cb.p[1] === 1 && cb.p[2] === 1),
+              beats: expandBeats([
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 1 組「右下」：頂層往右（俯視逆時針）" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "第 1 組「右下」：右側往下", sepAfter: true },
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 2 組「右下」：頂層往右" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "第 2 組「右下」：右側往下", sepAfter: true },
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 3 組「右下」：頂層往右" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "第 3 組「右下」：右側往下", sepAfter: true },
+                { m: "U",  word: "左", desc: "頂層往左", note: "第 1 組「左上」：頂層往左" },
+                { m: "R",  word: "上", desc: "右側往上", note: "第 1 組「左上」：右側往上", sepAfter: true },
+                { m: "U",  word: "左", desc: "頂層往左", note: "第 2 組「左上」：頂層往左" },
+                { m: "R",  word: "上", desc: "右側往上", note: "第 2 組「左上」：右側往上 — 綠紅邊塊完美塞入右下槽！" }
+              ]),
+              steps: [
+                "在頂層十字四格中找一顆<strong>沒有黃色</strong>的邊塊（範例為「上綠、前紅」）。",
+                "轉動頂層，把<strong>頂面十字點那格（綠色）轉到對應正前方綠色中心</strong>的正上方！",
+                "看它朝向自己那一格是<strong>紅色（對應右邊紅色中心）</strong>，代表要塞往右邊，執行口訣右：<strong>「右下、右下、右下，左上、左上」</strong>（上下轉動都是<strong>右側</strong>）。"
+              ],
+              callouts: [
+                { type: "warn", text: "🎯 對色重點別搞混：這個口訣是拿「頂面朝上那格顏色」去對齊正前方中心塊（不是拿側面格對齊喔）！" }
+              ]
+            },
+            {
+              tabName: "口訣左（順時針）：塞入左邊槽位",
+              rhythmTag: "左下・左下・左下，右上・右上（上下皆轉左側）",
+              setup: "R U Rp U R U2 Rp L U L U Lp Up Lp Up Lp Up",
+              defaultCam: { yaw: -0.48, pitch: 0.44 },
+              spotlight: cb => cb.p[1] <= 0 || (cb.p[0] === 0 && cb.p[1] === 1 && cb.p[2] === 1),
+              beats: expandBeats([
+                { m: "U",  word: "左", desc: "頂層往左", note: "第 1 組「左下」：頂層往左（俯視順時針）" },
+                { m: "L",  word: "下", desc: "左側往下", note: "第 1 組「左下」：左側往下", sepAfter: true },
+                { m: "U",  word: "左", desc: "頂層往左", note: "第 2 組「左下」：頂層往左" },
+                { m: "L",  word: "下", desc: "左側往下", note: "第 2 組「左下」：左側往下", sepAfter: true },
+                { m: "U",  word: "左", desc: "頂層往左", note: "第 3 組「左下」：頂層往左" },
+                { m: "L",  word: "下", desc: "左側往下", note: "第 3 組「左下」：左側往下", sepAfter: true },
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 1 組「右上」：頂層往右" },
+                { m: "Lp", word: "上", desc: "左側往上", note: "第 1 組「右上」：左側往上", sepAfter: true },
+                { m: "Up", word: "右", desc: "頂層往右", note: "第 2 組「右上」：頂層往右" },
+                { m: "Lp", word: "上", desc: "左側往上", note: "第 2 組「右上」：左側往上 — 綠橘邊塊完美塞入左下槽！" }
+              ]),
+              steps: [
+                "同樣把<strong>頂面十字點顏色（綠色）</strong>對齊正前方的綠色中心。",
+                "朝向自己那一格是<strong>橘色（對應左邊橘色中心）</strong>，代表要塞往左邊！",
+                "執行鏡像口訣左：<strong>「左下、左下、左下，右上、右上」</strong>（注意：這時候上下轉動都是<strong>左側</strong>！）。"
+              ],
+              callouts: [
+                { type: "tip", text: "💡 例外處理：如果頂層全都是黃色邊塊，但第二層還有邊塊「反了或塞錯邊」，直接對著那槽做一次口訣右（或口訣左）把它擠回頂層，再重放即可！" }
+              ]
+            }
+          ]
+        },
+
+        /* ---------------- STEP 4 ---------------- */
+        {
+          id: 4,
+          shortName: "頂面黃十字",
+          shortTag: "後側右轉＋右下左上",
+          badge: "第三層（步驟一）・頂面十字",
+          title: "最後側轉右 90°，做「右下左上」拼出黃色十字",
+          goal: "只觀察頂面十字的 4 個邊塊（先忽略四角），把最後側轉右 90°、重複「右下左上」直到湊齊黃邊，再把最後側左轉回 90°。",
+          poseHtml: `<span class="color-dot" style="background:#FFD600"></span> 黃色中心朝上 ・ <span class="color-dot" style="background:#FFFFFF"></span> 白色底面朝下`,
+          poseAlert: false,
+          poseHint: "「最後側」就是遠離你、背對你的最後面那一層",
+          defaultCam: { yaw: 0.45, pitch: 0.52 },
+          peekHighlight: "peekBackBox",
+          goalFn: checkYellowCrossGoal,
+          sheetSummary: {
+            pose: "黃心朝上・白心朝下",
+            chant: "最後側轉右 90° →（右・下・左・上）×1～2 次 → 最後側左轉回 90°",
+            desc: "折角放左下（6點與9點方向）做 1 次右下左上；橫線水平放（3點與9點方向）做 2 次右下左上；單點就做兩輪。"
+          },
+          cases: [
+            {
+              tabName: "狀況 A：小彎角（放左下 6 點與 9 點鐘）",
+              rhythmTag: "後側右轉 → 右下左上 ×1 → 後側左回",
+              setup: "Bp Rp Up R U B",
+              spotlight: cb => cb.p[1] <= 0 || (cb.p[1] === 1 && (cb.p[0] === 0 || cb.p[2] === 0)),
+              beats: expandBeats([
+                { m: "Bp", word: "後側右轉", desc: "最後側 → 右轉90°", note: "先把頂面黃色小彎角擺在「左＋前（9點與6點方向）」，將最後側往右轉 90°！", sepAfter: true },
+                ...makeTriggerBeats(1, ""),
+                { m: "B",  word: "後側左回", desc: "最後側 ← 左回90°", note: "最後把最後側往左轉回 90° — 頂面黃色十字完成了！" }
+              ]),
+              steps: [
+                "當頂面中心與相鄰兩格連成<strong>「小彎角」</strong>時，轉動頂層把它擺在<strong>左下角（靠近自己與左邊，即 6 點與 9 點鐘方向）</strong>。",
+                "<strong>起手</strong>：把<strong>最後側（背面層）往右轉 90°</strong>。",
+                "<strong>中間</strong>：做 1 次<strong>「右・下・左・上」</strong>。",
+                "<strong>收尾</strong>：把<strong>最後側往左轉回 90°</strong>，黃色十字立刻出現！"
+              ],
+              callouts: []
+            },
+            {
+              tabName: "狀況 B：橫向一字線（放水平 3 點與 9 點鐘）",
+              rhythmTag: "後側右轉 → 右下左上 ×2 → 後側左回",
+              setup: "Bp Rp Up R U Rp Up R U B",
+              spotlight: cb => cb.p[1] <= 0 || (cb.p[1] === 1 && (cb.p[0] === 0 || cb.p[2] === 0)),
+              beats: expandBeats([
+                { m: "Bp", word: "後側右轉", desc: "最後側 → 右轉90°", note: "把黃色直線橫向擺放（左到右水平線），先將最後側往右轉 90°！", sepAfter: true },
+                ...makeTriggerBeats(2, ""),
+                { m: "B",  word: "後側左回", desc: "最後側 ← 左回90°", note: "連做 2 組右下左上後，把最後側往左轉回 90° — 一次直達黃色十字！" }
+              ]),
+              steps: [
+                "當頂面出現<strong>「一字黃線」</strong>時，轉動頂層讓它變成<strong>左右水平橫線（千萬別擺成直的）</strong>。",
+                "把<strong>最後側往右轉 90°</strong>，接著連續做 <strong>2 次「右・下・左・上」</strong>，最後把<strong>最後側往左轉回 90°</strong> 就直接變出黃十字！"
+              ],
+              callouts: [
+                { type: "tip", text: "💡 如果頂面只有「單獨 1 顆黃色中心點」怎麼辦？隨便拿一面先做一次狀況 B（變出小彎角），再把小彎角擺到左下角做一次狀況 A 就好囉！" }
+              ]
+            }
+          ]
+        },
+
+        /* ---------------- STEP 5 ---------------- */
+        {
+          id: 5,
+          shortName: "黃色面全滿",
+          shortTag: "黃面放左・固定正面翻角",
+          badge: "第三層（步驟二）・四角變黃色",
+          title: "黃十字面放左側！固定正面，重複「右下左上」翻黃四角",
+          goal: "將黃十字面翻到「左側」，選定正面後絕對不再翻動整顆魔方！把非黃色角轉到左上前角做「右下左上」變黃，只轉左側找下一顆。",
+          poseHtml: `⚠️ 換拿法：<span class="color-dot" style="background:#FFD600"></span> 黃十字面放【左側】 ・ 選定正面固定不動！`,
+          poseAlert: true,
+          poseHint: "過程中右邊兩層暫時散開是正常的，全部翻黃就會自動復原！",
+          defaultCam: { yaw: -0.42, pitch: 0.38 },
+          peekHighlight: "peekLeftBox",
+          goalFn: checkYellowFaceGoal,
+          sheetSummary: {
+            pose: "⚠️ 黃十字面放左側・正面固定不動",
+            chant: "非黃角放左上前 →（右・下・左・上）直到左面變黃 → 只轉左側找下一角",
+            desc: "選定一面當正面後切記不可整顆亂轉！把沒變黃的角轉到左上前角，重複右下左上（2次或4次）直到變黃，再只轉左側換下一顆。"
+          },
+          cases: [
+            {
+              tabName: "完整示範：連續翻正兩顆非黃色角",
+              rhythmTag: "左上前角翻黃 → 只轉左側換角 → 右邊自動復原！",
+              setup: "Rp Up Up Rp Up Rp Up Rp U R U R Up R rotZp L Up Rp U R Up Rp U R Lp Up Rp U R Up Rp U R Up Rp U R Up Rp U R",
+              spotlight: cb => cb.p[0] === -1,
+              beats: expandBeats([
+                ...makeTriggerBeats(2, "第 1 顆角翻黃"),
+                { m: "L", word: "只轉左側", desc: "左側 ↓ 換下一角", note: "✅ 第 1 顆角變黃了！切記正面不動，只轉「左側這一層」把下一顆非黃角轉上來！", sepAfter: true },
+                ...makeTriggerBeats(4, "第 2 顆角翻黃"),
+                { m: "Lp", word: "左側轉正", desc: "左側 ↑ 對齊", note: "🎉 四個角全部變成黃色，而且右邊第一、二層也自動恢復原狀了！" }
+              ]),
+              steps: [
+                "<strong>第一步（換拿法）</strong>：把剛剛做好的<strong>黃十字面放到左側</strong>（此時左黃、右白），<strong>選定一面朝向自己當正面，接下來絕對不能翻動整顆魔方！</strong>",
+                "<strong>第二步（翻第 1 顆角）</strong>：看<strong>左上前角</strong>那顆角塊，若朝左那格不是黃色，重複做<strong>「右・下・左・上」</strong>（會做 2 次或 4 次），直到它朝左那格變成黃色！（⚠️ 注意：變黃那瞬間最後一拍「上」一定要做完！）",
+                "<strong>第三步（只轉左側找下一顆）</strong>：<strong>保持正面不動，只轉動「左側那一層」</strong>，把下一顆還沒變黃的角塊轉到同一個「左上前角」位置，繼續做「右・下・左・上」直到變黃！"
+              ],
+              callouts: [
+                { type: "warn", text: "🚨 新手最大陷阱：翻好第一顆角時，右邊白色看起來亂掉是「完全正常」的！千萬不要緊張去修右邊或整顆轉方向，只要乖乖「只轉左側」把剩下非黃角都翻黃，右邊最後一拍會 100% 自動歸位！" }
+              ]
+            }
+          ]
+        },
+
+        /* ---------------- STEP 6 ---------------- */
+        {
+          id: 6,
+          shortName: "側邊中線對齊",
+          shortTag: "同色中線放後・循環三邊",
+          badge: "第三層-2（前半）・四面中線一致",
+          title: "唯一對齊的中線放「最後側」，套口訣讓四面中線全對齊",
+          goal: "轉回上黃下白；轉動頂層讓 1 個側面的第三層中間格與下兩層同色，把該面放背面，執行口訣讓四面中線全部連成同色直線！",
+          poseHtml: `<span class="color-dot" style="background:#FFD600"></span> 黃色面轉回【頂部】 ・ 已對齊中線放【最後側】`,
+          poseAlert: false,
+          poseHint: "看左下「最後側」預覽：藍色中線已整條對齊放背面",
+          defaultCam: { yaw: 0.48, pitch: 0.44 },
+          peekHighlight: "peekBackBox",
+          goalFn: checkSideMiddleLinesGoal,
+          sheetSummary: {
+            pose: "黃面朝上・白面朝下（對齊的那面放背面）",
+            chant: "下・右 → 右下×3，左上×2 → 左側黃角往右轉 90° → 右側往上歸位",
+            desc: "轉頂層找到唯一「中線三格同色」的一面放背面，做 1～2 次口訣，四個側面的垂直中線就會全部同色。"
+          },
+          cases: [
+            {
+              tabName: "標準狀況：1 面中線相同（放最後側）",
+              rhythmTag: "下右 ＋ 口訣右 ＋ 黃角右轉歸位",
+              setup: "Rp Up Up Rp Up Rp Up Rp U R U R Up R Rp Up Up Rp Up Rp Up Rp U R U R Up R",
+              spotlight: cb => cb.p[1] <= 0 || cb.p[0] === 0 || cb.p[2] === 0,
+              beats: expandBeats([
+                { m: "Rp", word: "下", desc: "右側 ↓ 往下", note: "【起手：下右】① 右側往下拉 90°" },
+                { m: "Up", word: "右", desc: "頂層 → 往右", note: "【起手：下右】② 頂層往右轉 90°", sepAfter: true },
+                { m: "Up", word: "右", desc: "頂層往右", note: "【接第二層口訣右】第 1 組「右下」：頂層往右" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "【接第二層口訣右】第 1 組「右下」：右側往下" },
+                { m: "Up", word: "右", desc: "頂層往右", note: "【接第二層口訣右】第 2 組「右下」：頂層往右" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "【接第二層口訣右】第 2 組「右下」：右側往下" },
+                { m: "Up", word: "右", desc: "頂層往右", note: "【接第二層口訣右】第 3 組「右下」：頂層往右" },
+                { m: "Rp", word: "下", desc: "右側往下", note: "【接第二層口訣右】第 3 組「右下」：右側往下", sepAfter: true },
+                { m: "U",  word: "左", desc: "頂層往左", note: "【接第二層口訣右】第 1 組「左上」：頂層往左" },
+                { m: "R",  word: "上", desc: "右側往上", note: "【接第二層口訣右】第 1 組「左上」：右側往上" },
+                { m: "U",  word: "左", desc: "頂層往左", note: "【接第二層口訣右】第 2 組「左上」：頂層往左" },
+                { m: "R",  word: "上", desc: "右側往上", note: "【接第二層口訣右】第 2 組「左上」：右側往上", sepAfter: true },
+                { m: "Up", word: "黃角右轉", desc: "頂層 → 往右90°", note: "【收尾歸位】看到左上角那顆朝左的黃色角塊了嗎？把頂層往右轉 90°！" },
+                { m: "R",  word: "右側歸位", desc: "右側 ↑ 往上90°", note: "【收尾歸位】最後把右側往上推回 90° — 四個側面的中線顏色全部一樣了！" }
+              ]),
+              steps: [
+                "先把魔方轉回<strong>上黃、下白</strong>。轉動最上層，讓其中一面第三層的中間格對齊第一、二層顏色（變成<strong>只有 1 面中線相同，另外 3 面中間不同</strong>），把這唯一對齊的面<strong>放到最後側（背面）</strong>。",
+                "<strong>起手兩拍「下・右」</strong>：右側往下 90° → 頂層往右 90°。",
+                "<strong>中間接熟記的口訣右</strong>：<strong>「右下、右下、右下，左上、左上」</strong>。",
+                "<strong>收尾兩拍</strong>：此時左上前角會有一顆朝左的黃色角塊，將<strong>頂層往右轉 90°</strong>，再把<strong>右側往上轉 90°</strong> 把白底歸位！（若做 1 次還沒全對齊，背面不動再做第 2 次必成！）"
+              ],
+              callouts: [
+                { type: "tip", text: "💡 例外狀況：如果怎麼轉頂層都是「2 面中線相同、2 面不同」（找不到只有 1 面相同），隨便選一面直接做 1 次上面的口訣，做完再轉頂層就一定會出現「只有 1 面相同」了！" }
+              ]
+            }
+          ]
+        },
+
+        /* ---------------- STEP 7 ---------------- */
+        {
+          id: 7,
+          shortName: "四角歸位完勝",
+          shortTag: "黃變白定位・六面復原",
+          badge: "最終決戰・六面完全復原 🎉",
+          title: "黃色面放左側！「黃變白」交換四角，迎接六面復原",
+          goal: "再次將黃色面放左側；用 3 次「右下左上」把錯位黃角換到右邊（左角變白），看右邊黃角的另外兩色，把左側對應的兩面交界轉到同一線換進去！",
+          poseHtml: `⚠️ 最終拿法：<span class="color-dot" style="background:#FFD600"></span> 黃色面放【左側】 ・ <span class="color-dot" style="background:#FFFFFF"></span> 白色面放【右側】`,
+          poseAlert: true,
+          poseHint: "每次換完一顆角，記得把左側十字中點轉回對齊中心色！",
+          defaultCam: { yaw: -0.35, pitch: 0.38 },
+          peekHighlight: "peekLeftBox",
+          goalFn: checkFullSolvedGoal,
+          sheetSummary: {
+            pose: "⚠️ 黃色面放左側・白色面放右側",
+            chant: "右下左上×3（左角黃變白）→ 看右角兩色轉左層對同一線 → 右下左上×3 → 左層中點轉回對中心",
+            desc: "陷阱提醒：找對應位置時要看「整個側面的中心顏色」，不要看角塊原本錯誤的顏色！每次左角變黃後，先把左側中點轉回與中心同色再看下一顆。"
+          },
+          cases: [
+            {
+              tabName: "完整實戰示範：三角循環一次復原整顆魔方",
+              rhythmTag: "黃變白換出 → 對齊整面色換入 → 中點回正 → 完勝！",
+              setup: "rotZp Up Rp U R Up Rp U R Up Rp U R L2 Up Rp U R Up Rp U R Up Rp U R Lp Up Rp U R Up Rp U R Up Rp U R Lp Up Rp U R Up Rp U R Up Rp U R",
+              spotlight: () => true,
+              beats: expandBeats([
+                ...makeTriggerBeats(3, "第1步（換出錯角）"),
+                { m: "L",  word: "藍紅轉同線", desc: "左側 ↓ 轉一格", note: "🔍 看右上前角那顆黃色的另外兩面是「藍・紅」！把左側「藍面與紅面交界那格」轉到左上前同一線！", sepAfter: true },
+                ...makeTriggerBeats(3, "第2步（藍紅歸位）"),
+                { m: "Lp", word: "中點對回中心", desc: "左側 ↑ 回正", note: "⚠️ 關鍵防呆：左角出現黃色後，先把「左側中點顏色」轉回跟四面中心一樣！", sepAfter: true },
+                { m: "L2", word: "藍橘轉同線", desc: "左側轉 180°", note: "🔍 再看右上前角黃色的另外兩面是「藍・橘」！把左側「藍面與橘面交界那格」轉 180° 到左上前同一線！", sepAfter: true },
+                ...makeTriggerBeats(3, "第3步（藍橘歸位）"),
+                { m: "L2", word: "中點對回中心", desc: "左側轉回 180°", note: "⚠️ 再次把「左側中點顏色」轉回跟中心一樣！此時左上前正好是剛剛暫存白色的「紅綠交界格」！", sepAfter: true },
+                ...makeTriggerBeats(3, "最後一步（白變回黃）")
+              ]),
+              steps: [
+                "<strong>起手（黃變白）</strong>：黃色面放<strong>左側</strong>，把一顆顏色沒對齊的黃角放在<strong>左上前角</strong>，連續做 <strong>3 次「右・下・左・上」</strong>，直到左上前角<strong>由黃色變成白色</strong>！",
+                "<strong>看色找家（小心陷阱！）</strong>：看剛剛換到<strong>右上前角那顆黃色角塊的「另外兩面顏色」</strong>（例如範例是藍、紅）。轉動左側，找出左側<strong>夾在「整個藍色面與整個紅色面之間」的那個角落</strong>轉到左上前同一線（🚨 <strong>陷阱：要看整個側面的中心與中線顏色，千萬別看角塊本身錯誤的顏色！</strong>）。",
+                "<strong>換入並回正中點</strong>：再做 <strong>3 次「右・下・左・上」</strong>直到左角出現黃色！接著<strong>務必先把左側十字中點的顏色轉回和中心顏色一樣</strong>，再去觀察右上前角新的兩色繼續對應。",
+                "<strong>完美收官</strong>：當最後換回暫存白色的那格，做完 3 次「右・下・左・上」讓左角變回黃色——<strong>恭喜你，六面 100% 完全復原！🎉</strong>"
+              ],
+              callouts: [
+                { type: "tip", text: "💡 如果把白色變回黃色、左側中點也對齊中心後，發現「還有另外兩顆角互調」怎麼辦？別擔心！把其中一顆錯角轉到左上前，完全重複一次同樣流程（黃變白 → 對應換入 → 白變回黃），整顆就會徹底復原！" }
+              ]
+            }
+          ]
+        }
+      ];
+
+      /* =========================================================================
+       * 5. APPLICATION STATE & ANIMATION QUEUE
+       * ========================================================================= */
+      const state = {
+        stepIdx: 0,
+        caseIdx: 0,
+        mode: "demo", // "demo" | "practice"
+        cubies: createSolvedCubies(),
+        beatCursor: 0, // 0 .. beats.length
+        isPlaying: false,
+        speed: 1.0,
+        spotlight: true,
+        // Camera spherical coords
+        camYaw: 0.48,
+        camPitch: 0.43,
+        targetCamYaw: 0.48,
+        targetCamPitch: 0.43,
+        isDragging: false,
+        dragStartX: 0,
+        dragStartY: 0,
+        // Active animation
+        anim: null, // { moveKey, progress: 0..1, durationMs, onDone }
+        hoverMoveKey: null,
+        playTimer: null
+      };
+
+      /* =========================================================================
+       * 6. BESPOKE 3D CANVAS RENDERER (WITH BSP EXACT SORTING & 3D ARROWS)
+       * ========================================================================= */
+      const canvas = document.getElementById("cubeCanvas");
+      const ctx = canvas.getContext("2d");
+      const canvasWrap = document.getElementById("canvasWrap");
+
+      function resizeCanvas() {
+        const rect = canvasWrap.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+        canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      }
+      window.addEventListener("resize", resizeCanvas);
+
+      function vecSub(a, b) { return [a[0] - b[0], a[1] - b[1], a[2] - b[2]]; }
+      function vecAdd(a, b) { return [a[0] + b[0], a[1] + b[1], a[2] + b[2]]; }
+      function vecScale(a, s) { return [a[0] * s, a[1] * s, a[2] * s]; }
+      function vecDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+      function vecCross(a, b) {
+        return [
+          a[1] * b[2] - a[2] * b[1],
+          a[2] * b[0] - a[0] * b[2],
+          a[0] * b[1] - a[1] * b[0]
+        ];
+      }
+      function vecNorm(a) {
+        const len = Math.hypot(a[0], a[1], a[2]) || 1;
+        return [a[0] / len, a[1] / len, a[2] / len];
+      }
+      function distSq(a, b) {
+        const dx = a[0] - b[0], dy = a[1] - b[1], dz = a[2] - b[2];
+        return dx * dx + dy * dy + dz * dz;
+      }
+
+      function easeInOutCubic(t) {
+        return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      }
+
+      const UNIT_FACES = [
+        { n: [0, 1, 0],  u: [1, 0, 0],  v: [0, 0, 1] },
+        { n: [0, -1, 0], u: [1, 0, 0],  v: [0, 0, -1] },
+        { n: [0, 0, 1],  u: [1, 0, 0],  v: [0, 1, 0] },
+        { n: [0, 0, -1], u: [-1, 0, 0], v: [0, 1, 0] },
+        { n: [1, 0, 0],  u: [0, 0, -1], v: [0, 1, 0] },
+        { n: [-1, 0, 0], u: [0, 0, 1],  v: [0, 1, 0] }
+      ];
+
+      function buildCamera(w, h) {
+        const dist = 8.2;
+        const cp = Math.cos(state.camPitch);
+        const sp = Math.sin(state.camPitch);
+        const cy = Math.cos(state.camYaw);
+        const sy = Math.sin(state.camYaw);
+        const eye = [dist * cp * sy, dist * sp, dist * cp * cy];
+        const forward = vecNorm(vecScale(eye, -1));
+        const right = vecNorm(vecCross(forward, [0, 1, 0]));
+        const up = vecCross(right, forward);
+        const focal = Math.min(w, h) * 1.62;
+        const cx = w * 0.5;
+        const cyScreen = h * 0.52;
+
+        function project(pt) {
+          const rel = vecSub(pt, eye);
+          const depth = vecDot(rel, forward);
+          if (depth <= 0.2) return null;
+          return [
+            cx + (vecDot(rel, right) / depth) * focal,
+            cyScreen - (vecDot(rel, up) / depth) * focal,
+            depth
+          ];
+        }
+        return { eye, forward, right, up, project };
+      }
+
+      function shadeHex(hex, factor) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        const clamp = v => Math.max(0, Math.min(255, Math.round(v)));
+        return `rgb(${clamp(r * factor)}, ${clamp(g * factor)}, ${clamp(b * factor)})`;
+      }
+
+      function drawPoly(pts2d, fill, stroke, lineWidth) {
+        if (pts2d.some(p => !p)) return;
+        ctx.beginPath();
+        ctx.moveTo(pts2d[0][0], pts2d[0][1]);
+        for (let i = 1; i < pts2d.length; i++) {
+          ctx.lineTo(pts2d[i][0], pts2d[i][1]);
+        }
+        ctx.closePath();
+        if (fill) {
+          ctx.fillStyle = fill;
+          ctx.fill();
+        }
+        if (stroke) {
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = lineWidth || 1;
+          ctx.lineJoin = "round";
+          ctx.stroke();
+        }
+      }
+
+      // Draw smooth rounded polygon in 2D screen space for realistic glossy stickers!
+      function drawRoundedQuad(pts, cornerRatio, fill, stroke, lineWidth) {
+        if (pts.some(p => !p)) return;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          const prev = pts[(i + 3) % 4];
+          const curr = pts[i];
+          const next = pts[(i + 1) % 4];
+          const ax = curr[0] + (prev[0] - curr[0]) * cornerRatio;
+          const ay = curr[1] + (prev[1] - curr[1]) * cornerRatio;
+          const bx = curr[0] + (next[0] - curr[0]) * cornerRatio;
+          const by = curr[1] + (next[1] - curr[1]) * cornerRatio;
+          if (i === 0) ctx.moveTo(ax, ay);
+          else ctx.lineTo(ax, ay);
+          ctx.quadraticCurveTo(curr[0], curr[1], bx, by);
+        }
+        ctx.closePath();
+        if (fill) {
+          ctx.fillStyle = fill;
+          ctx.fill();
+        }
+        if (stroke) {
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = lineWidth || 1;
+          ctx.stroke();
+        }
+      }
+
+      function getActivePreviewMoveKey() {
+        if (state.anim) return state.anim.moveKey;
+        if (state.hoverMoveKey) return state.hoverMoveKey;
+        if (state.mode === "demo") {
+          const curCase = getCurrentCase();
+          if (curCase && curCase.beats[state.beatCursor]) {
+            return curCase.beats[state.beatCursor].m;
+          }
+        }
+        return null;
+      }
+
+      function draw3DTurnArrow(cam, moveKey, pulsePhase) {
+        const m = MOVE_DEFS[moveKey];
+        if (!m) return;
+
+        // Pick anchor vector outside cube surface so arrow floats cleanly in front of target layer
+        let anchor;
+        let spanStart = -30;
+        let spanEnd = 34;
+        if (Math.abs(m.deg) === 180) {
+          spanStart = -52;
+          spanEnd = 58;
+        }
+
+        const sgn = m.deg >= 0 ? 1 : -1;
+        if (m.ax === "y" && m.layer === 1) anchor = [0, 1.05, 1.72];
+        else if (m.ax === "y" && m.layer === -1) anchor = [0, -1.05, 1.72];
+        else if (m.ax === "x" && m.layer === 1) anchor = [1.05, 0, 1.72];
+        else if (m.ax === "x" && m.layer === -1) anchor = [-1.05, 0, 1.72];
+        else if (m.ax === "z" && m.layer === 1) anchor = [0, 1.72, 1.05];
+        else if (m.ax === "z" && m.layer === -1) anchor = [0, 1.72, -1.05];
+        else if (m.ax === "y" && m.layer === 99) anchor = [0, 0, 1.86];
+        else anchor = [0, 1.86, 0];
+
+        const samples = 18;
+        const pts2d = [];
+        const bounce = Math.sin(pulsePhase * 4.2) * 3.5;
+        for (let i = 0; i <= samples; i++) {
+          const t = i / samples;
+          const ang = (spanStart + (spanEnd - spanStart) * t + bounce) * sgn;
+          const p3 = rotVec3(anchor, m.ax, ang);
+          const p2 = cam.project(p3);
+          if (!p2) return;
+          pts2d.push(p2);
+        }
+
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        ctx.save();
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+
+        // Outer dark halo for crisp contrast against white/yellow stickers
+        ctx.beginPath();
+        pts2d.forEach((p, idx) => (idx === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1])));
+        ctx.strokeStyle = "rgba(15, 23, 42, 0.85)";
+        ctx.lineWidth = 11 * dpr;
+        ctx.stroke();
+
+        // Bright golden-cyan animated shaft
+        ctx.strokeStyle = "#38bdf8";
+        ctx.lineWidth = 6 * dpr;
+        ctx.stroke();
+
+        // Arrowhead at tip
+        const tip = pts2d[pts2d.length - 1];
+        const prev = pts2d[pts2d.length - 3];
+        const angle = Math.atan2(tip[1] - prev[1], tip[0] - prev[0]);
+        const headLen = 15 * dpr;
+
+        ctx.beginPath();
+        ctx.moveTo(
+          tip[0] + Math.cos(angle) * (4 * dpr),
+          tip[1] + Math.sin(angle) * (4 * dpr)
+        );
+        ctx.lineTo(
+          tip[0] - headLen * Math.cos(angle - Math.PI / 5.2),
+          tip[1] - headLen * Math.sin(angle - Math.PI / 5.2)
+        );
+        ctx.lineTo(
+          tip[0] - headLen * Math.cos(angle + Math.PI / 5.2),
+          tip[1] - headLen * Math.sin(angle + Math.PI / 5.2)
+        );
+        ctx.closePath();
+        ctx.fillStyle = "#fbbf24";
+        ctx.strokeStyle = "rgba(15, 23, 42, 0.9)";
+        ctx.lineWidth = 2.5 * dpr;
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function renderCubie(cb, cam, rotAx, rotDeg, isLayerHighlighted, isSpotlit) {
+        const halfPlastic = 0.478;
+        const halfSticker = 0.405;
+        const lightDir = vecNorm([0.38, 0.72, 0.58]);
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+
+        const center3 = rotAx ? rotVec3(cb.p, rotAx, rotDeg) : cb.p;
+
+        for (const uf of UNIT_FACES) {
+          const fn = rotAx ? rotVec3(uf.n, rotAx, rotDeg) : uf.n;
+          const fu = rotAx ? rotVec3(uf.u, rotAx, rotDeg) : uf.u;
+          const fv = rotAx ? rotVec3(uf.v, rotAx, rotDeg) : uf.v;
+
+          const faceCenter = vecAdd(center3, vecScale(fn, halfPlastic));
+          const toEye = vecSub(cam.eye, faceCenter);
+          // Back-face culling
+          if (vecDot(fn, toEye) <= 0) continue;
+
+          const pCorners = [
+            vecAdd(faceCenter, vecAdd(vecScale(fu, -halfPlastic), vecScale(fv, -halfPlastic))),
+            vecAdd(faceCenter, vecAdd(vecScale(fu, halfPlastic),  vecScale(fv, -halfPlastic))),
+            vecAdd(faceCenter, vecAdd(vecScale(fu, halfPlastic),  vecScale(fv, halfPlastic))),
+            vecAdd(faceCenter, vecAdd(vecScale(fu, -halfPlastic), vecScale(fv, halfPlastic)))
+          ].map(cam.project);
+
+          const ndotl = Math.max(0, vecDot(fn, lightDir));
+          const plasticShade = isLayerHighlighted
+            ? `rgb(${Math.round(32 + ndotl * 36)}, ${Math.round(46 + ndotl * 48)}, ${Math.round(72 + ndotl * 68)})`
+            : `rgb(${Math.round(20 + ndotl * 24)}, ${Math.round(24 + ndotl * 26)}, ${Math.round(33 + ndotl * 32)})`;
+          const rimStroke = isLayerHighlighted ? "rgba(96, 165, 250, 0.55)" : "rgba(8, 11, 18, 0.92)";
+
+          drawPoly(pCorners, plasticShade, rimStroke, 1.1 * dpr);
+
+          // Check if this cubie face carries an outer colored sticker
+          const matchSt = cb.stickers.find(
+            s => s.n[0] === uf.n[0] && s.n[1] === uf.n[1] && s.n[2] === uf.n[2]
+          );
+          if (matchSt) {
+            const stCenter = vecAdd(center3, vecScale(fn, halfPlastic + 0.004));
+            const sCorners = [
+              vecAdd(stCenter, vecAdd(vecScale(fu, -halfSticker), vecScale(fv, -halfSticker))),
+              vecAdd(stCenter, vecAdd(vecScale(fu, halfSticker),  vecScale(fv, -halfSticker))),
+              vecAdd(stCenter, vecAdd(vecScale(fu, halfSticker),  vecScale(fv, halfSticker))),
+              vecAdd(stCenter, vecAdd(vecScale(fu, -halfSticker), vecScale(fv, halfSticker)))
+            ].map(cam.project);
+
+            const pal = FACE_COLORS[matchSt.c];
+            const baseHex = isSpotlit ? pal.hex : pal.dim;
+            const shadeFactor = 0.84 + ndotl * 0.2;
+            const stickerFill = shadeHex(baseHex, shadeFactor);
+            const stickerBorder = isSpotlit ? "rgba(15, 23, 42, 0.55)" : "rgba(15, 23, 42, 0.4)";
+            drawRoundedQuad(sCorners, 0.16, stickerFill, stickerBorder, 1.0 * dpr);
+          }
+        }
+      }
+
+      function renderScene(nowMs) {
+        // Smooth camera interpolation
+        if (!state.isDragging) {
+          state.camYaw += (state.targetCamYaw - state.camYaw) * 0.14;
+          state.camPitch += (state.targetCamPitch - state.camPitch) * 0.14;
+        }
+
+        // Advance active layer animation
+        if (state.anim) {
+          const elapsed = nowMs - state.anim.startMs;
+          const t = Math.min(1, elapsed / state.anim.durationMs);
+          state.anim.progress = easeInOutCubic(t);
+          if (t >= 1) {
+            const doneAnim = state.anim;
+            state.anim = null;
+            applyMoveInstant(state.cubies, doneAnim.moveKey);
+            updateMiniPeeks();
+            if (doneAnim.onDone) doneAnim.onDone();
+          }
+        }
+
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const cam = buildCamera(w, h);
+        const curCase = getCurrentCase();
+        const spotlightFn = state.spotlight && curCase && curCase.spotlight ? curCase.spotlight : null;
+
+        const previewKey = getActivePreviewMoveKey();
+        const previewDef = previewKey ? MOVE_DEFS[previewKey] : null;
+        const previewAxisIdx = previewDef ? (previewDef.ax === "x" ? 0 : previewDef.ax === "y" ? 1 : 2) : -1;
+
+        if (state.anim) {
+          const m = MOVE_DEFS[state.anim.moveKey];
+          const axisIdx = m.ax === "x" ? 0 : m.ax === "y" ? 1 : 2;
+          const curDeg = m.deg * state.anim.progress;
+
+          if (m.layer === 99) {
+            // Whole-cube rotation: all 27 cubies share same rotation matrix
+            const sorted = state.cubies.slice().sort((a, b) => {
+              const pa = rotVec3(a.p, m.ax, curDeg);
+              const pb = rotVec3(b.p, m.ax, curDeg);
+              return distSq(pb, cam.eye) - distSq(pa, cam.eye);
+            });
+            for (const cb of sorted) {
+              const spot = spotlightFn ? spotlightFn(cb) : true;
+              renderCubie(cb, cam, m.ax, curDeg, false, spot);
+            }
+          } else {
+            // Exact BSP separating plane between rotating slice and stationary cubies!
+            const rotGroup = [];
+            const statGroup = [];
+            for (const cb of state.cubies) {
+              if (cb.p[axisIdx] === m.layer) rotGroup.push(cb);
+              else statGroup.push(cb);
+            }
+            rotGroup.sort((a, b) => {
+              const pa = rotVec3(a.p, m.ax, curDeg);
+              const pb = rotVec3(b.p, m.ax, curDeg);
+              return distSq(pb, cam.eye) - distSq(pa, cam.eye);
+            });
+            statGroup.sort((a, b) => distSq(b.p, cam.eye) - distSq(a.p, cam.eye));
+
+            // Plane at coord = 0.5 * m.layer along axisIdx; outward normal toward rotating layer is m.layer
+            const eyeCoord = cam.eye[axisIdx];
+            const rotSideIsNearer = (eyeCoord - 0.5 * m.layer) * m.layer > 0;
+
+            const drawStat = () => {
+              for (const cb of statGroup) {
+                renderCubie(cb, cam, null, 0, false, spotlightFn ? spotlightFn(cb) : true);
+              }
+            };
+            const drawRot = () => {
+              for (const cb of rotGroup) {
+                renderCubie(cb, cam, m.ax, curDeg, true, spotlightFn ? spotlightFn(cb) : true);
+              }
+            };
+
+            if (rotSideIsNearer) {
+              drawStat();
+              drawRot();
+            } else {
+              drawRot();
+              drawStat();
+            }
+          }
+        } else {
+          const sorted = state.cubies.slice().sort((a, b) => distSq(b.p, cam.eye) - distSq(a.p, cam.eye));
+          for (const cb of sorted) {
+            const hl = Boolean(
+              previewDef && (previewDef.layer === 99 || cb.p[previewAxisIdx] === previewDef.layer)
+            );
+            const spot = spotlightFn ? spotlightFn(cb) : true;
+            renderCubie(cb, cam, null, 0, hl, spot);
+          }
+        }
+
+        // Draw subtle 3D spatial orientation labels so beginners immediately recognize layers
+        draw3DOrientationLabels(cam);
+
+        // Draw floating 3D directional guide arrow when previewing or animating a move
+        if (previewKey) {
+          draw3DTurnArrow(cam, previewKey, nowMs * 0.001);
+        }
+
+        requestAnimationFrame(renderScene);
+      }
+
+      function draw3DOrientationLabels(cam) {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+        const anchors = [
+          { p: [0, 2.02, 0], text: "頂層（上）", show: cam.eye[1] > -0.8 },
+          { p: [0, -1.92, 1.35], text: "正面", show: cam.eye[2] > 1.2 },
+          { p: [2.08, 0, 0.35], text: "右側", show: cam.eye[0] > 0.9 },
+          { p: [-2.08, 0, 0.35], text: "左側", show: cam.eye[0] < -0.9 }
+        ];
+
+        ctx.save();
+        ctx.font = `700 ${Math.round(11.5 * dpr)}px "Noto Sans TC", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        for (const a of anchors) {
+          if (!a.show) continue;
+          const pt = cam.project(a.p);
+          if (!pt) continue;
+          const padX = 8 * dpr;
+          const boxH = 20 * dpr;
+          const boxW = ctx.measureText(a.text).width + padX * 2;
+          const rx = pt[0] - boxW / 2;
+          const ry = pt[1] - boxH / 2;
+          const rad = 10 * dpr;
+
+          ctx.beginPath();
+          ctx.roundRect(rx, ry, boxW, boxH, rad);
+          ctx.fillStyle = "rgba(15, 23, 42, 0.72)";
+          ctx.fill();
+          ctx.strokeStyle = "rgba(148, 163, 184, 0.32)";
+          ctx.lineWidth = 1 * dpr;
+          ctx.stroke();
+
+          ctx.fillStyle = "rgba(226, 232, 240, 0.92)";
+          ctx.fillText(a.text, pt[0], pt[1] + 0.5 * dpr);
+        }
+        ctx.restore();
+      }
+
+      /* =========================================================================
+       * 7. MINI PEEK GRIDS (LEFT, BOTTOM, BACK)
+       * ========================================================================= */
+      function renderPeekGrid(elId, getCellColor) {
+        const container = document.getElementById(elId);
+        container.innerHTML = "";
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 3; c++) {
+            const code = getCellColor(r, c);
+            const div = document.createElement("div");
+            div.className = "peek-cell";
+            div.style.background = code ? FACE_COLORS[code].hex : "#334155";
+            container.appendChild(div);
+          }
+        }
+      }
+
+      function updateMiniPeeks() {
+        // Left face (-x): looking directly at Left face, top is y=1.. -1, cols from Back z=-1 to Front z=1
+        renderPeekGrid("peekLeft", (r, c) => {
+          const y = 1 - r;
+          const z = -1 + c;
+          return getStickerAt(state.cubies, -1, y, z, -1, 0, 0);
+        });
+        // Bottom face (-y): looking from front-underneath, top row is Front z=1..-1, cols x=-1..1
+        renderPeekGrid("peekBottom", (r, c) => {
+          const z = 1 - r;
+          const x = -1 + c;
+          return getStickerAt(state.cubies, x, -1, z, 0, -1, 0);
+        });
+        // Back face (-z): looking through/from behind, keep x=-1..1 matching left-to-right of user's hands!
+        renderPeekGrid("peekBack", (r, c) => {
+          const y = 1 - r;
+          const x = -1 + c;
+          return getStickerAt(state.cubies, x, y, -1, 0, 0, -1);
+        });
+      }
+
+      /* =========================================================================
+       * 8. UI RENDERING & PLAYBACK CONTROLLER
+       * ========================================================================= */
+      function getCurrentLesson() {
+        return LESSONS[state.stepIdx];
+      }
+      function getCurrentCase() {
+        const l = getCurrentLesson();
+        return l.cases[state.caseIdx] || l.cases[0];
+      }
+
+      const toastEl = document.getElementById("liveMoveToast");
+      let toastTimer = null;
+      function showMoveToast(text) {
+        toastEl.textContent = text;
+        toastEl.classList.add("visible");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("visible"), 1600);
+      }
+
+      function stopAutoPlay() {
+        state.isPlaying = false;
+        clearTimeout(state.playTimer);
+        document.getElementById("playPauseBtn").textContent = "▶ 自動播放";
+      }
+
+      function resetCubeToCurrentCase() {
+        stopAutoPlay();
+        state.anim = null;
+        const lesson = getCurrentLesson();
+        const curCase = getCurrentCase();
+        state.cubies = createSolvedCubies();
+        applySeqInstant(state.cubies, curCase.setup);
+        state.beatCursor = 0;
+
+        const camCfg = curCase.defaultCam || lesson.defaultCam;
+        state.targetCamYaw = camCfg.yaw;
+        state.targetCamPitch = camCfg.pitch;
+
+        updateMiniPeeks();
+        updatePlayerUI();
+        checkPracticeGoalState();
+      }
+
+      function triggerAnimatedMove(moveKey, noteText, onComplete) {
+        if (state.anim) return;
+        const def = MOVE_DEFS[moveKey];
+        if (!def) return;
+        const baseMs = Math.abs(def.deg) === 180 ? 540 : 390;
+        showMoveToast(def.toast);
+        if (noteText) {
+          document.getElementById("liveBeatCaption").textContent = noteText;
+        }
+        state.anim = {
+          moveKey,
+          startMs: performance.now(),
+          durationMs: baseMs / state.speed,
+          progress: 0,
+          onDone: onComplete
+        };
+      }
+
+      function stepForwardBeat(continueLoop) {
+        if (state.anim) return;
+        const curCase = getCurrentCase();
+        if (state.beatCursor >= curCase.beats.length) {
+          stopAutoPlay();
+          return;
+        }
+        const beat = curCase.beats[state.beatCursor];
+        state.beatCursor++;
+        updatePlayerUI();
+
+        triggerAnimatedMove(beat.m, beat.note, () => {
+          updatePlayerUI();
+          if (continueLoop && state.isPlaying) {
+            if (state.beatCursor < curCase.beats.length) {
+              state.playTimer = setTimeout(() => stepForwardBeat(true), 220 / state.speed);
+            } else {
+              stopAutoPlay();
+              document.getElementById("liveBeatCaption").textContent =
+                "✅ 本段示範完成！可點「重置」再看一次，或切換到「我要自己轉轉看」練習！";
+            }
+          }
+        });
+      }
+
+      function stepBackwardBeat() {
+        stopAutoPlay();
+        if (state.anim || state.beatCursor <= 0) return;
+        const curCase = getCurrentCase();
+        state.beatCursor--;
+        const beat = curCase.beats[state.beatCursor];
+        const invKey = INVERSE_MOVE[beat.m];
+        updatePlayerUI();
+        triggerAnimatedMove(invKey, `⏪ 退回上一步：${beat.note}`, () => {
+          updatePlayerUI();
+        });
+      }
+
+      function jumpToBeat(targetIdx) {
+        stopAutoPlay();
+        state.anim = null;
+        const curCase = getCurrentCase();
+        state.cubies = createSolvedCubies();
+        applySeqInstant(state.cubies, curCase.setup);
+        for (let i = 0; i < targetIdx; i++) {
+          applyMoveInstant(state.cubies, curCase.beats[i].m);
+        }
+        state.beatCursor = targetIdx;
+        updateMiniPeeks();
+        updatePlayerUI();
+        // Immediately play that clicked beat so the learner sees it animate!
+        if (targetIdx < curCase.beats.length) {
+          stepForwardBeat(false);
+        }
+      }
+
+      function updatePlayerUI() {
+        const curCase = getCurrentCase();
+        const total = curCase.beats.length;
+        document.getElementById("beatCounterBadge").textContent = `${state.beatCursor} / ${total}`;
+        document.getElementById("prevBeatBtn").disabled = state.beatCursor <= 0;
+        document.getElementById("nextBeatBtn").disabled = state.beatCursor >= total;
+
+        const chips = document.querySelectorAll(".beat-chip");
+        chips.forEach((chip, idx) => {
+          chip.classList.remove("active-beat", "done-beat");
+          if (idx === state.beatCursor - 1 && state.anim) {
+            chip.classList.add("active-beat");
+          } else if (idx === state.beatCursor && !state.anim) {
+            chip.classList.add("active-beat");
+          } else if (idx < state.beatCursor) {
+            chip.classList.add("done-beat");
+          }
+        });
+
+        if (!state.anim && state.beatCursor === 0 && state.mode === "demo") {
+          const first = curCase.beats[0];
+          document.getElementById("liveBeatCaption").textContent = first
+            ? `準備開始：下一拍「${first.word}」（${first.desc}）`
+            : "點擊播放觀看動作示範";
+        }
+      }
+
+      function renderStepper() {
+        const bar = document.getElementById("stepperBar");
+        bar.innerHTML = "";
+        LESSONS.forEach((ls, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "step-pill" + (idx === state.stepIdx ? " active" : idx < state.stepIdx ? " completed" : "");
+          btn.innerHTML = `
+            <div class="step-pill-top">
+              <span>${idx === 0 ? "START" : "STEP " + idx}</span>
+              <span>${idx < state.stepIdx ? "✓" : ""}</span>
+            </div>
+            <div class="step-pill-name">${ls.shortName}</div>
+            <div class="step-pill-tag">${ls.shortTag}</div>
+          `;
+          btn.addEventListener("click", () => {
+            state.stepIdx = idx;
+            state.caseIdx = 0;
+            renderLesson();
+          });
+          bar.appendChild(btn);
+        });
+        requestAnimationFrame(() => {
+          const activeEl = bar.querySelector(".step-pill.active");
+          if (activeEl && activeEl.scrollIntoView) {
+            activeEl.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+          }
+        });
+      }
+
+      function renderLesson() {
+        renderStepper();
+        const ls = getCurrentLesson();
+        const curCase = getCurrentCase();
+
+        document.getElementById("lessonBadge").textContent = ls.badge;
+        document.getElementById("lessonTitle").textContent = ls.title;
+        document.getElementById("lessonGoal").textContent = ls.goal;
+
+        const poseBanner = document.getElementById("poseBanner");
+        poseBanner.classList.toggle("pose-alert", ls.poseAlert);
+        document.getElementById("poseText").innerHTML = ls.poseHtml;
+        document.getElementById("poseSubHint").textContent = ls.poseHint;
+
+        // Highlight relevant mini peek box
+        ["peekLeftBox", "peekBottomBox", "peekBackBox"].forEach(id => {
+          document.getElementById(id).classList.toggle("highlight-peek", ls.peekHighlight === id);
+        });
+
+        // Sub-case tabs
+        const caseTabsWrap = document.getElementById("caseTabs");
+        const caseSection = document.getElementById("caseTabsSection");
+        if (ls.cases.length <= 1) {
+          caseSection.style.display = "none";
+        } else {
+          caseSection.style.display = "block";
+          caseTabsWrap.innerHTML = "";
+          ls.cases.forEach((cs, cIdx) => {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className =
+              "case-tab" +
+              (cIdx === state.caseIdx ? " active" : "") +
+              (cs.isException ? " exception-tab" : "");
+            b.textContent = cs.tabName;
+            b.addEventListener("click", () => {
+              state.caseIdx = cIdx;
+              renderLesson();
+            });
+            caseTabsWrap.appendChild(b);
+          });
+        }
+
+        // Chant beats grid
+        document.getElementById("chantSummaryTag").textContent = curCase.rhythmTag;
+        const beatsGrid = document.getElementById("beatsGrid");
+        beatsGrid.innerHTML = "";
+        curCase.beats.forEach((bt, bIdx) => {
+          const chip = document.createElement("div");
+          chip.className = "beat-chip";
+          chip.innerHTML = `<span class="beat-word">${bt.word}</span><span class="beat-desc">${bt.desc}</span>`;
+          chip.addEventListener("mouseenter", () => {
+            if (!state.isPlaying && !state.anim) state.hoverMoveKey = bt.m;
+          });
+          chip.addEventListener("mouseleave", () => {
+            state.hoverMoveKey = null;
+          });
+          chip.addEventListener("click", () => jumpToBeat(bIdx));
+          beatsGrid.appendChild(chip);
+
+          if (bt.sepAfter) {
+            const sep = document.createElement("div");
+            sep.className = "beat-sep";
+            beatsGrid.appendChild(sep);
+          }
+        });
+
+        // Numbered steps
+        const stepsList = document.getElementById("guideStepsList");
+        stepsList.innerHTML = "";
+        curCase.steps.forEach((htmlStr, idx) => {
+          const item = document.createElement("div");
+          item.className = "guide-item";
+          item.innerHTML = `<div class="guide-num">${idx + 1}</div><div class="guide-text">${htmlStr}</div>`;
+          stepsList.appendChild(item);
+        });
+
+        // Callouts
+        const calloutsArea = document.getElementById("calloutsArea");
+        calloutsArea.innerHTML = "";
+        (curCase.callouts || []).forEach(co => {
+          const div = document.createElement("div");
+          div.className = "callout " + (co.type === "warn" ? "callout-warn" : "callout-tip");
+          div.innerHTML = `<div>${co.text}</div>`;
+          calloutsArea.appendChild(div);
+        });
+
+        // Footer step nav
+        document.getElementById("prevStepBtn").disabled = state.stepIdx === 0;
+        document.getElementById("nextStepBtn").disabled = state.stepIdx === LESSONS.length - 1;
+        document.getElementById("stepProgressLabel").textContent = `第 ${state.stepIdx + 1} / ${LESSONS.length} 階段`;
+
+        syncModeTabsUI();
+        resetCubeToCurrentCase();
+      }
+
+      function syncModeTabsUI() {
+        const isDemo = state.mode === "demo";
+        document.getElementById("tabDemoMode").classList.toggle("active", isDemo);
+        document.getElementById("tabPracticeMode").classList.toggle("active", !isDemo);
+        document.getElementById("demoContentWrap").style.display = isDemo ? "block" : "none";
+        document.getElementById("practicePadWrap").classList.toggle("visible", !isDemo);
+      }
+
+      function checkPracticeGoalState() {
+        if (state.mode !== "practice") return;
+        const ls = getCurrentLesson();
+        const banner = document.getElementById("practiceGoalBanner");
+        const titleEl = document.getElementById("practiceStatusTitle");
+        const subEl = document.getElementById("practiceStatusSub");
+
+        if (ls.id > 0 && ls.goalFn && ls.goalFn(state.cubies)) {
+          banner.classList.add("achieved");
+          titleEl.textContent =
+            ls.id === 7
+              ? "🏆 太神啦！！你親手把整顆 3x3 魔術方塊六面完全復原了！！"
+              : `🎉 太棒了！你已成功完成「${ls.shortName}」階段目標！`;
+          subEl.textContent =
+            ls.id === 7
+              ? "不用背任何英文公式代號，你已經徹底學會雙公式基本解了！"
+              : "可以點右下角「下一階段 →」繼續挑戰下一步，或點「重新出題」再練一次手感！";
+        } else {
+          banner.classList.remove("achieved");
+          titleEl.textContent = `🎯 練習目標：動手完成「${ls.shortName}」`;
+          subEl.textContent = "將滑鼠移到下方按鈕上，3D 魔方會先顯示發光層與立體轉動箭頭！";
+        }
+      }
+
+      function runMacroQueue(moves, label) {
+        if (state.anim) return;
+        stopAutoPlay();
+        let idx = 0;
+        function next() {
+          if (idx >= moves.length) {
+            checkPracticeGoalState();
+            return;
+          }
+          const mk = moves[idx++];
+          triggerAnimatedMove(mk, `${label}（${idx}/${moves.length}）`, () => {
+            setTimeout(next, 90 / state.speed);
+          });
+        }
+        next();
+      }
+
+      function renderCheatSheet() {
+        const grid = document.getElementById("cheatsheetGrid");
+        grid.innerHTML = "";
+        LESSONS.forEach((ls, idx) => {
+          const card = document.createElement("article");
+          card.className = "sheet-card";
+          card.innerHTML = `
+            <div class="sheet-card-head">
+              <span class="sheet-step-tag">${idx === 0 ? "預備觀念" : "步驟 " + idx}</span>
+              <span class="sheet-pose-tag">${ls.sheetSummary.pose}</span>
+            </div>
+            <h3>${ls.shortName}</h3>
+            <div class="sheet-chant">${ls.sheetSummary.chant}</div>
+            <p>${ls.sheetSummary.desc}</p>
+          `;
+          card.addEventListener("click", () => {
+            state.stepIdx = idx;
+            state.caseIdx = 0;
+            state.mode = "demo";
+            renderLesson();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+          grid.appendChild(card);
+        });
+      }
+
+      /* =========================================================================
+       * 9. EVENT LISTENERS (MOUSE/TOUCH ORBIT, CONTROLS, THEME)
+       * ========================================================================= */
+      canvasWrap.addEventListener("pointerdown", e => {
+        if (e.target.closest("button") || e.target.closest(".peek-dock")) return;
+        state.isDragging = true;
+        state.dragStartX = e.clientX;
+        state.dragStartY = e.clientY;
+        canvasWrap.setPointerCapture(e.pointerId);
+      });
+
+      canvasWrap.addEventListener("pointermove", e => {
+        if (!state.isDragging) return;
+        const dx = e.clientX - state.dragStartX;
+        const dy = e.clientY - state.dragStartY;
+        state.dragStartX = e.clientX;
+        state.dragStartY = e.clientY;
+        state.camYaw -= dx * 0.0085;
+        state.camPitch = Math.max(-1.15, Math.min(1.15, state.camPitch + dy * 0.0085));
+        state.targetCamYaw = state.camYaw;
+        state.targetCamPitch = state.camPitch;
+      });
+
+      function endDrag() {
+        state.isDragging = false;
+      }
+      canvasWrap.addEventListener("pointerup", endDrag);
+      canvasWrap.addEventListener("pointercancel", endDrag);
+
+      document.getElementById("resetCamBtn").addEventListener("click", () => {
+        const ls = getCurrentLesson();
+        const cs = getCurrentCase();
+        const cfg = cs.defaultCam || ls.defaultCam;
+        state.targetCamYaw = cfg.yaw;
+        state.targetCamPitch = cfg.pitch;
+      });
+
+      const spotlightBtn = document.getElementById("spotlightBtn");
+      spotlightBtn.addEventListener("click", () => {
+        state.spotlight = !state.spotlight;
+        spotlightBtn.classList.toggle("active", state.spotlight);
+        spotlightBtn.textContent = state.spotlight ? "🔦 重點聚光燈：開" : "🔦 重點聚光燈：關";
+      });
+
+      document.getElementById("playPauseBtn").addEventListener("click", () => {
+        if (state.isPlaying) {
+          stopAutoPlay();
+          return;
+        }
+        state.mode = "demo";
+        syncModeTabsUI();
+        const curCase = getCurrentCase();
+        if (state.beatCursor >= curCase.beats.length) {
+          resetCubeToCurrentCase();
+        }
+        state.isPlaying = true;
+        document.getElementById("playPauseBtn").textContent = "⏸ 暫停播放";
+        stepForwardBeat(true);
+      });
+
+      document.getElementById("nextBeatBtn").addEventListener("click", () => {
+        stopAutoPlay();
+        stepForwardBeat(false);
+      });
+
+      document.getElementById("prevBeatBtn").addEventListener("click", () => {
+        stepBackwardBeat();
+      });
+
+      document.getElementById("resetCaseBtn").addEventListener("click", () => {
+        resetCubeToCurrentCase();
+      });
+
+      document.getElementById("speedSelect").addEventListener("change", e => {
+        state.speed = parseFloat(e.target.value) || 1.0;
+      });
+
+      document.getElementById("tabDemoMode").addEventListener("click", () => {
+        state.mode = "demo";
+        syncModeTabsUI();
+        resetCubeToCurrentCase();
+      });
+
+      document.getElementById("tabPracticeMode").addEventListener("click", () => {
+        stopAutoPlay();
+        state.mode = "practice";
+        syncModeTabsUI();
+        resetCubeToCurrentCase();
+        document.getElementById("liveBeatCaption").textContent =
+          "✋ 互動練習模式：點擊方向按鈕親自操作魔方！";
+      });
+
+      document.getElementById("practiceResetBtn").addEventListener("click", () => {
+        resetCubeToCurrentCase();
+      });
+
+      document.querySelectorAll(".pad-btn[data-move]").forEach(btn => {
+        const mk = btn.getAttribute("data-move");
+        btn.addEventListener("mouseenter", () => {
+          if (!state.anim) state.hoverMoveKey = mk;
+        });
+        btn.addEventListener("mouseleave", () => {
+          state.hoverMoveKey = null;
+        });
+        btn.addEventListener("click", () => {
+          stopAutoPlay();
+          triggerAnimatedMove(mk, MOVE_DEFS[mk].toast, () => {
+            checkPracticeGoalState();
+          });
+        });
+      });
+
+      document.getElementById("macroTriggerBtn").addEventListener("click", () => {
+        runMacroQueue(["Up", "Rp", "U", "R"], "萬用四拍「右・下・左・上」");
+      });
+      document.getElementById("macroRightL2Btn").addEventListener("click", () => {
+        runMacroQueue(["Up", "Rp", "Up", "Rp", "Up", "Rp", "U", "R", "U", "R"], "口訣右（右下×3，左上×2）");
+      });
+      document.getElementById("macroLeftL2Btn").addEventListener("click", () => {
+        runMacroQueue(["U", "L", "U", "L", "U", "L", "Up", "Lp", "Up", "Lp"], "口訣左（左下×3，右上×2）");
+      });
+
+      document.getElementById("prevStepBtn").addEventListener("click", () => {
+        if (state.stepIdx > 0) {
+          state.stepIdx--;
+          state.caseIdx = 0;
+          renderLesson();
+        }
+      });
+
+      document.getElementById("nextStepBtn").addEventListener("click", () => {
+        if (state.stepIdx < LESSONS.length - 1) {
+          state.stepIdx++;
+          state.caseIdx = 0;
+          renderLesson();
+        }
+      });
+
+      const themeBtn = document.getElementById("themeToggleBtn");
+      themeBtn.addEventListener("click", () => {
+        const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+        if (isDark) {
+          document.documentElement.removeAttribute("data-theme");
+          themeBtn.textContent = "🌙 深色";
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+          themeBtn.textContent = "☀️ 淺色";
+        }
+      });
+
+      /* =========================================================================
+       * 10. BOOTSTRAP
+       * ========================================================================= */
+      resizeCanvas();
+      renderCheatSheet();
+      renderLesson();
+      requestAnimationFrame(renderScene);
+    })();
+  </script>
+</body>
+</html>
