@@ -1,0 +1,5265 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>台灣藥師進階認證暨證照維護系統｜Taiwan Pharmacist Credential Registry</title>
+  <meta name="description" content="台灣藥師 7 大類進階認證、法定資格與證書總覽，提供個人取得狀態註記、證書效期追蹤、換證提醒行事曆匯出及同仁分享清單匯出功能。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+/* ==========================================================================
+   台灣藥師進階認證暨證照維護系統 — Swiss Clinical Registry Design System
+   Sharp architectural geometry (0–2px radius), hairline grids, high legibility
+   ========================================================================== */
+
+:root {
+  --bg-canvas: #EBF0F5;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #EEF2F6;
+  --bg-hover: #F3F8FB;
+
+  --ink-primary: #0D2033;
+  --ink-secondary: #3C4F63;
+  --ink-muted: #66788A;
+
+  --brand-primary: #0B7272;
+  --brand-primary-hover: #085858;
+  --brand-primary-tint: #E6F5F5;
+  --brand-navy: #0E2439;
+  --brand-navy-mid: #1C354D;
+
+  --border-strong: #BCC8D6;
+  --border-default: #D1DBE5;
+  --border-subtle: #E3EAF1;
+
+  --status-valid-fg: #0F6342;
+  --status-valid-bg: #E3F4EC;
+  --status-valid-bar: #127A54;
+
+  --status-warn-fg: #8C4A00;
+  --status-warn-bg: #FEF2DB;
+  --status-warn-bar: #C97A00;
+
+  --status-expired-fg: #A91E16;
+  --status-expired-bg: #FCE9E7;
+  --status-expired-bar: #C92A2A;
+
+  --status-planned-fg: #184D88;
+  --status-planned-bg: #E7F1FC;
+  --status-planned-bar: #1F62AD;
+
+  --status-none-fg: #4B5C6E;
+  --status-none-bg: #EFF3F7;
+  --status-none-bar: #9FB0C2;
+
+  /* 7-Category Harmonious Clinical-Editorial Color Palette */
+  --cat-cat6-fg: #0A6B6B; --cat-cat6-bg: #E7F5F5; --cat-cat6-bd: #9CD4D4;
+  --cat-cat4-fg: #934B12; --cat-cat4-bg: #FAF1E8; --cat-cat4-bd: #E2BE9C;
+  --cat-cat1-fg: #174B87; --cat-cat1-bg: #E8F1FA; --cat-cat1-bd: #A5C6EA;
+  --cat-cat2-fg: #13684B; --cat-cat2-bg: #E6F4EE; --cat-cat2-bd: #9ED3BD;
+  --cat-cat3-fg: #5A3B86; --cat-cat3-bg: #F2ECF9; --cat-cat3-bd: #C4B2DF;
+  --cat-cat5-fg: #A32727; --cat-cat5-bg: #FBECEC; --cat-cat5-bd: #E4AAAA;
+  --cat-cat7-fg: #2E4D6B; --cat-cat7-bg: #EAF0F6; --cat-cat7-bd: #AFC4D8;
+  --cat-custom-fg: #3B5555; --cat-custom-bg: #ECF3F3; --cat-custom-bd: #B1C9C9;
+
+  --radius-sharp: 0px;
+  --radius-xs: 2px;
+
+  --font-sans: 'Inter', 'Noto Sans TC', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --container-max: 1360px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-canvas);
+  color: var(--ink-primary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.pre-line {
+  white-space: pre-line;
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* Top Accent Rule */
+.top-rule {
+  height: 4px;
+  background: linear-gradient(90deg, #14968C 0%, #1F6EB5 55%, #0E2439 100%);
+}
+
+/* Container */
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* ==========================================================================
+   Masthead Header — Deep Institutional Clinical Navy Anchor
+   ========================================================================== */
+.masthead {
+  background: var(--brand-navy);
+  border-bottom: 1px solid #081827;
+  color: #FFFFFF;
+}
+
+.masthead-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding-top: 20px;
+  padding-bottom: 19px;
+  flex-wrap: wrap;
+}
+
+.brand-block {
+  min-width: 0;
+  flex: 1 1 420px;
+}
+
+.brand-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  color: #5CD6CC;
+  margin-bottom: 4px;
+}
+
+.brand-title {
+  margin: 0;
+  font-size: clamp(19px, 1.9vw, 22px);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #FFFFFF;
+  line-height: 1.3;
+}
+
+.brand-meta {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: #B6C9DC;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.masthead .btn-primary {
+  background-color: #118A82;
+  border-color: #18A59B;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.masthead .btn-primary:hover:not(:disabled) {
+  background-color: #0E756E;
+  border-color: #20B8AD;
+}
+
+.masthead .btn-secondary {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.28);
+  color: #EDF4FA;
+}
+
+.masthead .btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   Buttons — Sharp, Tactile, Uncluttered
+   ========================================================================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn .icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.btn-primary {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #FFFFFF;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--brand-primary-hover);
+  border-color: var(--brand-primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--bg-surface);
+  border-color: var(--border-strong);
+  color: var(--ink-primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--bg-subtle);
+  border-color: #9FB0C2;
+}
+
+.btn-ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--ink-secondary);
+  padding: 0 10px;
+}
+
+.btn-ghost:hover {
+  background-color: var(--bg-subtle);
+  color: var(--ink-primary);
+}
+
+.btn-danger-ghost {
+  background-color: transparent;
+  border-color: transparent;
+  color: var(--status-expired-fg);
+  padding: 0 10px;
+}
+
+.btn-danger-ghost:hover {
+  background-color: var(--status-expired-bg);
+}
+
+.btn-danger-outline {
+  background-color: var(--bg-surface);
+  border-color: #DF9B96;
+  color: var(--status-expired-fg);
+}
+
+.btn-danger-outline:hover {
+  background-color: var(--status-expired-bg);
+  border-color: var(--status-expired-fg);
+}
+
+.btn-sm {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--brand-primary);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.btn-link:hover {
+  color: var(--brand-primary-hover);
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  color: var(--ink-secondary);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-icon:hover {
+  background: var(--bg-subtle);
+  color: var(--ink-primary);
+}
+
+/* ==========================================================================
+   Main Content & Basic License Strip
+   ========================================================================== */
+.main-content {
+  padding-top: 20px;
+  padding-bottom: 48px;
+}
+
+.license-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #F0F6FC;
+  border: 1px solid #BBD1E8;
+  border-left: 4px solid #16497C;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+}
+
+.license-strip.is-warn {
+  border-color: #E6C17A;
+  border-left-color: var(--status-warn-bar);
+  background: #FFF8EA;
+}
+
+.license-strip.is-expired {
+  border-color: #E4A29C;
+  border-left-color: var(--status-expired-bar);
+  background: #FFF1F0;
+}
+
+.license-strip-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.license-tag {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #FFFFFF;
+  background: #16497C;
+  border: 1px solid #16497C;
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+}
+
+.license-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-navy);
+}
+
+.license-status {
+  font-size: 13px;
+  color: var(--ink-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.license-strip-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Flat Architectural KPI Strip — Color-Coded Metric Weight
+   ========================================================================== */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  margin-bottom: 18px;
+}
+
+.kpi-cell {
+  appearance: none;
+  text-align: left;
+  background: var(--bg-surface);
+  border: none;
+  border-top: 3px solid var(--brand-navy);
+  border-right: 1px solid var(--border-default);
+  border-bottom: 3px solid transparent;
+  padding: 14px 20px 13px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.14s ease, border-bottom-color 0.14s ease;
+}
+
+.kpi-cell[data-kpi-filter="all"]      { border-top-color: var(--brand-navy); }
+.kpi-cell[data-kpi-filter="acquired"] { border-top-color: var(--status-valid-bar); }
+.kpi-cell[data-kpi-filter="planned"]  { border-top-color: var(--status-planned-bar); }
+.kpi-cell[data-kpi-filter="alert"]    { border-top-color: var(--status-warn-bar); }
+
+.kpi-cell.has-warn {
+  background: #FFFBF2;
+  border-top-color: var(--status-warn-bar);
+}
+
+.kpi-cell.has-expired {
+  background: #FFF5F4;
+  border-top-color: var(--status-expired-bar);
+}
+
+.kpi-cell:last-child {
+  border-right: none;
+}
+
+.kpi-cell:hover {
+  background: var(--bg-hover);
+}
+
+.kpi-cell.is-active {
+  background: #ECF6F6;
+  border-bottom-color: var(--brand-primary);
+}
+
+.kpi-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-secondary);
+  letter-spacing: 0.02em;
+  margin-bottom: 6px;
+}
+
+.kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.kpi-number {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ink-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-accent-green { color: var(--status-valid-fg); }
+.kpi-accent-blue { color: var(--status-planned-fg); }
+.kpi-accent-warn { color: var(--status-warn-fg); }
+.kpi-accent-danger { color: var(--status-expired-fg); }
+
+.kpi-unit {
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+
+.kpi-sub {
+  margin-top: 7px;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.kpi-progress-track {
+  margin-top: 10px;
+  height: 3px;
+  width: 100%;
+  background: var(--border-subtle);
+}
+
+.kpi-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--status-valid-bar);
+  transition: width 0.25s ease;
+}
+
+/* ==========================================================================
+   Sticky Control Panel & Underline Category Tabs
+   ========================================================================== */
+.control-panel {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  margin-bottom: 12px;
+}
+
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.search-field {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 220px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 15px;
+  height: 15px;
+  color: var(--ink-muted);
+  pointer-events: none;
+}
+
+.input-control,
+.select-control,
+.textarea-control {
+  height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+  color: var(--ink-primary);
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.2;
+  outline: none;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.select-control {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.input-control:focus,
+.select-control:focus,
+.textarea-control:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 2px rgba(11, 107, 107, 0.14);
+}
+
+.textarea-control {
+  height: auto;
+  width: 100%;
+  padding: 9px 11px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.search-input {
+  width: 100%;
+  padding-left: 34px;
+}
+
+.filter-selects {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Sharp Underline Category Tabs with Harmonious Chromatic Identity */
+.category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  padding: 0 8px;
+  background: #F4F7FA;
+  gap: 0 2px;
+}
+
+.cat-tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 9px 11px 8px;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.14s ease, border-color 0.14s ease, background-color 0.14s ease;
+}
+
+.cat-pip {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  flex-shrink: 0;
+  background: var(--cat-color, var(--brand-navy));
+}
+
+.cat-tab:hover {
+  color: var(--ink-primary);
+  background: #E9EFF5;
+}
+
+.cat-tab.is-active {
+  color: var(--cat-color, var(--brand-navy));
+  font-weight: 700;
+  border-bottom-color: var(--cat-color, var(--brand-navy));
+  background: var(--cat-bg, var(--bg-surface));
+}
+
+.cat-tab-count {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.cat-tab.is-active .cat-tab-count {
+  color: var(--cat-color, var(--brand-navy));
+  font-weight: 600;
+}
+
+/* Per-category custom properties */
+.cat-theme-cat6   { --cat-color: var(--cat-cat6-fg);   --cat-bg: var(--cat-cat6-bg);   --cat-bd: var(--cat-cat6-bd); }
+.cat-theme-cat4   { --cat-color: var(--cat-cat4-fg);   --cat-bg: var(--cat-cat4-bg);   --cat-bd: var(--cat-cat4-bd); }
+.cat-theme-cat1   { --cat-color: var(--cat-cat1-fg);   --cat-bg: var(--cat-cat1-bg);   --cat-bd: var(--cat-cat1-bd); }
+.cat-theme-cat2   { --cat-color: var(--cat-cat2-fg);   --cat-bg: var(--cat-cat2-bg);   --cat-bd: var(--cat-cat2-bd); }
+.cat-theme-cat3   { --cat-color: var(--cat-cat3-fg);   --cat-bg: var(--cat-cat3-bg);   --cat-bd: var(--cat-cat3-bd); }
+.cat-theme-cat5   { --cat-color: var(--cat-cat5-fg);   --cat-bg: var(--cat-cat5-bg);   --cat-bd: var(--cat-cat5-bd); }
+.cat-theme-cat7   { --cat-color: var(--cat-cat7-fg);   --cat-bg: var(--cat-cat7-bg);   --cat-bd: var(--cat-cat7-bd); }
+.cat-theme-custom { --cat-color: var(--cat-custom-fg); --cat-bg: var(--cat-custom-bg); --cat-bd: var(--cat-custom-bd); }
+
+/* ==========================================================================
+   Table Toolbar & Registry Table
+   ========================================================================== */
+.table-toolbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 4px 2px 10px;
+  flex-wrap: wrap;
+}
+
+.table-toolbar-left {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.result-count {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.category-desc {
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+}
+
+.toolbar-hint {
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+
+.registry-wrap {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  overflow-x: auto;
+}
+
+.registry-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.registry-table thead th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #E7F0F8;
+  letter-spacing: 0.04em;
+  background: var(--brand-navy-mid);
+  border-bottom: 2px solid var(--brand-navy);
+  padding: 11px 14px;
+  white-space: nowrap;
+}
+
+.col-status  { width: 126px; }
+.col-name    { width: 30%; }
+.col-target  { width: 21%; }
+.col-rule    { width: 17%; }
+.col-expiry  { width: 174px; }
+.col-actions { width: 136px; }
+
+.registry-table tbody tr.group-row td {
+  background: var(--cat-bg, #EDF3F9);
+  border-top: 2px solid var(--cat-bd, var(--border-strong));
+  border-bottom: 1px solid var(--cat-bd, var(--border-default));
+  border-left: 4px solid var(--cat-color, var(--brand-navy));
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cat-color, var(--brand-navy));
+  letter-spacing: 0.02em;
+}
+
+.group-row-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.group-row-meta {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+}
+
+.registry-table tbody tr.group-row:first-child td {
+  border-top: none;
+}
+
+.registry-table tbody tr.cert-row {
+  border-bottom: 1px solid var(--border-subtle);
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.registry-table tbody tr.cert-row:nth-of-type(even) {
+  background: #FAFBFD;
+}
+
+.registry-table tbody tr.cert-row:hover {
+  background: #EFF6FA;
+}
+
+.registry-table tbody tr.cert-row td {
+  padding: 13px 14px;
+  vertical-align: top;
+}
+
+/* Crisp Left Accent Indicator per Status (fallback subtle category rule when unacquired) */
+.registry-table tbody tr.cert-row td:first-child {
+  border-left: 3px solid var(--cat-bd, #D5DFE9);
+}
+.registry-table tbody tr.cert-row.row-acquired td:first-child {
+  border-left-color: var(--status-valid-bar);
+}
+.registry-table tbody tr.cert-row.row-warn td:first-child {
+  border-left-color: var(--status-warn-bar);
+}
+.registry-table tbody tr.cert-row.row-expired td:first-child {
+  border-left-color: var(--status-expired-bar);
+}
+.registry-table tbody tr.cert-row.row-planned td:first-child {
+  border-left-color: var(--status-planned-bar);
+}
+
+/* Inline Status Select (Flat, Crisp, Color-Coded) */
+.inline-status-select {
+  width: 100%;
+  height: 29px;
+  padding: 0 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border-default);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+}
+
+.inline-status-select.st-none {
+  background: var(--status-none-bg);
+  color: var(--status-none-fg);
+  border-color: #D2DBE4;
+}
+
+.inline-status-select.st-planned {
+  background: var(--status-planned-bg);
+  color: var(--status-planned-fg);
+  border-color: #B4CEEA;
+}
+
+.inline-status-select.st-acquired {
+  background: var(--status-valid-bg);
+  color: var(--status-valid-fg);
+  border-color: #A7D7C2;
+}
+
+.inline-status-select.st-warn {
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
+  border-color: #E5C17B;
+}
+
+.inline-status-select.st-expired {
+  background: var(--status-expired-bg);
+  color: var(--status-expired-fg);
+  border-color: #E7A9A4;
+}
+
+/* Name Column — Clear Typographic & Color Weight */
+.cert-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-navy);
+  line-height: 1.4;
+}
+
+.cert-subtitle {
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.cert-issuer {
+  font-size: 12px;
+  color: #344B63;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+.cert-memo-snippet {
+  margin-top: 6px;
+  padding: 4px 8px;
+  border-left: 2px solid var(--brand-primary);
+  background: #EBF6F6;
+  font-size: 12px;
+  color: #164444;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cert-target-text {
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  line-height: 1.5;
+}
+
+/* Validity / Renewal Scannable Micro-Badges */
+.rule-cell-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rule-chip {
+  display: inline-block;
+  width: fit-content;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  border: 1px solid transparent;
+  font-variant-numeric: tabular-nums;
+}
+
+.rule-chip-cycle {
+  background: #E6F4F4;
+  color: #095C5C;
+  border-color: #A4D5D5;
+}
+
+.rule-chip-annual {
+  background: #FEF3DF;
+  color: #8C4A00;
+  border-color: #E7C27E;
+}
+
+.rule-chip-nhi {
+  background: #E7F1FC;
+  color: #164C88;
+  border-color: #A9C9EC;
+}
+
+.rule-chip-perm {
+  background: #E8F4EE;
+  color: #116244;
+  border-color: #A6D6BE;
+}
+
+.rule-chip-program {
+  background: #F1ECF9;
+  color: #553880;
+  border-color: #C7B5E2;
+}
+
+.cert-rule-text {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  line-height: 1.45;
+}
+
+/* Expiry Column */
+.expiry-box {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.expiry-date-val {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.expiry-tag {
+  display: inline-block;
+  width: fit-content;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.expiry-tag.is-valid {
+  background: var(--status-valid-bg);
+  color: var(--status-valid-fg);
+}
+
+.expiry-tag.is-warn {
+  background: var(--status-warn-bg);
+  color: var(--status-warn-fg);
+}
+
+.expiry-tag.is-expired {
+  background: var(--status-expired-bg);
+  color: var(--status-expired-fg);
+}
+
+.expiry-tag.is-perm {
+  background: var(--bg-subtle);
+  color: var(--ink-secondary);
+}
+
+.expiry-placeholder {
+  font-size: 12px;
+  color: var(--ink-muted);
+  border-bottom: 1px dashed var(--border-strong);
+  width: fit-content;
+  padding-bottom: 1px;
+}
+
+.expiry-certno {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+/* Actions Column */
+.row-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.btn-row-edit {
+  background: #F1FAFA;
+  border-color: #96CECC;
+  color: var(--brand-primary);
+  font-weight: 600;
+}
+
+.btn-row-edit:hover {
+  background: var(--brand-primary);
+  border-color: var(--brand-primary);
+  color: #FFFFFF;
+}
+
+.row-ext-link {
+  font-size: 12px;
+  color: #1D568C;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.row-ext-link:hover {
+  color: var(--brand-navy);
+  text-decoration: underline;
+}
+
+/* Empty State */
+.empty-state {
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+.empty-sub {
+  margin: 6px 0 16px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.site-footer {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-default);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.footer-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--brand-navy);
+  letter-spacing: 0.03em;
+  margin-bottom: 8px;
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+}
+
+.footer-links a {
+  font-size: 12.5px;
+  color: var(--brand-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.footer-links a:hover {
+  text-decoration: underline;
+}
+
+.footer-note {
+  font-size: 12px;
+  color: var(--ink-muted);
+  line-height: 1.6;
+}
+
+/* ==========================================================================
+   Slide-Over Drawer (Sharp Editorial Sheet)
+   ========================================================================== */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(15, 35, 55, 0.36);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  width: 560px;
+  max-width: 100vw;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border-strong);
+  box-shadow: -8px 0 28px rgba(15, 35, 55, 0.14);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px 16px;
+  border-top: 4px solid var(--cat-color, var(--brand-primary));
+  border-bottom: 1px solid var(--cat-bd, var(--border-default));
+  background: var(--cat-bg, #F4F8FB);
+}
+
+.drawer-kicker {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--cat-color, var(--brand-primary));
+  margin-bottom: 4px;
+}
+
+.drawer-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--brand-navy);
+  line-height: 1.35;
+}
+
+.drawer-subtitle {
+  font-size: 12px;
+  color: var(--ink-muted);
+  margin-top: 4px;
+}
+
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.drawer-section {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.drawer-section:last-child {
+  border-bottom: none;
+}
+
+.drawer-form-section {
+  background: #F9FBFD;
+}
+
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.section-heading {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--brand-navy);
+  text-transform: uppercase;
+}
+
+.section-header-row .section-heading {
+  margin-bottom: 0;
+}
+
+.saved-indicator {
+  font-size: 12px;
+  color: var(--status-valid-fg);
+  font-weight: 500;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 14px;
+}
+
+.form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  margin-bottom: 6px;
+}
+
+.form-group .input-control {
+  width: 100%;
+}
+
+/* Segmented Radio Control (Sharp Flat Bar) */
+.segmented-control {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+}
+
+.segment-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-secondary);
+  cursor: pointer;
+  border-right: 1px solid var(--border-default);
+  user-select: none;
+}
+
+.segment-option:last-child {
+  border-right: none;
+}
+
+.segment-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segment-option:has(input[value="none"]:checked) {
+  background: #4A5C6E;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.segment-option:has(input[value="planned"]:checked) {
+  background: var(--status-planned-bar);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.segment-option:has(input[value="acquired"]:checked) {
+  background: var(--status-valid-bar);
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+.expiry-helpers {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: -4px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.checkbox-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--ink-secondary);
+  cursor: pointer;
+}
+
+.drawer-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+
+/* Specification Definition List */
+.spec-list {
+  margin: 0;
+  border-top: 1px solid var(--border-default);
+}
+
+.spec-row {
+  display: grid;
+  grid-template-columns: 124px 1fr;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.spec-row dt {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-muted);
+}
+
+.spec-row dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-primary);
+  line-height: 1.6;
+}
+
+.spec-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spec-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+  color: var(--brand-primary);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.spec-link-btn:hover {
+  background: var(--brand-primary-tint);
+  border-color: var(--brand-primary);
+}
+
+.spec-links-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spec-links-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.link-custom-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-primary);
+  background: var(--brand-primary-tint);
+  border: 1px solid #A4D5D5;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.link-editor {
+  border: 1px solid var(--border-strong);
+  background: #F6F9FC;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.link-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.link-editor-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 30px;
+  gap: 6px;
+  align-items: center;
+}
+
+.link-editor-row .input-control {
+  height: 31px;
+  font-size: 12.5px;
+  padding: 0 8px;
+}
+
+.btn-remove-link {
+  width: 30px;
+  height: 31px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+  color: var(--status-expired-fg);
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-remove-link:hover {
+  background: var(--status-expired-bg);
+  border-color: #E3A09A;
+}
+
+.link-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.backup-row-publish {
+  background: #F0F7F7;
+  border-left: 3px solid var(--brand-primary);
+}
+
+.custom-item-footer {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ==========================================================================
+   Modals (Sharp Architectural Dialogs)
+   ========================================================================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(15, 35, 55, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-panel {
+  width: 560px;
+  max-width: 100%;
+  max-height: 90vh;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 14px 40px rgba(15, 35, 55, 0.18);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-lg {
+  width: 680px;
+}
+
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px 15px;
+  border-bottom: 1px solid var(--border-default);
+  background: #FAFBFC;
+}
+
+.modal-kicker {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--brand-primary);
+  margin-bottom: 3px;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--brand-navy);
+}
+
+.modal-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+}
+
+.modal-intro {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--ink-secondary);
+  line-height: 1.6;
+}
+
+.modal-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 16px;
+}
+
+/* Export Modal Specifics */
+.radio-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.radio-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  background: var(--bg-surface);
+}
+
+.radio-block:has(input:checked) {
+  border-color: var(--brand-primary);
+  background: #F4F9F9;
+}
+
+.radio-block input {
+  margin-top: 3px;
+  accent-color: var(--brand-primary);
+}
+
+.radio-block-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+.radio-block-desc {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  margin-top: 3px;
+  line-height: 1.45;
+}
+
+.label-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.label-action-row .field-label {
+  margin-bottom: 0;
+}
+
+.mini-links {
+  display: flex;
+  gap: 14px;
+}
+
+.export-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 12px;
+  padding: 12px;
+  border: 1px solid var(--border-default);
+  background: #FAFBFC;
+}
+
+.export-cat-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-primary);
+  cursor: pointer;
+}
+
+.export-cat-item input {
+  accent-color: var(--brand-primary);
+}
+
+.export-scope-note {
+  margin-top: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand-primary);
+}
+
+.export-action-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.export-action-btn {
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+
+.export-action-btn:hover {
+  border-color: var(--brand-primary);
+  background: #F4F9F9;
+}
+
+.export-action-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-navy);
+}
+
+.export-action-desc {
+  font-size: 11.5px;
+  color: var(--ink-secondary);
+}
+
+.calendar-batch-bar {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-default);
+  border-left: 3px solid var(--brand-navy);
+  background: #FAFBFC;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.calendar-batch-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+.calendar-batch-desc {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  margin-top: 2px;
+}
+
+/* Backup Modal */
+.backup-actions-stack {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-default);
+}
+
+.backup-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.backup-row:last-child {
+  border-bottom: none;
+}
+
+.backup-row-danger {
+  background: #FFF9F8;
+}
+
+.backup-row-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-primary);
+}
+
+.backup-row-desc {
+  font-size: 12px;
+  color: var(--ink-secondary);
+  margin-top: 2px;
+}
+
+.file-btn-label {
+  cursor: pointer;
+}
+
+/* Toast Notification */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 90;
+  background: var(--brand-navy);
+  color: #FFFFFF;
+  padding: 11px 18px;
+  border-left: 4px solid var(--brand-primary);
+  border-radius: var(--radius-xs);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(15, 35, 55, 0.24);
+}
+
+/* ==========================================================================
+   Responsive Design (Tablet & Mobile)
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .kpi-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .kpi-cell:nth-child(2) {
+    border-right: none;
+  }
+  .kpi-cell:nth-child(1),
+  .kpi-cell:nth-child(2) {
+    border-bottom: 1px solid var(--border-default);
+  }
+  .col-target { display: none; }
+}
+
+@media (max-width: 780px) {
+  .container {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .masthead-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .license-strip {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .kpi-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .registry-table,
+  .registry-table thead,
+  .registry-table tbody,
+  .registry-table tr,
+  .registry-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .registry-table thead {
+    display: none;
+  }
+
+  .registry-table tbody tr.cert-row {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-default);
+  }
+
+  .registry-table tbody tr.cert-row td {
+    padding: 4px 0;
+    border-left: none !important;
+  }
+
+  .registry-table tbody tr.cert-row.row-acquired { border-left: 3px solid var(--status-valid-bar); }
+  .registry-table tbody tr.cert-row.row-warn { border-left: 3px solid var(--status-warn-bar); }
+  .registry-table tbody tr.cert-row.row-expired { border-left: 3px solid var(--status-expired-bar); }
+  .registry-table tbody tr.cert-row.row-planned { border-left: 3px solid var(--status-planned-bar); }
+
+  .col-target { display: block; }
+  .inline-status-select { width: auto; min-width: 120px; }
+  .row-actions { flex-direction: row; align-items: center; gap: 14px; margin-top: 6px; }
+
+  .form-row-2,
+  .radio-grid-2,
+  .export-cat-grid,
+  .export-action-grid,
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-batch-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .spec-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+}
+
+/* ==========================================================================
+   Dedicated Executive Print / Save-as-PDF Stylesheet
+   ========================================================================== */
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 9.5pt;
+  }
+
+  .top-rule,
+  .masthead,
+  .main-content,
+  .drawer,
+  .backdrop,
+  .modal-backdrop,
+  .toast {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .print-header {
+    border-bottom: 2px solid #0F2942;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .print-title {
+    margin: 0;
+    font-size: 15pt;
+    color: #0F2942;
+  }
+
+  .print-meta {
+    font-size: 8.5pt;
+    color: #435568;
+  }
+
+  .print-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 8.5pt;
+  }
+
+  .print-table th,
+  .print-table td {
+    border: 1px solid #9FB0C2;
+    padding: 5px 7px;
+    vertical-align: top;
+    text-align: left;
+  }
+
+  .print-table th {
+    background: #EDF2F6 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-weight: 700;
+  }
+
+  .print-table tr {
+    page-break-inside: avoid;
+  }
+
+  .print-cat-row td {
+    background: #E2EBF2 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-weight: 700;
+    color: #0F2942;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <!-- Top Accent Rule -->
+  <div class="top-rule" aria-hidden="true"></div>
+
+  <!-- Masthead Header -->
+  <header class="masthead">
+    <div class="container masthead-inner">
+      <div class="brand-block">
+        <div class="brand-kicker">TAIWAN PHARMACIST CREDENTIAL REGISTRY &amp; RENEWAL PLANNER</div>
+        <h1 class="brand-title">台灣藥師進階認證暨證照維護系統</h1>
+        <p class="brand-meta">
+          收錄第 1–7 大類新興領域、中藥師資、臨床專科與 ERAS、衛教共照、長照居家、急救輻防與藥廠法規資格｜資料核對：2026-11
+        </p>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="btn btn-primary" id="btnOpenExport">
+          <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3v9m0 0-3.5-3.5M10 12l3.5-3.5M4 14.5V16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1.5"/></svg>
+          匯出／分享同仁
+        </button>
+        <button type="button" class="btn btn-secondary" id="btnOpenBackup">
+          <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7.5V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2.5M4 12.5V15a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2.5M3 10h14"/></svg>
+          備份／還原
+        </button>
+        <button type="button" class="btn btn-secondary" id="btnOpenCustom">
+          <svg class="icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 4v12M4 10h12"/></svg>
+          新增自訂資格
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="container main-content">
+    <!-- Basic Practice License Strip (Practical Core License Maintenance) -->
+    <section class="license-strip" aria-label="個人藥師執業執照維護">
+      <div class="license-strip-left">
+        <span class="license-tag">基本法定執照</span>
+        <span class="license-label">藥師執業執照（每 6 年換證／120 點繼續教育積分）</span>
+        <span class="license-status" id="baseLicenseDisplay">尚未設定換證到期日</span>
+      </div>
+      <div class="license-strip-actions">
+        <button type="button" class="btn-link" id="btnEditBaseLicense">編輯執業執照效期</button>
+        <button type="button" class="btn-link hidden" id="btnExportBaseIcs">下載換證提醒 (.ics)</button>
+      </div>
+    </section>
+
+    <!-- Flat Architectural KPI Strip -->
+    <section class="kpi-strip" aria-label="個人證照統計摘要">
+      <button type="button" class="kpi-cell" data-kpi-filter="all" id="kpiTotal">
+        <div class="kpi-label">總收錄進階認證</div>
+        <div class="kpi-value-row">
+          <span class="kpi-number" id="statTotal">0</span>
+          <span class="kpi-unit">項（7 大類）</span>
+        </div>
+        <div class="kpi-sub">點擊顯示全部項目</div>
+      </button>
+
+      <button type="button" class="kpi-cell" data-kpi-filter="acquired" id="kpiAcquired">
+        <div class="kpi-label">已取得認證</div>
+        <div class="kpi-value-row">
+          <span class="kpi-number kpi-accent-green" id="statAcquired">0</span>
+          <span class="kpi-unit" id="statAcquiredPct">0%</span>
+        </div>
+        <div class="kpi-progress-track"><div class="kpi-progress-fill" id="statAcquiredBar"></div></div>
+      </button>
+
+      <button type="button" class="kpi-cell" data-kpi-filter="planned" id="kpiPlanned">
+        <div class="kpi-label">規劃／進修中</div>
+        <div class="kpi-value-row">
+          <span class="kpi-number kpi-accent-blue" id="statPlanned">0</span>
+          <span class="kpi-unit">項目標</span>
+        </div>
+        <div class="kpi-sub">追蹤近期報名與學分</div>
+      </button>
+
+      <button type="button" class="kpi-cell" data-kpi-filter="alert" id="kpiAlert">
+        <div class="kpi-label">效期警示（180天內／已逾期）</div>
+        <div class="kpi-value-row">
+          <span class="kpi-number" id="statAlert">0</span>
+          <span class="kpi-unit" id="statAlertSub">項需關注</span>
+        </div>
+        <div class="kpi-sub" id="statNextExpiry">尚無即將到期項目</div>
+      </button>
+    </section>
+
+    <!-- Sticky Control & Filter Toolbar -->
+    <section class="control-panel" aria-label="篩選與分類切換">
+      <div class="filter-bar">
+        <div class="search-field">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="5.5"/><path d="m13.5 13.5 3.5 3.5"/></svg>
+          <input type="search" id="searchInput" class="input-control search-input" placeholder="搜尋認證名稱、單位或關鍵字（ACLS、ERAS、CDE、17學分、ICU、在宅急症）" autocomplete="off" />
+        </div>
+
+        <div class="filter-selects">
+          <select id="statusFilter" class="select-control" aria-label="依個人狀態篩選">
+            <option value="all">狀態：全部</option>
+            <option value="acquired">已取得</option>
+            <option value="planned">規劃中</option>
+            <option value="none">未規劃</option>
+            <option value="alert">效期警示（180天內／逾期）</option>
+          </select>
+
+          <select id="domainFilter" class="select-control" aria-label="依執業場域篩選">
+            <option value="all">場域：全部領域</option>
+          </select>
+
+          <select id="sortSelect" class="select-control" aria-label="排序方式">
+            <option value="default">排序：預設分類</option>
+            <option value="expiry_asc">排序：到期日由近到遠</option>
+            <option value="acquired_first">排序：已取得優先</option>
+            <option value="planned_first">排序：規劃中優先</option>
+          </select>
+
+          <button type="button" class="btn btn-ghost hidden" id="btnResetFilters">清除篩選</button>
+        </div>
+      </div>
+
+      <!-- Underline Category Tabs -->
+      <nav class="category-tabs" id="categoryTabs" aria-label="認證類別切換"></nav>
+    </section>
+
+    <!-- Active Category Context + Result Count -->
+    <div class="table-toolbar">
+      <div class="table-toolbar-left">
+        <span class="result-count" id="resultCount">顯示 0 項</span>
+        <span class="category-desc" id="categoryDesc"></span>
+      </div>
+      <div class="table-toolbar-right">
+        <span class="toolbar-hint">提示：列表可直接切換狀態，點擊列或「編輯效期」開啟完整規範與個人維護面板</span>
+      </div>
+    </div>
+
+    <!-- Primary Registry Table -->
+    <section class="registry-wrap" aria-label="台灣藥師進階認證資料表">
+      <table class="registry-table">
+        <thead>
+          <tr>
+            <th class="col-status">取得狀態</th>
+            <th class="col-name">認證／資格名稱與主辦單位</th>
+            <th class="col-target">適用場域／對象</th>
+            <th class="col-rule">官方效期與展延規範</th>
+            <th class="col-expiry">個人效期與倒數</th>
+            <th class="col-actions">操作</th>
+          </tr>
+        </thead>
+        <tbody id="registryBody"></tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div class="empty-state hidden" id="emptyState">
+        <div class="empty-title">查無符合篩選條件的認證項目</div>
+        <p class="empty-sub">請嘗試調整搜尋關鍵字、類別分頁或狀態篩選條件。</p>
+        <button type="button" class="btn btn-secondary" id="btnEmptyReset">顯示全部認證</button>
+      </div>
+    </section>
+
+    <!-- Quick Reference Footer -->
+    <footer class="site-footer">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-heading">常態開課與繼續教育三大入口</div>
+          <div class="footer-links">
+            <a href="https://www.taiwan-pharma.org.tw/" target="_blank" rel="noopener noreferrer">藥師公會全聯會 (TPIP) ↗</a>
+            <a href="https://www.tshp.org.tw/" target="_blank" rel="noopener noreferrer">臺灣臨床藥學會 (TSHP) ↗</a>
+            <a href="https://www.ltc-learning.org/" target="_blank" rel="noopener noreferrer">衛福部長照數位學習平臺 ↗</a>
+            <a href="https://quitsmoking.hpa.gov.tw/" target="_blank" rel="noopener noreferrer">國健署戒菸服務訓練系統 ↗</a>
+          </div>
+        </div>
+        <div class="footer-note">
+          <strong>隱私與本機儲存說明：</strong>所有個人取得註記、證書效期與備註僅儲存於您目前使用的瀏覽器本機空間（localStorage），不會上傳至任何伺服器。換機或清除瀏覽器資料前，請使用右上角「備份／還原」下載 JSON 備份檔。法規與簡章請以各主辦單位最新公告為準。
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Print-Only Executive Report Container -->
+  <section id="printReport" class="print-only" aria-hidden="true"></section>
+
+  <!-- Right Slide-Over Drawer: Detail & Personal Maintenance -->
+  <div class="backdrop hidden" id="drawerBackdrop"></div>
+  <aside class="drawer hidden" id="detailDrawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-kicker" id="drawerCategory">類別</div>
+        <h2 class="drawer-title" id="drawerTitle">認證名稱</h2>
+        <div class="drawer-subtitle" id="drawerSubtitle"></div>
+      </div>
+      <button type="button" class="btn-icon" id="btnCloseDrawer" aria-label="關閉面板">✕</button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Editable Personal Record Section -->
+      <form id="recordForm" class="drawer-section drawer-form-section">
+        <div class="section-header-row">
+          <h3 class="section-heading">個人狀態與證書效期維護</h3>
+          <span class="saved-indicator" id="drawerSavedHint"></span>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">取得狀態註記</label>
+          <div class="segmented-control" role="radiogroup" aria-label="取得狀態">
+            <label class="segment-option">
+              <input type="radio" name="recStatus" value="none" />
+              <span>未規劃</span>
+            </label>
+            <label class="segment-option">
+              <input type="radio" name="recStatus" value="planned" />
+              <span>規劃／進修中</span>
+            </label>
+            <label class="segment-option">
+              <input type="radio" name="recStatus" value="acquired" />
+              <span>已取得</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="field-label" for="recIssueDate">取得／生效日期</label>
+            <input type="date" id="recIssueDate" class="input-control mono" />
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="recExpiryDate">證書到期日</label>
+            <input type="date" id="recExpiryDate" class="input-control mono" />
+          </div>
+        </div>
+
+        <div class="expiry-helpers">
+          <label class="checkbox-inline">
+            <input type="checkbox" id="recPermanent" />
+            <span>永久有效／無強制到期日</span>
+          </label>
+          <button type="button" class="btn-link hidden" id="btnAutoCalcExpiry">依官方效期自動推算</button>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="recCertNo">證書字號（選填）</label>
+          <input type="text" id="recCertNo" class="input-control mono" placeholder="例：台臨藥專字第 1150001 號" />
+        </div>
+
+        <div class="form-group">
+          <label class="field-label" for="recNotes">繼續教育學分進度／個人規劃備註</label>
+          <textarea id="recNotes" class="textarea-control" rows="3" placeholder="例：已累積 24/60 學分；預計 2027/04 報名展延或課程"></textarea>
+        </div>
+
+        <div class="drawer-form-actions">
+          <button type="submit" class="btn btn-primary">儲存維護紀錄</button>
+          <button type="button" class="btn btn-secondary" id="btnDownloadSingleIcs" disabled>加入行事曆提醒 (.ics)</button>
+          <button type="button" class="btn btn-danger-ghost" id="btnClearRecord">清除紀錄</button>
+        </div>
+      </form>
+
+      <!-- Verified Official Reference Section -->
+      <section class="drawer-section">
+        <h3 class="section-heading">官方認證規範與課程資訊</h3>
+        <dl class="spec-list">
+          <div class="spec-row">
+            <dt>主辦／發證單位</dt>
+            <dd id="specIssuer"></dd>
+          </div>
+          <div class="spec-row">
+            <dt>適用場域／對象</dt>
+            <dd id="specTarget"></dd>
+          </div>
+          <div class="spec-row">
+            <dt>取得條件與方式</dt>
+            <dd id="specRequirements" class="pre-line"></dd>
+          </div>
+          <div class="spec-row">
+            <dt>效期與展延規範</dt>
+            <dd id="specValidity"></dd>
+          </div>
+          <div class="spec-row">
+            <dt>近期課程／考程</dt>
+            <dd id="specSchedule"></dd>
+          </div>
+          <div class="spec-row">
+            <dt>官方查詢連結</dt>
+            <dd class="spec-links-wrap">
+              <div class="spec-links-bar">
+                <div id="specLinks" class="spec-links"></div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span id="specLinkCustomBadge" class="link-custom-badge hidden">已自訂</span>
+                  <button type="button" class="btn-link" id="btnToggleLinkEditor">編輯連結</button>
+                </div>
+              </div>
+              <div id="linkEditorPanel" class="link-editor hidden">
+                <div class="link-editor-list" id="linkEditorList"></div>
+                <div class="link-editor-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="btnAddLinkRow">＋ 新增連結</button>
+                  <div class="spacer"></div>
+                  <button type="button" class="btn btn-danger-ghost btn-sm hidden" id="btnResetItemLinks">恢復預設</button>
+                  <button type="button" class="btn btn-ghost btn-sm" id="btnCancelLinkEdit">取消</button>
+                  <button type="button" class="btn btn-primary btn-sm" id="btnSaveItemLinks">儲存連結</button>
+                </div>
+              </div>
+            </dd>
+          </div>
+        </dl>
+
+        <div class="custom-item-footer hidden" id="customItemControls">
+          <button type="button" class="btn btn-danger-ghost" id="btnDeleteCustomCert">刪除此自訂認證項目</button>
+        </div>
+      </section>
+    </div>
+  </aside>
+
+  <!-- Modal: Export & Share with Colleagues -->
+  <div class="modal-backdrop hidden" id="exportModal" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
+    <div class="modal-panel modal-lg">
+      <div class="modal-header">
+        <div>
+          <div class="modal-kicker">EXPORT &amp; SHARE</div>
+          <h2 class="modal-title" id="exportModalTitle">匯出清單與分享給同仁</h2>
+        </div>
+        <button type="button" class="btn-icon" data-close-modal="exportModal" aria-label="關閉">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="field-label">1. 選擇匯出用途（隱私控管）</label>
+          <div class="radio-grid-2">
+            <label class="radio-block">
+              <input type="radio" name="exportMode" value="share" checked />
+              <div>
+                <div class="radio-block-title">分享同仁參考版（預設）</div>
+                <div class="radio-block-desc">僅含認證資格、取得條件、效期規範與官方連結，自動隱藏個人狀態、效期與備註。</div>
+              </div>
+            </label>
+            <label class="radio-block">
+              <input type="radio" name="exportMode" value="personal" />
+              <div>
+                <div class="radio-block-title">個人證照維護清冊</div>
+                <div class="radio-block-desc">完整匯出個人取得狀態、取得日、到期日、剩餘天數、證書字號與進修備註。</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="label-action-row">
+            <label class="field-label">2. 選擇匯出範圍與類別</label>
+            <div class="mini-links">
+              <button type="button" class="btn-link" id="btnExportSelectAll">全選類別</button>
+              <button type="button" class="btn-link" id="btnExportUseCurrent">套用目前畫面篩選</button>
+            </div>
+          </div>
+          <div class="export-cat-grid" id="exportCatGrid"></div>
+          <div class="export-scope-note" id="exportPreviewCount">預計匯出：0 項認證</div>
+        </div>
+
+        <div class="form-group">
+          <label class="field-label">3. 選擇匯出／分享格式</label>
+          <div class="export-action-grid">
+            <button type="button" class="export-action-btn" id="btnDoExportCsv">
+              <span class="export-action-title">下載 Excel 表格 (.csv)</span>
+              <span class="export-action-desc">含 UTF-8 BOM，Windows Excel 直接開啟不亂碼</span>
+            </button>
+            <button type="button" class="export-action-btn" id="btnDoExportPrint">
+              <span class="export-action-title">列印／另存 PDF 報表</span>
+              <span class="export-action-desc">專屬 A4 專業排版表格，適合會議或紙本留存</span>
+            </button>
+            <button type="button" class="export-action-btn" id="btnDoCopyText">
+              <span class="export-action-title">複製 LINE／文字分享清單</span>
+              <span class="export-action-desc">條列式摘要含官網連結，可直接貼到 LINE 群組</span>
+            </button>
+            <button type="button" class="export-action-btn" id="btnDoCopyMarkdown">
+              <span class="export-action-title">複製 Markdown 表格</span>
+              <span class="export-action-desc">適合貼入 Notion、HackMD、GitHub Wiki</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="calendar-batch-bar">
+          <div>
+            <div class="calendar-batch-title">個人換證提醒行事曆批次匯出 (.ics)</div>
+            <div class="calendar-batch-desc">將所有「已設定到期日」的認證（含基本執業執照）匯出為 .ics 檔，匯入 Google／Outlook／Apple 行事曆（自動設到期前 90 天與 30 天提醒）。</div>
+          </div>
+          <button type="button" class="btn btn-secondary" id="btnDoExportAllIcs">匯出全部效期 (.ics)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Backup & Restore -->
+  <div class="modal-backdrop hidden" id="backupModal" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <div class="modal-kicker">LOCAL DATA MANAGEMENT</div>
+          <h2 class="modal-title" id="backupModalTitle">本機資料備份與還原</h2>
+        </div>
+        <button type="button" class="btn-icon" data-close-modal="backupModal" aria-label="關閉">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-intro">
+          本網站為純靜態網頁（可架設於 GitHub Pages），您的個人取得狀態、證書效期、基本執業執照與自訂認證皆儲存於本機瀏覽器。建議定期下載 JSON 備份檔，以便跨裝置同步或防止清除快取遺失資料。
+        </p>
+
+        <div class="backup-actions-stack">
+          <div class="backup-row">
+            <div>
+              <div class="backup-row-title">匯出個人備份檔 (.json)</div>
+              <div class="backup-row-desc">包含所有認證狀態、效期、備註、基本執業執照、自訂項目及已編輯之官方連結。</div>
+            </div>
+            <button type="button" class="btn btn-primary" id="btnDownloadBackup">下載備份</button>
+          </div>
+
+          <div class="backup-row">
+            <div>
+              <div class="backup-row-title">從備份檔還原 (.json)</div>
+              <div class="backup-row-desc">匯入先前下載的 JSON 檔案，還原個人維護資料與自訂連結。</div>
+            </div>
+            <label class="btn btn-secondary file-btn-label">
+              選擇 JSON 檔案
+              <input type="file" id="inputRestoreFile" accept="application/json,.json" hidden />
+            </label>
+          </div>
+
+          <div class="backup-row backup-row-publish">
+            <div>
+              <div class="backup-row-title">匯出已更新連結之網站檔 (index.html)</div>
+              <div class="backup-row-desc" id="publishHtmlDesc">將您編輯好的精準官方連結寫入新版單一 HTML（自動排除個人取得狀態與效期），可直接覆蓋上傳至 GitHub Pages 分享同仁。</div>
+            </div>
+            <button type="button" class="btn btn-primary" id="btnExportPublishedHtml">下載新版 HTML</button>
+          </div>
+
+          <div class="backup-row backup-row-danger">
+            <div>
+              <div class="backup-row-title">重設所有個人紀錄</div>
+              <div class="backup-row-desc">清除本機所有取得註記、效期、執業執照、自訂項目與本機自訂連結（無法復原）。</div>
+            </div>
+            <button type="button" class="btn btn-danger-outline" id="btnResetAllData">重設全部</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add Custom Certification -->
+  <div class="modal-backdrop hidden" id="customModal" role="dialog" aria-modal="true" aria-labelledby="customModalTitle">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <div class="modal-kicker">CUSTOM CREDENTIAL</div>
+          <h2 class="modal-title" id="customModalTitle">新增自訂認證／院內資格</h2>
+        </div>
+        <button type="button" class="btn-icon" data-close-modal="customModal" aria-label="關閉">✕</button>
+      </div>
+      <form id="customCertForm" class="modal-body">
+        <div class="form-group">
+          <label class="field-label" for="customName">認證／資格名稱 *</label>
+          <input type="text" id="customName" class="input-control" required placeholder="例：院內化療調劑認證、毒劇藥管理認證、外語檢定" />
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="field-label" for="customCategory">歸屬類別</label>
+            <select id="customCategory" class="select-control full-width">
+              <option value="custom">自訂／院內專屬資格</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="customIssuer">主辦／發證單位</label>
+            <input type="text" id="customIssuer" class="input-control" placeholder="例：所屬醫院藥劑部" />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="field-label" for="customStatus">取得狀態</label>
+            <select id="customStatus" class="select-control full-width">
+              <option value="acquired">已取得</option>
+              <option value="planned">規劃中</option>
+              <option value="none">未規劃</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="customValidityRule">效期規則說明</label>
+            <input type="text" id="customValidityRule" class="input-control" placeholder="例：2 年／年度考核" />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="field-label" for="customIssueDate">取得日期（選填）</label>
+            <input type="date" id="customIssueDate" class="input-control mono" />
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="customExpiryDate">證書到期日（選填）</label>
+            <input type="date" id="customExpiryDate" class="input-control mono" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="customUrl">相關／官方連結網址（選填）</label>
+          <input type="url" id="customUrl" class="input-control mono" placeholder="https://..." />
+        </div>
+        <div class="form-group">
+          <label class="field-label" for="customNotes">備註／認證條件</label>
+          <textarea id="customNotes" class="textarea-control" rows="2" placeholder="輸入相關換證條件或個人筆記"></textarea>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" class="btn btn-secondary" data-close-modal="customModal">取消</button>
+          <button type="submit" class="btn btn-primary">新增資格</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Basic Practice License -->
+  <div class="modal-backdrop hidden" id="baseLicenseModal" role="dialog" aria-modal="true" aria-labelledby="baseLicenseModalTitle">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <div>
+          <div class="modal-kicker">STATUTORY PRACTICE LICENSE</div>
+          <h2 class="modal-title" id="baseLicenseModalTitle">藥師執業執照效期維護</h2>
+        </div>
+        <button type="button" class="btn-icon" data-close-modal="baseLicenseModal" aria-label="關閉">✕</button>
+      </div>
+      <form id="baseLicenseForm" class="modal-body">
+        <p class="modal-intro">
+          依《醫事人員執業登記及繼續教育辦法》，藥師執業執照每 <strong>6 年</strong>須更新一次，須累計 <strong>120 點</strong>繼續教育積分（專業課程 96–108 點；專業品質／倫理／法規合計 12–24 點，且須含<strong>感染管制</strong>與<strong>性別議題</strong>；網路及雜誌通訊課程各以 80 點為上限）。
+        </p>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="field-label" for="baseIssueDate">執照核發／上次更新日</label>
+            <input type="date" id="baseIssueDate" class="input-control mono" />
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="baseExpiryDate">下次換證到期日</label>
+            <input type="date" id="baseExpiryDate" class="input-control mono" />
+          </div>
+        </div>
+        <div class="expiry-helpers">
+          <button type="button" class="btn-link" id="btnAutoCalcBase">依核發日自動加 6 年推算到期日</button>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="field-label" for="baseCredits">目前已累積積分（選填）</label>
+            <input type="number" id="baseCredits" class="input-control mono" min="0" max="500" step="0.5" placeholder="例：68" />
+          </div>
+          <div class="form-group">
+            <label class="field-label" for="baseLicenseNo">執業執照字號（選填）</label>
+            <input type="text" id="baseLicenseNo" class="input-control mono" placeholder="例：北市衛藥執字第XXXXX號" />
+          </div>
+        </div>
+        <div class="modal-footer-actions">
+          <button type="button" class="btn btn-danger-ghost" id="btnClearBaseLicense">清除設定</button>
+          <div class="spacer"></div>
+          <button type="button" class="btn btn-secondary" data-close-modal="baseLicenseModal">取消</button>
+          <button type="submit" class="btn btn-primary">儲存執照效期</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast hidden" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Published Official Link Overrides (Embedded when exporting updated index.html for GitHub Pages) -->
+  <script id="publishedLinksConfig" type="application/json">{}</script>
+
+  <script>
+/**
+ * 台灣藥師進階認證、法定資格與證書資料集（第 1–7 大類，共 52 項）
+ * 最後核對日期：2026-11
+ */
+
+window.CERT_CATEGORIES = [
+  {
+    id: 'cat6',
+    code: '一',
+    shortName: '新興藥事領域',
+    name: '一、特殊新興藥事領域認證（運動、寵物、藥妝、保健）',
+    description: '運動禁藥諮詢藥師、動物用藥管理技術人員、化粧品安全資料簽署人員 (SA) 與經濟部 iPAS 保健食品工程師。'
+  },
+  {
+    id: 'cat4',
+    code: '二',
+    shortName: '中藥與教學師資',
+    name: '二、中藥、實習指導藥師與藥學教育師資認證',
+    description: '中藥調劑法定資格（新制 17 學分＋160 小時實習）、醫院／社區／中藥實習指導藥師、PGY 師培與 OSCE 考官。'
+  },
+  {
+    id: 'cat1',
+    code: '三',
+    shortName: '臨床專科與醫院進階',
+    name: '三、臨床專科藥師與醫院進階制度（國內／國際）',
+    description: 'TSHP／TIPAA 專科藥師、健保「提升醫院用藥安全與品質方案」四項資格、健保 ERAS 推廣計畫、P0–P4 職級進階與美國 BPS 認證。'
+  },
+  {
+    id: 'cat2',
+    code: '四',
+    shortName: '慢性病衛教與共照網',
+    name: '四、慢性病衛教師與健保共照網資格',
+    description: '糖尿病、慢性腎臟病、戒菸、氣喘、COPD、骨鬆與失智友善等與健保 P4P／國健署計畫銜接之衛教認證。'
+  },
+  {
+    id: 'cat3',
+    code: '五',
+    shortName: '長照社區與公衛',
+    name: '五、長期照顧、社區藥事照護與公共衛生資格',
+    description: '長照 Level 1–3、居家藥事照護、健保在宅急症照護試辦計畫、安寧緩和、成癮戒治與用藥安全宣導師資。'
+  },
+  {
+    id: 'cat5',
+    code: '六',
+    shortName: '急救輻防與醫品實證',
+    name: '六、急救、救護、輻射防護與醫療品質認證',
+    description: 'ACLS、BLS、PALS、EMT-1、基礎外傷與重大災難種子教師、核醫輻射安全證書／輻防師員、醫品師與實證醫學種子師資。'
+  },
+  {
+    id: 'cat7',
+    code: '七',
+    shortName: '臨床試驗與藥廠法規',
+    name: '七、臨床試驗、藥廠法規、供應鏈與生醫品質認證',
+    description: 'GCP／CRC／CRA、醫療器材技術人員、PIC/S GMP／GDP、MR 醫藥行銷師、美國 RAC 法規認證與 ISO 稽核員。'
+  }
+];
+
+window.PRACTICE_DOMAINS = [
+  { id: 'hospital', label: '醫院臨床' },
+  { id: 'community', label: '社區藥局' },
+  { id: 'ltc', label: '長照與居家' },
+  { id: 'tcm_edu', label: '中藥／教學師資' },
+  { id: 'critical_nuc', label: '急重症／核醫醫品' },
+  { id: 'industry', label: '藥廠／生醫法規' }
+];
+
+window.CERT_DATA = [
+  // ================= 一、特殊新興藥事領域認證 =================
+  {
+    id: 'ctada-sports-pharmacist',
+    categoryId: 'cat6',
+    name: '運動禁藥諮詢藥師',
+    subtitle: 'Sports Pharmacist (CTADA / 藥師全聯會)',
+    issuer: '財團法人中華運動禁藥防制基金會 (CTADA)／藥師公會全聯會',
+    domains: ['community', 'hospital'],
+    target: '協助運動員、教練審視中西藥與保健食品是否誤觸 WADA 禁用清單及 TUE 諮詢之執業藥師',
+    requirements: '執業藥師全程參與初階＋進階培訓課程（共約 10–12 小時，涵蓋 WADA 禁用清單、TUE 治療用途豁免、中草藥與營養補充品風險），並通過線上或現場知識測驗取得證書，可登錄「運動藥師服務系統」。',
+    validitySummary: '無強制換證｜配合 WADA 年度清單進修',
+    validityDetail: '目前證書尚無強制定期換證年限，惟 WADA 每年 1 月 1 日更新禁用清單，主辦單位（CTADA／藥師全聯會）會辦理年度法規與實務講座供回訓更新。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '每年分北中南限額開辦，請關注全聯會與 CTADA 最新消息。',
+    links: [
+      { label: '中華運動禁藥防制基金會 (CTADA)', url: 'https://www.antidoping.org.tw/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'aphia-vet-drug',
+    categoryId: 'cat6',
+    name: '動物用藥品販賣業藥品管理技術人員（寵物／動物用藥）',
+    subtitle: 'Veterinary Drug Sales Management Technician (APHIA)',
+    issuer: '農業部動植物防疫檢疫署 (APHIA) 認可機構（藥師公會、大仁科大等）',
+    domains: ['community'],
+    target: '欲合法申辦「動物用藥品販賣業許可」、跨足犬貓寵物用藥諮詢之社區藥局藥師',
+    requirements: '領有中華民國藥師證書，就職前須完成防檢署公告指定訓練課程（動物用藥法規、獸醫藥理概論、動物常見疾病用藥），各科結業測驗達 70 分以上取得結業證書。',
+    validitySummary: '每 2 年｜防檢署指定繼續教育回訓',
+    validityDetail: '依《動物用藥品販賣業管理辦法》第 3 條第 3 項規定，在職期間應「每 2 年」接受中央主管機關公告之指定繼續教育訓練並取得結業證書（販賣業許可證最長 5 年展延時亦須查核）。',
+    defaultValidityYears: 2,
+    isPermanentDefault: false,
+    schedule: '各縣市藥師公會、大仁科大與基層藥師協會每年定期開辦新訓／回訓班。',
+    links: [
+      { label: '農業部防檢署 (APHIA)', url: 'https://www.aphia.gov.tw/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'tfda-cosmetic-sa',
+    categoryId: 'cat6',
+    name: '化粧品安全資料簽署人員 (Safety Assessor, SA)',
+    subtitle: 'Cosmetic Product Information File (PIF) Safety Assessor',
+    issuer: '衛福部食藥署 (TFDA) 規範／大專院校推廣部（北醫、嘉藥、中醫大等）',
+    domains: ['industry', 'community'],
+    target: '配合化粧品 PIF 制度，負責審查與簽署上市前安全性評估結論（藥學系具法定學歷優勢）',
+    requirements: '① 學歷：藥學系畢業即符合法定門檻。\n② 訓練：修滿至少 54 小時指定訓練課程（管理法規 4hr＋成分應用及風險 8hr＋安全評估方式 36hr＋評估結論製作 6hr）並通過評量。',
+    validitySummary: '每年 ≥8 小時｜法定持續教育',
+    validityDetail: '依《化粧品產品資訊檔案管理辦法》規定，安全資料簽署人員每年須接受至少 8 小時之化粧品安全評估相關持續教育訓練，始能維持合法簽署資格。',
+    defaultValidityYears: 1,
+    isPermanentDefault: false,
+    schedule: '臺北醫學大學、嘉南藥理大學、中國醫藥大學等推廣教育處全年分梯開班。',
+    links: [{ label: '食藥署化粧品專區 (TFDA)', url: 'https://www.fda.gov.tw/' }]
+  },
+  {
+    id: 'ipas-health-food',
+    categoryId: 'cat6',
+    name: '保健食品工程師（初級／研發級能力鑑定）',
+    subtitle: 'iPAS Health Food Engineer Certification',
+    issuer: '經濟部產業人才能力鑑定 (iPAS)／食品工業發展研究所',
+    domains: ['community', 'industry'],
+    target: '社區藥局保健品諮詢與選品、保健品品牌研發、法規與行銷顧問',
+    requirements: '• 初級工程師：藥學系符合報考資格，筆試考「保健食品概論、食品科學概論」。\n• 研發級工程師：須持初級證書＋1 年實務經驗（或碩士＋相關實務）報考。',
+    validitySummary: '永久有效（能力鑑定證書）',
+    validityDetail: '經濟部核發產業人才能力鑑定證書，無強制定期換證規定。',
+    defaultValidityYears: null,
+    isPermanentDefault: true,
+    schedule: '每年固定舉辦兩次鑑定考試（約 4–5 月與 10–11 月）；食品所與各大專亦開辦考照輔導班。',
+    links: [
+      { label: '經濟部 iPAS 官網', url: 'https://www.ipas.org.tw/' },
+      { label: '食品所食品產業學院', url: 'https://mms.firdi.org.tw/' }
+    ]
+  },
+
+  // ================= 二、中藥、實習指導藥師與藥學教育師資 =================
+  {
+    id: 'tcm-dispensing-17',
+    categoryId: 'cat4',
+    name: '中藥調劑法定資格（新制 17 學分＋160 小時實習／舊制 16 學分）',
+    subtitle: 'Statutory Qualification for TCM Dispensing & Manufacturing',
+    issuer: '衛福部中醫藥司／教育部／各大學藥學系',
+    domains: ['tcm_edu', 'community', 'hospital'],
+    target: '醫療院所中藥局、社區藥局調劑中藥製劑與飲片、中藥廠監製藥師',
+    requirements: '依 109/5/28 修正之《應修習中藥課程標準》：\n• 新制（109 學年度起入學）：須修滿 17 學分（中醫藥概論 2、現代本草學 3、方劑學 3、中藥炮製學 3、生藥學 4、中藥藥物學 2）＋累計至少 160 小時中藥實習（單一場所至少 80 小時）。\n• 舊制（108 學年度以前入學，不溯及既往）：維持修滿 16 學分，無強制實習。',
+    validitySummary: '永久有效（法定資格）',
+    validityDetail: '修畢法定學分（及新制實習）並取得證明即具永久執業擴充資格，無須換證。',
+    defaultValidityYears: null,
+    isPermanentDefault: true,
+    schedule: '未修滿學分者可透過各大學藥學系推廣教育隨班附讀補足。',
+    links: [{ label: '藥師公會全聯會中藥專區', url: 'https://www.taiwan-pharma.org.tw/' }]
+  },
+  {
+    id: 'tcm-preceptor',
+    categoryId: 'cat4',
+    name: '中藥實習指導教師（指導藥師）認證',
+    subtitle: 'TCM Pharmacy Internship Preceptor Certification',
+    issuer: '中華民國藥師公會全聯會／台灣中醫醫學教育學會',
+    domains: ['tcm_edu', 'community', 'hospital'],
+    target: '醫院中藥局、健保社區藥局、中藥廠／販賣業指導藥學系學生 160 小時中藥實習',
+    requirements: '從事中醫藥相關業務滿 2 年以上，完訓約 16 小時（800 分鐘）培訓：含「提升教師教學技能培育（400 分）」＋「中藥實習教案試作與討論（400 分）」。持有效醫院／社區指導藥師者可申請抵免部分教學技能時數。',
+    validitySummary: '4 年｜滿 8 點積分展延',
+    validityDetail: '證書效期 4 年，期滿展延須於 4 年內累積達 8 點以上積分（指導實習生 80hr 計 3 點／160hr 計 6 點、擔任講師、進修或中藥 ADR 通報）。',
+    defaultValidityYears: 4,
+    isPermanentDefault: false,
+    schedule: '全聯會常態於每年春季（約 3–5 月）開放線上報名。',
+    links: [
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' },
+      { label: '台灣中醫醫學教育學會', url: 'https://www.taecm.com.tw/' }
+    ]
+  },
+  {
+    id: 'tshp-hospital-preceptor',
+    categoryId: 'cat4',
+    name: '醫院藥學實習指導藥師 (Hospital Preceptor)',
+    subtitle: 'Hospital Pharmacy Internship Preceptor (TSHP)',
+    issuer: '社團法人臺灣臨床藥學會 (TSHP)',
+    domains: ['tcm_edu', 'hospital'],
+    target: '教學醫院指導藥學系大學部學生 640 小時醫院實習之藥師',
+    requirements: '具醫院執業年資（通常滿 2 年以上），完成學會認可之醫院實習指導藥師培訓課程（至少 16 小時教學能力培育）與考核，由學會核發電子證書。',
+    validitySummary: '2 年｜滿 12 小時（含師培 ≥8 小時；前 30 天申請）',
+    validityDetail: '依《醫院藥學實習指導藥師資格延續辦法》，證書效期 2 年；2 年內須累積總計至少 12 小時證明，其中「教學能力提升之師資培育課程」至少 8 小時（年均 ≥4 小時），可含實習指導或擔任講師時數。應於效期屆滿前 30 天線上申請展延（小於 30 天須辦急件）。',
+    defaultValidityYears: 2,
+    isPermanentDefault: false,
+    schedule: '學會與各大教學醫院全年常態合辦培訓班。',
+    links: [{ label: '臺灣臨床藥學會官網', url: 'https://www.tshp.org.tw/' }]
+  },
+  {
+    id: 'tpa-community-preceptor',
+    categoryId: 'cat4',
+    name: '社區藥局實習指導藥師（暨教學社區藥局認證）',
+    subtitle: 'Community Pharmacy Preceptor Certification',
+    issuer: '中華民國藥師公會全聯會／台灣藥學會 (TPS)',
+    domains: ['tcm_edu', 'community'],
+    target: '健保特約社區藥局指導藥學系學生 160 小時社區實習',
+    requirements: '具 2 年以上健保特約社區藥局執業經驗，完成全聯會／台灣藥學會認可之指導藥師培訓課程（教學技能、教案試作與法規倫理）並經審查通過；藥局可同步申請教學社區藥局認證。',
+    validitySummary: '6 年｜滿 8 點教學積分（未指導須重訓）',
+    validityDetail: '證書效期 6 年，須於效期內累積 8 點教學積分（指導 160hr 得 2 點、320hr 得 4 點，或擔任培訓講員／輔導員）；6 年內未實際指導或從事教學者，須重新參加培訓研習會。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '全聯會與地方公會常態分區開辦（批次審查多配合 5 月、11 月作業）。',
+    links: [
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' },
+      { label: '台灣藥學會 (TPS)', url: 'https://www.tps.org.tw/' }
+    ]
+  },
+  {
+    id: 'jct-pgy-cfd',
+    categoryId: 'cat4',
+    name: '教學醫院 PGY 臨床指導教師／師資培育認證 (CFD)',
+    subtitle: 'PGY Clinical Faculty Development Certification',
+    issuer: '醫策會 (JCT)／臺灣臨床藥學會／各教學醫院師資培育中心',
+    domains: ['tcm_edu', 'hospital'],
+    target: '教學醫院帶領新進藥師（二年期臨床醫事人員培訓計畫 PGY）之臨床教師',
+    requirements: '具教學醫院專任藥師年資（登錄臨床教師通常須 4 年以上，或依各院規範滿 2–3 年），完成至少 16 小時師資培育核心課程（CBME、EPA、DOPS、回饋與評量方法）並經院內認證登錄。',
+    validitySummary: '2 年｜滿 8–12 小時師培（年均 ≥4 小時）',
+    validityDetail: '配合衛福部「臨床醫事人員培訓計畫」與 TSHP 規範，臨床教師每 2 年須累計進修 8–12 小時（每年至少或年均 ≥4 小時）教學能力提升繼續教育以展延效期。',
+    defaultValidityYears: 2,
+    isPermanentDefault: false,
+    schedule: '各大教學醫院教學部與師資培育中心全年定期開課。',
+    links: [{ label: '醫策會 (JCT)', url: 'https://www.jct.org.tw/' }]
+  },
+  {
+    id: 'osce-examiner',
+    categoryId: 'cat4',
+    name: '臨床技能測驗 (OSCE) 考官認證',
+    subtitle: 'OSCE Certified Examiner',
+    issuer: '台灣藥學會／TSHP／台灣中醫醫學教育學會／各醫藥大學',
+    domains: ['tcm_edu', 'hospital', 'community'],
+    target: '擔任藥學系及醫院藥師 OSCE 臨床技能測驗評分考官',
+    requirements: '具備指導藥師或臨床教師資格，完成主辦單位辦理之「OSCE 考官培訓暨評分共識工作坊」並通過評分一致性考核。',
+    validitySummary: '3 年｜評分 ≥2 梯次或 ≥4 小時（逾期逾 1 年重訓）',
+    validityDetail: '考官認證效期通常為 3 年，期滿前 3 個月起可申請展延：須於效期內實際擔任 OSCE 評分達 2 梯次以上（或實際／影帶評分 ≥4 小時，或任試務主持人）；逾期逾 1 年視同新訓須重修。',
+    defaultValidityYears: 3,
+    isPermanentDefault: false,
+    schedule: '各藥學系與學會常態配合年度考季前開辦培訓工作坊。',
+    links: [
+      { label: '台灣藥學會 (TPS)', url: 'https://www.tps.org.tw/' },
+      { label: '臺灣臨床藥學會 (TSHP)', url: 'https://www.tshp.org.tw/' }
+    ]
+  },
+
+  // ================= 三、臨床專科藥師與醫院進階制度 =================
+  {
+    id: 'tshp-critical-care',
+    categoryId: 'cat1',
+    name: '重症加護專科藥師',
+    subtitle: 'Critical Care Pharmacy Specialist (TSHP)',
+    issuer: '社團法人臺灣臨床藥學會 (TSHP)',
+    domains: ['hospital', 'critical_nuc'],
+    target: '醫院 ICU、急重症臨床藥師',
+    requirements: '符合教學醫院完訓與年資門檻，參加全國筆試（100 題單選，60 分及格）；持有效美國 BCCCP 證書者，可依要點申請審查免試對應。',
+    validitySummary: '6 年｜100 點專科學分／學術活動或重考',
+    validityDetail: '依 TSHP 專科藥師認證辦法，證書效期 6 年；6 年內須累積達 100 點（學分）以上該領域學術活動或繼續教育證明（參與課程每 50 分鐘計 1 點、擔任講師每 50 分鐘計 5 點、發表論文或案例報告依作者別採計），或重考展延。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '2025 年首屆開考，常態於每年約 11 月舉行筆試（如 115 年 11/1 辦理）。',
+    links: [{ label: '臺灣臨床藥學會專科專區', url: 'https://www.tshp.org.tw/' }]
+  },
+  {
+    id: 'tshp-oncology',
+    categoryId: 'cat1',
+    name: '癌症藥學專科藥師',
+    subtitle: 'Oncology Pharmacy Specialist (TSHP)',
+    issuer: '社團法人臺灣臨床藥學會 (TSHP)',
+    domains: ['hospital'],
+    target: '醫院血液腫瘤科、化療無菌調劑與癌症中心臨床藥師',
+    requirements: '符合專科年資與訓練條件，採書面審查搭配筆試／口試評核（或依認證要點對應美國 BCOP）。',
+    validitySummary: '6 年｜100 點專科學分／學術活動或重考',
+    validityDetail: '證書效期 6 年；期滿前須累積達 100 點（學分）以上癌症藥學領域繼續教育、擔任講師或論文發表積分，或重考辦理展延（每次展延 6 年）。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '常態於每年約 4–6 月受理線上報名，秋季進行書面審查與口試。',
+    links: [{ label: '臺灣臨床藥學會官網', url: 'https://www.tshp.org.tw/' }]
+  },
+  {
+    id: 'tshp-tipaa-id',
+    categoryId: 'cat1',
+    name: '感染症專科藥師',
+    subtitle: 'Infectious Diseases Pharmacy Specialist',
+    issuer: '臺灣臨床藥學會 (TSHP)／台灣藥學國際發展協會 (TIPAA)',
+    domains: ['hospital', 'critical_nuc'],
+    target: '醫院感染科、執行抗生素管理計畫 (ASP) 之臨床藥師',
+    requirements: 'TSHP：依學會感染症專科認證要點審查與甄審。\nTIPAA：會員醫院主管推薦，於接訓醫學中心完成 400 小時系統化實務培訓與考核。',
+    validitySummary: 'TSHP 6 年（100 點展延）｜TIPAA 完訓證書',
+    validityDetail: 'TSHP 專科認證效期 6 年，期滿須累積 100 點以上感染領域學術／繼續教育積分或重考展延；TIPAA 完訓考核後核發培訓結業證書（無定期換證）。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: 'TIPAA 每年約 3–4 月受理報名、6 月開課（2026 年已辦至第 4 屆）；TSHP 依官網年度簡章公告。',
+    links: [
+      { label: '臺灣臨床藥學會 (TSHP)', url: 'https://www.tshp.org.tw/' },
+      { label: '台灣藥學國際發展協會 (TIPAA)', url: 'https://tipaa.org/' }
+    ]
+  },
+  {
+    id: 'tshp-pharmacotherapy',
+    categoryId: 'cat1',
+    name: '藥物治療專科藥師',
+    subtitle: 'Pharmacotherapy Specialist (TSHP)',
+    issuer: '社團法人臺灣臨床藥學會 (TSHP)',
+    domains: ['hospital'],
+    target: '醫院一般內外科、跨科整合醫療臨床藥師',
+    requirements: '具備規定醫院臨床年資與通科藥事照護訓練證明，並通過學會甄審筆試。',
+    validitySummary: '6 年｜100 點繼續教育／學術活動或重考',
+    validityDetail: '證書效期 6 年；期滿須於 6 年內累積至少 100 點相關繼續教育（含衛福部專業課程積分、學會課程、講師或論文發表）或重新考試辦理展延。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '依臺灣臨床藥學會官網專科與認證專區公告年度簡章。',
+    links: [{ label: '臺灣臨床藥學會官網', url: 'https://www.tshp.org.tw/' }]
+  },
+  {
+    id: 'tshp-tcm-specialist',
+    categoryId: 'cat1',
+    name: '中藥專科藥師',
+    subtitle: 'Traditional Chinese Medicine Specialist (TSHP)',
+    issuer: '社團法人臺灣臨床藥學會 (TSHP)',
+    domains: ['hospital', 'tcm_edu'],
+    target: '醫院中藥局、中西醫整合照護臨床藥師',
+    requirements: '符合中藥臨床執業年資與訓練要點，經學會專科甄審審查／考試通過。',
+    validitySummary: '6 年｜100 點中藥專科學分或重考',
+    validityDetail: '證書效期 6 年；6 年內須累積達 100 點以上中藥專科繼續教育、擔任講師或論文發表積分，或重考辦理展延。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '依臺灣臨床藥學會年度簡章公告。',
+    links: [{ label: '臺灣臨床藥學會官網', url: 'https://www.tshp.org.tw/' }]
+  },
+  {
+    id: 'tipaa-cardiology',
+    categoryId: 'cat1',
+    name: '心臟內科專科臨床藥師 (CPSC)',
+    subtitle: 'Cardiology Pharmacy Specialist Training (TIPAA)',
+    issuer: '社團法人台灣藥學國際發展協會 (TIPAA)',
+    domains: ['hospital', 'critical_nuc'],
+    target: '醫院心臟內科、加護病房 (CCU) 臨床藥師',
+    requirements: '醫院主管推薦（具教學醫院 PGY 完訓及基礎臨床訓練者優先），於接訓醫院 6 個月內完成 400 小時心臟專科實務培訓並通過考核。',
+    validitySummary: '完訓證書｜無強制定期換證',
+    validityDetail: '完成 400 小時培訓並經考核合格後由 TIPAA 核發專科培訓證書，目前無強制換證年限（可銜接國內外專科認證或持續參與心臟臨床研討）。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '常態於每年 3–5 月受理報名與公告培訓名單（2026 年已辦至第 6 屆）。',
+    links: [{ label: 'TIPAA 官網', url: 'https://tipaa.org/' }]
+  },
+  {
+    id: 'tspen-ntt',
+    categoryId: 'cat1',
+    name: '營養醫療小組 (NTT)／靜脈暨腸道營養藥師',
+    subtitle: 'Nutrition Therapy Team Pharmacist (TSPEN / TSHP)',
+    issuer: '台灣靜脈暨腸道營養醫學會 (TSPEN)／TSHP',
+    domains: ['hospital', 'critical_nuc'],
+    target: '醫院 TPN 無菌調劑、重症與營養醫療團隊藥師',
+    requirements: '參與 TSPEN 營養治療課程累積繼續教育學分，並加入經審查合格之醫院營養醫療小組 (NTT) 執行實務照護（TSPEN 為 TSHP 認可相關專科學會）。',
+    validitySummary: '6 年｜專科／學會學分展延並配合 NTT 審查',
+    validityDetail: '營養醫療相關專科認證效期多採 6 年制（須持續參與 TSPEN 春／秋季學術研討會、繼續教育或發表論文累積積分），並配合所屬醫院營養醫療小組 (NTT) 定期審查維持資格。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '學會每年定期辦理靜脈暨腸道營養學術研討會與臨床營養培訓班。',
+    links: [{ label: '台灣靜脈暨腸道營養醫學會 (TSPEN)', url: 'https://www.tspen.org.tw/' }]
+  },
+  {
+    id: 'nhi-icu-care',
+    categoryId: 'cat1',
+    name: '提升醫院用藥安全與品質方案—重症加護 (ICU) 臨床藥事照護資格',
+    subtitle: 'NHI Clinical Pharmaceutical Care — Intensive Care Unit',
+    issuer: '衛福部健保署／中華民國藥師公會全聯會（跨學會聯合審查）',
+    domains: ['hospital', 'critical_nuc'],
+    target: '醫學中心、區域醫院加護病房 (ICU) 臨床藥師',
+    requirements: '① 基本條件：醫院執業年資滿 2 年，或臨床藥學士／臨床藥學碩士／醫院藥學組畢業。\n② 實務佐證：過去 1 年實際參與 ICU 團隊照護至少連續 6 個月，並檢附連續 6 個月、每月至少 10 筆（共 ≥60 筆）ICU 實際照護紀錄。\n③ 由醫院函送藥師全聯會聯合審查（全聯會、TSHP、台灣醫院協會）並報健保署核備。',
+    validitySummary: '健保核備資格｜無獨立效期，異動報備／跨場域重審',
+    validityDetail: '方案未另設獨立換證效期（須維持有效藥師執業執照 6 年 120 點）；更換執業院所須向藥師全聯會辦理變更報備，若跨足不同照護類別（如轉門診／一般病床）則須重新送審。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '常態由所屬醫院彙整函送全聯會審查；可搭配 TSHP／全聯會重症照護課程。',
+    links: [
+      { label: '健保署官網', url: 'https://www.nhi.gov.tw/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'nhi-ward-care',
+    categoryId: 'cat1',
+    name: '提升醫院用藥安全與品質方案—一般病床臨床藥事照護資格',
+    subtitle: 'NHI Clinical Pharmaceutical Care — General Ward',
+    issuer: '衛福部健保署／中華民國藥師公會全聯會（跨學會聯合審查）',
+    domains: ['hospital'],
+    target: '地區醫院急性一般病床、精神急性一般病床（含經濟病床）臨床藥師',
+    requirements: '① 基本條件：醫院執業年資滿 2 年，或臨床藥學士／臨床藥學碩士／醫院藥學組畢業。\n② 實務佐證：實際提供藥事照護，檢附過去 1 年至少 20 筆住院（含一般病床）或門診實際照護紀錄。\n③ 由醫院函送藥師全聯會聯合審查並函報健保署核備。',
+    validitySummary: '健保核備資格｜無獨立效期，異動報備／轉 ICU 重審',
+    validityDetail: '方案未另設獨立換證效期（須維持有效藥師執業執照 6 年 120 點）；更換執業院所須向全聯會辦理變更報備，轉任重症加護須重新審查。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '常態由所屬醫院函送審查。',
+    links: [
+      { label: '健保署官網', url: 'https://www.nhi.gov.tw/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'nhi-opd-care',
+    categoryId: 'cat1',
+    name: '提升醫院用藥安全與品質方案—門診臨床藥事照護資格',
+    subtitle: 'NHI Clinical Pharmaceutical Care — Outpatient Clinic',
+    issuer: '衛福部健保署／中華民國藥師公會全聯會（跨學會聯合審查）',
+    domains: ['hospital'],
+    target: '地區醫院門診藥師（照護 ≥2 種慢性病且 ≥5 項用藥並發現用藥問題者）',
+    requirements: '① 基本條件：醫院執業年資滿 2 年，或臨床藥學士／臨床藥學碩士／醫院藥學組畢業。\n② 實務佐證：檢附過去 1 年至少 20 筆門診或住院實際臨床照護紀錄。\n③ 由醫院函送藥師全聯會聯合審查並函報健保署核備。',
+    validitySummary: '健保核備資格｜無獨立效期，異動報備／轉 ICU 重審',
+    validityDetail: '方案未另設獨立換證效期（須維持有效藥師執業執照 6 年 120 點）；更換執業院所須向全聯會辦理變更報備，轉任重症加護須重新審查。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '常態由所屬醫院函送審查。',
+    links: [
+      { label: '健保署官網', url: 'https://www.nhi.gov.tw/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'nhi-anticoag-clinic',
+    categoryId: 'cat1',
+    name: '提升醫院用藥安全與品質方案—抗凝血藥品藥師門診資格',
+    subtitle: 'NHI Anticoagulation Pharmacist Clinic (P6304B / P6305B / P6306B)',
+    issuer: '衛福部健保署／藥師公會全聯會／臺灣臨床藥學會 (TSHP)',
+    domains: ['hospital'],
+    target: '醫院抗凝血藥師門診（Warfarin／DOACs 首次、追蹤與成效評估藥事照護）',
+    requirements: '完成全聯會或臨床藥學會認可之「抗凝血藥師資格培訓課程」（實體 16 小時＋線上 16 小時，共 32 小時）並通過測驗（通常需達 80 分以上），或具認可抗凝血專門領域認證；經醫院推薦送全聯會核備並登錄健保 VPN。',
+    validitySummary: '健保核備資格｜VPN 登錄＋維持有效執照',
+    validityDetail: '目前方案未單獨訂定固定年度複訓門檻（須維持有效藥師執業執照 6 年 120 點，並確實於健保 VPN 登錄 INR／TTR 指標與撰寫 SOAP 病歷；後續依全聯會與健保署公告滾動更新）。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '全聯會與 TSHP 常態開設實體＋線上 32 小時培訓班與作業指引工作坊。',
+    links: [
+      { label: '臺灣臨床藥學會 (TSHP)', url: 'https://www.tshp.org.tw/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'nhi-eras-program',
+    categoryId: 'cat1',
+    name: '全民健康保險「術後加速康復 (ERAS) 推廣計畫」藥師資格',
+    subtitle: 'Enhanced Recovery After Surgery (TWERAS / NHI)',
+    issuer: '衛福部健保署／台灣術後加速康復學會 (TWERAS)',
+    domains: ['hospital', 'critical_nuc'],
+    target: '參與醫院院級 ERAS 跨領域團隊之臨床藥師（執行術前藥物整合、抗凝血／降血糖等停藥指導、多模式止痛與術後用藥優化）',
+    requirements: '① 團隊納編：由申請健保 ERAS 推廣計畫之醫院成立院級專責團隊，納入藥師等跨職類照護成員。\n② 完訓認證：團隊所有成員（含藥師）須全程參與台灣術後加速康復學會 (TWERAS) 主辦之「ERAS 共識工作坊」或指定訓練課程並完成簽到退，取得「ERAS 能力認證及學分證明」。\n③ 健保備查：由學會造冊提供完訓名單供主責醫院報請健保署備查（成員異動或新加入須於規定期間如 3 個月內補送名單並完訓）。',
+    validitySummary: '年度計畫展延｜共識工作坊更新（異動 3 月內補訓）',
+    validityDetail: '配合健保 ERAS 推廣計畫年度展延規定，團隊成員須參與 TWERAS 共識工作坊或年度線上／實體補訓更新資格；人員異動或新加入須於 3 個月內補送名單並完訓備查。',
+    defaultValidityYears: 1,
+    isPermanentDefault: false,
+    schedule: 'TWERAS 常態於北中南東分區及線上辦理各術式（關節置換、大腸直腸、胸腔、心臟、婦科、脊椎等）共識工作坊與年度補訓。',
+    links: [
+      { label: '台灣術後加速康復學會 (TWERAS)', url: 'https://tweras.org/' },
+      { label: '健保署 ERAS 計畫專區', url: 'https://www.nhi.gov.tw/' }
+    ]
+  },
+  {
+    id: 'tshp-p4-ladder',
+    categoryId: 'cat1',
+    name: '醫院藥師專業能力進階制度 (P0–P4)',
+    subtitle: 'Hospital Pharmacist Clinical Ladder (P4 Expert Certificate)',
+    issuer: '社團法人臺灣臨床藥學會 (TSHP)',
+    domains: ['hospital'],
+    target: '醫療院所執業藥師（職級晉升與院內專業能力考核）',
+    requirements: 'P0–P3 由各院依年資（滿 2–3 年）、PGY 完訓、品管與教學審核；P4（專家階）須服務滿 4 年以上、完成進階品管教學研究並領導專案，由 TSHP 線上審查核發電子證書。',
+    validitySummary: '2 年複審｜線上送件展延（補件限 1 週）',
+    validityDetail: 'P4 資格須依證書載明期限（多採 2 年週期）於 TSHP 系統線上送件複審展延（檢附主管簽章總表、持續教育與臨床教學佐證；退件須於通知後 1 週內補件）。',
+    defaultValidityYears: 2,
+    isPermanentDefault: false,
+    schedule: 'TSHP 會員專區常態受理 P4 線上審查與展延申請。',
+    links: [{ label: '臺灣臨床藥學會官網', url: 'https://www.tshp.org.tw/' }]
+  },
+  {
+    id: 'bps-international',
+    categoryId: 'cat1',
+    name: '美國專科藥師認證 (BPS)',
+    subtitle: 'BCPS / BCOP / BCIDP / BCCCP / BCACP / BCGP / BCPP / BCPPS / BCNSP / BCCP / BCEMP / BCTXP / BCNP 等',
+    issuer: '美國藥學專科認證委員會 (Board of Pharmacy Specialties)',
+    domains: ['hospital', 'critical_nuc'],
+    target: '醫院臨床藥師、欲接軌國際或對應國內專科免試審查者',
+    requirements: '持有效台灣藥師執照，過去 7 年內累積至少 4 年該專科實務經驗（且 ≥50% 工時投入該領域），於台灣 Prometric 考場參加全英文電腦單選測驗。',
+    validitySummary: '7 年｜100 單位（≥80 CPE＋≤20 CPD）或重考＋20 單位',
+    validityDetail: '證書效期 7 年。2024 年起新週期採 CPD 新制：每年 12/31 前須繳年費、完成年度反思計畫 (ARP) 並累積 ≥2 單位；7 年總計須達 100 單位（≥80 BPS 核可測驗型 CPE＋至多 20 自報 CPD），或第 7 年重考＋20 單位換證。',
+    defaultValidityYears: 7,
+    isPermanentDefault: false,
+    schedule: '多數科別已採全年連續考試窗口（Continuous Testing），可自行預約考期。',
+    links: [{ label: 'BPS 官方網站', url: 'https://bpsweb.org/' }]
+  },
+
+  // ================= 四、慢性病衛教師與健保共照網資格 =================
+  {
+    id: 'tade-cde',
+    categoryId: 'cat2',
+    name: '糖尿病合格衛教師 (CDE) 暨縣市糖尿病共同照護網認證',
+    subtitle: 'Certified Diabetes Educator (TADE)',
+    issuer: '中華民國糖尿病衛教學會 (TADE)／各縣市衛生局',
+    domains: ['hospital', 'community'],
+    target: '醫院糖尿病照護中心、健保 P4P 院所、社區藥局',
+    requirements: '累積學會認可 50 學分（含學會主辦核心課程）→ 通過筆試並成為學會會員 → 完成至少 80 小時實習 → 通過口試即獲 CDE 證書。',
+    validitySummary: '6 年｜150 學分換證（含甲類學分）',
+    validityDetail: 'CDE 證書效期 6 年；取得認證後學分重新起算，6 年內須累積滿 150 學分（須含規定比例之學會甲類學分）辦理展延換證。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: 'CDE 筆試常態於每年 5 月與 11 月舉辦；核心課程全年循環開課。',
+    links: [{ label: '中華民國糖尿病衛教學會', url: 'https://www.tade.org.tw/' }]
+  },
+  {
+    id: 'tsn-ckd',
+    categoryId: 'cat2',
+    name: '慢性腎臟病整體照護 (CKD / Pre-ESRD) 藥師／衛教師',
+    subtitle: 'Chronic Kidney Disease Care Pharmacist (TSN)',
+    issuer: '台灣腎臟醫學會 (TSN)／中華民國藥師公會全聯會',
+    domains: ['hospital', 'community'],
+    target: '醫院腎臟照護團隊、參與健保 Pre-ESRD 計畫與社區藥局',
+    requirements: '領有藥師證書，完成台灣腎臟醫學會與全聯會合辦之「慢性腎臟病整體照護訓練班」或「慢性腎臟病藥事照護訓練班」並通過課後測驗取得合格證書。',
+    validitySummary: '6 年｜約 24 小時 CKD 繼續教育換證',
+    validityDetail: '藥師腎臟病照護認證多採 6 年週期，期滿前須累積規定之慢性腎臟病繼續教育時數（常見標準為 6 年至少 24 小時／積分，護理衛教師則為 6 年 100 小時）以維持 Pre-ESRD 團隊資格。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '學會與藥師公會每年分區不定期開設實體或視訊訓練班。',
+    links: [{ label: '台灣腎臟醫學會 (TSN)', url: 'https://www.tsn.org.tw/' }]
+  },
+  {
+    id: 'hpa-smoking-cessation',
+    categoryId: 'cat2',
+    name: '藥事人員戒菸衛教師／戒菸服務人員資格',
+    subtitle: 'Certified Smoking Cessation Educator (HPA)',
+    issuer: '衛福部國民健康署 (HPA)／藥師公會全聯會',
+    domains: ['community', 'hospital'],
+    target: '健保特約社區藥局（申報戒菸服務補助）、醫院戒菸門診',
+    requirements: '① 核心課程：線上約 14 小時＋實體約 3 小時＋測驗。\n② 專門課程：取得核心完訓後 3 年內完成專門線上＋實體課程。\n③ 實務訓練：完成戒菸班／門診或藥局實習與個案追蹤報告合格。',
+    validitySummary: '6 年｜新制 ≥4 小時戒菸繼續教育（舊制 12 點）',
+    validityDetail: '戒菸衛教服務資格證明書效期 6 年；依國健署最新簡化換證規範，醫師以外醫事人員（含藥師）於 6 年內完成至少 4 小時指定戒菸繼續教育即可辦理展延（舊制曾要求 12 點；逾期失效須重訓）。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '線上課程全年開放自學；實體工作坊依國健署系統分區公告。',
+    links: [{ label: '國健署戒菸服務訓練系統', url: 'https://quitsmoking.hpa.gov.tw/' }]
+  },
+  {
+    id: 'asthma-educator',
+    categoryId: 'cat2',
+    name: '氣喘衛教師',
+    subtitle: 'Certified Asthma Educator',
+    issuer: '台灣氣喘暨過敏疾病衛教學會',
+    domains: ['hospital', 'community'],
+    target: '醫院胸腔／過敏免疫科、社區藥局吸入劑操作指導',
+    requirements: '參加學會認可之氣喘衛教課程累積達 60 學分以上（含必修學分）→ 通過筆試（成績保留 2 年）→ 通過口試取得證書。',
+    validitySummary: '6 年｜120 學分換證（含必修與實務）',
+    validityDetail: '證書效期 6 年，6 年內須修滿 120 學分以上（含規定必修與實務操作課程）申請換證。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '學會定期於北中南辦理衛教課程與年度筆口試甄審。',
+    links: [{ label: '台灣氣喘暨過敏疾病衛教學會', url: 'https://www.asthma-edu.org.tw/' }]
+  },
+  {
+    id: 'tspccm-copd',
+    categoryId: 'cat2',
+    name: '慢性阻塞性肺病 (COPD) 醫療給付改善方案照護資格',
+    subtitle: 'NHI COPD Pay-for-Performance Care Qualification',
+    issuer: '台灣胸腔暨重症加護醫學會 (TSPCCM)／健保署',
+    domains: ['hospital', 'community'],
+    target: '參與健保 COPD 醫療給付改善方案之醫院與社區藥局藥師',
+    requirements: '報名參加學會主辦之「慢性阻塞性肺病醫療給付改善方案資格認證教育訓練課程」（至少 6 小時）並通過課後測驗。',
+    validitySummary: '每 3 年｜至少 6 小時 COPD 繼續教育',
+    validityDetail: '依健保 COPD 醫療給付改善方案規定，取得資格後每 3 年須再取得至少 6 小時 COPD 相關繼續教育課程時數，方可維持執行資格。',
+    defaultValidityYears: 3,
+    isPermanentDefault: false,
+    schedule: '學會定期於官網公告北中南認證課程場次。',
+    links: [{ label: '台灣胸腔暨重症加護醫學會', url: 'https://www.tspccm.org.tw/' }]
+  },
+  {
+    id: 'toa-osteoporosis',
+    categoryId: 'cat2',
+    name: '骨質疏鬆症衛教師',
+    subtitle: 'Certified Osteoporosis Educator (TOA)',
+    issuer: '中華民國骨質疏鬆症學會 (TOA)',
+    domains: ['hospital', 'community'],
+    target: '骨鬆友善機構、骨折聯合照護服務 (FLS) 團隊與社區藥局',
+    requirements: '參加學會定期辦理之「骨質疏鬆症衛教師認證課程及考試」（涵蓋骨骼科學、DXA 判讀、骨鬆用藥與非藥物衛教）並通過測驗。',
+    validitySummary: '4 年｜學會繼續教育學分展延',
+    validityDetail: '骨鬆衛教師證書通常採 4 年效期制，須持續參與 TOA 或認可學會研討會／學分班累積規定積分，於期滿前檢附證明辦理換發（並維持有效會員身分以利骨鬆友善機構評核）。',
+    defaultValidityYears: 4,
+    isPermanentDefault: false,
+    schedule: '學會配合年會或分區定期開辦衛教師認證班。',
+    links: [{ label: '中華民國骨質疏鬆症學會', url: 'https://www.toa1997.org.tw/' }]
+  },
+  {
+    id: 'dementia-friendly',
+    categoryId: 'cat2',
+    name: '失智友善藥師／失智症專業照護人員培訓',
+    subtitle: 'Dementia-Friendly Pharmacist & Care Training',
+    issuer: '衛福部／各縣市衛生局／藥師公會全聯會',
+    domains: ['community', 'ltc'],
+    target: '社區「失智友善守護站」藥局、長照與高齡照護藥師',
+    requirements: '完成「失智守護天使」線上／實體課程（e 等公務園等平臺）或縣市衛生局失智照護專業培訓，並簽署認同書向衛生局／藥師公會登錄。',
+    validitySummary: '無單獨效期｜配合守護站年度訪查／長照積分',
+    validityDetail: '「失智守護天使」結業無獨立換證年限；惟社區藥局加入失智友善守護站須配合各縣市衛生局年度訪查，執行長照失智照護者則納入長照小卡 6 年 120 點繼續教育管理。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '線上課程全年開放；各縣市衛生局與公會定期開班。',
+    links: [{ label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }]
+  },
+
+  // ================= 五、長期照顧、社區藥事照護與公共衛生 =================
+  {
+    id: 'mohw-ltc-l123',
+    categoryId: 'cat3',
+    name: '長照專業人員培訓認證 (Level 1／Level 2／Level 3) 暨長照小卡',
+    subtitle: 'Long-Term Care Professional Certification (L1–L3)',
+    issuer: '衛生福利部／藥師公會全聯會／各縣市藥師公會',
+    domains: ['ltc', 'community'],
+    target: '承接長照 C 碼專業服務、居家失能個案家庭醫師照護與機構藥事服務藥師',
+    requirements: '• Level 1：於衛福部長照數位學習平臺完成 18 小時共同課程＋測驗，可申領長照人員證明（長照小卡）。\n• Level 2：須先具 L1，完訓藥師公會約 32–38 小時藥師專業實務課程。\n• Level 3：完成跨專業整合課程（執行完整長照專業服務須完訓 L1–L3）。',
+    validitySummary: '6 年｜120 點（含消防等 ≥10＋原民 6＋多元 6）',
+    validityDetail: '依《長期照顧服務人員訓練認證繼續教育及登錄辦法》，長照小卡效期 6 年，須滿 120 點：① 品質／倫理／法規合計 24–36 點（其中消防安全、緊急應變、感染管制、性別敏感度合計 ≥10 點）；② 原住民族文化安全 ≥6 點、多元族群文化敏感度 ≥6 點（原則每年各 1 點）。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: 'Level 1 全年線上開課；Level 2／3 由全聯會及各縣市公會分區開辦。',
+    links: [
+      { label: '長照數位學習平臺 (Level 1)', url: 'https://www.ltc-learning.org/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'tpa-home-care',
+    categoryId: 'cat3',
+    name: '居家藥事照護藥師／藥事照護服務藥師認證',
+    subtitle: 'Home Pharmaceutical Care Pharmacist Certificate',
+    issuer: '中華民國藥師公會全聯會／各縣市藥師公會／健保署',
+    domains: ['ltc', 'community'],
+    target: '健保「居家醫療照護整合計畫」、高齡多重用藥居家訪視藥師',
+    requirements: '具健保特約藥局或醫院執業資格，完成全聯會 TPIP 線上基礎課程＋實體演練／個案研討評核（部分計畫須另具備長照 Level 2 資格）。',
+    validitySummary: '4 年｜具照護實績或月例會／個案討論達標展延',
+    validityDetail: '藥師全聯會「居家藥事照護藥師」資格證書效期為 4 年（與長照小卡 6 年雙軌並行）；期滿須檢具 4 年內持續居家／長照機構照護個案實績或參與月例會／個案討論會達規定次數，向全聯會申請展延。',
+    defaultValidityYears: 4,
+    isPermanentDefault: false,
+    schedule: '全聯會 TPIP 平台與各縣市藥師公會常態開班。',
+    links: [{ label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }]
+  },
+  {
+    id: 'nhi-opat',
+    categoryId: 'cat3',
+    name: '全民健康保險「在宅急症照護試辦計畫」藥師資格 (OPAT)',
+    subtitle: 'NHI Hospital-at-Home / OPAT Pharmacist Qualification',
+    issuer: '衛福部中央健康保險署／中華民國藥師公會全聯會',
+    domains: ['ltc', 'hospital', 'community'],
+    target: '參與在宅急症共同照護小組，執行居家抗生素／輸液評估與訪視之藥師',
+    requirements: '① 專任限制：須為主責健保特約機構之「專任執業藥師」（不得為報備支援人員）。\n② 上工門檻：首次參與須先完訓健保署認可之「在宅急症照護」4 小時實體共同教育訓練。\n③ 1 年內補證：參與計畫起 1 年內須取得全聯會「居家藥事照護資格證書」，檢送健保署分區業務組備查。',
+    validitySummary: '每年 ≥4 小時｜並須維持全聯會居家證書（4 年）',
+    validityDetail: '參與計畫起 1 年內須補齊藥師全聯會「居家藥事照護資格證書」（效期 4 年），且訪視人員每年均須完成至少 4 小時相關繼續教育以維持參與資格。',
+    defaultValidityYears: 1,
+    isPermanentDefault: false,
+    schedule: '健保署委辦單位及各地方藥師公會定期開設「在宅急症照護暨居家藥事照護」專班。',
+    links: [
+      { label: '健保署官網', url: 'https://www.nhi.gov.tw/' },
+      { label: '藥師公會全聯會', url: 'https://www.taiwan-pharma.org.tw/' }
+    ]
+  },
+  {
+    id: 'hospice-palliative',
+    categoryId: 'cat3',
+    name: '安寧緩和醫療團隊基礎訓練／居家安寧藥師培訓',
+    subtitle: 'Hospice & Palliative Care Team Foundation Training',
+    issuer: '台灣安寧緩和醫學學會／台灣安寧照顧基金會',
+    domains: ['hospital', 'ltc', 'community'],
+    target: '醫院安寧共照團隊、社區居家安寧（嗎啡類止痛藥管理與衛教）',
+    requirements: '參加跨專業安寧緩和團隊基礎課程（涵蓋疼痛控制、末期症狀處理、居家安寧療護與靈性關懷），或修習衛福部線上安寧疼痛照護課程。（註：健保安寧居家法定核心團隊為醫／護／社工，藥師多透過居家醫療照護整合計畫跨專業共同參與）。',
+    validitySummary: '完訓證書｜健保乙類團隊每年 4 小時（甲類 20 小時）',
+    validityDetail: '個人基礎完訓核發時數證書；若納入健保安寧居家團隊，支付標準規範乙類（社區安寧）成員每年須 ≥4 小時（可線上）、甲類成員每年須 ≥20 小時安寧繼續教育。',
+    defaultValidityYears: 1,
+    isPermanentDefault: false,
+    schedule: '學會與安寧照顧基金會定期公告年度訓練梯次。',
+    links: [{ label: '台灣安寧緩和醫學學會', url: 'https://www.hospicemed.org.tw/' }]
+  },
+  {
+    id: 'tsas-methadone',
+    categoryId: 'cat3',
+    name: '美沙冬替代治療與藥癮戒治專業人員培訓',
+    subtitle: 'Methadone Maintenance & Addiction Treatment Training',
+    issuer: '衛生福利部／社團法人台灣成癮學會 (TSAS)',
+    domains: ['hospital'],
+    target: '指定藥癮戒治醫療院所、美沙冬三級管制藥品調劑與給藥管理藥師',
+    requirements: '於指定替代治療醫療機構執業之藥師，須完成衛福部或台灣成癮學會認可之成癮替代治療教育訓練。',
+    validitySummary: '每年 ≥8 小時｜法定替代治療繼續教育',
+    validityDetail: '依衛福部《鴉片類物質成癮替代治療作業基準》明文規定，執行替代治療團隊成員（含醫師、藥師、護理人員等），「每年」均須接受替代治療繼續教育講習至少 8 小時。',
+    defaultValidityYears: 1,
+    isPermanentDefault: false,
+    schedule: '學會與指定醫療院所不定期開辦年度研討與培訓課程。',
+    links: [{ label: '台灣成癮學會 (TSAS)', url: 'http://www.tsas.org.tw/' }]
+  },
+  {
+    id: 'tfda-tdrf-lecturer',
+    categoryId: 'cat3',
+    name: '正確用藥教育講師／反毒宣導講師／藥害防制宣講',
+    subtitle: 'Medication Safety & Anti-Drug Education Lecturer',
+    issuer: '衛福部食藥署 (TFDA)／藥害救濟基金會 (TDRF)／藥師公會',
+    domains: ['community', 'hospital'],
+    target: '進入校園、社區關懷據點執行用藥安全、防制藥物濫用與藥害防制宣講之藥師',
+    requirements: '參加正確用藥教育資源中心、藥害救濟基金會或各縣市公會辦理之師資培訓營，並通過試講或評核納入講師名冊。',
+    validitySummary: '年度名冊更新｜配合宣導計畫回訓續聘',
+    validityDetail: '無固定法定證照年限，係配合衛福部、食藥署及地方衛生局／公會年度公衛宣導計畫辦理師資回訓與講師名冊更新。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '各縣市藥師公會與藥害救濟基金會配合年度計畫辦理培訓。',
+    links: [
+      { label: '藥害救濟基金會 (TDRF)', url: 'https://www.tdrf.org.tw/' },
+      { label: '食藥署 (TFDA)', url: 'https://www.fda.gov.tw/' }
+    ]
+  },
+
+  // ================= 六、急救、救護、輻射防護與醫療品質 =================
+  {
+    id: 'acls',
+    categoryId: 'cat5',
+    name: 'ACLS（高級心臟救命術）',
+    subtitle: 'Advanced Cardiac Life Support (TSEM / SECCM / AHA)',
+    issuer: '台灣急診醫學會 (TSEM)／台灣急救加護醫學會 (SECCM)／美國心臟協會 (AHA)',
+    domains: ['critical_nuc', 'hospital'],
+    target: '醫院 ICU、急診、參與院內 CPR Team 之臨床藥師（掌握急救用藥）',
+    requirements: '建議先具 BLS 資格，完成約 2 天實體課程並通過筆試與 Megacode 術科情境測驗（部分 AHA 訓練中心可取得雙證照）。',
+    validitySummary: '2–3 年（AHA 2 年／國內多 3 年）',
+    validityDetail: 'AHA 證書效期 2 年，國內學會多為 3 年；到期前須參加再認證（Renewal）或重新完訓換證。',
+    defaultValidityYears: 3,
+    isPermanentDefault: false,
+    schedule: '全台各大教學醫院與學會全年常態開班。',
+    links: [
+      { label: '台灣急診醫學會 (TSEM)', url: 'https://www.sem.org.tw/' },
+      { label: '台灣急救加護醫學會 (SECCM)', url: 'http://www.seccm.org.tw/' }
+    ]
+  },
+  {
+    id: 'bls',
+    categoryId: 'cat5',
+    name: 'BLS（基本救命術）',
+    subtitle: 'Basic Life Support',
+    issuer: '各大教學醫院／急救教育推廣機構／急診醫學會',
+    domains: ['critical_nuc', 'hospital', 'community'],
+    target: '全體醫事人員（多數醫院強制定期受訓，亦為報考 ACLS 前置條件）',
+    requirements: '完成約 4–8 小時心肺復甦術 (CPR)、AED 操作與異物梗塞處理訓練，通過學科筆試與術科實作測驗。',
+    validitySummary: '2 年｜到期複訓',
+    validityDetail: '多數醫院與認證機構核發效期為 2 年，到期須重新完訓。',
+    defaultValidityYears: 2,
+    isPermanentDefault: false,
+    schedule: '各醫院與急救教育協會全年密集開班。',
+    links: [{ label: '台灣急診醫學會 (TSEM)', url: 'https://www.sem.org.tw/' }]
+  },
+  {
+    id: 'pals',
+    categoryId: 'cat5',
+    name: 'PALS（小兒高級救命術）',
+    subtitle: 'Pediatric Advanced Life Support',
+    issuer: '台灣兒童急診醫學會／AHA 認證訓練中心／醫學中心',
+    domains: ['critical_nuc', 'hospital'],
+    target: '兒童醫院、小兒加護病房 (PICU) 及新生兒照護臨床藥師',
+    requirements: '完成兒童急重症處置與兒科急救藥物計算訓練課程，通過筆試與術科情境演練考核。',
+    validitySummary: '2–3 年｜到期複訓',
+    validityDetail: 'AHA 體系效期為 2 年，國內學會體系多為 2–3 年，到期須再認證。',
+    defaultValidityYears: 2,
+    isPermanentDefault: false,
+    schedule: '各大醫學中心與兒童急診醫學會不定期開班。',
+    links: [{ label: '台灣急診醫學會參考資訊', url: 'https://www.sem.org.tw/' }]
+  },
+  {
+    id: 'emt-1',
+    categoryId: 'cat5',
+    name: 'EMT-1（初級救護技術員）',
+    subtitle: 'Emergency Medical Technician — Basic',
+    issuer: '衛福部認可急救訓練機構／各縣市消防局',
+    domains: ['critical_nuc'],
+    target: '對到院前緊急醫療救護、災難醫療隊 (DMAT) 或偏鄉醫療志工有興趣之藥師',
+    requirements: '完成至少 40 小時初級救護訓練課程（含基礎救護、創傷處置與氧氣治療），通過學科筆試與術科測驗。',
+    validitySummary: '3 年｜24 小時複訓展延',
+    validityDetail: '證書效期 3 年，3 年內須完成至少 24 小時繼續教育複訓（其中包含法規規定必修科目）方可展延。',
+    defaultValidityYears: 3,
+    isPermanentDefault: false,
+    schedule: '紅十字會、中華緊急救護技術員協會等認可機構全年開班。',
+    links: [{ label: '衛福部官網查詢認可機構', url: 'https://www.mohw.gov.tw/' }]
+  },
+  {
+    id: 'mohw-basic-trauma-instructor',
+    categoryId: 'cat5',
+    name: '醫事人員基礎外傷照護種子教師',
+    subtitle: 'All-Hazards Basic Trauma Care Seed Instructor (衛福部／台灣急診醫學會)',
+    issuer: '衛生福利部指導／社團法人台灣急診醫學會 (TSEM)／協辦醫學會與急救責任醫院',
+    domains: ['critical_nuc', 'hospital', 'tcm_edu'],
+    target: '配合國家醫療韌性與全災害應變計畫，投入院內 PGY 及跨職類基礎外傷與大量傷病患應變教學之藥師',
+    requirements: '參與衛福部「全災害應變管理及醫事人員基礎外傷照護種子教師訓練課程」（如 A 組：醫事人員基礎外傷照護），全程完訓並通過考核取得種子教師研習／認證資格，將基礎外傷與災害應變概念導入院內教學與藥事團隊。',
+    validitySummary: '完訓證書｜無固定到期日，配合韌性計畫回訓',
+    validityDetail: '屬衛福部專案培訓完訓證明，無單獨固定年檢效期；依國家醫療整備與韌性年度計畫辦理進階回訓與師資更新。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '依衛福部年度專案計畫滾動辦理，簡章常由台灣急診醫學會、臺灣臨床藥學會 (TSHP) 及急救責任醫院轉知報名。',
+    links: [
+      { label: '台灣急診醫學會 (TSEM)', url: 'https://www.sem.org.tw/' },
+      { label: '臺灣臨床藥學會 (TSHP)', url: 'https://www.tshp.org.tw/' }
+    ]
+  },
+  {
+    id: 'mohw-major-disaster-instructor',
+    categoryId: 'cat5',
+    name: '重大災難照護訓練種子教師',
+    subtitle: 'Major Disaster Care Training Seed Instructor (衛福部／中華民國重症醫學會)',
+    issuer: '衛生福利部委託／中華民國重症醫學會 (TSCCM)／台灣急診醫學會與協辦醫學中心',
+    domains: ['critical_nuc', 'hospital', 'tcm_edu'],
+    target: '具備臨床實務資歷，參與國家級災難醫療整備、DMAT 藥事支援與院內災難照護教學之藥師',
+    requirements: '① 報名條件：各職類醫事人員通常須具 2 年以上實務資歷，並持有有效期限內之急救／救護證照（如 ACLS、BLS、PALS、ATLS、ANLS 等擇一，依年度簡章規定）。\n② 訓練與認證：全程參與衛福部「醫療團隊重大災難照護訓練計畫」種子教師課程（含災難醫學理論、檢傷分類、SOP 實作與分組情境模擬演練），完成簽到退與考核核發數位完訓證書／種子教官證明，並提報衛福部造冊納入國家級災難照護人才資料庫。',
+    validitySummary: '衛福部造冊認證｜須維持有效急救證照',
+    validityDetail: '完訓核發數位種子教官證明並提報衛福部造冊（無獨立換證年限，惟平時須維持 ACLS／BLS 等急救證照有效，並配合專案計畫滾動更新）。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '多由衛福部專案補助（免費、限額報名），中華民國重症醫學會及各大醫學中心全年分區滾動開辦。',
+    links: [
+      { label: '中華民國重症醫學會 (TSCCM)', url: 'http://www.tsccm.org.tw/' },
+      { label: '台灣急診醫學會 (TSEM)', url: 'https://www.sem.org.tw/' }
+    ]
+  },
+  {
+    id: 'nuclear-radiation-safety',
+    categoryId: 'cat5',
+    name: '核醫藥師實務資格與輻射安全證書／輻射防護員（師）',
+    subtitle: 'Radiation Safety Certificate & Radiation Protection Specialist (NUSC)',
+    issuer: '核能安全委員會 (NUSC，原原能會)／中華民國核醫學學會',
+    domains: ['critical_nuc', 'hospital'],
+    target: '大型醫院核子醫學部、正子中心專責核醫藥師（放射性藥品無菌調製、活度量測與品管）',
+    requirements: '※ 制度釐清：台灣目前「無」衛福部法定核醫藥師專科證書（核醫學學會專科甄審對象為核醫醫師；美國 BCNP 非台灣法定執業資格）。\n① 必要門檻：依《游離輻射防護法》修習 18–36 小時訓練並測驗合格，取得核安會「操作人員輻射安全證書」。\n② 進階管理資格：報考核安會「輻射防護員／輻射防護師」測驗並完成實務訓練取得認可證書。',
+    validitySummary: '6 年｜輻安 36hr／輻防員 72 點／師 96 點（在職年 3hr）',
+    validityDetail: '① 輻射安全證書：效期 6 年，須滿 36 小時訓練（期滿前 3–6 個月換發）。\n② 輻射防護員／師：效期 6 年，分別須滿 72 點／96 點積分（期滿前 3 個月內換發；擔任講師每小時 2 點）。\n③ 法定在職訓練：依《游離輻射防護法》第 14 條，在職輻射工作人員每年另須接受 ≥3 小時定期輻防訓練（可折抵換證積分）。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '中華民國輻射防護協會、清大／陽明交大等全年開課；核醫放射製藥進修可查核醫學學會。',
+    links: [
+      { label: '核能安全委員會 (NUSC)', url: 'https://www.nusc.gov.tw/' },
+      { label: '中華民國核醫學學會', url: 'https://www.snm.org.tw/' }
+    ]
+  },
+  {
+    id: 'ahqroc-qm',
+    categoryId: 'cat5',
+    name: '醫療品質管理師（醫品師）',
+    subtitle: 'Healthcare Quality Manager (AHQROC)',
+    issuer: '社團法人臺灣醫療品質協會 (AHQROC)',
+    domains: ['critical_nuc', 'hospital'],
+    target: '醫院藥劑部管理職、品管中心藥師（執行評鑑、JCI、QCC、RCA、FMEA）',
+    requirements: '加入協會會員達規定年限，修習醫療品質與病人安全管理課程累積學分，並通過甄審考試或資格審查。',
+    validitySummary: '3 年｜60 點積分（期滿前 1 月申請）',
+    validityDetail: '證書效期 3 年，須於 3 年內累積繼續教育積分達 60 點以上（每年至多採計 25 點、不得為 0 點、協會主辦須佔 ≥60%），於期滿 1 個月前申請展延。',
+    defaultValidityYears: 3,
+    isPermanentDefault: false,
+    schedule: '協會每年定期舉辦醫品師培訓課程與年度甄審。',
+    links: [{ label: '臺灣醫療品質協會 (AHQROC)', url: 'https://www.ahqroc.org.tw/' }]
+  },
+  {
+    id: 'tebma-ebm-teacher',
+    categoryId: 'cat5',
+    name: '實證醫學 (EBM) 種子師資／實證健康照護教師',
+    subtitle: 'Evidence-Based Healthcare Teacher (TEBMA)',
+    issuer: '社團法人台灣實證醫學學會 (TEBMA)',
+    domains: ['critical_nuc', 'hospital', 'tcm_edu'],
+    target: '醫院藥訊、臨床用藥建議、PGY 教學與實證競賽指導藥師',
+    requirements: '完成學會主辦之實證健康照護核心課程與種子師資培訓工作坊，並通過文獻評讀與試教考核取得教師認證。',
+    validitySummary: '6 年｜60 分＋12 小時教學',
+    validityDetail: '證書效期 6 年；有效期間須持續為學會活動會員，6 年內須累積繼續教育 60 分（含學會甲類學分 30 分）及 12 小時實證教學時數辦理更新。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '學會每年於北中南舉辦初進階工作坊、師資營與年會。',
+    links: [{ label: '台灣實證醫學學會 (TEBMA)', url: 'https://www.tebma.org.tw/' }]
+  },
+
+  // ================= 七、臨床試驗、藥廠法規、供應鏈與生醫品質 =================
+  {
+    id: 'gcp-crc-cra',
+    categoryId: 'cat7',
+    name: 'GCP（藥品優良臨床試驗準則）受訓證明暨 CRC／CRA 培訓',
+    subtitle: 'Good Clinical Practice / Clinical Research Training (TCRA)',
+    issuer: '台灣藥物臨床研究協會 (TCRA)／各醫院 IRB 與臨床試驗中心',
+    domains: ['industry', 'hospital'],
+    target: '醫院臨床試驗藥局藥師、藥廠與 CRO 之 CRA（監測員）、醫院 CRC（協調師）',
+    requirements: '修習 GCP 法規與人體試驗倫理課程並通過測驗取得時數證明（多數醫院 IRB 要求團隊成員近 3 年須具 6–9 小時；試驗主持人 PI 依法近 6 年須滿 30 小時）；進階可參加 TCRA 專業認證課程。',
+    validitySummary: '1–3 年滾動｜團隊近 3 年 6–9hr（PI 近 6 年 30hr）',
+    validityDetail: '各醫院 IRB 針對試驗團隊／臨床試驗藥師多採近 1–3 年內 6–9 小時滾動檢核；依《人體試驗管理辦法》，擔任試驗主持人 (PI) 者近 6 年須滿 30 小時人體試驗訓練。',
+    defaultValidityYears: 3,
+    isPermanentDefault: false,
+    schedule: '各大教學醫院臨床試驗中心與 TCRA 全年密集開設實體與線上課程。',
+    links: [{ label: '台灣藥物臨床研究協會 (TCRA)', url: 'https://www.tcra-org.tw/' }]
+  },
+  {
+    id: 'tfda-med-device-tech',
+    categoryId: 'cat7',
+    name: '醫療器材技術人員（製造／輸入販賣／維修）',
+    subtitle: 'Medical Device Technical Personnel (TFDA)',
+    issuer: '衛福部食品藥物管理署 (TFDA)',
+    domains: ['industry'],
+    target: '依《醫療器材管理法》，醫材製造廠、輸入商及維修業者必聘之法規／品管技術人員',
+    requirements: '藥學系畢業（符合專科以上學歷）＋從事相關醫材製造或查驗登記文件送件實務滿 1 年以上＋最近 5 年內接受至少 20 小時醫材法規／QMS 訓練並至系統登錄。',
+    validitySummary: '每年 ≥8 小時｜法定在職教育訓練並登錄',
+    validityDetail: '依《醫療器材技術人員管理辦法》，任職技術人員期間「每年」須完成至少 8 小時食藥署認可之醫療器材繼續教育訓練並至系統登錄。',
+    defaultValidityYears: 1,
+    isPermanentDefault: false,
+    schedule: '食藥署認可訓練機構（藥技中心 PITDC 等）全年常態開班。',
+    links: [
+      { label: '食藥署醫療器材專區', url: 'https://www.fda.gov.tw/' },
+      { label: '藥技中心 (PITDC)', url: 'https://www.pitdc.org.tw/' }
+    ]
+  },
+  {
+    id: 'pics-gmp-gdp',
+    categoryId: 'cat7',
+    name: 'PIC/S GMP 與 GDP 管理人員訓練',
+    subtitle: 'PIC/S GMP & Good Distribution Practice Training',
+    issuer: '醫藥工業技術發展中心 (PITDC)／中華無菌製劑協會 (TPDA)／食藥署',
+    domains: ['industry'],
+    target: '藥廠監製藥師、QA／QC、藥品批發商與冷鏈物流 GDP 品質負責人',
+    requirements: '參加 PIC/S GMP（無菌製劑、確效、品質風險管理、數據完整性）或 GDP（藥品優良運銷規範）實務訓練班並取得完訓證書。',
+    validitySummary: '每年年度回訓｜留存訓練紀錄因應 TFDA 稽查',
+    validityDetail: '依 PIC/S GMP 與《西藥優良運銷準則 (GDP)》查核規範，藥廠與西藥批發商須定期（通常每年）安排監製藥師及品質負責人接受持續在職訓練並留存評估紀錄備查。',
+    defaultValidityYears: 1,
+    isPermanentDefault: false,
+    schedule: 'PITDC 與中華無菌製劑協會 (TPDA) 全年開設實體與線上專班。',
+    links: [
+      { label: '醫藥工業技術發展中心 (PITDC)', url: 'https://www.pitdc.org.tw/' },
+      { label: '中華無菌製劑協會 (TPDA)', url: 'https://www.pdatc.org.tw/' }
+    ]
+  },
+  {
+    id: 'tpmma-mr',
+    categoryId: 'cat7',
+    name: 'MR（醫藥行銷師）認證',
+    subtitle: 'Medical Representative Certification (TPMMA)',
+    issuer: '台灣藥品行銷暨管理協會 (TPMMA)',
+    domains: ['industry'],
+    target: '藥廠業務代表、產品經理 (PM)、醫藥學術推廣與行銷人員',
+    requirements: '參加協會培訓並通過認證筆試（考科涵蓋生理學、藥理學、醫藥行銷學與藥事法規）。',
+    validitySummary: '6 年｜120 小時繼續教育換證',
+    validityDetail: 'MR 證書與 ID 卡效期為 6 年，期滿前須累積修滿 120 小時繼續教育學分（含公司內訓或相關醫藥團體認可課程）並向協會辦理換證。',
+    defaultValidityYears: 6,
+    isPermanentDefault: false,
+    schedule: '協會每年定期舉辦培訓課程與全國認證考試。',
+    links: [{ label: '台灣藥品行銷暨管理協會 (TPMMA)', url: 'http://www.tpmma.org.tw/' }]
+  },
+  {
+    id: 'raps-rac',
+    categoryId: 'cat7',
+    name: 'RAC（美國醫療法規國際認證）',
+    subtitle: 'Regulatory Affairs Certification — Drugs / Devices (RAPS)',
+    issuer: '美國醫療法規學會 (RAPS)／台灣 RAPS 分會',
+    domains: ['industry'],
+    target: '外商與大型生技藥廠 RA（法規事務主管）、新藥／醫材查驗登記專家',
+    requirements: '具備相關學位與法規實務年資，通過全英文國際認證考試（分 RAC-Drugs 藥物與 RAC-Devices 醫材，涵蓋 FDA 及全球全生命週期法規）。',
+    validitySummary: '3 年｜36 RAC 學分換證',
+    validityDetail: '證書效期 3 年，期滿前須累積 36 個 RAPS 認可繼續教育學分辦理換證。',
+    defaultValidityYears: 3,
+    isPermanentDefault: false,
+    schedule: '每年分多梯次考試窗口；台灣分會定期舉辦法規研討會與備考讀書會。',
+    links: [
+      { label: 'RAPS 官方網站', url: 'https://www.raps.org/' },
+      { label: 'RAPS 台灣分會', url: 'https://www.raps-in-taiwan.org.tw/' }
+    ]
+  },
+  {
+    id: 'iso-13485-9001',
+    categoryId: 'cat7',
+    name: 'ISO 13485（醫材 QMS）／ISO 9001 稽核員',
+    subtitle: 'Medical Device QMS Internal / Lead Auditor',
+    issuer: '國際驗證機構 (BSI、SGS、TÜV 等)／藥技中心 (PITDC)',
+    domains: ['industry'],
+    target: '醫材廠與含藥醫材公司 QA 主管、品質管理系統建置與供應商稽核人員',
+    requirements: '參加 2 天（內部稽核員）或 5 天（CQI/IRCA 認證主導稽核員）密集課程並通過筆試考核。',
+    validitySummary: '完訓永久有效｜CQI/IRCA 登錄每 3 年維持',
+    validityDetail: '訓練結業證書本身無失效期限；若向 CQI/IRCA 申請國際註冊主導稽核員登錄，則須依規定每 3 年維持年度會員費、稽核天數與持續進修 (CPD) 紀錄。',
+    defaultValidityYears: null,
+    isPermanentDefault: false,
+    schedule: '各大驗證機構與藥技中心 (PITDC) 每季定期開班。',
+    links: [{ label: '藥技中心教育訓練 (PITDC)', url: 'https://www.pitdc.org.tw/' }]
+  }
+];
+
+
+/**
+ * 台灣藥師進階認證暨證照維護系統 — 主程式邏輯
+ * 純前端靜態實作（localStorage 持久化、效期計算、多格式匯出、ICS 行事曆）
+ */
+
+(function () {
+  'use strict';
+
+  // Capture pristine initial HTML before any dynamic DOM rendering (used to export updated index.html for GitHub Pages)
+  const PRISTINE_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+  const PUBLISHED_LINKS = (() => {
+    try {
+      const el = document.getElementById('publishedLinksConfig');
+      const parsed = el ? JSON.parse(el.textContent || '{}') : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  })();
+
+  const STORAGE_KEY = 'tw_pharm_cert_registry_v1';
+  const WARN_DAYS = 180;
+
+  const STATUS_LABELS = {
+    none: '未規劃',
+    planned: '規劃中',
+    acquired: '已取得'
+  };
+
+  // =========================================================================
+  // State
+  // =========================================================================
+  let appData = loadData();
+
+  const uiState = {
+    category: 'all',
+    search: '',
+    statusFilter: 'all',
+    domainFilter: 'all',
+    sort: 'default',
+    activeCertId: null,
+    exportUseCurrentFilter: false
+  };
+
+  let toastTimer = null;
+
+  // =========================================================================
+  // Data Persistence
+  // =========================================================================
+  function defaultAppData() {
+    return {
+      records: {},
+      customCerts: [],
+      linkOverrides: {},
+      baseLicense: {
+        issueDate: '',
+        expiryDate: '',
+        credits: '',
+        licenseNo: ''
+      }
+    };
+  }
+
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultAppData();
+      const parsed = JSON.parse(raw);
+      return {
+        records: parsed.records && typeof parsed.records === 'object' ? parsed.records : {},
+        customCerts: Array.isArray(parsed.customCerts) ? parsed.customCerts : [],
+        linkOverrides: parsed.linkOverrides && typeof parsed.linkOverrides === 'object' ? parsed.linkOverrides : {},
+        baseLicense: parsed.baseLicense && typeof parsed.baseLicense === 'object'
+          ? {
+              issueDate: parsed.baseLicense.issueDate || '',
+              expiryDate: parsed.baseLicense.expiryDate || '',
+              credits: parsed.baseLicense.credits || '',
+              licenseNo: parsed.baseLicense.licenseNo || ''
+            }
+          : defaultAppData().baseLicense
+      };
+    } catch (err) {
+      console.error('Failed to read localStorage:', err);
+      return defaultAppData();
+    }
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+    } catch (err) {
+      console.error('Failed to save localStorage:', err);
+      showToast('本機儲存空間寫入失敗，請檢查瀏覽器權限');
+    }
+  }
+
+  function getAllCerts() {
+    return [...window.CERT_DATA, ...appData.customCerts];
+  }
+
+  function getAllCategories() {
+    const cats = [...window.CERT_CATEGORIES];
+    if (appData.customCerts.some((c) => c.categoryId === 'custom')) {
+      cats.push({
+        id: 'custom',
+        code: '自',
+        shortName: '自訂／院內資格',
+        name: '自訂／院內專屬認證資格',
+        description: '使用者自行新增之院內認證、專責資格或個人進修證書。'
+      });
+    }
+    return cats;
+  }
+
+  function getCategoryById(catId) {
+    const found = getAllCategories().find((c) => c.id === catId);
+    if (found) return found;
+    return {
+      id: 'custom',
+      code: '自',
+      shortName: '自訂資格',
+      name: '自訂／院內專屬認證資格',
+      description: ''
+    };
+  }
+
+  function getRecord(certId) {
+    return appData.records[certId] || {
+      status: 'none',
+      issueDate: '',
+      expiryDate: '',
+      isPermanent: false,
+      certNo: '',
+      notes: ''
+    };
+  }
+
+  // =========================================================================
+  // Date & Expiry Utilities (Local Midnight Safe for UTC+8)
+  // =========================================================================
+  function parseLocalDate(str) {
+    if (!str || !/^\d{4}-\d{2}-\d{2}$/.test(str)) return null;
+    const [y, m, d] = str.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    return Number.isNaN(dt.getTime()) ? null : dt;
+  }
+
+  function getTodayLocal() {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  }
+
+  function formatDateISO(dt) {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const d = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function addYearsISO(dateStr, years) {
+    const base = parseLocalDate(dateStr) || getTodayLocal();
+    const targetYear = base.getFullYear() + years;
+    const targetMonth = base.getMonth();
+    const targetDay = base.getDate();
+    const res = new Date(targetYear, targetMonth, targetDay);
+    // Handle Feb 29 -> Feb 28 on non-leap target year
+    if (res.getMonth() !== targetMonth) {
+      res.setDate(0);
+    }
+    return formatDateISO(res);
+  }
+
+  function calcDaysDiff(dateStr) {
+    const dt = parseLocalDate(dateStr);
+    if (!dt) return null;
+    const today = getTodayLocal();
+    const msPerDay = 24 * 60 * 60 * 1000;
+    return Math.round((dt.getTime() - today.getTime()) / msPerDay);
+  }
+
+  function evalCertExpiry(cert, rec) {
+    if (rec.status !== 'acquired') {
+      if (rec.expiryDate) {
+        return { state: 'draft', daysLeft: calcDaysDiff(rec.expiryDate), label: '非已取得狀態' };
+      }
+      return { state: 'none', daysLeft: null, label: '' };
+    }
+    if (rec.isPermanent) {
+      return { state: 'perm', daysLeft: null, label: '永久有效' };
+    }
+    if (!rec.expiryDate) {
+      return { state: 'unset', daysLeft: null, label: '未設定到期日' };
+    }
+    const days = calcDaysDiff(rec.expiryDate);
+    if (days === null) {
+      return { state: 'unset', daysLeft: null, label: '日期格式錯誤' };
+    }
+    if (days < 0) {
+      return { state: 'expired', daysLeft: days, label: `已逾期 ${Math.abs(days)} 天` };
+    }
+    if (days === 0) {
+      return { state: 'warn', daysLeft: 0, label: '今日到期' };
+    }
+    if (days <= WARN_DAYS) {
+      return { state: 'warn', daysLeft: days, label: `剩 ${days} 天到期` };
+    }
+    return { state: 'valid', daysLeft: days, label: `剩 ${days.toLocaleString('zh-TW')} 天` };
+  }
+
+  function isAlertItem(cert, rec) {
+    const ev = evalCertExpiry(cert, rec);
+    return ev.state === 'expired' || ev.state === 'warn';
+  }
+
+  // =========================================================================
+  // Safe HTML & Toast
+  // =========================================================================
+  function escapeHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function isSafeUrl(url) {
+    return typeof url === 'string' && /^https?:\/\//i.test(url.trim());
+  }
+
+  function normalizeUrl(raw) {
+    const trimmed = String(raw ?? '').trim();
+    if (!trimmed) return '';
+    const candidate = /^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed) ? trimmed : `https://${trimmed}`;
+    try {
+      const u = new URL(candidate);
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return '';
+      return u.href;
+    } catch (e) {
+      return '';
+    }
+  }
+
+  function getEffectiveLinks(cert) {
+    if (!cert) return [];
+    if (Object.prototype.hasOwnProperty.call(appData.linkOverrides, cert.id)) {
+      return Array.isArray(appData.linkOverrides[cert.id]) ? appData.linkOverrides[cert.id] : [];
+    }
+    if (!cert.isCustom && Object.prototype.hasOwnProperty.call(PUBLISHED_LINKS, cert.id)) {
+      return Array.isArray(PUBLISHED_LINKS[cert.id]) ? PUBLISHED_LINKS[cert.id] : [];
+    }
+    return Array.isArray(cert.links) ? cert.links : [];
+  }
+
+  function hasLocalLinkOverride(certId) {
+    return Object.prototype.hasOwnProperty.call(appData.linkOverrides, certId);
+  }
+
+  function getMergedPublishedLinks() {
+    const merged = { ...PUBLISHED_LINKS };
+    Object.keys(appData.linkOverrides).forEach((id) => {
+      // Only embed built-in certification link overrides into published HTML
+      if (window.CERT_DATA.some((c) => c.id === id)) {
+        merged[id] = appData.linkOverrides[id];
+      }
+    });
+    return merged;
+  }
+
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.classList.add('hidden');
+    }, 3000);
+  }
+
+  // =========================================================================
+  // Filtering & Sorting
+  // =========================================================================
+  function getFilteredCerts() {
+    const all = getAllCerts();
+    const q = uiState.search.trim().toLowerCase();
+
+    const filtered = all.filter((cert) => {
+      const rec = getRecord(cert.id);
+
+      if (uiState.category !== 'all' && cert.categoryId !== uiState.category) {
+        return false;
+      }
+
+      if (uiState.statusFilter === 'alert') {
+        if (!isAlertItem(cert, rec)) return false;
+      } else if (uiState.statusFilter !== 'all') {
+        if (rec.status !== uiState.statusFilter) return false;
+      }
+
+      if (uiState.domainFilter !== 'all') {
+        if (!Array.isArray(cert.domains) || !cert.domains.includes(uiState.domainFilter)) {
+          return false;
+        }
+      }
+
+      if (q) {
+        const haystack = [
+          cert.name,
+          cert.subtitle,
+          cert.issuer,
+          cert.target,
+          cert.requirements,
+          cert.validitySummary,
+          cert.validityDetail,
+          cert.schedule,
+          rec.certNo,
+          rec.notes
+        ].join(' ').toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+
+      return true;
+    });
+
+    if (uiState.sort === 'expiry_asc') {
+      filtered.sort((a, b) => {
+        const ea = evalCertExpiry(a, getRecord(a.id));
+        const eb = evalCertExpiry(b, getRecord(b.id));
+        const da = ea.daysLeft !== null ? ea.daysLeft : 999999;
+        const db = eb.daysLeft !== null ? eb.daysLeft : 999999;
+        return da - db;
+      });
+    } else if (uiState.sort === 'acquired_first') {
+      const rank = { acquired: 0, planned: 1, none: 2 };
+      filtered.sort((a, b) => rank[getRecord(a.id).status] - rank[getRecord(b.id).status]);
+    } else if (uiState.sort === 'planned_first') {
+      const rank = { planned: 0, acquired: 1, none: 2 };
+      filtered.sort((a, b) => rank[getRecord(a.id).status] - rank[getRecord(b.id).status]);
+    }
+
+    return filtered;
+  }
+
+  // =========================================================================
+  // Rendering
+  // =========================================================================
+  function renderAll() {
+    renderBaseLicenseStrip();
+    renderKPIs();
+    renderCategoryTabs();
+    renderTable();
+  }
+
+  function renderBaseLicenseStrip() {
+    const strip = document.querySelector('.license-strip');
+    const display = document.getElementById('baseLicenseDisplay');
+    const btnIcs = document.getElementById('btnExportBaseIcs');
+    const bl = appData.baseLicense;
+
+    strip.classList.remove('is-warn', 'is-expired');
+
+    if (!bl.expiryDate) {
+      display.innerHTML = '尚未設定換證到期日';
+      btnIcs.classList.add('hidden');
+      return;
+    }
+
+    btnIcs.classList.remove('hidden');
+    const days = calcDaysDiff(bl.expiryDate);
+    let badgeClass = 'is-valid';
+    let badgeText = `剩 ${days.toLocaleString('zh-TW')} 天`;
+
+    if (days < 0) {
+      badgeClass = 'is-expired';
+      badgeText = `已逾期 ${Math.abs(days)} 天`;
+      strip.classList.add('is-expired');
+    } else if (days <= WARN_DAYS) {
+      badgeClass = 'is-warn';
+      badgeText = days === 0 ? '今日到期' : `剩 ${days} 天到期`;
+      strip.classList.add('is-warn');
+    }
+
+    const creditsPart = bl.credits !== '' ? ` ｜ 已累積 <strong>${escapeHtml(bl.credits)} / 120</strong> 點` : '';
+    const noPart = bl.licenseNo ? ` ｜ ${escapeHtml(bl.licenseNo)}` : '';
+
+    display.innerHTML = `到期日 <strong class="mono">${escapeHtml(bl.expiryDate)}</strong> <span class="expiry-tag ${badgeClass}">${badgeText}</span>${creditsPart}${noPart}`;
+  }
+
+  function renderKPIs() {
+    const all = getAllCerts();
+    let acquired = 0;
+    let planned = 0;
+    let alertCount = 0;
+    let expiredCount = 0;
+    let nearest = null;
+
+    all.forEach((cert) => {
+      const rec = getRecord(cert.id);
+      if (rec.status === 'acquired') acquired++;
+      if (rec.status === 'planned') planned++;
+
+      const ev = evalCertExpiry(cert, rec);
+      if (ev.state === 'expired') {
+        alertCount++;
+        expiredCount++;
+      } else if (ev.state === 'warn') {
+        alertCount++;
+      }
+      if (rec.status === 'acquired' && ev.daysLeft !== null) {
+        if (!nearest || ev.daysLeft < nearest.daysLeft) {
+          nearest = { name: cert.name, daysLeft: ev.daysLeft, date: rec.expiryDate };
+        }
+      }
+    });
+
+    const pct = all.length ? Math.round((acquired / all.length) * 100) : 0;
+
+    document.getElementById('statTotal').textContent = all.length;
+    document.getElementById('statAcquired').textContent = acquired;
+    document.getElementById('statAcquiredPct').textContent = `${pct}%`;
+    document.getElementById('statAcquiredBar').style.width = `${pct}%`;
+    document.getElementById('statPlanned').textContent = planned;
+
+    const alertNumEl = document.getElementById('statAlert');
+    const alertCellEl = document.getElementById('kpiAlert');
+    alertNumEl.textContent = alertCount;
+    alertNumEl.classList.remove('kpi-accent-warn', 'kpi-accent-danger');
+    alertCellEl.classList.remove('has-warn', 'has-expired');
+    if (expiredCount > 0) {
+      alertNumEl.classList.add('kpi-accent-danger');
+      alertCellEl.classList.add('has-expired');
+    } else if (alertCount > 0) {
+      alertNumEl.classList.add('kpi-accent-warn');
+      alertCellEl.classList.add('has-warn');
+    }
+
+    const nextEl = document.getElementById('statNextExpiry');
+    if (nearest) {
+      const tag = nearest.daysLeft < 0
+        ? `已逾期 ${Math.abs(nearest.daysLeft)} 天`
+        : `剩 ${nearest.daysLeft} 天`;
+      const shortName = nearest.name.length > 14 ? nearest.name.slice(0, 14) + '…' : nearest.name;
+      nextEl.textContent = `最近到期：${shortName}（${nearest.date}，${tag}）`;
+    } else {
+      nextEl.textContent = '尚無已設定效期之項目';
+    }
+
+    // Active highlight on KPI cells
+    document.querySelectorAll('.kpi-cell').forEach((cell) => {
+      const kf = cell.dataset.kpiFilter;
+      const active =
+        (kf === 'all' && uiState.statusFilter === 'all' && uiState.category === 'all' && !uiState.search && uiState.domainFilter === 'all') ||
+        (kf !== 'all' && uiState.statusFilter === kf);
+      cell.classList.toggle('is-active', active);
+    });
+  }
+
+  function getCatThemeClass(catId) {
+    const valid = ['cat6', 'cat4', 'cat1', 'cat2', 'cat3', 'cat5', 'cat7', 'custom'];
+    return valid.includes(catId) ? `cat-theme-${catId}` : 'cat-theme-custom';
+  }
+
+  function renderRuleCellHtml(cert) {
+    const raw = cert.validitySummary || '—';
+    const parts = raw.split('｜');
+    const head = (parts[0] || '').trim();
+    const rest = parts.slice(1).join('｜').trim();
+
+    let chipClass = 'rule-chip-program';
+    let chipText = head || '計畫／回訓';
+    let detail = rest || raw;
+
+    if (cert.isPermanentDefault || head.includes('永久有效')) {
+      chipClass = 'rule-chip-perm';
+      chipText = head.includes('完訓') ? '完訓永久有效' : '永久有效';
+      detail = rest || raw.replace(/^永久有效[｜\s]*/, '').replace(/^[（(](.+)[）)]$/, '$1') || '無須定期換證';
+    } else if (head.includes('健保核備')) {
+      chipClass = 'rule-chip-nhi';
+      chipText = '健保核備資格';
+      detail = rest || '須醫院送審核備';
+    } else if (/^(每年|在職每年|年度)/.test(head)) {
+      chipClass = 'rule-chip-annual';
+      chipText = head;
+      detail = rest || '年度定期回訓';
+    } else if (/^(每\s*\d+\s*年|\d+(?:–\d+)?\s*年|TSHP\s*\d+\s*年)/.test(head)) {
+      chipClass = 'rule-chip-cycle';
+      chipText = head.startsWith('每') || head.startsWith('TSHP') ? head : `效期 ${head}`;
+      detail = rest || '期滿依規定展延';
+    } else if (head.includes('無強制') || head.includes('無單獨')) {
+      chipClass = 'rule-chip-program';
+      chipText = head;
+      detail = rest || raw;
+    } else if (head.includes('完訓') || head.includes('造冊')) {
+      chipClass = 'rule-chip-program';
+      chipText = head;
+      detail = rest || raw;
+    }
+
+    return `
+      <div class="rule-cell-stack">
+        <span class="rule-chip ${chipClass}">${escapeHtml(chipText)}</span>
+        <span class="cert-rule-text">${escapeHtml(detail)}</span>
+      </div>
+    `;
+  }
+
+  function renderCategoryTabs() {
+    const container = document.getElementById('categoryTabs');
+    const all = getAllCerts();
+    const cats = getAllCategories();
+
+    const tabsHtml = [
+      `<button type="button" class="cat-tab ${uiState.category === 'all' ? 'is-active' : ''}" data-cat="all">全部類別 <span class="cat-tab-count">(${all.length})</span></button>`
+    ];
+
+    cats.forEach((cat) => {
+      const count = all.filter((c) => c.categoryId === cat.id).length;
+      const themeCls = getCatThemeClass(cat.id);
+      tabsHtml.push(
+        `<button type="button" class="cat-tab ${themeCls} ${uiState.category === cat.id ? 'is-active' : ''}" data-cat="${escapeHtml(cat.id)}"><span class="cat-pip" aria-hidden="true"></span>${escapeHtml(cat.code)}、${escapeHtml(cat.shortName)} <span class="cat-tab-count">(${count})</span></button>`
+      );
+    });
+
+    container.innerHTML = tabsHtml.join('');
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('registryBody');
+    const emptyState = document.getElementById('emptyState');
+    const resultCount = document.getElementById('resultCount');
+    const catDesc = document.getElementById('categoryDesc');
+    const resetBtn = document.getElementById('btnResetFilters');
+
+    const hasActiveFilter =
+      uiState.category !== 'all' ||
+      uiState.statusFilter !== 'all' ||
+      uiState.domainFilter !== 'all' ||
+      uiState.search.trim() !== '' ||
+      uiState.sort !== 'default';
+    resetBtn.classList.toggle('hidden', !hasActiveFilter);
+
+    const list = getFilteredCerts();
+    resultCount.textContent = `顯示 ${list.length} / ${getAllCerts().length} 項`;
+
+    if (uiState.category === 'all') {
+      catDesc.textContent = '涵蓋第 1–7 類台灣藥師進階認證與法定資格';
+    } else {
+      const cat = getCategoryById(uiState.category);
+      catDesc.textContent = cat.description || '';
+    }
+
+    if (list.length === 0) {
+      tbody.innerHTML = '';
+      emptyState.classList.remove('hidden');
+      return;
+    }
+
+    emptyState.classList.add('hidden');
+
+    const rows = [];
+    const showGroupHeaders = uiState.category === 'all' && uiState.sort === 'default';
+    let lastCatId = null;
+
+    list.forEach((cert) => {
+      const catTheme = getCatThemeClass(cert.categoryId);
+
+      if (showGroupHeaders && cert.categoryId !== lastCatId) {
+        const cat = getCategoryById(cert.categoryId);
+        const catCount = list.filter((x) => x.categoryId === cert.categoryId).length;
+        rows.push(
+          `<tr class="group-row ${catTheme}"><td colspan="6"><div class="group-row-inner"><span>${escapeHtml(cat.name)}</span><span class="group-row-meta">共 ${catCount} 項</span></div></td></tr>`
+        );
+        lastCatId = cert.categoryId;
+      }
+
+      const rec = getRecord(cert.id);
+      const ev = evalCertExpiry(cert, rec);
+
+      let rowClass = `cert-row ${catTheme}`;
+      let selectClass = 'inline-status-select st-none';
+
+      if (rec.status === 'acquired') {
+        if (ev.state === 'expired') {
+          rowClass += ' row-expired';
+          selectClass = 'inline-status-select st-expired';
+        } else if (ev.state === 'warn') {
+          rowClass += ' row-warn';
+          selectClass = 'inline-status-select st-warn';
+        } else {
+          rowClass += ' row-acquired';
+          selectClass = 'inline-status-select st-acquired';
+        }
+      } else if (rec.status === 'planned') {
+        rowClass += ' row-planned';
+        selectClass = 'inline-status-select st-planned';
+      }
+
+      // Expiry Cell HTML
+      let expiryHtml = '';
+      if (rec.status === 'acquired') {
+        if (ev.state === 'perm') {
+          expiryHtml = `<div class="expiry-box"><span class="expiry-tag is-perm">永久有效</span>${rec.issueDate ? `<span class="expiry-certno">取得 ${escapeHtml(rec.issueDate)}</span>` : ''}</div>`;
+        } else if (rec.expiryDate) {
+          const tagCls = ev.state === 'expired' ? 'is-expired' : ev.state === 'warn' ? 'is-warn' : 'is-valid';
+          expiryHtml = `
+            <div class="expiry-box">
+              <span class="expiry-date-val">${escapeHtml(rec.expiryDate)}</span>
+              <span class="expiry-tag ${tagCls}">${escapeHtml(ev.label)}</span>
+              ${rec.certNo ? `<span class="expiry-certno">${escapeHtml(rec.certNo)}</span>` : ''}
+            </div>`;
+        } else {
+          expiryHtml = `<div class="expiry-box"><span class="expiry-placeholder">點此設定到期日</span></div>`;
+        }
+      } else if (rec.status === 'planned') {
+        expiryHtml = `<div class="expiry-box"><span class="expiry-placeholder">規劃中（點此填備註）</span></div>`;
+      } else {
+        expiryHtml = `<div class="expiry-box"><span class="expiry-certno">—</span></div>`;
+      }
+
+      const effLinks = getEffectiveLinks(cert).filter((l) => isSafeUrl(l.url));
+      let primaryLink = '';
+      if (effLinks.length) {
+        const rawLabel = effLinks[0].label || '官方網站';
+        const shortLabel = rawLabel.length > 9 ? rawLabel.slice(0, 9) + '…' : rawLabel;
+        const extraTag = effLinks.length > 1 ? ` (+${effLinks.length - 1})` : '';
+        primaryLink = `<a href="${escapeHtml(effLinks[0].url)}" target="_blank" rel="noopener noreferrer" class="row-ext-link" data-stop-row="true" title="${escapeHtml(rawLabel + '：' + effLinks[0].url)}">${escapeHtml(shortLabel)} ↗${extraTag}</a>`;
+      }
+
+      const memoHtml = rec.notes
+        ? `<div class="cert-memo-snippet" title="${escapeHtml(rec.notes)}">備註：${escapeHtml(rec.notes)}</div>`
+        : '';
+
+      rows.push(`
+        <tr class="${rowClass}" data-cert-id="${escapeHtml(cert.id)}">
+          <td class="col-status" data-stop-row="true">
+            <select class="${selectClass}" data-inline-status="${escapeHtml(cert.id)}" aria-label="${escapeHtml(cert.name)} 取得狀態">
+              <option value="none" ${rec.status === 'none' ? 'selected' : ''}>未規劃</option>
+              <option value="planned" ${rec.status === 'planned' ? 'selected' : ''}>規劃中</option>
+              <option value="acquired" ${rec.status === 'acquired' ? 'selected' : ''}>已取得</option>
+            </select>
+          </td>
+          <td class="col-name">
+            <div class="cert-name">${escapeHtml(cert.name)}</div>
+            ${cert.subtitle ? `<div class="cert-subtitle">${escapeHtml(cert.subtitle)}</div>` : ''}
+            <div class="cert-issuer">${escapeHtml(cert.issuer)}</div>
+            ${memoHtml}
+          </td>
+          <td class="col-target">
+            <div class="cert-target-text">${escapeHtml(cert.target || '—')}</div>
+          </td>
+          <td class="col-rule">
+            ${renderRuleCellHtml(cert)}
+          </td>
+          <td class="col-expiry">
+            ${expiryHtml}
+          </td>
+          <td class="col-actions">
+            <div class="row-actions">
+              <button type="button" class="btn btn-secondary btn-sm btn-row-edit" data-open-drawer="${escapeHtml(cert.id)}">編輯／詳情</button>
+              ${primaryLink}
+            </div>
+          </td>
+        </tr>
+      `);
+    });
+
+    tbody.innerHTML = rows.join('');
+  }
+
+  // =========================================================================
+  // Slide-Over Detail & Maintenance Drawer
+  // =========================================================================
+  function openDrawer(certId) {
+    const cert = getAllCerts().find((c) => c.id === certId);
+    if (!cert) return;
+
+    uiState.activeCertId = certId;
+    const rec = getRecord(certId);
+    const cat = getCategoryById(cert.categoryId);
+
+    const drawerEl = document.getElementById('detailDrawer');
+    drawerEl.className = `drawer ${getCatThemeClass(cert.categoryId)}`;
+
+    document.getElementById('drawerCategory').textContent = cat.name;
+    document.getElementById('drawerTitle').textContent = cert.name;
+    document.getElementById('drawerSubtitle').textContent = cert.subtitle || '';
+    document.getElementById('drawerSavedHint').textContent = rec.updatedAt
+      ? `上次更新：${rec.updatedAt.slice(0, 10)}`
+      : '';
+
+    // Form fields
+    const radios = document.querySelectorAll('input[name="recStatus"]');
+    radios.forEach((r) => {
+      r.checked = r.value === rec.status;
+    });
+
+    const issueInput = document.getElementById('recIssueDate');
+    const expiryInput = document.getElementById('recExpiryDate');
+    const permCheck = document.getElementById('recPermanent');
+    const autoBtn = document.getElementById('btnAutoCalcExpiry');
+
+    issueInput.value = rec.issueDate || '';
+    expiryInput.value = rec.expiryDate || '';
+    permCheck.checked = Boolean(rec.isPermanent);
+    expiryInput.disabled = Boolean(rec.isPermanent);
+
+    document.getElementById('recCertNo').value = rec.certNo || '';
+    document.getElementById('recNotes').value = rec.notes || '';
+
+    if (cert.defaultValidityYears) {
+      autoBtn.textContent = `依官方效期 (+${cert.defaultValidityYears} 年) 自動推算`;
+      autoBtn.classList.remove('hidden');
+    } else {
+      autoBtn.classList.add('hidden');
+    }
+
+    updateSingleIcsButtonState();
+
+    // Official Spec fields
+    document.getElementById('specIssuer').textContent = cert.issuer || '—';
+    document.getElementById('specTarget').textContent = cert.target || '—';
+    document.getElementById('specRequirements').textContent = cert.requirements || '—';
+    document.getElementById('specValidity').textContent = cert.validityDetail || cert.validitySummary || '—';
+    document.getElementById('specSchedule').textContent = cert.schedule || '—';
+
+    renderDrawerLinks(cert);
+    closeLinkEditor();
+
+    document.getElementById('customItemControls').classList.toggle('hidden', !cert.isCustom);
+
+    document.getElementById('drawerBackdrop').classList.remove('hidden');
+    document.getElementById('detailDrawer').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function renderDrawerLinks(cert) {
+    const linksWrap = document.getElementById('specLinks');
+    const effLinks = getEffectiveLinks(cert).filter((l) => isSafeUrl(l.url));
+    if (effLinks.length) {
+      linksWrap.innerHTML = effLinks
+        .map((l) => `<a href="${escapeHtml(l.url)}" target="_blank" rel="noopener noreferrer" class="spec-link-btn">${escapeHtml(l.label || '相關連結')} ↗</a>`)
+        .join('');
+    } else {
+      linksWrap.innerHTML = '<span style="color:var(--ink-muted);font-size:12.5px;">尚未設定連結</span>';
+    }
+    const isCustomized = hasLocalLinkOverride(cert.id) || Object.prototype.hasOwnProperty.call(PUBLISHED_LINKS, cert.id);
+    document.getElementById('specLinkCustomBadge').classList.toggle('hidden', !isCustomized);
+  }
+
+  function appendLinkEditorRow(label = '', url = '') {
+    const list = document.getElementById('linkEditorList');
+    const row = document.createElement('div');
+    row.className = 'link-editor-row';
+    row.innerHTML = `
+      <input type="text" class="input-control link-edit-label" placeholder="連結名稱（例：簡章下載）" value="${escapeHtml(label)}" />
+      <input type="url" class="input-control mono link-edit-url" placeholder="https://..." value="${escapeHtml(url)}" />
+      <button type="button" class="btn-remove-link" title="移除此連結" aria-label="移除此連結">✕</button>
+    `;
+    list.appendChild(row);
+  }
+
+  function openLinkEditor(cert) {
+    const list = document.getElementById('linkEditorList');
+    list.innerHTML = '';
+    const effLinks = getEffectiveLinks(cert);
+    if (effLinks.length) {
+      effLinks.forEach((l) => appendLinkEditorRow(l.label || '', l.url || ''));
+    } else {
+      appendLinkEditorRow('', '');
+    }
+    document.getElementById('btnResetItemLinks').classList.toggle('hidden', cert.isCustom || !hasLocalLinkOverride(cert.id));
+    document.getElementById('linkEditorPanel').classList.remove('hidden');
+    document.getElementById('btnToggleLinkEditor').textContent = '收合編輯';
+  }
+
+  function closeLinkEditor() {
+    document.getElementById('linkEditorPanel').classList.add('hidden');
+    document.getElementById('btnToggleLinkEditor').textContent = '編輯連結';
+  }
+
+  function saveEditedLinks() {
+    if (!uiState.activeCertId) return;
+    const cert = getAllCerts().find((c) => c.id === uiState.activeCertId);
+    if (!cert) return;
+
+    const rows = Array.from(document.querySelectorAll('#linkEditorList .link-editor-row'));
+    const nextLinks = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const labelRaw = rows[i].querySelector('.link-edit-label').value.trim();
+      const urlRaw = rows[i].querySelector('.link-edit-url').value.trim();
+      if (!labelRaw && !urlRaw) continue;
+      const norm = normalizeUrl(urlRaw);
+      if (!norm) {
+        showToast(`第 ${i + 1} 筆網址格式無效，請輸入正確的 https:// 網址`);
+        rows[i].querySelector('.link-edit-url').focus();
+        return;
+      }
+      let finalLabel = labelRaw;
+      if (!finalLabel) {
+        try {
+          finalLabel = new URL(norm).hostname.replace(/^www\./, '');
+        } catch (e) {
+          finalLabel = '官方連結';
+        }
+      }
+      nextLinks.push({ label: finalLabel, url: norm });
+    }
+
+    if (cert.isCustom) {
+      cert.links = nextLinks;
+    } else {
+      appData.linkOverrides[cert.id] = nextLinks;
+    }
+
+    saveData();
+    renderDrawerLinks(cert);
+    closeLinkEditor();
+    renderTable();
+    showToast(`已更新「${cert.name}」的官方連結（共 ${nextLinks.length} 筆）`);
+  }
+
+  function exportPublishedHtml() {
+    const merged = getMergedPublishedLinks();
+    const count = Object.keys(merged).length;
+    const safeJson = JSON.stringify(merged).replace(/</g, '\\u003c');
+    const closeScriptTag = '</scr' + 'ipt>';
+    const regex = new RegExp('<script id="publishedLinksConfig" type="application/json">[\\s\\S]*?' + closeScriptTag);
+
+    if (!regex.test(PRISTINE_HTML)) {
+      showToast('匯出失敗：找不到內嵌設定區塊');
+      return;
+    }
+
+    const updatedHtml = PRISTINE_HTML.replace(
+      regex,
+      () => '<script id="publishedLinksConfig" type="application/json">' + safeJson + closeScriptTag
+    );
+
+    downloadBlob(updatedHtml, 'index.html', 'text/html;charset=utf-8;');
+    showToast(`已下載新版 index.html（內嵌 ${count} 項自訂連結，未含任何個人隱私資料）`);
+  }
+
+  function updatePublishModalMeta() {
+    const mergedCount = Object.keys(getMergedPublishedLinks()).length;
+    const desc = document.getElementById('publishHtmlDesc');
+    desc.textContent = mergedCount > 0
+      ? `目前已自訂 ${mergedCount} 項認證連結。點擊下載即可產出內嵌這些連結的新版單一 index.html（自動排除個人取得狀態與效期），可直接覆蓋上傳至 GitHub Pages 分享同仁。`
+      : '將您編輯好的精準官方連結寫入新版單一 HTML（自動排除個人取得狀態與效期），可直接覆蓋上傳至 GitHub Pages 分享同仁。';
+  }
+
+  function closeDrawer() {
+    uiState.activeCertId = null;
+    document.getElementById('drawerBackdrop').classList.add('hidden');
+    document.getElementById('detailDrawer').classList.add('hidden');
+    document.body.style.overflow = '';
+  }
+
+  function updateSingleIcsButtonState() {
+    const expiryVal = document.getElementById('recExpiryDate').value;
+    const isPerm = document.getElementById('recPermanent').checked;
+    document.getElementById('btnDownloadSingleIcs').disabled = !expiryVal || isPerm;
+  }
+
+  // =========================================================================
+  // Export & Share Modal
+  // =========================================================================
+  function openExportModal() {
+    uiState.exportUseCurrentFilter = false;
+    renderExportCategoryGrid();
+    updateExportPreview();
+    openModal('exportModal');
+  }
+
+  function renderExportCategoryGrid() {
+    const grid = document.getElementById('exportCatGrid');
+    const cats = getAllCategories();
+    const all = getAllCerts();
+
+    grid.innerHTML = cats.map((cat) => {
+      const count = all.filter((c) => c.categoryId === cat.id).length;
+      return `
+        <label class="export-cat-item">
+          <input type="checkbox" name="exportCat" value="${escapeHtml(cat.id)}" checked />
+          <span>${escapeHtml(cat.code)}、${escapeHtml(cat.shortName)} (${count})</span>
+        </label>
+      `;
+    }).join('');
+  }
+
+  function getSelectedExportCerts() {
+    if (uiState.exportUseCurrentFilter) {
+      return getFilteredCerts();
+    }
+    const checked = Array.from(document.querySelectorAll('input[name="exportCat"]:checked')).map((el) => el.value);
+    return getAllCerts().filter((c) => checked.includes(c.categoryId));
+  }
+
+  function getExportMode() {
+    const checked = document.querySelector('input[name="exportMode"]:checked');
+    return checked ? checked.value : 'share';
+  }
+
+  function updateExportPreview() {
+    const items = getSelectedExportCerts();
+    const note = document.getElementById('exportPreviewCount');
+    const scopeLabel = uiState.exportUseCurrentFilter ? '（使用目前畫面篩選條件）' : '';
+    note.textContent = `預計匯出：${items.length} 項認證 ${scopeLabel}`;
+  }
+
+  // --- CSV Export (UTF-8 BOM for Excel) ---
+  function csvCell(val) {
+    const s = String(val ?? '').replace(/\r?\n/g, ' / ');
+    return `"${s.replace(/"/g, '""')}"`;
+  }
+
+  function doExportCsv() {
+    const items = getSelectedExportCerts();
+    if (!items.length) {
+      showToast('請至少勾選一個包含項目的類別');
+      return;
+    }
+    const mode = getExportMode();
+    const headers = mode === 'personal'
+      ? ['類別', '認證／資格名稱', '英文／別稱', '主辦／發證單位', '適用場域', '官方效期與展延規範', '個人狀態', '取得日期', '證書到期日', '效期狀態', '證書字號', '個人備註', '官方連結']
+      : ['類別', '認證／資格名稱', '英文／別稱', '主辦／發證單位', '適用場域', '取得條件與認證方式', '官方效期與展延規範', '近期課程／考程', '官方連結'];
+
+    const lines = [headers.map(csvCell).join(',')];
+
+    items.forEach((cert) => {
+      const cat = getCategoryById(cert.categoryId);
+      const linksStr = getEffectiveLinks(cert).map((l) => `${l.label ? l.label + ': ' : ''}${l.url}`).join(' ; ');
+      if (mode === 'personal') {
+        const rec = getRecord(cert.id);
+        const ev = evalCertExpiry(cert, rec);
+        lines.push([
+          cat.name,
+          cert.name,
+          cert.subtitle || '',
+          cert.issuer,
+          cert.target,
+          cert.validitySummary,
+          STATUS_LABELS[rec.status] || '未規劃',
+          rec.issueDate || '',
+          rec.isPermanent ? '永久有效' : (rec.expiryDate || ''),
+          ev.label || '',
+          rec.certNo || '',
+          rec.notes || '',
+          linksStr
+        ].map(csvCell).join(','));
+      } else {
+        lines.push([
+          cat.name,
+          cert.name,
+          cert.subtitle || '',
+          cert.issuer,
+          cert.target,
+          cert.requirements,
+          cert.validityDetail || cert.validitySummary,
+          cert.schedule || '',
+          linksStr
+        ].map(csvCell).join(','));
+      }
+    });
+
+    const todayStr = formatDateISO(getTodayLocal());
+    const filePrefix = mode === 'personal' ? '個人藥師證照維護清冊' : '台灣藥師進階認證總覽_同仁分享版';
+    downloadBlob('\uFEFF' + lines.join('\r\n'), `${filePrefix}_${todayStr}.csv`, 'text/csv;charset=utf-8;');
+    showToast(`已下載 Excel CSV（共 ${items.length} 項）`);
+  }
+
+  // --- Print / Save as PDF ---
+  function doExportPrint() {
+    const items = getSelectedExportCerts();
+    if (!items.length) {
+      showToast('請至少勾選一個包含項目的類別');
+      return;
+    }
+    const mode = getExportMode();
+    const todayStr = formatDateISO(getTodayLocal());
+    const container = document.getElementById('printReport');
+
+    const title = mode === 'personal'
+      ? '台灣藥師進階認證—個人證照維護清冊'
+      : '台灣藥師進階認證與法定資格總覽（同仁分享版）';
+
+    let headerCols = '';
+    if (mode === 'personal') {
+      headerCols = '<th>認證／資格名稱</th><th>主辦單位</th><th>狀態</th><th>取得日</th><th>到期日／效期狀態</th><th>字號與個人備註</th>';
+    } else {
+      headerCols = '<th style="width:20%">認證／資格名稱</th><th style="width:15%">主辦單位</th><th style="width:16%">適用場域</th><th style="width:28%">取得條件與方式</th><th style="width:13%">效期與展延</th><th style="width:8%">官網</th>';
+    }
+
+    const bodyRows = [];
+    let lastCat = null;
+    const colSpan = 6;
+
+    items.forEach((cert) => {
+      if (cert.categoryId !== lastCat) {
+        const cat = getCategoryById(cert.categoryId);
+        bodyRows.push(`<tr class="print-cat-row"><td colspan="${colSpan}">${escapeHtml(cat.name)}</td></tr>`);
+        lastCat = cert.categoryId;
+      }
+
+      if (mode === 'personal') {
+        const rec = getRecord(cert.id);
+        const ev = evalCertExpiry(cert, rec);
+        const expText = rec.isPermanent
+          ? '永久有效'
+          : (rec.expiryDate ? `${rec.expiryDate}（${ev.label}）` : '—');
+        const noteText = [rec.certNo ? `字號：${rec.certNo}` : '', rec.notes || ''].filter(Boolean).join('；') || '—';
+
+        bodyRows.push(`
+          <tr>
+            <td><strong>${escapeHtml(cert.name)}</strong></td>
+            <td>${escapeHtml(cert.issuer)}</td>
+            <td>${escapeHtml(STATUS_LABELS[rec.status])}</td>
+            <td class="mono">${escapeHtml(rec.issueDate || '—')}</td>
+            <td class="mono">${escapeHtml(expText)}</td>
+            <td>${escapeHtml(noteText)}</td>
+          </tr>
+        `);
+      } else {
+        const effLinks = getEffectiveLinks(cert);
+        const firstUrl = effLinks[0] ? effLinks[0].url : '—';
+        bodyRows.push(`
+          <tr>
+            <td><strong>${escapeHtml(cert.name)}</strong>${cert.subtitle ? `<br><span style="color:#555">${escapeHtml(cert.subtitle)}</span>` : ''}</td>
+            <td>${escapeHtml(cert.issuer)}</td>
+            <td>${escapeHtml(cert.target)}</td>
+            <td class="pre-line">${escapeHtml(cert.requirements)}</td>
+            <td>${escapeHtml(cert.validitySummary)}</td>
+            <td style="word-break:break-all;font-size:7.5pt">${escapeHtml(firstUrl)}</td>
+          </tr>
+        `);
+      }
+    });
+
+    let baseLicenseSummary = '';
+    if (mode === 'personal' && appData.baseLicense.expiryDate) {
+      const bl = appData.baseLicense;
+      const days = calcDaysDiff(bl.expiryDate);
+      baseLicenseSummary = `<div style="margin-bottom:10px;padding:6px 10px;border:1px solid #9FB0C2;font-size:9pt;">
+        <strong>基本藥師執業執照</strong>：到期日 ${escapeHtml(bl.expiryDate)}（${days < 0 ? `已逾期 ${Math.abs(days)} 天` : `剩 ${days} 天`}）
+        ${bl.credits !== '' ? ` ｜ 已累積積分：${escapeHtml(bl.credits)} / 120 點` : ''}
+        ${bl.licenseNo ? ` ｜ 字號：${escapeHtml(bl.licenseNo)}` : ''}
+      </div>`;
+    }
+
+    container.innerHTML = `
+      <div class="print-header">
+        <div>
+          <h1 class="print-title">${title}</h1>
+          <div class="print-meta">共 ${items.length} 項資格｜法規與簡章請以各主辦單位最新公告為準</div>
+        </div>
+        <div class="print-meta">匯出日期：${todayStr}</div>
+      </div>
+      ${baseLicenseSummary}
+      <table class="print-table">
+        <thead><tr>${headerCols}</tr></thead>
+        <tbody>${bodyRows.join('')}</tbody>
+      </table>
+    `;
+
+    closeModal('exportModal');
+    setTimeout(() => {
+      window.print();
+    }, 120);
+  }
+
+  // --- Copy LINE / Plain Text ---
+  async function doCopyText() {
+    const items = getSelectedExportCerts();
+    if (!items.length) {
+      showToast('請至少勾選一個包含項目的類別');
+      return;
+    }
+    const mode = getExportMode();
+    const todayStr = formatDateISO(getTodayLocal());
+    const out = [
+      mode === 'personal'
+        ? `【台灣藥師進階認證—個人維護清單】（${todayStr}）`
+        : `【台灣藥師進階認證與法定資格總覽】（整理：${todayStr}，共 ${items.length} 項）`,
+      ''
+    ];
+
+    let lastCat = null;
+    items.forEach((cert) => {
+      if (cert.categoryId !== lastCat) {
+        const cat = getCategoryById(cert.categoryId);
+        out.push(`■ ${cat.name}`);
+        lastCat = cert.categoryId;
+      }
+
+      if (mode === 'personal') {
+        const rec = getRecord(cert.id);
+        const ev = evalCertExpiry(cert, rec);
+        const expPart = rec.status === 'acquired'
+          ? (rec.isPermanent ? '｜永久有效' : (rec.expiryDate ? `｜到期：${rec.expiryDate}（${ev.label}）` : '｜未設到期日'))
+          : '';
+        out.push(`• [${STATUS_LABELS[rec.status]}] ${cert.name}${expPart}`);
+        if (rec.notes) out.push(`  備註：${rec.notes}`);
+      } else {
+        const effLinks = getEffectiveLinks(cert);
+        const urlPart = effLinks.length ? ' ' + effLinks.map((l) => `(${l.label ? l.label + ' ' : ''}${l.url})`).join(' ') : '';
+        out.push(`• ${cert.name}｜${cert.issuer}`);
+        out.push(`  效期：${cert.validitySummary}${urlPart}`);
+      }
+    });
+
+    await copyToClipboard(out.join('\n'));
+    showToast(`已複製純文字分享清單（共 ${items.length} 項），可直接貼上 LINE`);
+  }
+
+  // --- Copy Markdown Table ---
+  async function doCopyMarkdown() {
+    const items = getSelectedExportCerts();
+    if (!items.length) {
+      showToast('請至少勾選一個包含項目的類別');
+      return;
+    }
+    const mode = getExportMode();
+    const mdClean = (s) => String(s ?? '').replace(/\|/g, '｜').replace(/\r?\n/g, '<br>');
+
+    const out = [
+      mode === 'personal'
+        ? '# 台灣藥師進階認證—個人證照維護清冊'
+        : '# 台灣藥師進階認證與法定資格總覽',
+      ''
+    ];
+
+    let lastCat = null;
+    items.forEach((cert) => {
+      if (cert.categoryId !== lastCat) {
+        const cat = getCategoryById(cert.categoryId);
+        out.push(`## ${cat.name}`);
+        out.push('');
+        if (mode === 'personal') {
+          out.push('| 狀態 | 認證／資格名稱 | 主辦單位 | 取得日 | 到期日／狀態 | 備註 |');
+          out.push('| :--- | :--- | :--- | :--- | :--- | :--- |');
+        } else {
+          out.push('| 認證／資格名稱 | 主辦單位 | 適用場域 | 取得條件與方式 | 效期與展延 | 官方連結 |');
+          out.push('| :--- | :--- | :--- | :--- | :--- | :--- |');
+        }
+        lastCat = cert.categoryId;
+      }
+
+      if (mode === 'personal') {
+        const rec = getRecord(cert.id);
+        const ev = evalCertExpiry(cert, rec);
+        const exp = rec.isPermanent ? '永久有效' : (rec.expiryDate ? `${rec.expiryDate} (${ev.label})` : '—');
+        out.push(`| ${STATUS_LABELS[rec.status]} | ${mdClean(cert.name)} | ${mdClean(cert.issuer)} | ${rec.issueDate || '—'} | ${exp} | ${mdClean(rec.notes || '—')} |`);
+      } else {
+        const linksMd = getEffectiveLinks(cert).map((l) => `[${l.label}](${l.url})`).join(' / ') || '—';
+        out.push(`| **${mdClean(cert.name)}** | ${mdClean(cert.issuer)} | ${mdClean(cert.target)} | ${mdClean(cert.requirements)} | ${mdClean(cert.validitySummary)} | ${linksMd} |`);
+      }
+    });
+
+    await copyToClipboard(out.join('\n'));
+    showToast(`已複製 Markdown 表格（共 ${items.length} 項）`);
+  }
+
+  // =========================================================================
+  // ICS Calendar Reminder Generator (RFC 5545)
+  // =========================================================================
+  function icsEscape(str) {
+    return String(str ?? '')
+      .replace(/\\/g, '\\\\')
+      .replace(/\r?\n/g, '\\n')
+      .replace(/,/g, '\\,')
+      .replace(/;/g, '\\;');
+  }
+
+  function buildIcsEvents(events) {
+    const nowStamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+    const lines = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//Taiwan Pharmacist Credential Registry//ZH-TW',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH'
+    ];
+
+    events.forEach((ev, idx) => {
+      const startDt = parseLocalDate(ev.expiryDate);
+      if (!startDt) return;
+      const endDt = new Date(startDt.getFullYear(), startDt.getMonth(), startDt.getDate() + 1);
+      const dtStart = formatDateISO(startDt).replace(/-/g, '');
+      const dtEnd = formatDateISO(endDt).replace(/-/g, '');
+      const uid = `pharm-cert-${ev.id}-${dtStart}-${idx}@tw-pharm-registry`;
+
+      lines.push('BEGIN:VEVENT');
+      lines.push(`UID:${uid}`);
+      lines.push(`DTSTAMP:${nowStamp}`);
+      lines.push(`DTSTART;VALUE=DATE:${dtStart}`);
+      lines.push(`DTEND;VALUE=DATE:${dtEnd}`);
+      lines.push(`SUMMARY:${icsEscape('【證照到期】' + ev.title)}`);
+      lines.push(`DESCRIPTION:${icsEscape(ev.description)}`);
+      // 90-day advance alarm
+      lines.push('BEGIN:VALARM');
+      lines.push('TRIGGER:-P90D');
+      lines.push('ACTION:DISPLAY');
+      lines.push(`DESCRIPTION:${icsEscape('尚餘 90 天到期，請檢視繼續教育積分並準備展延：' + ev.title)}`);
+      lines.push('END:VALARM');
+      // 30-day advance alarm
+      lines.push('BEGIN:VALARM');
+      lines.push('TRIGGER:-P30D');
+      lines.push('ACTION:DISPLAY');
+      lines.push(`DESCRIPTION:${icsEscape('尚餘 30 天到期，請儘速辦理換證申請：' + ev.title)}`);
+      lines.push('END:VALARM');
+      lines.push('END:VEVENT');
+    });
+
+    lines.push('END:VCALENDAR');
+    return lines.join('\r\n');
+  }
+
+  function exportSingleIcs(certId) {
+    const cert = getAllCerts().find((c) => c.id === certId);
+    if (!cert) return;
+    const expiryDate = document.getElementById('recExpiryDate').value;
+    const certNo = document.getElementById('recCertNo').value.trim();
+    const notes = document.getElementById('recNotes').value.trim();
+    if (!expiryDate) {
+      showToast('請先填寫證書到期日');
+      return;
+    }
+
+    const effLinks = getEffectiveLinks(cert);
+    const desc = [
+      `主辦單位：${cert.issuer}`,
+      `換證規範：${cert.validityDetail || cert.validitySummary}`,
+      certNo ? `證書字號：${certNo}` : '',
+      notes ? `個人備註：${notes}` : '',
+      effLinks[0] ? `官網：${effLinks[0].url}` : ''
+    ].filter(Boolean).join('\n');
+
+    const ics = buildIcsEvents([{ id: cert.id, title: cert.name, expiryDate, description: desc }]);
+    downloadBlob(ics, `換證提醒_${cert.name.replace(/[\\/:*?"<>|]/g, '_')}.ics`, 'text/calendar;charset=utf-8;');
+    showToast('已下載行事曆提醒檔 (.ics)，內含到期前 90 天與 30 天通知');
+  }
+
+  function exportAllIcs() {
+    const events = [];
+
+    if (appData.baseLicense.expiryDate) {
+      const bl = appData.baseLicense;
+      events.push({
+        id: 'base-license',
+        title: '藥師執業執照（6年換證／120點）',
+        expiryDate: bl.expiryDate,
+        description: [
+          '法定 6 年換證，須滿 120 點繼續教育積分（含感管、性別、法規、倫理必修）。',
+          bl.licenseNo ? `執照字號：${bl.licenseNo}` : '',
+          bl.credits !== '' ? `已紀錄積分：${bl.credits} / 120` : ''
+        ].filter(Boolean).join('\n')
+      });
+    }
+
+    getAllCerts().forEach((cert) => {
+      const rec = getRecord(cert.id);
+      if (rec.status === 'acquired' && !rec.isPermanent && rec.expiryDate) {
+        events.push({
+          id: cert.id,
+          title: cert.name,
+          expiryDate: rec.expiryDate,
+          description: [
+            `主辦單位：${cert.issuer}`,
+            `換證規範：${cert.validityDetail || cert.validitySummary}`,
+            rec.certNo ? `證書字號：${rec.certNo}` : '',
+            rec.notes ? `個人備註：${rec.notes}` : ''
+          ].filter(Boolean).join('\n')
+        });
+      }
+    });
+
+    if (!events.length) {
+      showToast('目前尚無任何「已取得且已設定到期日」的證照可匯出');
+      return;
+    }
+
+    const ics = buildIcsEvents(events);
+    downloadBlob(ics, `台灣藥師證照換證提醒_${formatDateISO(getTodayLocal())}.ics`, 'text/calendar;charset=utf-8;');
+    showToast(`已匯出 ${events.length} 筆換證提醒至行事曆 (.ics)`);
+  }
+
+  // =========================================================================
+  // Download & Clipboard Helpers
+  // =========================================================================
+  function downloadBlob(content, filename, mimeType) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async function copyToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  // =========================================================================
+  // Modal Helpers
+  // =========================================================================
+  function openModal(id) {
+    document.getElementById(id).classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.add('hidden');
+    if (document.getElementById('detailDrawer').classList.contains('hidden')) {
+      document.body.style.overflow = '';
+    }
+  }
+
+  function closeAllOverlays() {
+    closeDrawer();
+    ['exportModal', 'backupModal', 'customModal', 'baseLicenseModal'].forEach((id) => {
+      document.getElementById(id).classList.add('hidden');
+    });
+    document.body.style.overflow = '';
+  }
+
+  // =========================================================================
+  // Initialization & Event Binding
+  // =========================================================================
+  function populateStaticSelects() {
+    const domainSelect = document.getElementById('domainFilter');
+    window.PRACTICE_DOMAINS.forEach((d) => {
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = `場域：${d.label}`;
+      domainSelect.appendChild(opt);
+    });
+
+    const customCatSelect = document.getElementById('customCategory');
+    window.CERT_CATEGORIES.forEach((cat) => {
+      const opt = document.createElement('option');
+      opt.value = cat.id;
+      opt.textContent = `${cat.code}、${cat.shortName}`;
+      customCatSelect.appendChild(opt);
+    });
+  }
+
+  function bindEvents() {
+    // Search & Filters
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      uiState.search = e.target.value;
+      renderTable();
+      renderKPIs();
+    });
+
+    document.getElementById('statusFilter').addEventListener('change', (e) => {
+      uiState.statusFilter = e.target.value;
+      renderTable();
+      renderKPIs();
+    });
+
+    document.getElementById('domainFilter').addEventListener('change', (e) => {
+      uiState.domainFilter = e.target.value;
+      renderTable();
+      renderKPIs();
+    });
+
+    document.getElementById('sortSelect').addEventListener('change', (e) => {
+      uiState.sort = e.target.value;
+      renderTable();
+    });
+
+    const resetFilters = () => {
+      uiState.category = 'all';
+      uiState.search = '';
+      uiState.statusFilter = 'all';
+      uiState.domainFilter = 'all';
+      uiState.sort = 'default';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('statusFilter').value = 'all';
+      document.getElementById('domainFilter').value = 'all';
+      document.getElementById('sortSelect').value = 'default';
+      renderAll();
+    };
+
+    document.getElementById('btnResetFilters').addEventListener('click', resetFilters);
+    document.getElementById('btnEmptyReset').addEventListener('click', resetFilters);
+
+    // KPI Strip Quick Filters
+    document.querySelectorAll('.kpi-cell').forEach((cell) => {
+      cell.addEventListener('click', () => {
+        const kf = cell.dataset.kpiFilter;
+        if (kf === 'all') {
+          resetFilters();
+          return;
+        }
+        uiState.statusFilter = uiState.statusFilter === kf ? 'all' : kf;
+        document.getElementById('statusFilter').value = uiState.statusFilter;
+        renderTable();
+        renderKPIs();
+      });
+    });
+
+    // Category Tabs Delegation
+    document.getElementById('categoryTabs').addEventListener('click', (e) => {
+      const btn = e.target.closest('.cat-tab');
+      if (!btn) return;
+      uiState.category = btn.dataset.cat;
+      renderCategoryTabs();
+      renderTable();
+      renderKPIs();
+    });
+
+    // Table Delegation (Inline Status Change + Row Open Drawer)
+    document.getElementById('registryBody').addEventListener('change', (e) => {
+      const select = e.target.closest('[data-inline-status]');
+      if (!select) return;
+      const certId = select.dataset.inlineStatus;
+      const cert = getAllCerts().find((c) => c.id === certId);
+      const newStatus = select.value;
+      const existing = getRecord(certId);
+
+      const updated = {
+        ...existing,
+        status: newStatus,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Automatically set permanent flag for statutory permanent qualifications when newly marked acquired
+      if (newStatus === 'acquired' && cert && cert.isPermanentDefault && !existing.expiryDate && !existing.updatedAt) {
+        updated.isPermanent = true;
+      }
+
+      appData.records[certId] = updated;
+      saveData();
+      renderAll();
+      showToast(`已更新「${cert ? cert.name : ''}」狀態為：${STATUS_LABELS[newStatus]}`);
+    });
+
+    document.getElementById('registryBody').addEventListener('click', (e) => {
+      if (e.target.closest('[data-stop-row="true"]')) return;
+      const openBtn = e.target.closest('[data-open-drawer]');
+      if (openBtn) {
+        openDrawer(openBtn.dataset.openDrawer);
+        return;
+      }
+      const row = e.target.closest('tr.cert-row');
+      if (row) {
+        openDrawer(row.dataset.certId);
+      }
+    });
+
+    // Drawer Controls
+    document.getElementById('btnCloseDrawer').addEventListener('click', closeDrawer);
+    document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+
+    document.getElementById('recPermanent').addEventListener('change', (e) => {
+      const expiryInput = document.getElementById('recExpiryDate');
+      expiryInput.disabled = e.target.checked;
+      if (e.target.checked) expiryInput.value = '';
+      updateSingleIcsButtonState();
+    });
+
+    document.getElementById('recExpiryDate').addEventListener('input', updateSingleIcsButtonState);
+
+    document.getElementById('btnAutoCalcExpiry').addEventListener('click', () => {
+      const cert = getAllCerts().find((c) => c.id === uiState.activeCertId);
+      if (!cert || !cert.defaultValidityYears) return;
+
+      const issueInput = document.getElementById('recIssueDate');
+      if (!issueInput.value) {
+        issueInput.value = formatDateISO(getTodayLocal());
+      }
+      const permCheck = document.getElementById('recPermanent');
+      permCheck.checked = false;
+      const expiryInput = document.getElementById('recExpiryDate');
+      expiryInput.disabled = false;
+      expiryInput.value = addYearsISO(issueInput.value, cert.defaultValidityYears);
+
+      // Convenience: if currently 未規劃, switch radio to 已取得
+      const checkedRadio = document.querySelector('input[name="recStatus"]:checked');
+      if (!checkedRadio || checkedRadio.value === 'none') {
+        document.querySelector('input[name="recStatus"][value="acquired"]').checked = true;
+      }
+
+      updateSingleIcsButtonState();
+      showToast(`已依取得日加 ${cert.defaultValidityYears} 年推算到期日`);
+    });
+
+    document.getElementById('recordForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!uiState.activeCertId) return;
+
+      const status = document.querySelector('input[name="recStatus"]:checked')?.value || 'none';
+      const issueDate = document.getElementById('recIssueDate').value;
+      const isPermanent = document.getElementById('recPermanent').checked;
+      const expiryDate = isPermanent ? '' : document.getElementById('recExpiryDate').value;
+      const certNo = document.getElementById('recCertNo').value.trim();
+      const notes = document.getElementById('recNotes').value.trim();
+
+      appData.records[uiState.activeCertId] = {
+        status,
+        issueDate,
+        expiryDate,
+        isPermanent,
+        certNo,
+        notes,
+        updatedAt: new Date().toISOString()
+      };
+
+      saveData();
+      renderAll();
+      document.getElementById('drawerSavedHint').textContent = `已於 ${new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })} 儲存`;
+      showToast('已儲存個人證照維護紀錄');
+    });
+
+    document.getElementById('btnDownloadSingleIcs').addEventListener('click', () => {
+      if (uiState.activeCertId) exportSingleIcs(uiState.activeCertId);
+    });
+
+    document.getElementById('btnClearRecord').addEventListener('click', () => {
+      if (!uiState.activeCertId) return;
+      if (!confirm('確定清除此認證的個人狀態、效期與備註紀錄？')) return;
+      delete appData.records[uiState.activeCertId];
+      saveData();
+      renderAll();
+      openDrawer(uiState.activeCertId);
+      showToast('已清除該項個人紀錄');
+    });
+
+    document.getElementById('btnDeleteCustomCert').addEventListener('click', () => {
+      if (!uiState.activeCertId) return;
+      if (!confirm('確定永久刪除此自訂認證項目？')) return;
+      appData.customCerts = appData.customCerts.filter((c) => c.id !== uiState.activeCertId);
+      delete appData.records[uiState.activeCertId];
+      if (uiState.category === 'custom' && !appData.customCerts.some((c) => c.categoryId === 'custom')) {
+        uiState.category = 'all';
+      }
+      saveData();
+      closeDrawer();
+      renderAll();
+      showToast('已刪除自訂認證項目');
+    });
+
+    // Link Editor Controls inside Drawer
+    document.getElementById('btnToggleLinkEditor').addEventListener('click', () => {
+      if (!uiState.activeCertId) return;
+      const cert = getAllCerts().find((c) => c.id === uiState.activeCertId);
+      if (!cert) return;
+      const panel = document.getElementById('linkEditorPanel');
+      if (panel.classList.contains('hidden')) {
+        openLinkEditor(cert);
+      } else {
+        closeLinkEditor();
+      }
+    });
+
+    document.getElementById('btnAddLinkRow').addEventListener('click', () => {
+      appendLinkEditorRow('', '');
+      const inputs = document.querySelectorAll('#linkEditorList .link-edit-label');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    });
+
+    document.getElementById('linkEditorList').addEventListener('click', (e) => {
+      const rmBtn = e.target.closest('.btn-remove-link');
+      if (!rmBtn) return;
+      rmBtn.closest('.link-editor-row').remove();
+    });
+
+    document.getElementById('btnCancelLinkEdit').addEventListener('click', closeLinkEditor);
+    document.getElementById('btnSaveItemLinks').addEventListener('click', saveEditedLinks);
+
+    document.getElementById('btnResetItemLinks').addEventListener('click', () => {
+      if (!uiState.activeCertId) return;
+      const cert = getAllCerts().find((c) => c.id === uiState.activeCertId);
+      if (!cert) return;
+      delete appData.linkOverrides[cert.id];
+      saveData();
+      renderDrawerLinks(cert);
+      closeLinkEditor();
+      renderTable();
+      showToast('已恢復系統預設官方連結');
+    });
+
+    // Header Buttons & Modals
+    document.getElementById('btnOpenExport').addEventListener('click', openExportModal);
+    document.getElementById('btnOpenBackup').addEventListener('click', () => {
+      updatePublishModalMeta();
+      openModal('backupModal');
+    });
+    document.getElementById('btnExportPublishedHtml').addEventListener('click', exportPublishedHtml);
+    document.getElementById('btnOpenCustom').addEventListener('click', () => {
+      document.getElementById('customCertForm').reset();
+      openModal('customModal');
+    });
+
+    // Modal close triggers
+    document.querySelectorAll('[data-close-modal]').forEach((btn) => {
+      btn.addEventListener('click', () => closeModal(btn.dataset.closeModal));
+    });
+    document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) closeModal(backdrop.id);
+      });
+    });
+
+    // Export Modal Interactions
+    document.getElementById('exportCatGrid').addEventListener('change', () => {
+      uiState.exportUseCurrentFilter = false;
+      updateExportPreview();
+    });
+
+    document.getElementById('btnExportSelectAll').addEventListener('click', () => {
+      uiState.exportUseCurrentFilter = false;
+      document.querySelectorAll('input[name="exportCat"]').forEach((cb) => { cb.checked = true; });
+      updateExportPreview();
+    });
+
+    document.getElementById('btnExportUseCurrent').addEventListener('click', () => {
+      uiState.exportUseCurrentFilter = true;
+      updateExportPreview();
+      showToast('已切換為目前畫面篩選結果');
+    });
+
+    document.getElementById('btnDoExportCsv').addEventListener('click', doExportCsv);
+    document.getElementById('btnDoExportPrint').addEventListener('click', doExportPrint);
+    document.getElementById('btnDoCopyText').addEventListener('click', doCopyText);
+    document.getElementById('btnDoCopyMarkdown').addEventListener('click', doCopyMarkdown);
+    document.getElementById('btnDoExportAllIcs').addEventListener('click', exportAllIcs);
+
+    // Backup & Restore
+    document.getElementById('btnDownloadBackup').addEventListener('click', () => {
+      const payload = {
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        data: appData
+      };
+      downloadBlob(
+        JSON.stringify(payload, null, 2),
+        `藥師證照維護備份_${formatDateISO(getTodayLocal())}.json`,
+        'application/json;charset=utf-8;'
+      );
+      showToast('已下載本機資料備份 (.json)');
+    });
+
+    document.getElementById('inputRestoreFile').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result));
+          const incoming = parsed.data || parsed;
+          if (!incoming || typeof incoming !== 'object' || !incoming.records) {
+            throw new Error('格式不符');
+          }
+          appData = {
+            records: incoming.records || {},
+            customCerts: Array.isArray(incoming.customCerts) ? incoming.customCerts : [],
+            linkOverrides: incoming.linkOverrides && typeof incoming.linkOverrides === 'object' ? incoming.linkOverrides : {},
+            baseLicense: incoming.baseLicense || defaultAppData().baseLicense
+          };
+          saveData();
+          renderAll();
+          closeModal('backupModal');
+          showToast('已成功還原個人證照維護資料');
+        } catch (err) {
+          showToast('還原失敗：JSON 檔案格式不正確');
+        } finally {
+          e.target.value = '';
+        }
+      };
+      reader.readAsText(file, 'utf-8');
+    });
+
+    document.getElementById('btnResetAllData').addEventListener('click', () => {
+      if (!confirm('警告：將清除所有個人取得狀態、效期、執業執照與自訂認證且無法復原，確定繼續？')) return;
+      appData = defaultAppData();
+      saveData();
+      uiState.category = 'all';
+      renderAll();
+      closeModal('backupModal');
+      showToast('已重設所有個人維護資料');
+    });
+
+    // Add Custom Certification
+    document.getElementById('customCertForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('customName').value.trim();
+      if (!name) return;
+
+      const id = 'custom-' + Date.now();
+      const categoryId = document.getElementById('customCategory').value || 'custom';
+      const issuer = document.getElementById('customIssuer').value.trim() || '自訂／院內單位';
+      const status = document.getElementById('customStatus').value || 'acquired';
+      const validityRule = document.getElementById('customValidityRule').value.trim() || '依單位規範';
+      const issueDate = document.getElementById('customIssueDate').value;
+      const expiryDate = document.getElementById('customExpiryDate').value;
+      const customUrlRaw = document.getElementById('customUrl').value.trim();
+      const customUrl = normalizeUrl(customUrlRaw);
+      if (customUrlRaw && !customUrl) {
+        showToast('相關連結網址格式無效，請輸入正確的 https:// 網址');
+        return;
+      }
+      const notes = document.getElementById('customNotes').value.trim();
+
+      appData.customCerts.push({
+        id,
+        categoryId,
+        name,
+        subtitle: 'Custom / Institutional Credential',
+        issuer,
+        domains: ['hospital', 'community'],
+        target: '個人自訂或院內專屬資格',
+        requirements: notes || '使用者自行新增項目。',
+        validitySummary: validityRule,
+        validityDetail: validityRule,
+        defaultValidityYears: null,
+        isPermanentDefault: false,
+        schedule: '依主辦單位公告。',
+        links: customUrl ? [{ label: '官方／相關連結', url: customUrl }] : [],
+        isCustom: true
+      });
+
+      appData.records[id] = {
+        status,
+        issueDate,
+        expiryDate,
+        isPermanent: false,
+        certNo: '',
+        notes,
+        updatedAt: new Date().toISOString()
+      };
+
+      saveData();
+      closeModal('customModal');
+      renderAll();
+      showToast(`已新增自訂資格「${name}」`);
+    });
+
+    // Basic Practice License Modal
+    document.getElementById('btnEditBaseLicense').addEventListener('click', () => {
+      const bl = appData.baseLicense;
+      document.getElementById('baseIssueDate').value = bl.issueDate || '';
+      document.getElementById('baseExpiryDate').value = bl.expiryDate || '';
+      document.getElementById('baseCredits').value = bl.credits !== undefined ? bl.credits : '';
+      document.getElementById('baseLicenseNo').value = bl.licenseNo || '';
+      openModal('baseLicenseModal');
+    });
+
+    document.getElementById('btnAutoCalcBase').addEventListener('click', () => {
+      const issueInput = document.getElementById('baseIssueDate');
+      if (!issueInput.value) {
+        issueInput.value = formatDateISO(getTodayLocal());
+      }
+      document.getElementById('baseExpiryDate').value = addYearsISO(issueInput.value, 6);
+      showToast('已依核發日自動加 6 年推算換證到期日');
+    });
+
+    document.getElementById('baseLicenseForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      appData.baseLicense = {
+        issueDate: document.getElementById('baseIssueDate').value,
+        expiryDate: document.getElementById('baseExpiryDate').value,
+        credits: document.getElementById('baseCredits').value.trim(),
+        licenseNo: document.getElementById('baseLicenseNo').value.trim()
+      };
+      saveData();
+      renderBaseLicenseStrip();
+      closeModal('baseLicenseModal');
+      showToast('已更新藥師執業執照效期');
+    });
+
+    document.getElementById('btnClearBaseLicense').addEventListener('click', () => {
+      appData.baseLicense = defaultAppData().baseLicense;
+      saveData();
+      renderBaseLicenseStrip();
+      closeModal('baseLicenseModal');
+      showToast('已清除執業執照效期設定');
+    });
+
+    document.getElementById('btnExportBaseIcs').addEventListener('click', () => {
+      const bl = appData.baseLicense;
+      if (!bl.expiryDate) return;
+      const ics = buildIcsEvents([{
+        id: 'base-license',
+        title: '藥師執業執照（6年換證／120點）',
+        expiryDate: bl.expiryDate,
+        description: `法定 6 年換證，須滿 120 點繼續教育積分。${bl.licenseNo ? `\n字號：${bl.licenseNo}` : ''}`
+      }]);
+      downloadBlob(ics, '換證提醒_藥師執業執照.ics', 'text/calendar;charset=utf-8;');
+      showToast('已下載藥師執業執照換證提醒 (.ics)');
+    });
+
+    // Global Escape Key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllOverlays();
+      }
+    });
+  }
+
+  // Boot
+  populateStaticSelects();
+  bindEvents();
+  renderAll();
+})();
+
+  </script>
+</body>
+</html>
